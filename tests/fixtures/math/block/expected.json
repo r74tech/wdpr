@@ -1,0 +1,120 @@
+{
+  "elements": [
+    {
+      "element": "math",
+      "data": {
+        "name": null,
+        "latex-source": "A = \\pi \\cdot r^2"
+      }
+    },
+    {
+      "element": "math",
+      "data": {
+        "name": null,
+        "latex-source": "C = 2\\pi r"
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Apple"
+          },
+          {
+            "element": "equation-reference",
+            "data": "quadratic-formula"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Banana"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "cherry"
+          },
+          {
+            "element": "text",
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "equation"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "quadratic"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "formula"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "Gooseberry"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Pineapple"
+          },
+          {
+            "element": "equation-reference",
+            "data": "navier-stokes"
+          },
+          {
+            "element": "text",
+            "data": "Blueberry"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

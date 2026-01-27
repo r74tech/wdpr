@@ -1,0 +1,30 @@
+{
+  "elements": [
+    {
+      "element": "module",
+      "data": {
+        "module": "unknown",
+        "name": "NoSuchModuleWithThisName",
+        "arguments": {}
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "backlinks",
+        "page": null
+      }
+    },
+    {
+      "element": "style",
+      "data": ""
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wdpr-demo-v1-files",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-01-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "wdpr-demo-v1-files",
+    },
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "https://wdpr-demo-v1.r74.tech",
+  },
+  "dev": {
+    "port": 8788,
+    "persist_to": "../main/.wrangler/state",
+  },
+}

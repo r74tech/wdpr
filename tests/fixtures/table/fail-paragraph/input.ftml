@@ -1,0 +1,11 @@
+[[table]] [[cell]] Also no row [[/cell]] [[/table]]
+
+EMPTY TABLE
+[[table]]
+[[/table]]
+
+EMPTY ROW
+[[table]]
+[[row]]
+[[/row]]
+[[/table]]

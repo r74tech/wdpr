@@ -1,0 +1,11 @@
+non root
+[[module pagetree]]
+[[module PageTree]]
+[[module PAGETREE]]
+----
+[[module PageTree root="some-page"]]
+[[module PageTree root="some-page" showRoot="true"]]
+[[module PageTree root="some-page" showRoot="yes"]]
+[[module PageTree root="some-page" showRoot="no"]]
+[[module PageTree root="some-page" showRoot="yes" depth="2"]]
+[[module PageTree depth="3" root="some-page"  Showroot="yes"]]

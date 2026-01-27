@@ -1,0 +1,20 @@
+{
+  "elements": [
+    {
+      "element": "module",
+      "data": {
+        "module": "list-users",
+        "users": ".",
+        "body": "%%title%%, %%name%%, %%number%%",
+        "attributes": {}
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

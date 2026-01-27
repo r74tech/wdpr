@@ -1,0 +1,6 @@
+User normal: [[user Alice]]
+User with star: [[*user Bob]]
+
+Weird: [[USER  SYSTEM]]
+
+Special: [[user anonymous]]

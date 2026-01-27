@@ -1,0 +1,39 @@
+{
+  "elements": [
+    {
+      "element": "module",
+      "data": {
+        "module": "categories",
+        "include-hidden": false
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "categories",
+        "include-hidden": false
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "categories",
+        "include-hidden": true
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "categories",
+        "include-hidden": false
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

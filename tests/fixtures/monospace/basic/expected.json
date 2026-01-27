@@ -1,0 +1,49 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Some"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "monospace",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "monospace"
+                }
+              ]
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "text"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

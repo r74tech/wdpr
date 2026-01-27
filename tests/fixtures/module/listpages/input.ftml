@@ -1,0 +1,33 @@
+[[module ListPages category="*" tags="+scp" order="created_at desc" limit="10"]]
+%%title_linked%% - %%created_at%%
+[[/module]]
+
+[[module ListPages category="." pagetype="hidden" parent="=" created_by="-=" rating=">3" votes=">=10"]]
+[[head]]
+Pages in current category:
+[[/head]]
+[[body]]
+* %%fullname%% (by %%created_by_linked%%) - Rating: %%rating%% (%%rating_votes%% votes)
+  Tags: %%tags_linked%%
+  Created: %%created_at|%Y-%m-%d%% | Updated: %%updated_at|%Y-%m-%d%%
+[[/body]]
+[[foot]]
+Total pages: %%total%%
+[[/foot]]
+[[/module]]
+
+[[module ListPages name="scp-%" order="name" separate="no" wrapper="no" perPage="5"]]
+%%title%% | %%name%%
+[[/module]]
+
+[[module ListPages category="-_default" tags="-scp +tale" order="random" limit="3"]]
+%%content{1}%%%%
+[[/module]]
+
+[[module ListPages range="others" reverse="yes" offset="10"]]
+%%preview(200)%%
+[[/module]]
+
+[[module ListPages rss="Recent Changes" rssDescription="Latest updates to the wiki" rssLimit="20" rssOnly="yes"]]
+%%title%% - %%summary%%
+[[/module]]

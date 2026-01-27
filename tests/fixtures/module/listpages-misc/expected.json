@@ -1,0 +1,43 @@
+{
+  "elements": [
+    {
+      "element": "module",
+      "data": {
+        "module": "list-pages",
+        "limit": 3,
+        "reverse": false,
+        "separate": true,
+        "wrapper": true,
+        "rss-only": false,
+        "body": "[[div class=\"item\"]]\n%%title_linked%%\n[[/div]]",
+        "attributes": {
+          "limit": "3"
+        }
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "list-pages",
+        "category": "*",
+        "limit": 2,
+        "reverse": false,
+        "separate": true,
+        "wrapper": true,
+        "rss-only": false,
+        "body": "[[div class=\"outer\"]]\n[[div class=\"inner\"]]\n%%title%%\n[[/div]]\n[[/div]]",
+        "attributes": {
+          "limit": "2",
+          "category": "*"
+        }
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

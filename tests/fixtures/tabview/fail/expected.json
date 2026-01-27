@@ -1,0 +1,51 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "EMPTY:"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "[[tabview]]"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "[[/tabview]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "EMPTY INLINE: [[tabs]] [[/tabs]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

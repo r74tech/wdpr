@@ -1,0 +1,97 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "A"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "{"
+          },
+          {
+            "element": "text",
+            "data": "$"
+          },
+          {
+            "element": "text",
+            "data": "variable"
+          },
+          {
+            "element": "text",
+            "data": "}"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Another"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "{"
+          },
+          {
+            "element": "text",
+            "data": "$"
+          },
+          {
+            "element": "text",
+            "data": "var"
+          },
+          {
+            "element": "text",
+            "data": "}"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "{"
+          },
+          {
+            "element": "text",
+            "data": "$"
+          },
+          {
+            "element": "text",
+            "data": "here"
+          },
+          {
+            "element": "text",
+            "data": "}"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

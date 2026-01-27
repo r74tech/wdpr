@@ -1,0 +1,160 @@
+import { describe, expect, it } from "bun:test";
+import type { SyntaxTree } from "@wdpr/ast";
+import { renderToHtml } from "@wdpr/render";
+import * as fs from "fs";
+import * as path from "path";
+
+const FIXTURES_DIR = path.join(import.meta.dir, "../fixtures");
+
+/**
+ * renderテストから除外するfixture
+ * 除外する場合は理由をコメントで記載すること
+ */
+const EXCLUDED_FIXTURES = new Set<string>([
+  "include/wikidot", // includeは外部ページ展開後のHTMLのため比較不可
+  "module/listpages", // ListPagesは動的コンテンツのため比較不可
+  "module/listpages-misc", // 同上
+  "module/backlinks/basic", // Backlinksは動的コンテンツ
+  "module/listusers/basic", // ListUsersは動的コンテンツ
+  "module/listusers/fail", // 同上
+  "module/pagetree", // PageTreeは動的コンテンツ（resolver未実装）
+  "table/fail-paragraph", // リンク解釈・段落内改行処理の問題（別issueで対応）
+  "expr/edge-cases", // エラーメッセージがWikidotと異なる（スタックベース vs 再帰下降）
+]);
+
+/**
+ * output.htmlが不要なfixture
+ */
+const NO_OUTPUT_REQUIRED = new Set<string>([
+  // 動的モジュール系はここに追加
+]);
+
+interface TestCase {
+  category: string;
+  expectedPath: string;
+  outputPath: string | null;
+}
+
+function discoverTestCases(): TestCase[] {
+  const cases: TestCase[] = [];
+
+  function walk(dir: string, prefix: string): void {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        walk(path.join(dir, entry.name), prefix ? `${prefix}/${entry.name}` : entry.name);
+      }
+    }
+
+    const hasExpected = entries.some((e) => e.name === "expected.json");
+    const outputPath = path.join(dir, "output.html");
+    const hasOutput = fs.existsSync(outputPath);
+
+    if (hasExpected) {
+      cases.push({
+        category: prefix,
+        expectedPath: path.join(dir, "expected.json"),
+        outputPath: hasOutput ? outputPath : null,
+      });
+    }
+  }
+
+  walk(FIXTURES_DIR, "");
+  return cases;
+}
+
+/**
+ * HTML正規化ルール
+ * Wikidotの出力とwdparserの出力の許容される差異のみ正規化
+ */
+function normalizeHtml(html: string): string {
+  return (
+    html
+      // 改行の正規化
+      .replace(/\r\n/g, "\n")
+      // onclick属性を削除（Wikidot固有のJS）
+      .replace(/ onclick="[^"]*"/g, "")
+      // 連続する空白・改行を単一スペースに（HTML的に等価）
+      .replace(/\s+/g, " ")
+      // タグ間の空白を削除
+      .replace(/>\s+</g, "><")
+      // <br />前後の空白を削除（HTML的に等価）
+      .replace(/\s*<br\s*\/?>\s*/gi, "<br />")
+      // HTMLエンティティをUnicodeに統一
+      .replace(/&#171;/g, "\u00AB") // «
+      .replace(/&#187;/g, "\u00BB") // »
+      .replace(/&#8212;/g, "\u2014") // —
+      .replace(/&quot;/g, '"')
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      // 前後の空白を削除
+      .trim()
+  );
+}
+
+/**
+ * 環境変数でフィルタリングするfixtureカテゴリ
+ * 例: FIXTURE_FILTER=image/fail bun test tests/integration/fixture-render.test.ts
+ */
+function getFixtureFilter(): string | undefined {
+  return process.env.FIXTURE_FILTER;
+}
+
+const FIXTURE_FILTER = getFixtureFilter();
+
+function matchesFilter(category: string): boolean {
+  if (!FIXTURE_FILTER) {
+    return true;
+  }
+  // 完全一致または前方一致でマッチ
+  return category === FIXTURE_FILTER || category.startsWith(`${FIXTURE_FILTER}/`);
+}
+
+const allCases = discoverTestCases();
+const includedCases = allCases.filter(
+  (c) => !EXCLUDED_FIXTURES.has(c.category) && matchesFilter(c.category),
+);
+const casesWithOutput = includedCases.filter((c) => c.outputPath !== null);
+const casesRequiringOutput = includedCases.filter(
+  (c) => c.outputPath === null && !NO_OUTPUT_REQUIRED.has(c.category),
+);
+
+describe("Render Fixture Tests", () => {
+  describe("HTML output verification", () => {
+    for (const testCase of casesWithOutput) {
+      it(`[${testCase.category}] rendered HTML should match expected`, () => {
+        const expectedJson = fs.readFileSync(testCase.expectedPath, "utf-8");
+        const syntaxTree: SyntaxTree = JSON.parse(expectedJson);
+        const expectedHtml = fs.readFileSync(testCase.outputPath!, "utf-8");
+
+        const rendered = renderToHtml(syntaxTree);
+        expect(normalizeHtml(rendered)).toBe(normalizeHtml(expectedHtml));
+      });
+    }
+  });
+
+  describe("Coverage check", () => {
+    it("all fixtures with expected.json should have output.html (unless explicitly excluded)", () => {
+      if (casesRequiringOutput.length > 0) {
+        const missing = casesRequiringOutput.map((c) => c.category);
+        throw new Error(
+          `Missing output.html for ${missing.length} fixture(s):\n  - ${missing.join("\n  - ")}\n\n` +
+            `Add output.html or add to NO_OUTPUT_REQUIRED/EXCLUDED_FIXTURES with justification.`,
+        );
+      }
+    });
+  });
+});
+
+// Summary output
+const excludedCount = allCases.filter((c) => EXCLUDED_FIXTURES.has(c.category)).length;
+
+console.log("\n[Render Fixtures]");
+if (FIXTURE_FILTER) {
+  console.log(`  Filter: ${FIXTURE_FILTER}`);
+}
+console.log(`  Total with expected.json: ${allCases.length}`);
+console.log(`  Tested: ${casesWithOutput.length}`);
+console.log(`  Excluded: ${excludedCount}`);
+console.log(`  Missing output.html: ${casesRequiringOutput.length}`);

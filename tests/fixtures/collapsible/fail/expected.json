@@ -1,0 +1,257 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "NESTED"
+          }
+        ]
+      }
+    },
+    {
+      "element": "collapsible",
+      "data": {
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Alpha"
+                },
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "[["
+                },
+                {
+                  "element": "text",
+                  "data": "collapsible"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "show"
+                },
+                {
+                  "element": "text",
+                  "data": "="
+                },
+                {
+                  "element": "text",
+                  "data": "\"+ Layer 2\""
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "hide"
+                },
+                {
+                  "element": "text",
+                  "data": "="
+                },
+                {
+                  "element": "text",
+                  "data": "\"- Layer 2\""
+                },
+                {
+                  "element": "text",
+                  "data": "]]"
+                },
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "Beta"
+                },
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "[["
+                },
+                {
+                  "element": "text",
+                  "data": "collapsible"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "show"
+                },
+                {
+                  "element": "text",
+                  "data": "="
+                },
+                {
+                  "element": "text",
+                  "data": "\"+ Layer 3\""
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "hide"
+                },
+                {
+                  "element": "text",
+                  "data": "="
+                },
+                {
+                  "element": "text",
+                  "data": "\"- Layer 3\""
+                },
+                {
+                  "element": "text",
+                  "data": "]]"
+                },
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "Gamma"
+                },
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "[["
+                },
+                {
+                  "element": "text",
+                  "data": "collapsible"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "show"
+                },
+                {
+                  "element": "text",
+                  "data": "="
+                },
+                {
+                  "element": "text",
+                  "data": "\"+ Layer 4\""
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "hide"
+                },
+                {
+                  "element": "text",
+                  "data": "="
+                },
+                {
+                  "element": "text",
+                  "data": "\"- Layer 4\""
+                },
+                {
+                  "element": "text",
+                  "data": "]]"
+                },
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "Delta"
+                }
+              ]
+            }
+          }
+        ],
+        "attributes": {},
+        "start-open": false,
+        "show-text": "+ Layer 1",
+        "hide-text": "- Layer 1",
+        "show-top": true,
+        "show-bottom": false
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "text",
+      "data": "[[/"
+    },
+    {
+      "element": "text",
+      "data": "collapsible"
+    },
+    {
+      "element": "text",
+      "data": "]]"
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "text",
+      "data": "[[/"
+    },
+    {
+      "element": "text",
+      "data": "collapsible"
+    },
+    {
+      "element": "text",
+      "data": "]]"
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "text",
+      "data": "[[/"
+    },
+    {
+      "element": "text",
+      "data": "collapsible"
+    },
+    {
+      "element": "text",
+      "data": "]]"
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

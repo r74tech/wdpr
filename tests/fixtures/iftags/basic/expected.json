@@ -1,0 +1,141 @@
+{
+  "elements": [
+    {
+      "element": "if-tags",
+      "data": {
+        "condition": "+fruit -admin component template",
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Apple"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "if-tags",
+      "data": {
+        "condition": "component",
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Banana"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "if-tags",
+      "data": {
+        "condition": "+xyz",
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Hidden"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "bold",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "CSS"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "tests"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "if-tags",
+      "data": {
+        "condition": "fruit",
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Cherry"
+                }
+              ]
+            }
+          },
+          {
+            "element": "style",
+            "data": "body { color: red; }"
+          }
+        ]
+      }
+    },
+    {
+      "element": "if-tags",
+      "data": {
+        "condition": "xyz",
+        "elements": [
+          {
+            "element": "style",
+            "data": "body { color: purple; }"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

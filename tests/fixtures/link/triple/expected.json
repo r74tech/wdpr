@@ -1,0 +1,535 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "bold",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Dual"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "page",
+                  "link": {
+                    "site": null,
+                    "page": "SCP-001"
+                  },
+                  "extra": null,
+                  "label": {
+                    "text": "SCP-001"
+                  },
+                  "target": null
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "bold",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Dual"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "("
+                },
+                {
+                  "element": "text",
+                  "data": "category"
+                },
+                {
+                  "element": "text",
+                  "data": ")"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "interwiki",
+                  "link": "system:Recent Changes",
+                  "extra": null,
+                  "label": {
+                    "text": "system:Recent Changes"
+                  },
+                  "target": null
+                }
+              },
+              {
+                "element": "text",
+                "data": " "
+              },
+              {
+                "element": "text",
+                "data": "("
+              },
+              {
+                "element": "text",
+                "data": "only"
+              },
+              {
+                "element": "text",
+                "data": " "
+              },
+              {
+                "element": "text",
+                "data": "\"Recent Changes\""
+              },
+              {
+                "element": "text",
+                "data": ")"
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "interwiki",
+                  "link": "system: Recent Changes",
+                  "extra": null,
+                  "label": {
+                    "text": "system: Recent Changes"
+                  },
+                  "target": null
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "bold",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Basic"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "page",
+                  "link": {
+                    "site": null,
+                    "page": "some-page"
+                  },
+                  "extra": null,
+                  "label": {
+                    "text": "My label"
+                  },
+                  "target": null
+                }
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "page",
+                  "link": {
+                    "site": null,
+                    "page": "some-page"
+                  },
+                  "extra": null,
+                  "label": {
+                    "text": "My label"
+                  },
+                  "target": null
+                }
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "page",
+                  "link": {
+                    "site": null,
+                    "page": "missing"
+                  },
+                  "extra": null,
+                  "label": {
+                    "text": "Wanted page"
+                  },
+                  "target": null
+                }
+              },
+              {
+                "element": "text",
+                "data": " "
+              },
+              {
+                "element": "text",
+                "data": "("
+              },
+              {
+                "element": "text",
+                "data": "orange"
+              },
+              {
+                "element": "text",
+                "data": ")"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "bold",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Auto"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "title"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "page",
+                  "link": {
+                    "site": null,
+                    "page": "some-page"
+                  },
+                  "extra": null,
+                  "label": {
+                    "text": ""
+                  },
+                  "target": null
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "bold",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Anchors"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "page",
+                  "link": {
+                    "site": null,
+                    "page": "scp-series#001"
+                  },
+                  "extra": null,
+                  "label": {
+                    "text": "SCP-001 to SCP-099"
+                  },
+                  "target": null
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "bold",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Subpath"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "page",
+                  "link": {
+                    "site": null,
+                    "page": "//main/edit"
+                  },
+                  "extra": null,
+                  "label": {
+                    "text": "Edit page"
+                  },
+                  "target": null
+                }
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "page",
+                  "link": {
+                    "site": null,
+                    "page": "MAIN/#/page"
+                  },
+                  "extra": null,
+                  "label": {
+                    "text": "Hash routing"
+                  },
+                  "target": null
+                }
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "page",
+                  "link": {
+                    "site": null,
+                    "page": "example/edit"
+                  },
+                  "extra": null,
+                  "label": {
+                    "text": "Edit page"
+                  },
+                  "target": null
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "bold",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "URL"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "direct",
+                  "link": "https://example.com/",
+                  "extra": null,
+                  "label": {
+                    "text": "Example"
+                  },
+                  "target": null
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

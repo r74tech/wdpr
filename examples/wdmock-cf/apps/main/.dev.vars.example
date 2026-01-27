@@ -1,0 +1,2 @@
+# Copy this file to .dev.vars for local development
+FILES_BASE_URL=http://localhost:8788

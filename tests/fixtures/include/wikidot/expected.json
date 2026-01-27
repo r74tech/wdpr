@@ -1,0 +1,258 @@
+{
+  "elements": [
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {},
+        "location": {
+          "site": null,
+          "page": "some-page"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {},
+        "location": {
+          "site": null,
+          "page": "fragment:abc"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {},
+        "location": {
+          "site": "scp-wiki",
+          "page": "theme:black-highlighter-theme"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {
+          "class": "box",
+          "apple": "1",
+          "banana": "2"
+        },
+        "location": {
+          "site": null,
+          "page": "component:fruit"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {
+          "class": "box",
+          "apple": "1",
+          "banana": "2"
+        },
+        "location": {
+          "site": null,
+          "page": "component:fruit"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {
+          "class": "box",
+          "apple": "1",
+          "banana": "2"
+        },
+        "location": {
+          "site": null,
+          "page": "component:fruit"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {
+          "class": "box",
+          "apple": "1",
+          "banana": "2"
+        },
+        "location": {
+          "site": null,
+          "page": "component:fruit"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "apple"
+          }
+        ]
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {
+          "class": "box",
+          "apple": "1",
+          "banana": "2"
+        },
+        "location": {
+          "site": null,
+          "page": "component:fruit"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {
+          "class": "box",
+          "apple": "1",
+          "banana": "2"
+        },
+        "location": {
+          "site": null,
+          "page": "component:fruit"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {
+          "class": "box",
+          "apple": "1",
+          "banana": "2"
+        },
+        "location": {
+          "site": null,
+          "page": "component:fruit"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {
+          "class": "box",
+          "apple": "1",
+          "banana": "2"
+        },
+        "location": {
+          "site": null,
+          "page": "component:fruit"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {
+          "class": "box",
+          "apple": "durian",
+          "banana": "2"
+        },
+        "location": {
+          "site": null,
+          "page": "component:fruit"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "cherry"
+          }
+        ]
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {
+          "class": "box",
+          "apple": "1",
+          "banana": "2"
+        },
+        "location": {
+          "site": null,
+          "page": "component:fruit"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "banana"
+          }
+        ]
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {},
+        "location": {
+          "site": null,
+          "page": "COMponeNt:FRUIT"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

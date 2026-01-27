@@ -1,0 +1,28 @@
+{
+  "name": "@wdmock/main",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && vite build --mode client",
+    "preview": "wrangler pages dev",
+    "deploy": "bun run build && wrangler pages deploy dist",
+    "typecheck": "bunx tsc --noEmit"
+  },
+  "dependencies": {
+    "@wdmock/db": "workspace:*",
+    "@wdmock/shared": "workspace:*",
+    "@wdpr/parser": "workspace:*",
+    "@wdpr/render": "workspace:*",
+    "@wdpr/runtime": "workspace:*",
+    "hono": "^4.7.5"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250123.0",
+    "@hono/vite-build": "^1.2.1",
+    "@hono/vite-dev-server": "^0.19.0",
+    "vite": "^6.0.11",
+    "wrangler": "^3.107.1"
+  }
+}

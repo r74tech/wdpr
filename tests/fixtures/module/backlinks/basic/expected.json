@@ -1,0 +1,25 @@
+{
+  "elements": [
+    {
+      "element": "module",
+      "data": {
+        "module": "backlinks",
+        "page": null
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "backlinks",
+        "page": null
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

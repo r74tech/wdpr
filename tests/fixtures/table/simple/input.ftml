@@ -1,0 +1,17 @@
+|| Cell ||
+|| Another ||
+||no spaces||
+
+||< Left  ||= Center ||
+|| Normal ||> Right  ||
+||        ||  Empty  ||
+
+|| Missing ||
+|| Cell || Corner ||
+
+|| Blueberry || Raspberry || Gooseberry ||
+||||||~ Very Berry ||
+
+|||| Durian ||
+
+||~ **Bold** stuff, //and// also ##blue|color## ||

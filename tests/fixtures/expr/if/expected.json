@@ -1,0 +1,152 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "if",
+            "data": {
+              "condition": "true",
+              "then": [
+                {
+                  "element": "text",
+                  "data": "display"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "if"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "true"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                }
+              ],
+              "else": [
+                {
+                  "element": "text",
+                  "data": "display"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "if"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "false"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                }
+              ]
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "if",
+            "data": {
+              "condition": "false",
+              "then": [
+                {
+                  "element": "text",
+                  "data": "yes"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                }
+              ],
+              "else": [
+                {
+                  "element": "text",
+                  "data": "no"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                }
+              ]
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "if",
+            "data": {
+              "condition": "",
+              "then": [
+                {
+                  "element": "text",
+                  "data": "empty"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "is"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "false"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                }
+              ],
+              "else": [
+                {
+                  "element": "text",
+                  "data": "shown"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

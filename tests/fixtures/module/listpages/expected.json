@@ -1,0 +1,137 @@
+{
+  "elements": [
+    {
+      "element": "module",
+      "data": {
+        "module": "list-pages",
+        "category": "*",
+        "tags": "+scp",
+        "limit": 10,
+        "order": "created_at desc",
+        "reverse": false,
+        "separate": true,
+        "wrapper": true,
+        "rss-only": false,
+        "body": "%%title_linked%% - %%created_at%%",
+        "attributes": {
+          "category": "*",
+          "tags": "+scp",
+          "order": "created_at desc",
+          "limit": "10"
+        }
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "list-pages",
+        "category": ".",
+        "parent": "=",
+        "rating": ">3",
+        "votes": ">=10",
+        "pagetype": "hidden",
+        "reverse": false,
+        "separate": true,
+        "wrapper": true,
+        "rss-only": false,
+        "body": "[[head]]\nPages in current category:\n[[/head]]\n[[body]]\n* %%fullname%% (by %%created_by_linked%%) - Rating: %%rating%% (%%rating_votes%% votes)\n  Tags: %%tags_linked%%\n  Created: %%created_at|%Y-%m-%d%% | Updated: %%updated_at|%Y-%m-%d%%\n[[/body]]\n[[foot]]\nTotal pages: %%total%%\n[[/foot]]",
+        "attributes": {
+          "category": ".",
+          "pagetype": "hidden",
+          "parent": "=",
+          "created": "true",
+          "by": "-=",
+          "rating": ">3",
+          "votes": ">=10"
+        }
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "list-pages",
+        "name": "scp-%",
+        "per-page": 5,
+        "order": "name",
+        "reverse": false,
+        "separate": false,
+        "wrapper": false,
+        "rss-only": false,
+        "body": "%%title%% | %%name%%",
+        "attributes": {
+          "name": "scp-%",
+          "order": "name",
+          "separate": "no",
+          "wrapper": "no",
+          "perpage": "5"
+        }
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "list-pages",
+        "category": "-_default",
+        "tags": "-scp +tale",
+        "limit": 3,
+        "order": "random",
+        "reverse": false,
+        "separate": true,
+        "wrapper": true,
+        "rss-only": false,
+        "body": "%%content{1}%%%%",
+        "attributes": {
+          "category": "-_default",
+          "tags": "-scp +tale",
+          "order": "random",
+          "limit": "3"
+        }
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "list-pages",
+        "range": "others",
+        "offset": 10,
+        "reverse": true,
+        "separate": true,
+        "wrapper": true,
+        "rss-only": false,
+        "body": "%%preview(200)%%",
+        "attributes": {
+          "range": "others",
+          "reverse": "yes",
+          "offset": "10"
+        }
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "list-pages",
+        "reverse": false,
+        "separate": true,
+        "wrapper": true,
+        "rss": "Recent Changes",
+        "rss-description": "Latest updates to the wiki",
+        "rss-limit": 20,
+        "rss-only": true,
+        "body": "%%title%% - %%summary%%",
+        "attributes": {
+          "rss": "Recent Changes",
+          "rssdescription": "Latest updates to the wiki",
+          "rsslimit": "20",
+          "rssonly": "yes"
+        }
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

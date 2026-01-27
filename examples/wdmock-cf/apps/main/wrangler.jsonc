@@ -1,0 +1,24 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wdpr-demo-v1",
+  "compatibility_date": "2026-01-25",
+  "pages_build_output_dir": "./dist",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "wdpr-demo-v1-db",
+      "database_id": "bed05945-bbc8-474c-bc3e-43c011723ffe",
+      "migrations_dir": "../../migrations",
+    },
+  ],
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "wdpr-demo-v1-files",
+    },
+  ],
+  "vars": {
+    "FILES_BASE_URL": "https://wdpr-demo-v1-files.r74.workers.dev",
+  },
+}

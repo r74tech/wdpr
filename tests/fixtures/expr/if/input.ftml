@@ -1,0 +1,3 @@
+[[#if true | display if true | display if false ]]
+[[#if false | yes | no ]]
+[[#if  | empty is false | shown ]]

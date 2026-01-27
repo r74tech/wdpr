@@ -1,0 +1,130 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "expr",
+            "data": {
+              "expression": "1/0"
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "expr",
+            "data": {
+              "expression": "0/0"
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "expr",
+            "data": {
+              "expression": "unknown_func(1)"
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "expr",
+            "data": {
+              "expression": "1 + + 2"
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "expr",
+            "data": {
+              "expression": ""
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "expr",
+            "data": {
+              "expression": "1..2"
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "expr",
+            "data": {
+              "expression": "abc"
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "ifexpr",
+            "data": {
+              "expression": "1/0",
+              "then": [
+                {
+                  "element": "text",
+                  "data": "yes"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                }
+              ],
+              "else": [
+                {
+                  "element": "text",
+                  "data": "no"
+                }
+              ]
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "if",
+            "data": {
+              "condition": "",
+              "then": [
+                {
+                  "element": "text",
+                  "data": "yes"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                }
+              ],
+              "else": [
+                {
+                  "element": "text",
+                  "data": "no"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

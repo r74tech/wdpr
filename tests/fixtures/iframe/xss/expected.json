@@ -1,0 +1,59 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "[[iframe javascript:alert(1)]]"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "[[iframe javascript: alert(1)]]"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "[[iframe java script:alert(1)]]"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "[[iframe java\\nscript:alert(1)]]"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "[[iframe data:,Foobar]]"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "[[iframe data:text/html,%3Cscript%3Ealert%28%27XSS%27%29%3B%3C%2Fscript%3E]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

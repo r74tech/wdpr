@@ -1,0 +1,44 @@
+{
+  "name": "@wdpr/render",
+  "version": "0.1.0",
+  "description": "HTML renderer for Wikidot markup",
+  "keywords": [
+    "html",
+    "markup",
+    "parser",
+    "renderer",
+    "wikidot"
+  ],
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/r74tech/wdpr.git",
+    "directory": "packages/render"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@wdpr/ast": "workspace:*"
+  }
+}

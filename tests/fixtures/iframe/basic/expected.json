@@ -1,0 +1,43 @@
+{
+  "elements": [
+    {
+      "element": "iframe",
+      "data": {
+        "url": "https://example.com/some-page",
+        "attributes": {}
+      }
+    },
+    {
+      "element": "iframe",
+      "data": {
+        "url": "http://example.org/http",
+        "attributes": {}
+      }
+    },
+    {
+      "element": "iframe",
+      "data": {
+        "url": "https://example.com/",
+        "attributes": {
+          "width": "90%"
+        }
+      }
+    },
+    {
+      "element": "iframe",
+      "data": {
+        "url": "https://example.com/",
+        "attributes": {
+          "style": "width: 90%"
+        }
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

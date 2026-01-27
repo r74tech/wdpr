@@ -1,0 +1,31 @@
+BASIC
+[[code]]
+apple
+banana
+[[/code]]
+
+EMPTY
+[[code]]
+[[/code]]
+
+ESCAPES
+[[code]]
+[[div]]
+not a div test
+[[/div]]
+
+**also not bold**
+[[/code]]
+
+LANG
+[[code type="python"]]
+import antigravity
+[[/code]]
+
+INLINE
+[[code type="css"]]a { display: none; }[[/code]]
+
+NOT QUOTED STRING
+[[code type=css]][[/code]]
+[[code type="css]][[/code]]
+[[code type=css"]][[/code]]

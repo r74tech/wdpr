@@ -1,0 +1,38 @@
+++ Single-Bracket
+
+[REDACTED]
+[ not a link ]
+[* not a link ] link-single-fail-new-tab.json"
+
+[page Some page]
+
+[https://example.com/ 
+Label]
+
+[page 
+
+[# Label
+
+++ Triple-Bracket
+
+[[[|some-page]]]
+[[[*|some-page]]]
+
+[[[some-page |
+Label]]]
+
+[[[some-page
+]]]some-page
+some-page]]]
+
+**Star**
+* [[[*SCP-001]]]
+
+**Anchors**
+* [[[home###|Home]]]
+
+**Subpath**
+* [[[MAIN/##/page#toc1|Hash routing]]]
+
+**URL**
+* [[[ https://example.com/ | Example ]]]

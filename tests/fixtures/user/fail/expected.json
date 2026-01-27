@@ -1,0 +1,31 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "No argument [[user]]"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "Some Spaces [[ user Alice]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

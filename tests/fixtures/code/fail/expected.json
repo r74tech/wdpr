@@ -1,0 +1,46 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "[[ code ]]"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "NESTED"
+          }
+        ]
+      }
+    },
+    {
+      "element": "code",
+      "data": {
+        "contents": "",
+        "language": null,
+        "name": null
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ],
+  "code-blocks": [
+    {
+      "contents": "",
+      "language": null,
+      "name": null
+    }
+  ]
+}

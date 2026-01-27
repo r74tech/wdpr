@@ -1,0 +1,31 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "[[div]]inline[[/div]][[div]]inline, closing tag is on a new line"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "[[/div]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

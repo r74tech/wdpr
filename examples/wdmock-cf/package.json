@@ -1,0 +1,23 @@
+{
+  "name": "wdmock-cf",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --filter @wdmock/main dev",
+    "dev:files": "bun run --filter @wdmock/files dev",
+    "dev:all": "bun run dev & bun run dev:files",
+    "build": "bun run --filter '*' build",
+    "deploy": "bun run --filter @wdmock/main deploy",
+    "deploy:files": "bun run --filter @wdmock/files deploy",
+    "migrate": "cd apps/main && wrangler d1 migrations apply wdpr-demo-v1-db --local",
+    "seed": "cd apps/main && wrangler d1 execute wdpr-demo-v1-db --local --file=../../seed.sql",
+    "typecheck": "bun run --filter '*' typecheck"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}

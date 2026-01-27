@@ -1,0 +1,355 @@
+{
+  "elements": [
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": "Apple"
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": "Banana"
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": "Cherry"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "numbered",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": "Melon"
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": "Mango"
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": "Pineapple"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": "Inline"
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": "list"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "numbered",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": "Also"
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": "inline"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "numbered",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": "ALPHA"
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": "BETA"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "numbered",
+        "attributes": {
+          "class": "fruits",
+          "data-yum": "tasty"
+        },
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {
+              "class": "fruit"
+            },
+            "elements": [
+              {
+                "element": "text",
+                "data": "apple"
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {
+              "class": "fruit",
+              "style": "color:yellow"
+            },
+            "elements": [
+              {
+                "element": "text",
+                "data": "banana"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": " "
+              },
+              {
+                "element": "text",
+                "data": "Indented"
+              },
+              {
+                "element": "text",
+                "data": " "
+              }
+            ]
+          },
+          {
+            "item-type": "sub-list",
+            "element": "list",
+            "data": {
+              "type": "numbered",
+              "attributes": {},
+              "items": [
+                {
+                  "item-type": "elements",
+                  "attributes": {},
+                  "elements": [
+                    {
+                      "element": "text",
+                      "data": " "
+                    },
+                    {
+                      "element": "text",
+                      "data": "and"
+                    },
+                    {
+                      "element": "text",
+                      "data": " "
+                    }
+                  ]
+                },
+                {
+                  "item-type": "elements",
+                  "attributes": {},
+                  "elements": [
+                    {
+                      "element": "text",
+                      "data": " "
+                    },
+                    {
+                      "element": "text",
+                      "data": "nested"
+                    },
+                    {
+                      "element": "text",
+                      "data": " "
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "text",
+                "data": " "
+              },
+              {
+                "element": "text",
+                "data": "list"
+              },
+              {
+                "element": "text",
+                "data": " "
+              }
+            ]
+          },
+          {
+            "item-type": "sub-list",
+            "element": "list",
+            "data": {
+              "type": "numbered",
+              "attributes": {},
+              "items": [
+                {
+                  "item-type": "sub-list",
+                  "element": "list",
+                  "data": {
+                    "type": "bullet",
+                    "attributes": {},
+                    "items": [
+                      {
+                        "item-type": "elements",
+                        "attributes": {},
+                        "elements": [
+                          {
+                            "element": "text",
+                            "data": "-"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

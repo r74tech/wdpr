@@ -1,0 +1,9 @@
+**FAIL**
+
+NEWLINES
+[[$ E =
+
+mc^2 $]]
+
+SYNTAX
+[[$ 2^{\\pi - 1 $]]

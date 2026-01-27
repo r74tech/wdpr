@@ -1,0 +1,83 @@
+@import url(https://d3g0gp89917ko0.cloudfront.net/v--7690939296dc/common--theme/base/css/style.css);
+@import url(https://scp-jp.github.io/files/theme/sigma-9/sigma-9.min.css);
+
+#header {
+  background-image: unset;
+}
+
+#side-bar-actions {
+  margin-bottom: 1em;
+  padding-bottom: 0.5em;
+  border-bottom: 1px solid #ddd;
+}
+
+#side-bar-actions a {
+  cursor: pointer;
+  color: #b01;
+  font-weight: bold;
+}
+
+#page-options-bottom a {
+  margin-right: 1em;
+  cursor: pointer;
+  color: #b01;
+  font-size: 0.85em;
+}
+
+#edit-page-form {
+  padding: 0.5em 0;
+}
+
+#edit-page-form .edit-field {
+  margin-bottom: 0.8em;
+}
+
+#edit-page-form label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 0.3em;
+}
+
+#edit-page-form input[type="text"] {
+  width: 100%;
+  padding: 0.4em;
+  font-size: 1em;
+  box-sizing: border-box;
+}
+
+#edit-page-form textarea {
+  width: 100%;
+  font-family: monospace;
+  font-size: 0.9em;
+  padding: 0.5em;
+  box-sizing: border-box;
+}
+
+#edit-page-form .edit-actions {
+  margin-top: 0.5em;
+}
+
+#edit-page-form .edit-actions button {
+  margin-right: 0.5em;
+  padding: 0.4em 1em;
+  cursor: pointer;
+}
+
+#edit-preview-area {
+  margin-top: 1em;
+  border-top: 1px solid #ccc;
+  padding-top: 1em;
+}
+
+#edit-preview-area .preview-content {
+  border: 1px dashed #999;
+  padding: 1em;
+  background: #fafafa;
+}
+
+/* Action Area (View Source, etc.) */
+
+#action-area .page-source {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}

@@ -1,0 +1,116 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "non"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "root"
+          }
+        ]
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "page-tree",
+        "root": null,
+        "show-root": false,
+        "depth": null
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "page-tree",
+        "root": null,
+        "show-root": false,
+        "depth": null
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "page-tree",
+        "root": null,
+        "show-root": false,
+        "depth": null
+      }
+    },
+    {
+      "element": "horizontal-rule"
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "page-tree",
+        "root": "some-page",
+        "show-root": false,
+        "depth": null
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "page-tree",
+        "root": "some-page",
+        "show-root": true,
+        "depth": null
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "page-tree",
+        "root": "some-page",
+        "show-root": false,
+        "depth": null
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "page-tree",
+        "root": "some-page",
+        "show-root": false,
+        "depth": null
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "page-tree",
+        "root": "some-page",
+        "show-root": false,
+        "depth": 2
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "page-tree",
+        "root": "some-page",
+        "show-root": false,
+        "depth": 3
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "esModuleInterop": true
+  },
+  "references": [
+    { "path": "packages/shared" },
+    { "path": "packages/db" },
+    { "path": "apps/main" },
+    { "path": "apps/files" }
+  ],
+  "include": []
+}

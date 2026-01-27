@@ -1,0 +1,7 @@
+[[iframe https://example.com/some-page]]
+
+[[iframe http://example.org/http]]
+
+[[iframe https://example.com/ id = "my-example" class="iframe" width="90%"]]
+
+[[iframe https://example.com/ id = "my-example" class="iframe" style="width: 90%"]]

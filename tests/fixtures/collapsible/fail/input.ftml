@@ -1,0 +1,13 @@
+NESTED
+[[collapsible show="+ Layer 1" hide="- Layer 1"]]
+Alpha
+[[collapsible show="+ Layer 2" hide="- Layer 2"]]
+Beta
+[[collapsible show="+ Layer 3" hide="- Layer 3"]]
+Gamma
+[[collapsible show="+ Layer 4" hide="- Layer 4"]]
+Delta
+[[/collapsible]]
+[[/collapsible]]
+[[/collapsible]]
+[[/collapsible]]

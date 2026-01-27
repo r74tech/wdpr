@@ -1,0 +1,39 @@
+{
+  "name": "wdpr",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/r74tech/wdpr.git"
+  },
+  "workspaces": [
+    "packages/*",
+    "examples/*",
+    "examples/wdmock-cf/packages/*",
+    "examples/wdmock-cf/apps/*"
+  ],
+  "scripts": {
+    "build": "bunup",
+    "dev": "bunup --watch",
+    "test": "bun test",
+    "test:unit": "bun test tests/unit",
+    "test:integration": "bun test tests/integration",
+    "lint": "oxlint packages/ tests/ examples/",
+    "lint:fix": "oxlint --fix packages/ tests/ examples/",
+    "format": "oxfmt --check packages/ tests/ examples/",
+    "format:fix": "oxfmt packages/ tests/ examples/",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p packages/runtime/tsconfig.json",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^0.5.2",
+    "@changesets/cli": "^2.29.8",
+    "@types/bun": "latest",
+    "bunup": "^0.16.20",
+    "happy-dom": "^20.3.9",
+    "oxfmt": "^0.27.0",
+    "oxlint": "^1.42.0",
+    "typescript": "^5.9.3"
+  }
+}

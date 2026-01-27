@@ -1,0 +1,147 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "ifexpr",
+            "data": {
+              "expression": "2*4/12-4+66%2 < -3.5",
+              "then": [
+                {
+                  "element": "text",
+                  "data": "less"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "than"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "-"
+                },
+                {
+                  "element": "text",
+                  "data": "3"
+                },
+                {
+                  "element": "text",
+                  "data": "."
+                },
+                {
+                  "element": "text",
+                  "data": "5"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                }
+              ],
+              "else": [
+                {
+                  "element": "text",
+                  "data": "greater"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "than"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "-"
+                },
+                {
+                  "element": "text",
+                  "data": "3"
+                },
+                {
+                  "element": "text",
+                  "data": "."
+                },
+                {
+                  "element": "text",
+                  "data": "5"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                }
+              ]
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "ifexpr",
+            "data": {
+              "expression": "1+1 > 1",
+              "then": [
+                {
+                  "element": "text",
+                  "data": "math"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "works"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                }
+              ],
+              "else": [
+                {
+                  "element": "text",
+                  "data": "math"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "broken"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

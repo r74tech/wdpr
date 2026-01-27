@@ -1,0 +1,45 @@
+[[ul]]
+[[/ul]]
+
+[[ol]]
+[[/ol]]
+
+[[ul]]
+[[li]]
+[[/li]]
+[[/ul]]
+
+[[ul]] [[/ul]]
+
+[[ol]] [[/ol]]
+
+[[ul]] [[li]] [[/li]] [[/ul]]
+
+[[ul]]
+Foo
+[[/ul]]
+
+[[ol]]
+Bar
+[[/ol]]
+
+[[li]]
+Baz
+[[/li]]
+
+[[ul]]
+
+[[li_]]
+ALPHA
+[[/li]]
+
+[[li_]]
+
+BETA
+
+[[/li]]
+[[li]]GAMMA[[/li]]
+
+[[li_]] DELTA [[/li]]
+
+[[/ul]]

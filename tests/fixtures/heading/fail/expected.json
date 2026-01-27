@@ -1,0 +1,135 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "+Fail h1"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "++Fail h2"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "+++Fail h3"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "++++Fail h4"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "+++++Fail h5"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "++++++Fail h6"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "+*Fail notoc h1"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "++*Fail notoc h2"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "+++*Fail notoc h3"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "++++*Fail notoc h4"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "+++++*Fail notoc h5"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "++++++*Fail notoc h6"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "+++++++ h7"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "++++++++ h8"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "+++++++* h7"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "++++++++* h8"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

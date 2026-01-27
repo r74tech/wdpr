@@ -1,0 +1,62 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Some"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "superscript",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "superscript"
+                }
+              ]
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "text"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Then empty superscript:"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

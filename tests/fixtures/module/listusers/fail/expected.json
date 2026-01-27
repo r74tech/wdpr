@@ -1,0 +1,26 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {
+          "class": "error-block"
+        },
+        "elements": [
+          {
+            "element": "text",
+            "data": "Currently only users=\".\" is implemented."
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

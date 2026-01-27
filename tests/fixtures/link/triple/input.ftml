@@ -1,0 +1,25 @@
+**Dual**
+* [[[SCP-001]]]
+
+**Dual (category)**
+* [[[system:Recent Changes]]] (only "Recent Changes")
+* [[[system: Recent Changes]]]
+
+**Basic**
+* [[[some-page|My label]]]
+* [[[ some-page  |  My label  ]]]
+* [[[missing | Wanted page]]] (orange)
+
+**Auto title**
+* [[[some-page|]]]
+
+**Anchors**
+* [[[scp-series#001|SCP-001 to SCP-099]]]
+
+**Subpath**
+* [[[//main/edit|Edit page]]]
+* [[[MAIN/#/page|Hash routing]]]
+* [[[example/edit|Edit page]]]
+
+**URL**
+* [[[https://example.com/|Example]]]

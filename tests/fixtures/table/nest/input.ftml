@@ -1,0 +1,40 @@
+SIMPLE NESTED
+[[table]]
+[[row]]
+[[cell]]
+[[table]]
+[[row]]
+[[cell]]Inner[[/cell]]
+[[/row]]
+[[/table]]
+[[/cell]]
+[[/row]]
+[[/table]]
+
+NESTED WITH CONTENT
+[[table]]
+[[row]]
+[[cell]]Before[[table]][[row]][[cell]]Inside[[/cell]][[/row]][[/table]]After[[/cell]]
+[[/row]]
+[[/table]]
+
+DEEP NESTED
+[[table]]
+[[row]]
+[[cell]]
+L1
+[[table]]
+[[row]]
+[[cell]]
+L2
+[[table]]
+[[row]]
+[[cell]]L3[[/cell]]
+[[/row]]
+[[/table]]
+[[/cell]]
+[[/row]]
+[[/table]]
+[[/cell]]
+[[/row]]
+[[/table]]

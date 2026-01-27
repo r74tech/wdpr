@@ -1,0 +1,24 @@
+1. span_ inside span_
+
+[[span_]]outer [[span_]]inner[[/span]] more[[/span]]
+
+----
+
+2. span_ inside span
+
+[[span_]]outer [[span]]inner[[/span]] more[[/span]]
+----
+
+3. span inside span_
+
+[[span]]outer [[span_]]inner[[/span]] more[[/span]]
+
+----
+
+4. span_ inside empty line
+
+[[span_]]
+before
+
+after
+[[/span]]

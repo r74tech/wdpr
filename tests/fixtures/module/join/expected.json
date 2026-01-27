@@ -1,0 +1,50 @@
+{
+  "elements": [
+    {
+      "element": "module",
+      "data": {
+        "module": "join",
+        "button-text": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "join",
+        "button-text": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "[[ module JOIN button=\"Join our site!! ;-)\"]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "join",
+        "button-text": null,
+        "attributes": {
+          "class": "join-module"
+        }
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,307 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "SIMPLE"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "NESTED"
+          }
+        ]
+      }
+    },
+    {
+      "element": "table",
+      "data": {
+        "attributes": {
+          "_source": "block"
+        },
+        "rows": [
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "table",
+                    "data": {
+                      "attributes": {
+                        "_source": "block"
+                      },
+                      "rows": [
+                        {
+                          "attributes": {},
+                          "cells": [
+                            {
+                              "header": false,
+                              "column-span": 1,
+                              "align": null,
+                              "attributes": {},
+                              "elements": [
+                                {
+                                  "element": "text",
+                                  "data": "Inner"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "NESTED"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "WITH"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "CONTENT"
+          }
+        ]
+      }
+    },
+    {
+      "element": "table",
+      "data": {
+        "attributes": {
+          "_source": "block"
+        },
+        "rows": [
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "container",
+                    "data": {
+                      "type": "paragraph",
+                      "attributes": {},
+                      "elements": [
+                        {
+                          "element": "text",
+                          "data": "Before"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "element": "table",
+                    "data": {
+                      "attributes": {
+                        "_source": "block"
+                      },
+                      "rows": [
+                        {
+                          "attributes": {},
+                          "cells": [
+                            {
+                              "header": false,
+                              "column-span": 1,
+                              "align": null,
+                              "attributes": {},
+                              "elements": [
+                                {
+                                  "element": "text",
+                                  "data": "Inside"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "element": "container",
+                    "data": {
+                      "type": "paragraph",
+                      "attributes": {},
+                      "elements": [
+                        {
+                          "element": "text",
+                          "data": "After"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "DEEP"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "NESTED"
+          }
+        ]
+      }
+    },
+    {
+      "element": "table",
+      "data": {
+        "attributes": {
+          "_source": "block"
+        },
+        "rows": [
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "container",
+                    "data": {
+                      "type": "paragraph",
+                      "attributes": {},
+                      "elements": [
+                        {
+                          "element": "text",
+                          "data": "L1"
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "element": "table",
+                    "data": {
+                      "attributes": {
+                        "_source": "block"
+                      },
+                      "rows": [
+                        {
+                          "attributes": {},
+                          "cells": [
+                            {
+                              "header": false,
+                              "column-span": 1,
+                              "align": null,
+                              "attributes": {},
+                              "elements": [
+                                {
+                                  "element": "container",
+                                  "data": {
+                                    "type": "paragraph",
+                                    "attributes": {},
+                                    "elements": [
+                                      {
+                                        "element": "text",
+                                        "data": "L2"
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "element": "table",
+                                  "data": {
+                                    "attributes": {
+                                      "_source": "block"
+                                    },
+                                    "rows": [
+                                      {
+                                        "attributes": {},
+                                        "cells": [
+                                          {
+                                            "header": false,
+                                            "column-span": 1,
+                                            "align": null,
+                                            "attributes": {},
+                                            "elements": [
+                                              {
+                                                "element": "text",
+                                                "data": "L3"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

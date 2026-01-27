@@ -1,0 +1,44 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "expr",
+            "data": {
+              "expression": "abs(-100)"
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "expr",
+            "data": {
+              "expression": "min(4, 1, -4, 6, -10)"
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "expr",
+            "data": {
+              "expression": "max(4, 1, -4, 6, -10)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

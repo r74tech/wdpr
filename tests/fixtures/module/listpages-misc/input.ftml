@@ -1,0 +1,13 @@
+[[module ListPages limit="3"]]
+[[div class="item"]]
+%%title_linked%%
+[[/div]]
+[[/module]]
+
+[[module ListPages limit="2" category="*"]]
+[[div class="outer"]]
+[[div class="inner"]]
+%%title%%
+[[/div]]
+[[/div]]
+[[/module]]

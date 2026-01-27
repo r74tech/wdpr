@@ -1,0 +1,388 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "1"
+          },
+          {
+            "element": "text",
+            "data": "."
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "span"
+          },
+          {
+            "element": "text",
+            "data": "_"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "inside"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "span"
+          },
+          {
+            "element": "text",
+            "data": "_"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "span",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "outer"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "span",
+                    "attributes": {},
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "inner"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "more"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "horizontal-rule"
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "2"
+          },
+          {
+            "element": "text",
+            "data": "."
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "span"
+          },
+          {
+            "element": "text",
+            "data": "_"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "inside"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "span"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "span",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "outer"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "span",
+                    "attributes": {},
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "inner"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "more"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "horizontal-rule"
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "3"
+          },
+          {
+            "element": "text",
+            "data": "."
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "span"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "inside"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "span"
+          },
+          {
+            "element": "text",
+            "data": "_"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "span",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "outer"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "span",
+                    "attributes": {},
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "inner"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "more"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "horizontal-rule"
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "4"
+          },
+          {
+            "element": "text",
+            "data": "."
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "span"
+          },
+          {
+            "element": "text",
+            "data": "_"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "inside"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "empty"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "line"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "span",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "before"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "span",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "after"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

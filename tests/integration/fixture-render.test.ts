@@ -74,8 +74,11 @@ function normalizeHtml(html: string): string {
       .replace(/\r\n/g, "\n")
       // onclick属性を削除（Wikidot固有のJS）
       .replace(/ onclick="[^"]*"/g, "")
-      // 連続する空白・改行を単一スペースに（HTML的に等価）
-      .replace(/\s+/g, " ")
+      // タグ前後の改行を削除（ブロック要素の前後の改行はHTML的に無意味）
+      .replace(/\n\s*</g, "<")
+      .replace(/>\s*\n/g, ">")
+      // 残りの連続空白を単一スペースに（HTML的に等価）
+      .replace(/[ \t]+/g, " ")
       // 属性順序を正規化（HTML的に等価）
       .replace(
         /<(\w+)((?:\s+[a-zA-Z_][\w-]*(?:="[^"]*")?)+)\s*(\/?)>/g,

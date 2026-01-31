@@ -100,6 +100,18 @@ export const paragraphRule: BlockRule = {
       return { success: false };
     }
 
+    // Wikidot: text lines immediately before a definition list are not
+    // wrapped in <p>. Check if next token starts a definition list.
+    const nextPos = ctx.pos + result.consumed;
+    const nextToken = ctx.tokens[nextPos];
+    if (nextToken?.type === "COLON" && nextToken.lineStart) {
+      return {
+        success: true,
+        elements: [...elements, { element: "line-break" }],
+        consumed: result.consumed,
+      };
+    }
+
     return {
       success: true,
       elements: [

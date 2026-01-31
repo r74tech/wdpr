@@ -1,17 +1,11 @@
 {
   "elements": [
     {
-      "element": "container",
-      "data": {
-        "type": "paragraph",
-        "attributes": {},
-        "elements": [
-          {
-            "element": "text",
-            "data": "ALPHA"
-          }
-        ]
-      }
+      "element": "text",
+      "data": "ALPHA"
+    },
+    {
+      "element": "line-break"
     },
     {
       "element": "definition-list",
@@ -75,17 +69,11 @@
       ]
     },
     {
-      "element": "container",
-      "data": {
-        "type": "paragraph",
-        "attributes": {},
-        "elements": [
-          {
-            "element": "text",
-            "data": "BETA"
-          }
-        ]
-      }
+      "element": "text",
+      "data": "BETA"
+    },
+    {
+      "element": "line-break"
     },
     {
       "element": "definition-list",

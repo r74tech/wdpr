@@ -1,11 +1,7 @@
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
-import {
-  parseBlockName,
-  parseAttributes,
-  parseBlocksUntil,
-} from "./utils";
+import { parseBlockName, parseAttributes, parseBlocksUntil } from "./utils";
 
 export const divRule: BlockRule = {
   name: "div",
@@ -177,10 +173,7 @@ function consumeFailedDiv(ctx: ParseContext): RuleResult<Element> {
       while (ctx.tokens[peekPos]?.type === "WHITESPACE") peekPos++;
       if (ctx.tokens[peekPos]?.type === "NEWLINE") {
         // Blank line — skip all newlines and whitespace
-        while (
-          ctx.tokens[pos]?.type === "NEWLINE" ||
-          ctx.tokens[pos]?.type === "WHITESPACE"
-        ) {
+        while (ctx.tokens[pos]?.type === "NEWLINE" || ctx.tokens[pos]?.type === "WHITESPACE") {
           pos++;
           consumed++;
         }

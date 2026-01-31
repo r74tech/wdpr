@@ -92,13 +92,18 @@ export const paragraphRule: BlockRule = {
     }
 
     // Remove trailing whitespace-only text nodes
-    while (
-      elements.length > 0 &&
-      elements[elements.length - 1]?.element === "text" &&
-      typeof elements[elements.length - 1]?.data === "string" &&
-      (elements[elements.length - 1]?.data as string).trim() === ""
-    ) {
-      elements.pop();
+    while (elements.length > 0) {
+      const last = elements[elements.length - 1];
+      if (
+        last?.element === "text" &&
+        "data" in last &&
+        typeof last.data === "string" &&
+        last.data.trim() === ""
+      ) {
+        elements.pop();
+      } else {
+        break;
+      }
     }
 
     // Remove leading line-breaks

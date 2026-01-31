@@ -40,6 +40,8 @@ jobs:
           bun changeset version
           git add .
           git commit -m "chore: release packages" || echo "No changes to commit"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate PR body
         if: steps.check.outputs.has_changesets == 'true'

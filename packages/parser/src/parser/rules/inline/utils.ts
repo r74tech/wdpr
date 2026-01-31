@@ -132,9 +132,7 @@ export function parseInlineUntil(ctx: ParseContext, endType: TokenType): InlineP
         if (isBlockStart && nodes.length > 0) {
           const nextPos = pos + lookAhead;
           const shouldPreserve = ctx.blockRules.some(
-            (rule) =>
-              rule.preservesPrecedingLineBreak &&
-              rule.isStartPattern?.(ctx, nextPos),
+            (rule) => rule.preservesPrecedingLineBreak && rule.isStartPattern?.(ctx, nextPos),
           );
           if (shouldPreserve) {
             const lb: any = { element: "line-break" };

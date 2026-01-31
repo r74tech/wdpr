@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [develop, release]
   push:
-    branches: [develop]
+    branches-ignore: [release]
 
 jobs:
   test:

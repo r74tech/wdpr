@@ -62,15 +62,30 @@ export const newlineLineBreakRule: InlineRule = {
 
     const nextMeaningfulToken = ctx.tokens[ctx.pos + lookAhead];
 
+    // Check if HEADING_MARKER would actually form a valid heading
+    let isValidBlock = isBlockStartToken(nextMeaningfulToken?.type as TokenType);
+    if (isValidBlock && nextMeaningfulToken?.type === "HEADING_MARKER") {
+      const markerLen = nextMeaningfulToken.value.length;
+      const afterPos = ctx.pos + lookAhead + 1;
+      const afterMarker = ctx.tokens[afterPos];
+      if (markerLen > 6) {
+        isValidBlock = false;
+      } else if (afterMarker?.type === "STAR") {
+        if (ctx.tokens[afterPos + 1]?.type !== "WHITESPACE") isValidBlock = false;
+      } else if (afterMarker?.type !== "WHITESPACE") {
+        isValidBlock = false;
+      }
+    }
+
     // Skip line-break if:
     // - End of input
     // - Another NEWLINE (paragraph break will handle this)
-    // - Block start token
+    // - Valid block start token
     if (
       !nextMeaningfulToken ||
       nextMeaningfulToken.type === "EOF" ||
       nextMeaningfulToken.type === "NEWLINE" ||
-      isBlockStartToken(nextMeaningfulToken.type)
+      isValidBlock
     ) {
       // Don't generate line-break, return empty array
       return {

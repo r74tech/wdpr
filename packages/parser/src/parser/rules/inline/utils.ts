@@ -111,15 +111,37 @@ export function parseInlineUntil(ctx: ParseContext, endType: TokenType): InlineP
         }
       }
 
+      // Check if HEADING_MARKER would actually succeed as a heading
+      // Wikidot requires: 1-6 plus signs + whitespace. Otherwise it's plain text.
+      let isInvalidHeading = false;
+      if (nextMeaningfulToken?.type === "HEADING_MARKER") {
+        const markerLen = nextMeaningfulToken.value.length;
+        const afterMarkerPos = pos + lookAhead + 1;
+        const afterMarker = ctx.tokens[afterMarkerPos];
+        // Invalid if: 7+ plus signs, or no whitespace after marker (or after optional *)
+        if (markerLen > 6) {
+          isInvalidHeading = true;
+        } else if (afterMarker?.type === "STAR") {
+          // +* pattern - check whitespace after *
+          const afterStar = ctx.tokens[afterMarkerPos + 1];
+          if (afterStar?.type !== "WHITESPACE") {
+            isInvalidHeading = true;
+          }
+        } else if (afterMarker?.type !== "WHITESPACE") {
+          isInvalidHeading = true;
+        }
+      }
+
       // Stop at double NEWLINE, EOF, or block start token (at line start)
-      // But don't stop at [[/span]], [[# name]], or [[>/[[< - they're not valid blocks
+      // But don't stop at [[/span]], [[# name]], [[>/[[<, or invalid headings
       const isBlockStart =
         nextMeaningfulToken &&
         BLOCK_START_TOKENS.includes(nextMeaningfulToken.type) &&
         nextMeaningfulToken.lineStart &&
         !isOrphanCloseSpan &&
         !isAnchorName &&
-        !isInvalidBlockOpen;
+        !isInvalidBlockOpen &&
+        !isInvalidHeading;
       if (
         !nextMeaningfulToken ||
         nextMeaningfulToken.type === "NEWLINE" ||

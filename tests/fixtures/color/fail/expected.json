@@ -33,7 +33,27 @@
         "elements": [
           {
             "element": "text",
-            "data": "##|no spec##"
+            "data": "##"
+          },
+          {
+            "element": "text",
+            "data": "|"
+          },
+          {
+            "element": "text",
+            "data": "no"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "spec"
+          },
+          {
+            "element": "text",
+            "data": "##"
           }
         ]
       }

@@ -43,6 +43,18 @@ export interface BlockRule {
   requiresLineStart: boolean;
   /** Try to parse this block */
   parse(ctx: ParseContext): RuleResult<Element>;
+  /**
+   * Check if tokens at the given position match this rule's start pattern.
+   * Used by inline parser to determine behavior before a block boundary
+   * (e.g. whether to generate a trailing line-break).
+   */
+  isStartPattern?(ctx: ParseContext, pos: number): boolean;
+  /**
+   * When true, a single newline before this block becomes a line-break.
+   * Wikidot's Divalign expands content inline, so \n before nested blocks
+   * becomes <br />. Other blocks (Code, Div, etc.) suppress this.
+   */
+  preservesPrecedingLineBreak?: boolean;
 }
 
 /**

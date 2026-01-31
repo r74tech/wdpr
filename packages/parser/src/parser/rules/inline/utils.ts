@@ -126,7 +126,23 @@ export function parseInlineUntil(ctx: ParseContext, endType: TokenType): InlineP
         nextMeaningfulToken.type === "EOF" ||
         isBlockStart
       ) {
-        // Consume the NEWLINE and stop (don't add line-break before block)
+        // Check if a block rule with preservesPrecedingLineBreak matches at the next position.
+        // Wikidot's Divalign expands content inline, so \n before it becomes <br />.
+        // Other blocks (Code, Div, etc.) suppress this by prepending \n\n to their token.
+        if (isBlockStart && nodes.length > 0) {
+          const nextPos = pos + lookAhead;
+          const shouldPreserve = ctx.blockRules.some(
+            (rule) =>
+              rule.preservesPrecedingLineBreak &&
+              rule.isStartPattern?.(ctx, nextPos),
+          );
+          if (shouldPreserve) {
+            const lb: any = { element: "line-break" };
+            lb._preservedTrailingBreak = true;
+            nodes.push(lb);
+          }
+        }
+        // Consume the NEWLINE and stop
         consumed++;
         if (nextMeaningfulToken?.type === "NEWLINE") {
           consumed++; // Also consume second newline for paragraph break

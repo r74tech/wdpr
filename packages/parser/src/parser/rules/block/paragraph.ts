@@ -81,7 +81,13 @@ export const paragraphRule: BlockRule = {
     let elements = processCloseSpanMarkers(result.elements);
 
     // Remove trailing line-breaks (they shouldn't appear at end of paragraph)
+    // Exception: line-breaks flagged by preserveTrailingLineBreak context are kept
     while (elements.length > 0 && elements[elements.length - 1]?.element === "line-break") {
+      const lastEl = elements[elements.length - 1] as any;
+      if (lastEl._preservedTrailingBreak) {
+        delete lastEl._preservedTrailingBreak;
+        break;
+      }
       elements.pop();
     }
 

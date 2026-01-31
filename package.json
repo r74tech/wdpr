@@ -22,13 +22,9 @@
     "format": "oxfmt --check packages/ tests/ examples/",
     "format:fix": "oxfmt packages/ tests/ examples/",
     "typecheck": "tsc --noEmit && tsc --noEmit -p packages/runtime/tsconfig.json",
-    "changeset": "changeset",
-    "version": "changeset version",
-    "release": "changeset publish"
+    "publish:packages": "for dir in packages/*; do (cd \"$dir\" && bun publish --access public || true); done"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.5.2",
-    "@changesets/cli": "^2.29.8",
     "@types/bun": "latest",
     "bunup": "^0.16.20",
     "happy-dom": "^20.3.9",

@@ -56,9 +56,9 @@ This is an example application demonstrating the capabilities of the wdpr librar
 
 * **Server**: Hono on Cloudflare Workers
 * **Database**: Cloudflare D1 (SQLite)
-* **Parser**: @wdpr/parser
-* **Renderer**: @wdpr/render
-* **Runtime**: @wdpr/runtime (client-side)
+* **Parser**: @wdprlib/parser
+* **Renderer**: @wdprlib/render
+* **Runtime**: @wdprlib/runtime (client-side)
 ', 1);
 INSERT OR REPLACE INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, '_default', 'scp-280-jp', 'SCP-280-JP', '[[include credit:start]]
 **タイトル:** SCP-280-JP - 縮小する時空間異常

@@ -1,4 +1,4 @@
-import type { Element, Module } from "@wdpr/ast";
+import type { Element, Module } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 
 /**

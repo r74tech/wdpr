@@ -1,4 +1,4 @@
-import type { IncludeData } from "@wdpr/ast";
+import type { IncludeData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { renderElements } from "../render";
 

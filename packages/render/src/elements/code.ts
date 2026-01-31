@@ -1,4 +1,4 @@
-import type { CodeBlockData } from "@wdpr/ast";
+import type { CodeBlockData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeHtml } from "../escape";
 import { highlight } from "../libs/highlighter";

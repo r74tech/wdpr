@@ -2,7 +2,7 @@
  * Size rule: [[size Xpx]]text[[/size]]
  *
  */
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName } from "../utils";

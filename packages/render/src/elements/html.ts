@@ -1,4 +1,4 @@
-import type { HtmlData } from "@wdpr/ast";
+import type { HtmlData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr } from "../escape";
 import { syncHashSha1 } from "../hash";

@@ -1,4 +1,4 @@
-import type { TableData } from "@wdpr/ast";
+import type { TableData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, sanitizeAttributes } from "../escape";
 import { renderElements } from "../render";

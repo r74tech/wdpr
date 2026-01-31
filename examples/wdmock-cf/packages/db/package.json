@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@wdmock/shared": "workspace:*",
-    "@wdpr/parser": "workspace:*"
+    "@wdprlib/parser": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250123.0"

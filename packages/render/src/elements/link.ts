@@ -1,4 +1,4 @@
-import type { LinkData, AnchorData } from "@wdpr/ast";
+import type { LinkData, AnchorData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, isDangerousUrl, sanitizeAttributes } from "../escape";
 import { renderElements } from "../render";

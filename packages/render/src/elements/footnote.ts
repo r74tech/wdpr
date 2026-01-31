@@ -1,4 +1,4 @@
-import type { FootnoteBlockData } from "@wdpr/ast";
+import type { FootnoteBlockData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeHtml } from "../escape";
 import { renderElements } from "../render";

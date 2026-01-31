@@ -4,7 +4,7 @@
  * Evaluates [[iftags]] conditions and returns matching elements.
  */
 
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import { parseTagCondition, evaluateTagCondition } from "./condition";
 
 /**

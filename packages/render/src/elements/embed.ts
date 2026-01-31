@@ -1,4 +1,4 @@
-import type { Embed } from "@wdpr/ast";
+import type { Embed } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr } from "../escape";
 

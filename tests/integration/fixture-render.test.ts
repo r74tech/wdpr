@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import type { SyntaxTree } from "@wdpr/ast";
-import { renderToHtml } from "@wdpr/render";
+import type { SyntaxTree } from "@wdprlib/ast";
+import { renderToHtml } from "@wdprlib/render";
 import * as fs from "fs";
 import * as path from "path";
 

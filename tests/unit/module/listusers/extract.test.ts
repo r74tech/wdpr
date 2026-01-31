@@ -1,6 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { extractDataRequirements } from "../../../../packages/parser/src/parser/rules/block/module/listpages/extract";
-import type { SyntaxTree, Element } from "@wdpr/ast";
+import type { SyntaxTree, Element } from "@wdprlib/ast";
 
 function createListUsersModule(users = ".", body?: string): Element {
   return {

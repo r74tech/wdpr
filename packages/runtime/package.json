@@ -1,5 +1,5 @@
 {
-  "name": "@wdpr/runtime",
+  "name": "@wdprlib/runtime",
   "version": "0.1.0",
   "description": "Client-side runtime for Wikidot markup",
   "keywords": [

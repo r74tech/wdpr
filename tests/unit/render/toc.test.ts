@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { renderTableOfContents } from "../../../packages/render/src/elements/toc";
 import { RenderContext } from "../../../packages/render/src/context";
-import type { SyntaxTree, Element, ListData, TableOfContentsData } from "@wdpr/ast";
+import type { SyntaxTree, Element, ListData, TableOfContentsData } from "@wdprlib/ast";
 
 /**
  * Table of Contents Rendering Tests

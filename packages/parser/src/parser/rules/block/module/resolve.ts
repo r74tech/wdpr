@@ -6,7 +6,7 @@
  * - IfTags condition evaluation
  */
 
-import type { Element, SyntaxTree } from "@wdpr/ast";
+import type { Element, SyntaxTree } from "@wdprlib/ast";
 import type { DataProvider } from "./types-common";
 import { walkElements, mapElementChildren, mapElementChildrenWithState } from "./walk";
 import type {

@@ -10,7 +10,7 @@
  * - /common--javascript/html-block-iframe.js - Resize script for iframe
  */
 
-import { HTML_BLOCK_RESIZE_SCRIPT } from "@wdpr/runtime";
+import { HTML_BLOCK_RESIZE_SCRIPT } from "@wdprlib/runtime";
 
 interface Env {
   FILES: R2Bucket;

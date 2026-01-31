@@ -1,7 +1,7 @@
 /**
  * AST操作用ヘルパー関数
  */
-import type { Element, ContainerData, ListData } from "@wdpr/ast";
+import type { Element, ContainerData, ListData } from "@wdprlib/ast";
 
 export function isContainer(el: Element): el is { element: "container"; data: ContainerData } {
   return el.element === "container";

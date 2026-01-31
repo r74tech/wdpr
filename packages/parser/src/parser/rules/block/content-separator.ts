@@ -3,7 +3,7 @@
  *
  * Creates a content separator element.
  */
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 

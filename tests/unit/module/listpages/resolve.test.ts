@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { resolveModules } from "../../../../packages/parser/src/parser/rules/block/module/resolve";
 import { compileTemplate } from "../../../../packages/parser/src/parser/rules/block/module/listpages/compiler";
-import type { SyntaxTree, Module } from "@wdpr/ast";
+import type { SyntaxTree, Module } from "@wdprlib/ast";
 import type { DataProvider } from "../../../../packages/parser/src/parser/rules/block/module/types-common";
 import type {
   ListPagesDataRequirement,

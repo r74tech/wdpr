@@ -2,7 +2,7 @@
  * ListUsers module parser
  */
 
-import type { Element, Module } from "@wdpr/ast";
+import type { Element, Module } from "@wdprlib/ast";
 import type { ModuleRule } from "../types";
 
 const ERROR_MESSAGE = 'Currently only users="." is implemented.';

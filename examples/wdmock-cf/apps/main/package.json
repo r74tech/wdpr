@@ -13,9 +13,9 @@
   "dependencies": {
     "@wdmock/db": "workspace:*",
     "@wdmock/shared": "workspace:*",
-    "@wdpr/parser": "workspace:*",
-    "@wdpr/render": "workspace:*",
-    "@wdpr/runtime": "workspace:*",
+    "@wdprlib/parser": "workspace:*",
+    "@wdprlib/render": "workspace:*",
+    "@wdprlib/runtime": "workspace:*",
     "hono": "^4.7.5"
   },
   "devDependencies": {

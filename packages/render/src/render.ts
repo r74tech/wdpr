@@ -1,4 +1,4 @@
-import type { Element, SyntaxTree } from "@wdpr/ast";
+import type { Element, SyntaxTree } from "@wdprlib/ast";
 import { RenderContext } from "./context";
 import { escapeStyleContent } from "./escape";
 import type { RenderOptions } from "./types";

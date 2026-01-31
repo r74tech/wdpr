@@ -1,7 +1,7 @@
 import type { Token } from "../lexer";
 import { tokenize } from "../lexer";
 import { preprocess } from "./preprocess";
-import type { Element, SyntaxTree } from "@wdpr/ast";
+import type { Element, SyntaxTree } from "@wdprlib/ast";
 import { blockRules, blockFallbackRule, inlineRules, type ParseContext } from "./rules";
 import { canApplyBlockRule } from "./rules/block/utils";
 import { mergeSpanStripParagraphs, cleanInternalFlags } from "./postprocess";

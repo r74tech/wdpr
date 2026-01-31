@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { RenderContext } from "../../../packages/render/src/context";
-import type { SyntaxTree, ImageSource, LinkLocation } from "@wdpr/ast";
+import type { SyntaxTree, ImageSource, LinkLocation } from "@wdprlib/ast";
 
 describe("RenderContext", () => {
   function createEmptyTree(): SyntaxTree {

@@ -3,7 +3,7 @@
  *
  * Handles [[table]][[row]][[cell]]...[[/cell]][[/row]][[/table]] syntax
  */
-import type { Element, TableData, TableRow, TableCell, Alignment } from "@wdpr/ast";
+import type { Element, TableData, TableRow, TableCell, Alignment } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName, parseAttributes, parseBlocksUntil } from "./utils";

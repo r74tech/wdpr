@@ -1,4 +1,4 @@
-import type { IframeData } from "@wdpr/ast";
+import type { IframeData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, isDangerousUrl, sanitizeStyleValue } from "../escape";
 

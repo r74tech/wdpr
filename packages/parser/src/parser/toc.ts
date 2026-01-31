@@ -4,7 +4,7 @@
  * Converts flat TocEntry[] to nested List elements
  */
 
-import type { Element, TocEntry, ListItem } from "@wdpr/ast";
+import type { Element, TocEntry, ListItem } from "@wdprlib/ast";
 import { processDepths, type DepthList, type DepthItem } from "./depth";
 
 /**

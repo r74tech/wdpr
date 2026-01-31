@@ -1,4 +1,4 @@
-import type { Element, ImageSource, FloatAlignment, Alignment, AttributeMap } from "@wdpr/ast";
+import type { Element, ImageSource, FloatAlignment, Alignment, AttributeMap } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { filterUnsafeAttributes } from "../utils";

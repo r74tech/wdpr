@@ -1,4 +1,4 @@
-import type { TabData } from "@wdpr/ast";
+import type { TabData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeHtml } from "../escape";
 import { syncHashMd5 } from "../hash";

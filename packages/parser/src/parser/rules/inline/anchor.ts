@@ -5,7 +5,7 @@
  * Supports:
  * - [[a_]] - strips line breaks (paragraph strip mode)
  */
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { inlineRules } from "../index";

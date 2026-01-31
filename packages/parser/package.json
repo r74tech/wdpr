@@ -1,5 +1,5 @@
 {
-  "name": "@wdpr/parser",
+  "name": "@wdprlib/parser",
   "version": "0.1.0",
   "description": "Parser for Wikidot markup",
   "keywords": [
@@ -39,6 +39,6 @@
   },
   "dependencies": {
     "@braintree/sanitize-url": "^7.1.1",
-    "@wdpr/ast": "workspace:*"
+    "@wdprlib/ast": "workspace:*"
   }
 }

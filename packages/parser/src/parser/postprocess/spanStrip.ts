@@ -3,7 +3,7 @@
  *
  * Handles span_ (paragraph strip) paragraph merging
  */
-import type { Element, ContainerData } from "@wdpr/ast";
+import type { Element, ContainerData } from "@wdprlib/ast";
 
 /**
  * Check if an element is a container with specific type

@@ -3,7 +3,7 @@ import {
   mergeSpanStripParagraphs,
   cleanInternalFlags,
 } from "../../../packages/parser/src/parser/postprocess/spanStrip";
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 
 /**
  * spanStrip Post-processing Tests

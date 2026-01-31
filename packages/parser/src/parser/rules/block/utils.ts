@@ -1,5 +1,5 @@
 import type { Token } from "../../../lexer";
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import type { ParseContext, BlockRule } from "../types";
 import { canApplyInlineRule } from "../inline/utils";
 import { filterUnsafeAttributes, parseBlockName } from "../utils";

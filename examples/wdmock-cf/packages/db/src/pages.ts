@@ -2,7 +2,7 @@
  * Pages table operations
  */
 
-import type { PageData } from "@wdpr/parser";
+import type { PageData } from "@wdprlib/parser";
 import { getUserInfo, buildFullname } from "@wdmock/shared";
 
 export interface PageApiData {

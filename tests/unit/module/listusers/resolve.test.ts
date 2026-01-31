@@ -1,7 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import { resolveModules } from "../../../../packages/parser/src/parser/rules/block/module/resolve";
 import { compileListUsersTemplate } from "../../../../packages/parser/src/parser/rules/block/module/listusers/compiler";
-import type { SyntaxTree, Element } from "@wdpr/ast";
+import type { SyntaxTree, Element } from "@wdprlib/ast";
 import type { DataProvider } from "../../../../packages/parser/src/parser/rules/block/module/types-common";
 import type { ListUsersCompiledTemplate } from "../../../../packages/parser/src/parser/rules/block/module/listusers/types";
 

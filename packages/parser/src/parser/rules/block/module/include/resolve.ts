@@ -5,7 +5,7 @@
  * allowing block structures (like div) to span across include boundaries.
  */
 
-import type { PageRef, VariableMap } from "@wdpr/ast";
+import type { PageRef, VariableMap } from "@wdprlib/ast";
 
 /**
  * Callback to fetch page content for include resolution.

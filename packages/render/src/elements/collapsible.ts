@@ -1,4 +1,4 @@
-import type { CollapsibleData } from "@wdpr/ast";
+import type { CollapsibleData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeHtml } from "../escape";
 import { renderElements } from "../render";

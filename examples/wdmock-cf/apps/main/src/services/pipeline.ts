@@ -3,15 +3,15 @@
  *
  * Handles source parsing, module resolution, and HTML rendering.
  */
-import { parse, extractDataRequirements, resolveModules, resolveIncludes } from "@wdpr/parser";
+import { parse, extractDataRequirements, resolveModules, resolveIncludes } from "@wdprlib/parser";
 import type {
   NormalizedListPagesQuery,
   ListPagesExternalData,
   PageData,
   PageRef,
-} from "@wdpr/parser";
-import { renderToHtml } from "@wdpr/render";
-import type { PageContext } from "@wdpr/render";
+} from "@wdprlib/parser";
+import { renderToHtml } from "@wdprlib/render";
+import type { PageContext } from "@wdprlib/render";
 import { SITE, getUserInfo, parseFullname, buildFullname } from "@wdmock/shared";
 import { getTagsByFullname, rowToPageData, getAllPageSources } from "@wdmock/db";
 

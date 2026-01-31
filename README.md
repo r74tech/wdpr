@@ -6,22 +6,22 @@ Wikidot markup parser and renderer.
 
 | Package | Description |
 |---------|-------------|
-| [@wdpr/ast](./packages/ast) | AST type definitions |
-| [@wdpr/parser](./packages/parser) | Wikidot markup parser |
-| [@wdpr/render](./packages/render) | HTML renderer |
-| [@wdpr/runtime](./packages/runtime) | Client-side runtime for interactive elements |
+| [@wdprlib/ast](./packages/ast) | AST type definitions |
+| [@wdprlib/parser](./packages/parser) | Wikidot markup parser |
+| [@wdprlib/render](./packages/render) | HTML renderer |
+| [@wdprlib/runtime](./packages/runtime) | Client-side runtime for interactive elements |
 
 ## Installation
 
 ```bash
-npm install @wdpr/parser @wdpr/render
+npm install @wdprlib/parser @wdprlib/render
 ```
 
 ## Usage
 
 ```ts
-import { parse } from '@wdpr/parser'
-import { renderToHtml } from '@wdpr/render'
+import { parse } from '@wdprlib/parser'
+import { renderToHtml } from '@wdprlib/render'
 
 const ast = parse('**Hello** world')
 const html = renderToHtml(ast)

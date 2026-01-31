@@ -1,4 +1,4 @@
-import type { Element, HeadingLevel } from "@wdpr/ast";
+import type { Element, HeadingLevel } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseInlineUntil } from "../inline/utils";

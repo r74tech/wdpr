@@ -4,7 +4,7 @@
  * The footnote content is stored separately and the inline element
  * just marks where the footnote reference appears.
  */
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName } from "../utils";

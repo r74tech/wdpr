@@ -4,7 +4,7 @@
  * Creates an anchor target for page-internal links.
  * Wikidot regex: /(\[\[# )([-_A-Za-z0-9.%]+?)(\]\])/i
  */
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 

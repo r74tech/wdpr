@@ -1,4 +1,4 @@
-import type { Element, PageRef, VariableMap } from "@wdpr/ast";
+import type { Element, PageRef, VariableMap } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName } from "./utils";

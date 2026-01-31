@@ -1,4 +1,4 @@
-import type { AttributeMap, Element } from "@wdpr/ast";
+import type { AttributeMap, Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName } from "./utils";

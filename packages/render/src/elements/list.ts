@@ -1,4 +1,4 @@
-import type { ListData, DefinitionListItem } from "@wdpr/ast";
+import type { ListData, DefinitionListItem } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, sanitizeAttributes } from "../escape";
 import { renderElements } from "../render";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { tokenize } from "@wdpr/parser";
+import { tokenize } from "@wdprlib/parser";
 
 /**
  * Helper to get token types from source

@@ -1,4 +1,4 @@
-import type { Position } from "@wdpr/ast";
+import type { Position } from "@wdprlib/ast";
 
 /**
  * Token types for Wikidot markup

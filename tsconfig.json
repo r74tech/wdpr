@@ -20,8 +20,8 @@
     "noEmit": true,
     "baseUrl": ".",
     "paths": {
-      "@wdpr/ast": ["packages/ast/src/index.ts"],
-      "@wdpr/runtime": ["packages/runtime/src/index.ts"]
+      "@wdprlib/ast": ["packages/ast/src/index.ts"],
+      "@wdprlib/runtime": ["packages/runtime/src/index.ts"]
     }
   },
   "include": ["packages/*/src/**/*"],

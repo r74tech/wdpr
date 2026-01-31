@@ -19,7 +19,7 @@ import type {
   TableCell,
   DefinitionListItem,
   TabData,
-} from "@wdpr/ast";
+} from "@wdprlib/ast";
 
 /**
  * Walk all elements recursively, calling callback for each element.

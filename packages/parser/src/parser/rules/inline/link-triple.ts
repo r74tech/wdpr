@@ -1,4 +1,4 @@
-import type { Element, LinkType, LinkLocation, LinkLabel } from "@wdpr/ast";
+import type { Element, LinkType, LinkLocation, LinkLabel } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken, hasClosingMarkerBeforeNewline } from "../types";
 

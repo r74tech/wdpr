@@ -1,4 +1,4 @@
-import type { Module } from "@wdpr/ast";
+import type { Module } from "@wdprlib/ast";
 import type { ModuleRule } from "../types";
 import { parseBool, parseInt32 } from "../utils";
 

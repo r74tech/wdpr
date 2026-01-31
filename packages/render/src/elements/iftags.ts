@@ -1,4 +1,4 @@
-import type { IfTagsData } from "@wdpr/ast";
+import type { IfTagsData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { renderElements } from "../render";
 

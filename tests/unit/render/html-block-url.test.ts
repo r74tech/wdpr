@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import type { SyntaxTree, Element } from "@wdpr/ast";
-import { renderToHtml } from "@wdpr/render";
+import type { SyntaxTree, Element } from "@wdprlib/ast";
+import { renderToHtml } from "@wdprlib/render";
 
 describe("htmlBlockUrl callback", () => {
   const createTreeWithHtmlBlocks = (htmlBlocks: string[]): SyntaxTree => ({

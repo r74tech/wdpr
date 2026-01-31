@@ -8,7 +8,7 @@
  *
  * Note: ~~~ (3 tildes) does NOT work in Wikidot - requires 4+
  */
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 

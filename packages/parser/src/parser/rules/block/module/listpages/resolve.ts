@@ -4,7 +4,7 @@
  * Handles expanding ListPages modules with fetched data.
  */
 
-import type { Element, Module } from "@wdpr/ast";
+import type { Element, Module } from "@wdprlib/ast";
 import type { ListPagesExternalData, CompiledTemplate, VariableContext } from "./types";
 import type { ParseFunction } from "../types";
 export type { ParseFunction };

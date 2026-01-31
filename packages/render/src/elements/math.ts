@@ -1,4 +1,4 @@
-import type { MathData, MathInlineData } from "@wdpr/ast";
+import type { MathData, MathInlineData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, escapeHtml } from "../escape";
 

@@ -1,4 +1,4 @@
-import type { UserData } from "@wdpr/ast";
+import type { UserData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeHtml, escapeAttr } from "../escape";
 

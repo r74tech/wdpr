@@ -4,7 +4,7 @@
  * Creates a centered paragraph.
  * Requires: line start + = + space + text
  */
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseInlineUntil } from "../inline/utils";

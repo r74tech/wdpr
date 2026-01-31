@@ -21,7 +21,7 @@ export default defineWorkspace([
       dts: true,
       minify: false,
       clean: true,
-      external: ["@wdpr/ast"],
+      external: ["@wdprlib/ast"],
     },
   },
   {
@@ -33,7 +33,7 @@ export default defineWorkspace([
       dts: true,
       minify: false,
       clean: true,
-      external: ["@wdpr/ast"],
+      external: ["@wdprlib/ast"],
     },
   },
   {

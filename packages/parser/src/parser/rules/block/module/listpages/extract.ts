@@ -5,7 +5,7 @@
  * what external data they need.
  */
 
-import type { SyntaxTree, Module } from "@wdpr/ast";
+import type { SyntaxTree, Module } from "@wdprlib/ast";
 import type {
   DataRequirements,
   ListPagesQuery,

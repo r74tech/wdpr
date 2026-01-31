@@ -1,4 +1,4 @@
-import type { ColorData } from "@wdpr/ast";
+import type { ColorData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, sanitizeCssColor } from "../escape";
 import { renderElements } from "../render";

@@ -1,4 +1,4 @@
-import type { Element, ImageSource, LinkLocation, SyntaxTree } from "@wdpr/ast";
+import type { Element, ImageSource, LinkLocation, SyntaxTree } from "@wdprlib/ast";
 import type { RenderOptions, PageContext } from "./types";
 import { escapeHtml, escapeAttr, sanitizeAttributes } from "./escape";
 

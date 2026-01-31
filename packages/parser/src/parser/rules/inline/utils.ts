@@ -1,5 +1,5 @@
 import type { TokenType, Token } from "../../../lexer";
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import type { ParseContext, InlineRule } from "../types";
 import { BLOCK_START_TOKENS } from "../../constants";
 

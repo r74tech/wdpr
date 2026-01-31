@@ -1,4 +1,4 @@
-import type { DateData } from "@wdpr/ast";
+import type { DateData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeHtml } from "../escape";
 

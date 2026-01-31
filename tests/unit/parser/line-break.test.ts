@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { parse } from "@wdpr/parser";
-import type { Element, SyntaxTree } from "@wdpr/ast";
+import { parse } from "@wdprlib/parser";
+import type { Element, SyntaxTree } from "@wdprlib/ast";
 
 /**
  * Line Break Unit Tests

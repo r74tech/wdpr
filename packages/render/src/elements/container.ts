@@ -1,5 +1,5 @@
-import type { ContainerData } from "@wdpr/ast";
-import { isStringContainerType, isHeaderType, isAlignType } from "@wdpr/ast";
+import type { ContainerData } from "@wdprlib/ast";
+import { isStringContainerType, isHeaderType, isAlignType } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, sanitizeAttributes } from "../escape";
 import { renderElements } from "../render";
@@ -30,7 +30,7 @@ function renderHeader(
   level: number,
   hasToc: boolean,
   attributes: Record<string, string>,
-  elements: import("@wdpr/ast").Element[],
+  elements: import("@wdprlib/ast").Element[],
 ): void {
   const tag = `h${level}`;
   if (hasToc) {
@@ -49,7 +49,7 @@ function renderStringContainer(
   ctx: RenderContext,
   type: string,
   attributes: Record<string, string>,
-  elements: import("@wdpr/ast").Element[],
+  elements: import("@wdprlib/ast").Element[],
 ): void {
   switch (type) {
     case "paragraph":
@@ -191,7 +191,7 @@ function renderStringContainer(
 function renderSizeContainer(
   ctx: RenderContext,
   attributes: Record<string, string>,
-  elements: import("@wdpr/ast").Element[],
+  elements: import("@wdprlib/ast").Element[],
 ): void {
   const style = attributes.style ?? "";
   // The size value is stored in the style attribute as font-size

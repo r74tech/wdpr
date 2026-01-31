@@ -1,4 +1,4 @@
-import type { Element, ExprData, IfCondData, IfExprData } from "@wdpr/ast";
+import type { Element, ExprData, IfCondData, IfExprData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { renderElements } from "../render";
 import { evaluateExpression, isTruthy } from "../utils/expr-eval";

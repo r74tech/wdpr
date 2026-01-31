@@ -4,7 +4,7 @@
  * Collects inline content until paragraph break (double newline) or end of input.
  * Line breaks within paragraphs are handled by the newlineLineBreakRule.
  */
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { parseInlineUntil } from "../inline/utils";
 

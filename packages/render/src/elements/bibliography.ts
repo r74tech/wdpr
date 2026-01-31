@@ -1,4 +1,4 @@
-import type { BibliographyCiteData, BibliographyBlockData } from "@wdpr/ast";
+import type { BibliographyCiteData, BibliographyBlockData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeHtml } from "../escape";
 

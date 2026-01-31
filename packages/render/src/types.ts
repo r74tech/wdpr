@@ -1,4 +1,4 @@
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 
 /**
  * Page context for resolving links, images, etc.

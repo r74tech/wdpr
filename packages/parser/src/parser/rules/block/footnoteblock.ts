@@ -4,7 +4,7 @@
  * This block marks where the collected footnotes should be rendered.
  * Supports optional title attribute.
  */
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 

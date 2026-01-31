@@ -1,4 +1,4 @@
-import type { Element, CodeBlockData } from "@wdpr/ast";
+import type { Element, CodeBlockData } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName } from "../utils";

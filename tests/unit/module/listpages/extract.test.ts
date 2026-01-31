@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { extractDataRequirements } from "../../../../packages/parser/src/parser/rules/block/module/listpages/extract";
-import type { SyntaxTree, Module, Element } from "@wdpr/ast";
+import type { SyntaxTree, Module, Element } from "@wdprlib/ast";
 
 /**
  * Type alias for list-pages module

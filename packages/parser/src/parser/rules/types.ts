@@ -1,6 +1,6 @@
 import type { Token, TokenType } from "../../lexer";
-import type { Version } from "@wdpr/ast";
-import type { Element, CodeBlockData, TocEntry } from "@wdpr/ast";
+import type { Version } from "@wdprlib/ast";
+import type { Element, CodeBlockData, TocEntry } from "@wdprlib/ast";
 
 /**
  * Parser context passed to rules

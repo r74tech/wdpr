@@ -9,7 +9,7 @@
  * Note: Wikidot ignores attributes on [[toc]] (class, style, id are not applied)
  * [[>toc]] and [[<toc]] are invalid in Wikidot and not supported.
  */
-import type { Alignment, Element } from "@wdpr/ast";
+import type { Alignment, Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 

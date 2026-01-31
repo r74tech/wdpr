@@ -1,4 +1,4 @@
-import type { Element, ListData, ListItem, ListType } from "@wdpr/ast";
+import type { Element, ListData, ListItem, ListType } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseInlineUntil } from "../inline/utils";

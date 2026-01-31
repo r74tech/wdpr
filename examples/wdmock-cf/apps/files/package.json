@@ -9,7 +9,7 @@
     "typecheck": "bunx tsc --noEmit"
   },
   "dependencies": {
-    "@wdpr/runtime": "workspace:*"
+    "@wdprlib/runtime": "workspace:*"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250123.0",

@@ -1,4 +1,4 @@
-import type { ClearFloat } from "@wdpr/ast";
+import type { ClearFloat } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 
 /** Render clear-float */

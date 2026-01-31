@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { parse, resolveModules, resolveIncludes } from "@wdpr/parser";
-import type { SyntaxTree, Element } from "@wdpr/ast";
+import { parse, resolveModules, resolveIncludes } from "@wdprlib/parser";
+import type { SyntaxTree, Element } from "@wdprlib/ast";
 import type { DataProvider } from "../../../../packages/parser/src/parser/rules/block/module/types-common";
 import type { ResolveOptions } from "../../../../packages/parser/src/parser/rules/block/module/resolve";
 

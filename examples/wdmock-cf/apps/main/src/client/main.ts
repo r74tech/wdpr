@@ -1,4 +1,4 @@
-import { initWdprRuntime, type WdprRuntime } from "@wdpr/runtime";
+import { initWdprRuntime, type WdprRuntime } from "@wdprlib/runtime";
 
 let runtime: WdprRuntime | null = null;
 let currentPageId: number | null = null;
@@ -21,7 +21,7 @@ function applyPageStyles(styles: string[]) {
 
 /**
  * Safely set HTML content using a sandboxed approach.
- * The HTML is generated server-side by @wdpr/render which sanitizes user input.
+ * The HTML is generated server-side by @wdprlib/render which sanitizes user input.
  * We use a template element for parsing to avoid script execution during parsing.
  */
 function setTrustedHtml(element: Element, html: string): void {
@@ -76,7 +76,7 @@ async function loadPage(path: string) {
   const content = document.getElementById("page-content");
   if (!content) return;
 
-  // Server-generated HTML from @wdpr/render (sanitized)
+  // Server-generated HTML from @wdprlib/render (sanitized)
   setTrustedHtml(content, data.html);
   content.dataset.pageId = String(data.page_id);
 
@@ -341,7 +341,7 @@ async function previewPage() {
     h3.textContent = "Preview";
     const previewContent = document.createElement("div");
     previewContent.className = "preview-content";
-    // Server-generated HTML from @wdpr/render (sanitized)
+    // Server-generated HTML from @wdprlib/render (sanitized)
     setTrustedHtml(previewContent, data.html);
     previewArea.appendChild(h3);
     previewArea.appendChild(previewContent);
@@ -391,7 +391,7 @@ async function loadNavigation() {
       const actionsSection = sidebar.querySelector("#side-bar-actions");
       // Clone the actions section to preserve it after replaceChildren
       const actionsClone = actionsSection?.cloneNode(true) as HTMLElement | null;
-      // Server-generated HTML from @wdpr/render (sanitized)
+      // Server-generated HTML from @wdprlib/render (sanitized)
       setTrustedHtml(sidebar, html);
       // Re-add actions section at the beginning
       if (actionsClone) {
@@ -407,7 +407,7 @@ async function loadNavigation() {
     const { html, styles } = (await topbarRes.json()) as { html: string; styles?: string[] };
     const topbar = document.getElementById("top-bar");
     if (topbar) {
-      // Server-generated HTML from @wdpr/render (sanitized)
+      // Server-generated HTML from @wdprlib/render (sanitized)
       setTrustedHtml(topbar, html);
     }
     if (styles) navStyles.push(...styles);

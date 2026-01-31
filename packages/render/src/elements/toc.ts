@@ -1,4 +1,4 @@
-import type { Element, ListData, ListItem, TableOfContentsData } from "@wdpr/ast";
+import type { Element, ListData, ListItem, TableOfContentsData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeHtml } from "../escape";
 

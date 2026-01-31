@@ -2,7 +2,7 @@
  * Definition list rule: : term : value
  *
  */
-import type { Element, DefinitionListItem } from "@wdpr/ast";
+import type { Element, DefinitionListItem } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { parseInlineUntil } from "../inline/utils";
 

@@ -1,4 +1,4 @@
-import type { ImageSource, ImageData } from "@wdpr/ast";
+import type { ImageSource, ImageData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, isDangerousUrl, sanitizeAttributes } from "../escape";
 

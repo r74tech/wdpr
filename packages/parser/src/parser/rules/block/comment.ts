@@ -4,7 +4,7 @@
  * Handles comments that span multiple lines. These are completely removed
  * from output (returns empty elements array).
  */
-import type { Element } from "@wdpr/ast";
+import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 
 export const blockCommentRule: BlockRule = {

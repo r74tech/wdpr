@@ -1,4 +1,4 @@
-import type { Element, TabData } from "@wdpr/ast";
+import type { Element, TabData } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName, parseBlocksUntil } from "./utils";

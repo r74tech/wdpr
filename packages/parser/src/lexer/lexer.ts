@@ -1,4 +1,4 @@
-import { createPoint, createPosition } from "@wdpr/ast";
+import { createPoint, createPosition } from "@wdprlib/ast";
 import { createToken, type Token, type TokenType } from "./tokens";
 
 /**

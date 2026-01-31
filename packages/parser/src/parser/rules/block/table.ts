@@ -1,4 +1,4 @@
-import type { Element, TableData, TableRow, TableCell, Alignment } from "@wdpr/ast";
+import type { Element, TableData, TableRow, TableCell, Alignment } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import type { TokenType } from "../../../lexer/tokens";

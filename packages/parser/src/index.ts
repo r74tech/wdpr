@@ -1,4 +1,4 @@
-// Re-export AST types and utilities from @wdpr/ast
+// Re-export AST types and utilities from @wdprlib/ast
 export type {
   Position,
   Point,
@@ -36,7 +36,7 @@ export type {
   DateItem,
   Embed,
   TocEntry,
-} from "@wdpr/ast";
+} from "@wdprlib/ast";
 export {
   createPoint,
   createPosition,
@@ -52,7 +52,7 @@ export {
   list,
   listItemElements,
   listItemSubList,
-} from "@wdpr/ast";
+} from "@wdprlib/ast";
 
 // Lexer
 export type { TokenType, Token, LexerOptions } from "./lexer";

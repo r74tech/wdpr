@@ -25,7 +25,7 @@
       "name": "@wdmock/files",
       "version": "0.0.1",
       "dependencies": {
-        "@wdpr/runtime": "workspace:*",
+        "@wdprlib/runtime": "workspace:*",
       },
       "devDependencies": {
         "@cloudflare/workers-types": "^4.20250123.0",
@@ -38,9 +38,9 @@
       "dependencies": {
         "@wdmock/db": "workspace:*",
         "@wdmock/shared": "workspace:*",
-        "@wdpr/parser": "workspace:*",
-        "@wdpr/render": "workspace:*",
-        "@wdpr/runtime": "workspace:*",
+        "@wdprlib/parser": "workspace:*",
+        "@wdprlib/render": "workspace:*",
+        "@wdprlib/runtime": "workspace:*",
         "hono": "^4.7.5",
       },
       "devDependencies": {
@@ -56,7 +56,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@wdmock/shared": "workspace:*",
-        "@wdpr/parser": "workspace:*",
+        "@wdprlib/parser": "workspace:*",
       },
       "devDependencies": {
         "@cloudflare/workers-types": "^4.20250123.0",
@@ -67,26 +67,26 @@
       "version": "0.0.1",
     },
     "packages/ast": {
-      "name": "@wdpr/ast",
+      "name": "@wdprlib/ast",
       "version": "0.1.0",
     },
     "packages/parser": {
-      "name": "@wdpr/parser",
+      "name": "@wdprlib/parser",
       "version": "0.1.0",
       "dependencies": {
         "@braintree/sanitize-url": "^7.1.1",
-        "@wdpr/ast": "workspace:*",
+        "@wdprlib/ast": "workspace:*",
       },
     },
     "packages/render": {
-      "name": "@wdpr/render",
+      "name": "@wdprlib/render",
       "version": "0.1.0",
       "dependencies": {
-        "@wdpr/ast": "workspace:*",
+        "@wdprlib/ast": "workspace:*",
       },
     },
     "packages/runtime": {
-      "name": "@wdpr/runtime",
+      "name": "@wdprlib/runtime",
       "version": "0.1.0",
     },
   },
@@ -493,13 +493,13 @@
 
     "@wdmock/shared": ["@wdmock/shared@workspace:examples/wdmock-cf/packages/shared"],
 
-    "@wdpr/ast": ["@wdpr/ast@workspace:packages/ast"],
+    "@wdprlib/ast": ["@wdprlib/ast@workspace:packages/ast"],
 
-    "@wdpr/parser": ["@wdpr/parser@workspace:packages/parser"],
+    "@wdprlib/parser": ["@wdprlib/parser@workspace:packages/parser"],
 
-    "@wdpr/render": ["@wdpr/render@workspace:packages/render"],
+    "@wdprlib/render": ["@wdprlib/render@workspace:packages/render"],
 
-    "@wdpr/runtime": ["@wdpr/runtime@workspace:packages/runtime"],
+    "@wdprlib/runtime": ["@wdprlib/runtime@workspace:packages/runtime"],
 
     "acorn": ["acorn@8.14.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-cl669nCJTZBsL97OF4kUQm5g5hC2uihk0NxY3WENAC0TYdILVkAyHymAntgxGkl7K+t0cXIrH5siy5S4XkFycA=="],
 

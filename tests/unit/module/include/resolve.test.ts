@@ -1,5 +1,5 @@
 import { test, expect, describe } from "bun:test";
-import { parse, resolveIncludes } from "@wdpr/parser";
+import { parse, resolveIncludes } from "@wdprlib/parser";
 import { getAllText } from "../../../helpers";
 
 describe("resolveIncludes", () => {

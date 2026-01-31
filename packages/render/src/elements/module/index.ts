@@ -1,4 +1,4 @@
-import type { Module } from "@wdpr/ast";
+import type { Module } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
 import { renderBacklinks } from "./backlinks";
 import { renderCategories } from "./categories";

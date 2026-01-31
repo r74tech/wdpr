@@ -45,16 +45,11 @@ jobs:
 
       - name: Generate PR body
         if: steps.check.outputs.has_changesets == 'true'
-        id: body
         run: |
-          {
-            echo "body<<BODY_EOF"
-            for changelog in $(git diff HEAD~1 --name-only | grep 'CHANGELOG.md$'); do
-              cat "$changelog"
-              echo ""
-            done
-            echo "BODY_EOF"
-          } >> "$GITHUB_OUTPUT"
+          for changelog in $(git diff HEAD~1 --name-only | grep 'CHANGELOG.md$'); do
+            cat "$changelog"
+            echo ""
+          done > /tmp/pr-body.md
 
       - name: Create or update release PR
         if: steps.check.outputs.has_changesets == 'true'
@@ -62,13 +57,13 @@ jobs:
           git push origin HEAD:changeset-release/release --force
           EXISTING_PR=$(gh pr list --base release --head changeset-release/release --json number --jq '.[0].number')
           if [ -n "$EXISTING_PR" ]; then
-            gh pr edit "$EXISTING_PR" --body "${{ steps.body.outputs.body }}"
+            gh pr edit "$EXISTING_PR" --body-file /tmp/pr-body.md
           else
             gh pr create \
               --base release \
               --head changeset-release/release \
               --title "chore: release packages" \
-              --body "${{ steps.body.outputs.body }}"
+              --body-file /tmp/pr-body.md
           fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

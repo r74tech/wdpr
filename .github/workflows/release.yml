@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    branches: [release]
+    branches: [develop]
 
 concurrency: ${{ github.workflow }}-${{ github.ref }}
 
@@ -12,9 +12,10 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-      id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -22,16 +23,50 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - run: bun run build
+      - name: Check for changesets
+        id: check
+        run: |
+          if ls .changeset/*.md 2>/dev/null | grep -v README.md | head -1 > /dev/null 2>&1; then
+            echo "has_changesets=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changesets=false" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Create Release Pull Request or Publish
-        id: changesets
-        uses: changesets/action@v1
-        with:
-          version: bun changeset version
-          publish: bun changeset publish
-          title: "chore: release packages"
-          commit: "chore: release packages"
+      - name: Version packages
+        if: steps.check.outputs.has_changesets == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bun changeset version
+          git add .
+          git commit -m "chore: release packages" || echo "No changes to commit"
+
+      - name: Generate PR body
+        if: steps.check.outputs.has_changesets == 'true'
+        id: body
+        run: |
+          {
+            echo "body<<BODY_EOF"
+            for changelog in $(git diff HEAD~1 --name-only | grep 'CHANGELOG.md$'); do
+              cat "$changelog"
+              echo ""
+            done
+            echo "BODY_EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create or update release PR
+        if: steps.check.outputs.has_changesets == 'true'
+        run: |
+          git push origin HEAD:changeset-release/release --force
+          EXISTING_PR=$(gh pr list --base release --head changeset-release/release --json number --jq '.[0].number')
+          if [ -n "$EXISTING_PR" ]; then
+            gh pr edit "$EXISTING_PR" --body "${{ steps.body.outputs.body }}"
+          else
+            gh pr create \
+              --base release \
+              --head changeset-release/release \
+              --title "chore: release packages" \
+              --body "${{ steps.body.outputs.body }}"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}

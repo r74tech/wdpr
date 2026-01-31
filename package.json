@@ -22,7 +22,17 @@
     "format": "oxfmt --check packages/ tests/ examples/",
     "format:fix": "oxfmt packages/ tests/ examples/",
     "typecheck": "tsc --noEmit && tsc --noEmit -p packages/runtime/tsconfig.json",
-    "publish:packages": "for dir in packages/*; do (cd \"$dir\" && bun publish --access public || true); done"
+    "release": "semantic-release-npm-workspaces-monorepo"
+  },
+  "workspaceRelease": {
+    "branches": ["release"],
+    "repositoryUrl": "https://github.com/r74tech/wdpr.git",
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/npm",
+      "@semantic-release/github"
+    ]
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -30,6 +40,8 @@
     "happy-dom": "^20.3.9",
     "oxfmt": "^0.27.0",
     "oxlint": "^1.42.0",
+    "semantic-release": "^25.0.3",
+    "semantic-release-npm-workspaces-monorepo": "^3.2.1",
     "typescript": "^5.9.3"
   }
 }

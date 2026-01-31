@@ -76,6 +76,12 @@ function normalizeHtml(html: string): string {
       .replace(/ onclick="[^"]*"/g, "")
       // 連続する空白・改行を単一スペースに（HTML的に等価）
       .replace(/\s+/g, " ")
+      // 属性順序を正規化（HTML的に等価）
+      .replace(/<(\w+)((?:\s+[a-zA-Z_][\w-]*(?:="[^"]*")?)+)\s*(\/?)>/g, (_match, tag, attrStr, selfClose) => {
+        const attrs = attrStr.trim().match(/[a-zA-Z_][\w-]*(?:="[^"]*")?/g) || [];
+        attrs.sort();
+        return `<${tag} ${attrs.join(" ")}${selfClose ? " /" : ""}>`;
+      })
       // タグ間の空白を削除
       .replace(/>\s+</g, "><")
       // <br />前後の空白を削除（HTML的に等価）

@@ -142,6 +142,13 @@ export const anchorRule: InlineRule = {
             consumed++;
           }
           foundClose = true;
+
+          // In paragraph strip mode, consume trailing newlines after close tag
+          // This prevents line-breaks between consecutive [[a_]] blocks
+          while (paragraphStrip && ctx.tokens[pos]?.type === "NEWLINE") {
+            pos++;
+            consumed++;
+          }
           break;
         }
       }

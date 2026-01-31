@@ -29,9 +29,8 @@ jobs:
       - run: bun run build
 
       - name: Publish to npm
-        run: bun changeset publish
+        run: NPM_CONFIG_PROVENANCE=true bun changeset publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push tags

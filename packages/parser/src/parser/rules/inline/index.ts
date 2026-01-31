@@ -11,7 +11,7 @@ import { linkSingleRule } from "./link-single";
 import { linkAnchorRule } from "./link-anchor";
 import { linkStarRule } from "./link-star";
 import { colorRule } from "./color";
-import { newlineLineBreakRule, underscoreLineBreakRule } from "./line-break";
+import { backslashLineBreakRule, newlineLineBreakRule, underscoreLineBreakRule } from "./line-break";
 import { commentRule } from "./comment";
 import { rawRule } from "./raw";
 import { spanRule, closeSpanRule } from "./span";
@@ -39,7 +39,7 @@ export { linkSingleRule } from "./link-single";
 export { linkAnchorRule } from "./link-anchor";
 export { linkStarRule } from "./link-star";
 export { colorRule } from "./color";
-export { newlineLineBreakRule, underscoreLineBreakRule } from "./line-break";
+export { backslashLineBreakRule, newlineLineBreakRule, underscoreLineBreakRule } from "./line-break";
 export { commentRule } from "./comment";
 export { rawRule } from "./raw";
 export { spanRule, closeSpanRule } from "./span";
@@ -71,6 +71,7 @@ export const inlineRules: InlineRule[] = [
   linkAnchorRule,
   linkStarRule,
   colorRule,
+  backslashLineBreakRule,
   underscoreLineBreakRule,
   newlineLineBreakRule, // Must come after underscore rule
   commentRule,

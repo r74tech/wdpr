@@ -73,6 +73,7 @@ export type TokenType =
 
   // Other
   | "UNDERSCORE" // _ (single underscore, for line break)
+  | "BACKSLASH_BREAK" // U+E000 (preproc marker for \ at end of line)
 
   // Comment
   | "COMMENT_OPEN" // [!--

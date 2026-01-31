@@ -127,7 +127,11 @@
           },
           {
             "element": "text",
-            "data": "—-"
+            "data": "—"
+          },
+          {
+            "element": "text",
+            "data": "-"
           }
         ]
       }

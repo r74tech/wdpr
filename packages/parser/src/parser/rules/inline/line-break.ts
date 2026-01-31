@@ -6,8 +6,8 @@
  * - " _\n" pattern → line-break
  * - "^_\n" pattern → line-break (underscore at start of line)
  *
- * Note: Backslash line break (\ at end of line) is handled by preproc,
- * which removes \\\n and joins lines.
+ * Note: Backslash line break (\ at end of line) is preprocessed to U+E000
+ * by preproc, then handled by backslashLineBreakRule.
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
@@ -98,6 +98,29 @@ export const newlineLineBreakRule: InlineRule = {
     return {
       success: true,
       elements: [{ element: "line-break" }],
+      consumed: 1,
+    };
+  },
+};
+
+/**
+ * Backslash line break: \ at end of line (preprocessed to U+E000)
+ */
+export const backslashLineBreakRule: InlineRule = {
+  name: "backslashLineBreak",
+  startTokens: ["BACKSLASH_BREAK"],
+
+  parse(ctx: ParseContext): RuleResult<Element> {
+    const currentTok = ctx.tokens[ctx.pos];
+    if (!currentTok || currentTok.type !== "BACKSLASH_BREAK") {
+      return { success: false };
+    }
+
+    const lb: any = { element: "line-break" };
+    lb._preservedTrailingBreak = true;
+    return {
+      success: true,
+      elements: [lb],
       consumed: 1,
     };
   },

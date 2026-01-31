@@ -310,8 +310,8 @@ export class Lexer {
       return;
     }
 
-    // Horizontal rule --- or more (check before --)
-    if (isLineStart && this.match("---")) {
+    // Horizontal rule ---- or more (4+ hyphens, check before --)
+    if (isLineStart && this.match("----")) {
       let dashes = "";
       while (this.current() === "-") {
         dashes += this.advance();
@@ -579,6 +579,13 @@ export class Lexer {
     if (char === "\\") {
       this.advance();
       this.addToken("BACKSLASH", "\\");
+      return;
+    }
+
+    // Backslash line break marker (U+E000, inserted by preproc)
+    if (char.charCodeAt(0) === 0xe000) {
+      this.advance();
+      this.addToken("BACKSLASH_BREAK", char);
       return;
     }
 

@@ -1,6 +1,32 @@
 import type { Element, LinkType, LinkLocation, LinkLabel } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
-import { currentToken, hasClosingMarkerBeforeNewline } from "../types";
+import { currentToken } from "../types";
+
+/**
+ * Check if there's a LINK_CLOSE (]]]) ahead, allowing newlines
+ * Wikidot allows multi-line links like [[[page |\nLabel]]]
+ */
+function hasClosingLinkMarker(ctx: ParseContext, startPos: number): boolean {
+  let pos = startPos;
+  while (pos < ctx.tokens.length) {
+    const token = ctx.tokens[pos];
+    if (!token || token.type === "EOF") {
+      return false;
+    }
+    if (token.type === "LINK_CLOSE") {
+      return true;
+    }
+    // Allow at most one newline (don't span paragraphs)
+    if (token.type === "NEWLINE") {
+      const next = ctx.tokens[pos + 1];
+      if (next?.type === "NEWLINE") {
+        return false; // Double newline = paragraph break
+      }
+    }
+    pos++;
+  }
+  return false;
+}
 
 export const linkTripleRule: InlineRule = {
   name: "linkTriple",
@@ -9,7 +35,7 @@ export const linkTripleRule: InlineRule = {
   parse(ctx: ParseContext): RuleResult<Element> {
     const startToken = currentToken(ctx);
 
-    if (!hasClosingMarkerBeforeNewline({ ...ctx, pos: ctx.pos + 1 }, "LINK_CLOSE")) {
+    if (!hasClosingLinkMarker(ctx, ctx.pos + 1)) {
       return {
         success: true,
         elements: [{ element: "text", data: startToken.value }],
@@ -17,7 +43,7 @@ export const linkTripleRule: InlineRule = {
       };
     }
 
-    // Collect tokens until LINK_CLOSE
+    // Collect tokens until LINK_CLOSE (allowing single newline)
     let target = "";
     let labelText = "";
     let foundPipe = false;
@@ -26,13 +52,15 @@ export const linkTripleRule: InlineRule = {
 
     while (pos < ctx.tokens.length) {
       const token = ctx.tokens[pos];
-      if (
-        !token ||
-        token.type === "LINK_CLOSE" ||
-        token.type === "NEWLINE" ||
-        token.type === "EOF"
-      ) {
+      if (!token || token.type === "LINK_CLOSE" || token.type === "EOF") {
         break;
+      }
+
+      // Skip newlines in link content (Wikidot allows this)
+      if (token.type === "NEWLINE") {
+        consumed++;
+        pos++;
+        continue;
       }
 
       if (token.type === "PIPE" && !foundPipe) {

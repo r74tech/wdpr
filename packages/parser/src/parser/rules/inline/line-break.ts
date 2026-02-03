@@ -77,15 +77,31 @@ export const newlineLineBreakRule: InlineRule = {
       }
     }
 
+    // Check if there's a BACKSLASH_BREAK ahead (skip whitespace)
+    // Pattern: NEWLINE + WHITESPACE? + BACKSLASH_BREAK
+    // In this case, the BACKSLASH_BREAK rule will handle the line-break
+    let hasBackslashBreak = false;
+    {
+      let ahead = 1;
+      while (ctx.tokens[ctx.pos + ahead]?.type === "WHITESPACE") {
+        ahead++;
+      }
+      if (ctx.tokens[ctx.pos + ahead]?.type === "BACKSLASH_BREAK") {
+        hasBackslashBreak = true;
+      }
+    }
+
     // Skip line-break if:
     // - End of input
     // - Another NEWLINE (paragraph break will handle this)
     // - Valid block start token
+    // - BACKSLASH_BREAK ahead (that rule will create the line-break)
     if (
       !nextMeaningfulToken ||
       nextMeaningfulToken.type === "EOF" ||
       nextMeaningfulToken.type === "NEWLINE" ||
-      isValidBlock
+      isValidBlock ||
+      hasBackslashBreak
     ) {
       // Don't generate line-break, return empty array
       return {
@@ -105,24 +121,71 @@ export const newlineLineBreakRule: InlineRule = {
 
 /**
  * Backslash line break: \ at end of line (preprocessed to U+E000)
+ *
+ * In Wikidot, " \" at end of line creates a line break.
+ * The space before the backslash is preserved after the line break.
+ *
+ * Since preprocessing converts "\\\n" → U+E000, the actual token sequence is:
+ * - NEWLINE + WHITESPACE + BACKSLASH_BREAK + content
+ *
+ * This rule is triggered by WHITESPACE when followed by BACKSLASH_BREAK,
+ * producing: line-break + space (in that order).
+ *
+ * Also handles standalone BACKSLASH_BREAK (without preceding whitespace).
  */
 export const backslashLineBreakRule: InlineRule = {
   name: "backslashLineBreak",
-  startTokens: ["BACKSLASH_BREAK"],
+  startTokens: ["WHITESPACE", "BACKSLASH_BREAK"],
 
   parse(ctx: ParseContext): RuleResult<Element> {
     const currentTok = ctx.tokens[ctx.pos];
-    if (!currentTok || currentTok.type !== "BACKSLASH_BREAK") {
+    if (!currentTok) {
       return { success: false };
     }
 
-    const lb: any = { element: "line-break" };
-    lb._preservedTrailingBreak = true;
-    return {
-      success: true,
-      elements: [lb],
-      consumed: 1,
-    };
+    // Pattern: WHITESPACE + BACKSLASH_BREAK → line-break + text(" ")
+    // But if followed by underscore line-break pattern, don't include the space
+    if (currentTok.type === "WHITESPACE") {
+      const nextTok = ctx.tokens[ctx.pos + 1];
+      if (nextTok?.type === "BACKSLASH_BREAK") {
+        // Check if followed by " _\n" pattern (underscore line-break)
+        const afterBreak = ctx.tokens[ctx.pos + 2];
+        const afterAfter = ctx.tokens[ctx.pos + 3];
+        const afterAfterAfter = ctx.tokens[ctx.pos + 4];
+
+        const isFollowedByUnderscoreBreak =
+          afterBreak?.type === "WHITESPACE" &&
+          afterAfter?.type === "UNDERSCORE" &&
+          (afterAfterAfter?.type === "NEWLINE" || afterAfterAfter?.type === "EOF");
+
+        if (isFollowedByUnderscoreBreak) {
+          // Don't include the space, let underscore rule handle the rest
+          return {
+            success: true,
+            elements: [{ element: "line-break" }],
+            consumed: 2,
+          };
+        }
+
+        return {
+          success: true,
+          elements: [{ element: "line-break" }, { element: "text", data: " " }],
+          consumed: 2,
+        };
+      }
+      return { success: false };
+    }
+
+    // Standalone BACKSLASH_BREAK
+    if (currentTok.type === "BACKSLASH_BREAK") {
+      return {
+        success: true,
+        elements: [{ element: "line-break" }],
+        consumed: 1,
+      };
+    }
+
+    return { success: false };
   },
 };
 

@@ -108,13 +108,11 @@ export const linkTripleRule: InlineRule = {
 
     // Special case: [[[*|label]]] means link to root "/" with label
     let finalTarget = trimmedTarget;
-    let labelPrefix = "";
     if (trimmedTarget === "*" && foundPipe) {
       finalTarget = "";
     }
     // Special case: [[[*page]]] - * is a label prefix, page is the target
     if (trimmedTarget.startsWith("*") && !foundPipe) {
-      labelPrefix = "*";
       finalTarget = trimmedTarget.slice(1);
     }
 

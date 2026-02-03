@@ -16,7 +16,8 @@ const VALID_SIZE_UNITS = ["px", "em", "rem", "ex", "%", "cm", "mm", "in", "pc"];
  */
 function isValidSizeValue(size: string): boolean {
   // Match number + unit pattern
-  const match = size.match(/^(\d+(?:\.\d+)?)(px|em|rem|ex|%|cm|mm|in|pc)$/i);
+  const unitPattern = VALID_SIZE_UNITS.join("|");
+  const match = size.match(new RegExp(`^(\\d+(?:\\.\\d+)?)(${unitPattern})$`, "i"));
   return match !== null;
 }
 

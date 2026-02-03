@@ -44,13 +44,15 @@ function isLiClose(ctx: ParseContext, pos: number): boolean {
 }
 
 /**
- * Check if the next tokens form [[li]] or [[li_]] open tag
+ * Check if the next tokens form [[li]] open tag
+ * Note: [[li_]] is NOT recognized by Wikidot and treated as text
  */
 function isLiOpen(ctx: ParseContext, pos: number): { name: string; consumed: number } | null {
   if (ctx.tokens[pos]?.type !== "BLOCK_OPEN") return null;
   const nameResult = parseBlockName(ctx, pos + 1);
   if (!nameResult) return null;
-  if (nameResult.name === "li" || nameResult.name === "li_") {
+  // Only "li" is valid, not "li_" (Wikidot doesn't recognize li_)
+  if (nameResult.name === "li") {
     return { name: nameResult.name, consumed: 1 + nameResult.consumed };
   }
   return null;
@@ -95,11 +97,10 @@ function parseLiItem(
   let pos = startPos;
   let consumed = 0;
 
-  // Check for [[li]] or [[li_]] open
+  // Check for [[li]] open
   const liOpen = isLiOpen(ctx, pos);
   if (!liOpen) return null;
 
-  const isParagraphStrip = liOpen.name === "li_";
   pos += liOpen.consumed;
   consumed += liOpen.consumed;
 
@@ -166,20 +167,31 @@ function parseLiItem(
       pos++;
       consumed++;
       // Check if next line starts with [[/li]] or nested list
-      // Skip consecutive newlines
+      // Count consecutive newlines
+      let consecutiveNewlines = 1;
       while (ctx.tokens[pos]?.type === "NEWLINE") {
         pos++;
         consumed++;
+        consecutiveNewlines++;
       }
-      // If not at close tag or nested list, add line-break for paragraph strip mode
-      if (
-        isParagraphStrip &&
-        !isLiClose(ctx, pos) &&
-        !isListClose(ctx, pos, listType) &&
-        !isNestedListOpen(ctx, pos) &&
-        ctx.tokens[pos]?.type !== "EOF"
-      ) {
+      // Skip leading whitespace
+      while (ctx.tokens[pos]?.type === "WHITESPACE" && ctx.tokens[pos]?.lineStart) {
+        pos++;
+        consumed++;
+      }
+      // Wikidot behavior:
+      // - Single newline followed by content or [[/li]] → <br />
+      // - Multiple newlines (paragraph break) → no <br />
+      // - Need content before this newline
+      const atCloseTag =
+        isLiClose(ctx, pos) || isListClose(ctx, pos, listType) || ctx.tokens[pos]?.type === "EOF";
+      if (consecutiveNewlines === 1 && contentElements.length > 0) {
+        // Single newline with content before - add line-break
+        // (Even before [[/li]], Wikidot adds <br /> for the trailing newline)
         contentElements.push({ element: "line-break" });
+      }
+      if (atCloseTag) {
+        continue;
       }
       continue;
     }
@@ -233,6 +245,72 @@ function parseLiItem(
     const closeConsumed = consumeCloseTag(ctx, pos);
     consumed += closeConsumed;
     pos += closeConsumed;
+
+    // Wikidot behavior: content after [[/li]] but before next [[li]] or [[/ul]]/[[/ol]]
+    // is included in the same <li> element
+    // Skip newlines first
+    while (ctx.tokens[pos]?.type === "NEWLINE") {
+      pos++;
+      consumed++;
+    }
+    // Skip whitespace
+    while (ctx.tokens[pos]?.type === "WHITESPACE") {
+      pos++;
+      consumed++;
+    }
+
+    // Collect trailing content until next [[li]], [[/ul]], [[/ol]], or EOF
+    while (pos < ctx.tokens.length) {
+      const tok = ctx.tokens[pos];
+      if (!tok || tok.type === "EOF") break;
+      if (tok.type === "NEWLINE") {
+        pos++;
+        consumed++;
+        // Skip consecutive newlines
+        while (ctx.tokens[pos]?.type === "NEWLINE") {
+          pos++;
+          consumed++;
+        }
+        // Skip whitespace
+        while (ctx.tokens[pos]?.type === "WHITESPACE" && ctx.tokens[pos]?.lineStart) {
+          pos++;
+          consumed++;
+        }
+        // Check for end conditions
+        if (
+          isLiOpen(ctx, pos) ||
+          isListClose(ctx, pos, listType) ||
+          isNestedListOpen(ctx, pos) ||
+          ctx.tokens[pos]?.type === "EOF"
+        ) {
+          break;
+        }
+        continue;
+      }
+      if (isLiOpen(ctx, pos) || isListClose(ctx, pos, listType) || isNestedListOpen(ctx, pos)) {
+        break;
+      }
+      // Parse inline content for trailing
+      let matched = false;
+      const inlineCtx: ParseContext = { ...ctx, pos };
+      for (const rule of ctx.inlineRules) {
+        if (rule.startTokens.includes(tok.type)) {
+          const result = rule.parse(inlineCtx);
+          if (result.success) {
+            contentElements.push(...result.elements);
+            consumed += result.consumed;
+            pos += result.consumed;
+            matched = true;
+            break;
+          }
+        }
+      }
+      if (!matched) {
+        contentElements.push({ element: "text", data: tok.value });
+        consumed++;
+        pos++;
+      }
+    }
   }
 
   // Regular list item with content (may include nested list as element)
@@ -346,9 +424,117 @@ function parseListBlock(
       continue;
     }
 
-    // Unknown content - skip
-    pos++;
-    consumed++;
+    // Wikidot behavior: bare content inside [[ul]]/[[ol]] (without [[li]])
+    // is wrapped in <li style="list-style: none">
+    // Empty lines create paragraph breaks within the bare content
+    // Collect content until [[/ul]], [[/ol]], [[li]], or [[ul]]/[[ol]]
+    const bareContent: Element[] = [];
+    let currentParagraph: Element[] = [];
+
+    const flushParagraph = () => {
+      if (currentParagraph.length > 0) {
+        // Trim trailing line-breaks from paragraph
+        while (
+          currentParagraph.length > 0 &&
+          currentParagraph[currentParagraph.length - 1]?.element === "line-break"
+        ) {
+          currentParagraph.pop();
+        }
+        if (currentParagraph.length > 0) {
+          bareContent.push({
+            element: "container",
+            data: {
+              type: "paragraph",
+              attributes: {},
+              elements: currentParagraph,
+            },
+          });
+        }
+        currentParagraph = [];
+      }
+    };
+
+    while (pos < ctx.tokens.length) {
+      const tok = ctx.tokens[pos];
+      if (!tok || tok.type === "EOF") break;
+      if (tok.type === "NEWLINE") {
+        pos++;
+        consumed++;
+        // Count consecutive newlines
+        let consecutiveNewlines = 1;
+        while (ctx.tokens[pos]?.type === "NEWLINE") {
+          pos++;
+          consumed++;
+          consecutiveNewlines++;
+        }
+        // Skip leading whitespace
+        while (ctx.tokens[pos]?.type === "WHITESPACE" && ctx.tokens[pos]?.lineStart) {
+          pos++;
+          consumed++;
+        }
+        // Check if next meaningful token is a close tag or li open
+        if (
+          isListClose(ctx, pos, listType) ||
+          isLiOpen(ctx, pos) ||
+          isNestedListOpen(ctx, pos)
+        ) {
+          break;
+        }
+        // Multiple newlines = paragraph break
+        if (consecutiveNewlines >= 2) {
+          flushParagraph();
+        } else if (currentParagraph.length > 0) {
+          // Single newline = line break
+          currentParagraph.push({ element: "line-break" });
+        }
+        continue;
+      }
+      if (isListClose(ctx, pos, listType) || isLiOpen(ctx, pos) || isNestedListOpen(ctx, pos)) {
+        break;
+      }
+      // Parse inline content
+      let matched = false;
+      const inlineCtx: ParseContext = { ...ctx, pos };
+      for (const rule of ctx.inlineRules) {
+        if (rule.startTokens.includes(tok.type)) {
+          const result = rule.parse(inlineCtx);
+          if (result.success) {
+            currentParagraph.push(...result.elements);
+            consumed += result.consumed;
+            pos += result.consumed;
+            matched = true;
+            break;
+          }
+        }
+      }
+      if (!matched) {
+        currentParagraph.push({ element: "text", data: tok.value });
+        consumed++;
+        pos++;
+      }
+    }
+    // Flush remaining content
+    flushParagraph();
+    if (bareContent.length > 0) {
+      // Wikidot behavior: if there's only one paragraph, unwrap it
+      // Only use <p> tags when there are multiple paragraphs
+      let finalElements: Element[];
+      if (
+        bareContent.length === 1 &&
+        bareContent[0]?.element === "container" &&
+        (bareContent[0] as { data?: { type?: string } }).data?.type === "paragraph"
+      ) {
+        // Single paragraph - unwrap
+        finalElements = (bareContent[0] as { data: { elements: Element[] } }).data.elements;
+      } else {
+        finalElements = bareContent;
+      }
+      items.push({
+        "item-type": "elements",
+        attributes: { _noMarker: "true" }, // Flag for list-style: none
+        elements: finalElements,
+      });
+    }
   }
 
   const listData: ListData = {

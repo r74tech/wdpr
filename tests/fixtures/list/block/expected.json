@@ -161,6 +161,9 @@
               {
                 "element": "text",
                 "data": "ALPHA"
+              },
+              {
+                "element": "line-break"
               }
             ]
           },

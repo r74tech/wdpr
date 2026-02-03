@@ -63,7 +63,17 @@ export const newlineLineBreakRule: InlineRule = {
     const nextMeaningfulToken = ctx.tokens[ctx.pos + lookAhead];
 
     // Check if HEADING_MARKER would actually form a valid heading
+    // Also check lineStart for list markers - they're only valid at true line start
     let isValidBlock = isBlockStartToken(nextMeaningfulToken?.type as TokenType);
+    if (
+      isValidBlock &&
+      (nextMeaningfulToken?.type === "LIST_BULLET" || nextMeaningfulToken?.type === "LIST_NUMBER")
+    ) {
+      // List markers are only valid block starts when at actual line start
+      if (!nextMeaningfulToken.lineStart) {
+        isValidBlock = false;
+      }
+    }
     if (isValidBlock && nextMeaningfulToken?.type === "HEADING_MARKER") {
       const markerLen = nextMeaningfulToken.value.length;
       const afterPos = ctx.pos + lookAhead + 1;

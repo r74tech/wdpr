@@ -12,6 +12,8 @@ export interface PageContext {
   domain?: string;
   /** Check if a page exists (for "newpage" class on links) */
   pageExists?: (page: string) => boolean;
+  /** Page tags for [[iftags]] conditional rendering */
+  tags?: string[];
 }
 
 /**

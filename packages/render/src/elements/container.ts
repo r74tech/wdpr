@@ -1,25 +1,8 @@
-import type { ContainerData, Element } from "@wdprlib/ast";
+import type { ContainerData } from "@wdprlib/ast";
 import { isStringContainerType, isHeaderType, isAlignType } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, sanitizeAttributes } from "../escape";
 import { renderElements } from "../render";
-
-/**
- * Check if elements contain an inline image (image without alignment)
- * Wikidot skips <p> tags for paragraphs containing inline images
- */
-function hasInlineImage(elements: Element[]): boolean {
-  for (const elem of elements) {
-    if (elem.element === "image") {
-      const data = (elem as any).data;
-      // Inline image = no alignment (alignment is null or undefined)
-      if (data?.alignment == null) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
 
 /** Render a container element */
 export function renderContainer(ctx: RenderContext, data: ContainerData): void {
@@ -70,14 +53,9 @@ function renderStringContainer(
 ): void {
   switch (type) {
     case "paragraph":
-      // Wikidot: paragraphs containing inline images (no alignment) skip <p> tags
-      if (hasInlineImage(elements)) {
-        renderElements(ctx, elements);
-      } else {
-        ctx.push(`<p${renderAttrs(attributes)}>`);
-        renderElements(ctx, elements);
-        ctx.push("</p>");
-      }
+      ctx.push(`<p${renderAttrs(attributes)}>`);
+      renderElements(ctx, elements);
+      ctx.push("</p>");
       break;
     case "bold":
       ctx.push(`<strong${renderAttrs(attributes)}>`);

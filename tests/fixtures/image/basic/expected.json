@@ -40,85 +40,85 @@
           {
             "element": "text",
             "data": "LEFT"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "filename.png"
-                }
-              },
-              "link": null,
-              "alignment": {
-                "align": "left",
-                "float": false
-              },
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
+          }
+        ]
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "filename.png"
+          }
+        },
+        "link": null,
+        "alignment": {
+          "align": "left",
+          "float": false
+        },
+        "attributes": {}
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
           {
             "element": "text",
             "data": "RIGHT"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "filename.png"
-                }
-              },
-              "link": null,
-              "alignment": {
-                "align": "right",
-                "float": false
-              },
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
+          }
+        ]
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "filename.png"
+          }
+        },
+        "link": null,
+        "alignment": {
+          "align": "right",
+          "float": false
+        },
+        "attributes": {}
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
           {
             "element": "text",
             "data": "CENTER"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "filename.png"
-                }
-              },
-              "link": null,
-              "alignment": {
-                "align": "center",
-                "float": false
-              },
-              "attributes": {}
-            }
           }
         ]
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "filename.png"
+          }
+        },
+        "link": null,
+        "alignment": {
+          "align": "center",
+          "float": false
+        },
+        "attributes": {}
       }
     },
     {
@@ -138,31 +138,33 @@
           {
             "element": "text",
             "data": "LEFT"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "landscape.jpg"
-                }
-              },
-              "link": null,
-              "alignment": {
-                "align": "left",
-                "float": true
-              },
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
+          }
+        ]
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "landscape.jpg"
+          }
+        },
+        "link": null,
+        "alignment": {
+          "align": "left",
+          "float": true
+        },
+        "attributes": {}
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
           {
             "element": "text",
             "data": "FLOAT"
@@ -174,29 +176,25 @@
           {
             "element": "text",
             "data": "RIGHT"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "landscape.jpg"
-                }
-              },
-              "link": null,
-              "alignment": {
-                "align": "right",
-                "float": true
-              },
-              "attributes": {}
-            }
           }
         ]
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "landscape.jpg"
+          }
+        },
+        "link": null,
+        "alignment": {
+          "align": "right",
+          "float": true
+        },
+        "attributes": {}
       }
     },
     {
@@ -375,10 +373,11 @@
             "element": "image",
             "data": {
               "source": {
-                "type": "file2",
+                "type": "file3",
                 "data": {
-                  "page": "scp-wiki",
-                  "file": "some-other-page/my-picture.png"
+                  "site": "scp-wiki",
+                  "page": "some-other-page",
+                  "file": "my-picture.png"
                 }
               },
               "link": null,

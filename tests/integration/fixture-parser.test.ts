@@ -19,7 +19,7 @@ const EXCLUDED_FIXTURES = new Set<string>([
  * パースエラーなしのテストは行う
  */
 const SKIP_AST_COMPARISON = new Set<string>([
-  "include/wikidot", // includeは外部ページ依存のためAST固定不可
+  // "include/wikidot", // includeは外部ページ依存のためAST固定不可
   // "table/nest", // インライン位置の[[table]]パースは未実装（issue参照）
   // "table/advanced", // セル内テキストのparagraphラップ判定が未実装（issue参照）
   // "tabview/basic", // expected.jsonがoutput.htmlと不整合（issue参照）

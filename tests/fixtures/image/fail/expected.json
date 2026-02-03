@@ -16,42 +16,6 @@
           },
           {
             "element": "text",
-            "data": "CENTER"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "landscape.jpg"
-                }
-              },
-              "link": null,
-              "alignment": {
-                "align": "center",
-                "float": true
-              },
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
-          {
-            "element": "text",
-            "data": "FLOAT"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "text",
             "data": "JUSTIFY"
           },
           {

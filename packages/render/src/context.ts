@@ -95,11 +95,12 @@ export class RenderContext {
     if (typeof location === "string") {
       return location;
     }
-    // PageRef
+    // PageRef - Wikidot normalizes page names to lowercase
+    const normalizedPage = location.page.toLowerCase();
     if (location.site) {
-      return `https://${location.site}.wikidot.com/${location.page}`;
+      return `https://${location.site}.wikidot.com/${normalizedPage}`;
     }
-    return `/${location.page}`;
+    return `/${normalizedPage}`;
   }
 
   /** Render an AttributeMap to HTML attribute string (with leading space) */

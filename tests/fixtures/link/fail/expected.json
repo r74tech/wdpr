@@ -341,19 +341,28 @@
         "attributes": {},
         "elements": [
           {
-            "element": "link",
-            "data": {
-              "type": "page",
-              "link": {
-                "site": null,
-                "page": ""
-              },
-              "extra": null,
-              "label": {
-                "text": "some-page"
-              },
-              "target": null
-            }
+            "element": "text",
+            "data": "[[["
+          },
+          {
+            "element": "text",
+            "data": "|"
+          },
+          {
+            "element": "text",
+            "data": "some"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "page"
+          },
+          {
+            "element": "text",
+            "data": "]]]"
           },
           {
             "element": "line-break"
@@ -364,7 +373,7 @@
               "type": "page",
               "link": {
                 "site": null,
-                "page": "*"
+                "page": ""
               },
               "extra": null,
               "label": {
@@ -521,7 +530,7 @@
                   "type": "page",
                   "link": {
                     "site": null,
-                    "page": "*SCP-001"
+                    "page": "SCP-001"
                   },
                   "extra": null,
                   "label": {

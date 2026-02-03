@@ -22,6 +22,17 @@ export function renderLink(ctx: RenderContext, data: LinkData): void {
   // Build <a> tag
   const attrs: string[] = [`href="${escapeAttr(href)}"`];
 
+  // Add "newpage" class for page links that don't exist
+  // Only for page-type links (not direct URLs, anchors, etc.)
+  if (data.type === "page" && typeof data.link === "object") {
+    const pageExists = ctx.page?.pageExists;
+    // If pageExists is not provided, assume page doesn't exist (show newpage class)
+    const exists = pageExists ? pageExists(data.link.page) : false;
+    if (!exists) {
+      attrs.push(`class="newpage"`);
+    }
+  }
+
   // Target attribute
   if (data.target) {
     const targetMap: Record<string, string> = {

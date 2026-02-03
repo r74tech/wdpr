@@ -53,7 +53,29 @@ export const linkTripleRule: InlineRule = {
     }
 
     const trimmedTarget = target.trim();
-    const { linkType, link } = determineLinkTypeAndLocation(trimmedTarget);
+
+    // Invalid: empty target with pipe (e.g., [[[|some-page]]])
+    if (trimmedTarget === "" && foundPipe) {
+      return {
+        success: true,
+        elements: [{ element: "text", data: startToken.value }],
+        consumed: 1,
+      };
+    }
+
+    // Special case: [[[*|label]]] means link to root "/" with label
+    let finalTarget = trimmedTarget;
+    let labelPrefix = "";
+    if (trimmedTarget === "*" && foundPipe) {
+      finalTarget = "";
+    }
+    // Special case: [[[*page]]] - * is a label prefix, page is the target
+    if (trimmedTarget.startsWith("*") && !foundPipe) {
+      labelPrefix = "*";
+      finalTarget = trimmedTarget.slice(1);
+    }
+
+    const { linkType, link } = determineLinkTypeAndLocation(finalTarget);
     const displayText = foundPipe ? labelText.trim() : trimmedTarget;
 
     const label: LinkLabel = { text: displayText };

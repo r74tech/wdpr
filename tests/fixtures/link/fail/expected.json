@@ -557,19 +557,32 @@
             "attributes": {},
             "elements": [
               {
-                "element": "link",
-                "data": {
-                  "type": "page",
-                  "link": {
-                    "site": null,
-                    "page": "home###"
-                  },
-                  "extra": null,
-                  "label": {
-                    "text": "Home"
-                  },
-                  "target": null
-                }
+                "element": "text",
+                "data": "[[["
+              },
+              {
+                "element": "text",
+                "data": "home"
+              },
+              {
+                "element": "text",
+                "data": "##"
+              },
+              {
+                "element": "text",
+                "data": "#"
+              },
+              {
+                "element": "text",
+                "data": "|"
+              },
+              {
+                "element": "text",
+                "data": "Home"
+              },
+              {
+                "element": "text",
+                "data": "]]]"
               }
             ]
           }
@@ -609,19 +622,56 @@
             "attributes": {},
             "elements": [
               {
-                "element": "link",
-                "data": {
-                  "type": "page",
-                  "link": {
-                    "site": null,
-                    "page": "MAIN/##/page#toc1"
-                  },
-                  "extra": null,
-                  "label": {
-                    "text": "Hash routing"
-                  },
-                  "target": null
-                }
+                "element": "text",
+                "data": "[[["
+              },
+              {
+                "element": "text",
+                "data": "MAIN"
+              },
+              {
+                "element": "text",
+                "data": "/"
+              },
+              {
+                "element": "text",
+                "data": "##"
+              },
+              {
+                "element": "text",
+                "data": "/"
+              },
+              {
+                "element": "text",
+                "data": "page"
+              },
+              {
+                "element": "text",
+                "data": "#"
+              },
+              {
+                "element": "text",
+                "data": "toc1"
+              },
+              {
+                "element": "text",
+                "data": "|"
+              },
+              {
+                "element": "text",
+                "data": "Hash"
+              },
+              {
+                "element": "text",
+                "data": " "
+              },
+              {
+                "element": "text",
+                "data": "routing"
+              },
+              {
+                "element": "text",
+                "data": "]]]"
               }
             ]
           }

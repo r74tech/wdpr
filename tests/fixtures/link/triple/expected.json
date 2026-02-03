@@ -103,11 +103,14 @@
               {
                 "element": "link",
                 "data": {
-                  "type": "interwiki",
-                  "link": "system:Recent Changes",
+                  "type": "page",
+                  "link": {
+                    "site": null,
+                    "page": "system:Recent Changes"
+                  },
                   "extra": null,
                   "label": {
-                    "text": "system:Recent Changes"
+                    "text": "Recent Changes"
                   },
                   "target": null
                 }
@@ -145,11 +148,14 @@
               {
                 "element": "link",
                 "data": {
-                  "type": "interwiki",
-                  "link": "system: Recent Changes",
+                  "type": "page",
+                  "link": {
+                    "site": null,
+                    "page": "system: Recent Changes"
+                  },
                   "extra": null,
                   "label": {
-                    "text": "system: Recent Changes"
+                    "text": "Recent Changes"
                   },
                   "target": null
                 }
@@ -319,7 +325,7 @@
                   },
                   "extra": null,
                   "label": {
-                    "text": ""
+                    "text": "some-page"
                   },
                   "target": null
                 }

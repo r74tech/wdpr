@@ -95,12 +95,50 @@ export class RenderContext {
     if (typeof location === "string") {
       return location;
     }
-    // PageRef - Wikidot normalizes page names to lowercase
-    const normalizedPage = location.page.toLowerCase();
+    // PageRef - Wikidot normalizes page names
+    const page = location.page;
+
+    // Handle special cases first
+    // //path - protocol-relative or special routing
+    if (page.startsWith("//")) {
+      return page.toLowerCase();
+    }
+
+    // Handle # in page name (anchor routing like scp-series#001 or MAIN/#/page)
+    // The # and everything after should be preserved as-is
+    const hashIdx = page.indexOf("#");
+    if (hashIdx !== -1) {
+      let pagePart = page.slice(0, hashIdx);
+      const anchor = page.slice(hashIdx);
+      // Remove trailing slash before # (MAIN/ -> MAIN for MAIN/#/page)
+      if (pagePart.endsWith("/")) {
+        pagePart = pagePart.slice(0, -1);
+      }
+      // Don't apply slash-to-hyphen conversion for page part before #
+      return `/${pagePart.toLowerCase()}${anchor.toLowerCase()}`;
+    }
+
+    const normalizedPage = this.normalizePageName(page);
+
     if (location.site) {
       return `https://${location.site}.wikidot.com/${normalizedPage}`;
     }
     return `/${normalizedPage}`;
+  }
+
+  /** Normalize a page name according to Wikidot rules */
+  private normalizePageName(page: string): string {
+    // Lowercase
+    let normalized = page.toLowerCase();
+    // Remove space after category separator (system: Recent -> system:Recent)
+    normalized = normalized.replace(/:\s+/g, ":");
+    // Replace spaces with hyphens (Wikidot URL normalization)
+    normalized = normalized.replace(/\s+/g, "-").trim();
+    // Replace / with - (except at start)
+    if (!normalized.startsWith("/")) {
+      normalized = normalized.replace(/\//g, "-");
+    }
+    return normalized;
   }
 
   /** Render an AttributeMap to HTML attribute string (with leading space) */

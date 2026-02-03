@@ -19,7 +19,7 @@ const EXCLUDED_FIXTURES = new Set<string>([
   "module/listusers/fail", // 同上
   "module/pagetree", // PageTreeは動的コンテンツ（resolver未実装）
   "table/fail-paragraph", // リンク解釈・段落内改行処理の問題（別issueで対応）
-  "expr/edge-cases", // エラーメッセージがWikidotと異なる（スタックベース vs 再帰下降）
+  // "expr/edge-cases", // エラーメッセージがWikidotと異なる（スタックベース vs 再帰下降）
   "misc/bibliography", // bibliography機能（bibcite/bibitems）が未実装
 ]);
 

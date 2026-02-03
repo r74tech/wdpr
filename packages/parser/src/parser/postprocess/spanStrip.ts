@@ -2,8 +2,9 @@
  * Post-processing for parsed AST
  *
  * Handles span_ (paragraph strip) paragraph merging
+ * Handles empty expr splitting paragraphs
  */
-import type { Element, ContainerData } from "@wdprlib/ast";
+import type { Element, ContainerData, ExprData } from "@wdprlib/ast";
 
 /**
  * Check if an element is a container with specific type
@@ -227,6 +228,77 @@ function splitParagraphAtBlankLineSpans(para: Element): Element[] {
 }
 
 /**
+ * Check if an element is an empty expr (expression is empty string)
+ */
+function isEmptyExpr(el: Element): boolean {
+  if (el.element !== "expr") return false;
+  const data = el.data as ExprData;
+  return data.expression === "";
+}
+
+/**
+ * Split paragraph at empty expr elements
+ * Empty expr acts as a paragraph break
+ * Returns array of paragraphs (original may be split into multiple)
+ */
+function splitParagraphAtEmptyExpr(para: Element): Element[] {
+  const data = getContainerData(para);
+  if (!data || data.type !== "paragraph") return [para];
+
+  // Check if paragraph contains empty expr
+  const hasEmptyExpr = data.elements.some(isEmptyExpr);
+  if (!hasEmptyExpr) return [para];
+
+  const result: Element[] = [];
+  let currentElements: Element[] = [];
+
+  for (let i = 0; i < data.elements.length; i++) {
+    const child = data.elements[i];
+    if (!child) continue;
+
+    if (isEmptyExpr(child)) {
+      // Skip the empty expr and surrounding line-breaks
+      // Check if prev element is line-break, remove it
+      if (currentElements.length > 0 && currentElements[currentElements.length - 1]?.element === "line-break") {
+        currentElements.pop();
+      }
+      // Save current paragraph if not empty
+      if (currentElements.length > 0) {
+        result.push({
+          element: "container",
+          data: {
+            type: "paragraph",
+            attributes: {},
+            elements: currentElements,
+          },
+        });
+        currentElements = [];
+      }
+      // Skip next line-break if present
+      if (i + 1 < data.elements.length && data.elements[i + 1]?.element === "line-break") {
+        i++;
+      }
+    } else {
+      currentElements.push(child);
+    }
+  }
+
+  // Add remaining elements as final paragraph
+  if (currentElements.length > 0) {
+    result.push({
+      element: "container",
+      data: {
+        type: "paragraph",
+        attributes: {},
+        elements: currentElements,
+      },
+    });
+  }
+
+  return result.length > 0 ? result : [];
+}
+
+/**
  * Merge consecutive paragraphs that contain span_ (paragraph strip mode)
  * Wikidot behavior: span_ removes paragraph breaks around it
  *
@@ -237,15 +309,18 @@ function splitParagraphAtBlankLineSpans(para: Element): Element[] {
  * outside the paragraph.
  *
  * Also splits paragraphs containing spans with _splitByBlankLine marker.
+ * Also splits paragraphs at empty [[#expr ]] elements.
  */
 export function mergeSpanStripParagraphs(children: Element[]): Element[] {
-  // First pass: split paragraphs at _splitByBlankLine markers
+  // First pass: split paragraphs at _splitByBlankLine markers and empty expr
   const expandedChildren: Element[] = [];
   for (const child of children) {
     if (isContainer(child, "paragraph")) {
       const data = getContainerData(child);
       if (data && data.elements.some(isSplitSpan)) {
         expandedChildren.push(...splitParagraphAtBlankLineSpans(child));
+      } else if (data && data.elements.some(isEmptyExpr)) {
+        expandedChildren.push(...splitParagraphAtEmptyExpr(child));
       } else {
         expandedChildren.push(child);
       }

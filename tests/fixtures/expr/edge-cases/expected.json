@@ -38,19 +38,16 @@
             "data": {
               "expression": "1 + + 2"
             }
-          },
-          {
-            "element": "line-break"
-          },
-          {
-            "element": "expr",
-            "data": {
-              "expression": ""
-            }
-          },
-          {
-            "element": "line-break"
-          },
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
           {
             "element": "expr",
             "data": {

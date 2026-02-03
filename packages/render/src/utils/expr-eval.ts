@@ -238,7 +238,8 @@ class ExprParser {
   parse(): number {
     const result = this.parseOr();
     if (this.current().kind !== "EOF") {
-      throw new Error("Unexpected token");
+      // Wikidot-compatible error message when extra values remain
+      throw new Error("too many values in the stack");
     }
     return result;
   }
@@ -386,7 +387,7 @@ class ExprParser {
     }
     if (kind === "PLUS") {
       this.advance();
-      return this.parseUnary();
+      return +this.parseUnary();
     }
 
     return this.parsePrimary();

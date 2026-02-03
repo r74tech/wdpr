@@ -28,18 +28,6 @@
       "element": "include",
       "data": {
         "paragraph-safe": false,
-        "variables": {},
-        "location": {
-          "site": "scp-wiki",
-          "page": "theme:black-highlighter-theme"
-        },
-        "elements": []
-      }
-    },
-    {
-      "element": "include",
-      "data": {
-        "paragraph-safe": false,
         "variables": {
           "class": "box",
           "apple": "1",

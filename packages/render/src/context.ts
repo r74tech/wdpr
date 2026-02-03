@@ -68,11 +68,21 @@ export class RenderContext {
 
   /** Resolve an ImageSource to a src URL */
   resolveImageSource(source: ImageSource): string {
+    const pageName = this.page?.pageName;
     switch (source.type) {
-      case "url":
-        return source.data;
+      case "url": {
+        // Convert /path to /local--files/path (Wikidot file reference)
+        const url = source.data;
+        if (url.startsWith("/") && !url.startsWith("//")) {
+          return `/local--files${url}`;
+        }
+        return url;
+      }
       case "file1":
-        return `/local--files/${source.data.file}`;
+        // file1 uses current page context
+        return pageName
+          ? `/local--files/${pageName}/${source.data.file}`
+          : `/local--files/${source.data.file}`;
       case "file2":
         return `/local--files/${source.data.page}/${source.data.file}`;
       case "file3":

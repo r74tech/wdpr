@@ -23,40 +23,21 @@
             "data": " "
           },
           {
-            "element": "text",
-            "data": "[["
-          },
-          {
-            "element": "text",
-            "data": "f"
-          },
-          {
-            "element": "text",
-            "data": "="
-          },
-          {
-            "element": "text",
-            "data": "image"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "text",
-            "data": "landscape"
-          },
-          {
-            "element": "text",
-            "data": "."
-          },
-          {
-            "element": "text",
-            "data": "jpg"
-          },
-          {
-            "element": "text",
-            "data": "]]"
+            "element": "image",
+            "data": {
+              "source": {
+                "type": "file1",
+                "data": {
+                  "file": "landscape.jpg"
+                }
+              },
+              "link": null,
+              "alignment": {
+                "align": "center",
+                "float": true
+              },
+              "attributes": {}
+            }
           },
           {
             "element": "line-break"

@@ -46,7 +46,7 @@ function parseImageBlockName(
     pos++;
     consumed++;
   } else if (token?.type === "IDENTIFIER" && token.value.toLowerCase() === "f") {
-    // Check for f< or f>
+    // Check for f<, f>, or f=
     const nextToken = ctx.tokens[pos + 1];
     if (nextToken?.type === "TEXT" && nextToken.value === "<") {
       prefix = "f<";
@@ -58,6 +58,11 @@ function parseImageBlockName(
       consumed += 2;
     } else if (nextToken?.type === "BLOCKQUOTE_MARKER" && nextToken.value === ">") {
       prefix = "f>";
+      pos += 2;
+      consumed += 2;
+    } else if (nextToken?.type === "EQUALS") {
+      // f=image (float center)
+      prefix = "f=";
       pos += 2;
       consumed += 2;
     }
@@ -126,6 +131,9 @@ function parseAlignment(blockName: string): FloatAlignment | null {
   } else if (blockName === "f>image") {
     align = "right";
     float = true;
+  } else if (blockName === "f=image") {
+    align = "center";
+    float = true;
   } else if (blockName === "image") {
     return null;
   }
@@ -151,9 +159,9 @@ export const imageRule: InlineRule = {
       return { success: false };
     }
 
-    // Check for image, =image, <image, >image, f<image, f>image
+    // Check for image, =image, <image, >image, f<image, f>image, f=image
     const blockName = nameResult.name;
-    const imageNames = ["image", "=image", "<image", ">image", "f<image", "f>image"];
+    const imageNames = ["image", "=image", "<image", ">image", "f<image", "f>image", "f=image"];
     if (!imageNames.includes(blockName)) {
       return { success: false };
     }

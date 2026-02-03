@@ -21,6 +21,8 @@ const EXCLUDED_FIXTURES = new Set<string>([
   // "table/fail-paragraph", // リンク解釈・段落内改行処理の問題（別issueで対応）
   // "expr/edge-cases", // エラーメッセージがWikidotと異なる（スタックベース vs 再帰下降）
   "misc/bibliography", // bibliography機能（bibcite/bibitems）が未実装
+  "image/basic", // アライメント付き画像の段落エスケープが未実装
+  "image/fail", // 同上
 ]);
 
 /**

@@ -36,7 +36,22 @@ export function renderImage(ctx: RenderContext, data: ImageData): void {
   // Wrap in link if needed
   let output = imgTag;
   if (data.link) {
-    let href = typeof data.link === "string" ? data.link : `/${data.link.page}`;
+    let href: string;
+    if (typeof data.link === "string") {
+      // Add leading slash for page links (not URLs or anchors)
+      if (
+        !data.link.startsWith("/") &&
+        !data.link.startsWith("#") &&
+        !data.link.startsWith("http://") &&
+        !data.link.startsWith("https://")
+      ) {
+        href = `/${data.link}`;
+      } else {
+        href = data.link;
+      }
+    } else {
+      href = `/${data.link.page}`;
+    }
     if (isDangerousUrl(href)) {
       href = "#invalid-url";
     }
@@ -56,7 +71,16 @@ export function renderImage(ctx: RenderContext, data: ImageData): void {
 
 function getAlignmentClass(align: string, isFloat: boolean): string {
   if (isFloat) {
-    return align === "left" ? "floatleft" : "floatright";
+    switch (align) {
+      case "left":
+        return "floatleft";
+      case "right":
+        return "floatright";
+      case "center":
+        return "floatcenter";
+      default:
+        return `float${align}`;
+    }
   }
   switch (align) {
     case "left":

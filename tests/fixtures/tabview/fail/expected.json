@@ -8,21 +8,11 @@
         "elements": [
           {
             "element": "text",
-            "data": "EMPTY:"
-          },
-          {
-            "element": "line-break"
+            "data": "EMPTY"
           },
           {
             "element": "text",
-            "data": "[[tabview]]"
-          },
-          {
-            "element": "line-break"
-          },
-          {
-            "element": "text",
-            "data": "[[/tabview]]"
+            "data": ":"
           }
         ]
       }
@@ -35,7 +25,93 @@
         "elements": [
           {
             "element": "text",
-            "data": "EMPTY INLINE: [[tabs]] [[/tabs]]"
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "tabview"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "[[/"
+          },
+          {
+            "element": "text",
+            "data": "tabview"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "EMPTY"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "INLINE"
+          },
+          {
+            "element": "text",
+            "data": ":"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "tabs"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "[[/"
+          },
+          {
+            "element": "text",
+            "data": "tabs"
+          },
+          {
+            "element": "text",
+            "data": "]]"
           }
         ]
       }

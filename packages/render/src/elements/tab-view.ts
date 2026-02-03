@@ -30,7 +30,7 @@ export function renderTabView(ctx: RenderContext, tabs: TabData[]): void {
   ctx.push(`<div class="yui-content">`);
   for (let i = 0; i < tabs.length; i++) {
     const tab = tabs[i]!;
-    const displayStyle = i === 0 ? "" : ` style="display: none"`;
+    const displayStyle = i === 0 ? "" : ` style="display:none"`;
     ctx.push(`<div id="wiki-tab-0-${i}"${displayStyle}>`);
     renderElements(ctx, tab.elements);
     ctx.push("</div>");

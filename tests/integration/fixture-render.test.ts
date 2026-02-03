@@ -11,7 +11,7 @@ const FIXTURES_DIR = path.join(import.meta.dir, "../fixtures");
  * 除外する場合は理由をコメントで記載すること
  */
 const EXCLUDED_FIXTURES = new Set<string>([
-  "include/wikidot", // includeは外部ページ展開後のHTMLのため比較不可
+  // "include/wikidot", // includeは外部ページ展開後のHTMLのため比較不可
   "module/listpages", // ListPagesは動的コンテンツのため比較不可
   "module/listpages-misc", // 同上
   "module/backlinks/basic", // Backlinksは動的コンテンツ
@@ -21,8 +21,8 @@ const EXCLUDED_FIXTURES = new Set<string>([
   // "table/fail-paragraph", // リンク解釈・段落内改行処理の問題（別issueで対応）
   // "expr/edge-cases", // エラーメッセージがWikidotと異なる（スタックベース vs 再帰下降）
   "misc/bibliography", // bibliography機能（bibcite/bibitems）が未実装
-  "image/basic", // アライメント付き画像の段落エスケープが未実装
-  "image/fail", // 同上
+  // "image/basic", // アライメント付き画像の段落エスケープが未実装
+  // "image/fail", // 同上
 ]);
 
 /**
@@ -144,7 +144,9 @@ describe("Render Fixture Tests", () => {
         const expectedHtml = fs.readFileSync(testCase.outputPath!, "utf-8");
 
         const rendered = renderToHtml(syntaxTree, {
-          page: { pageName: "some-page" },
+          page: {
+            pageName: "some-page",
+          },
         });
         expect(normalizeHtml(rendered)).toBe(normalizeHtml(expectedHtml));
       });
@@ -157,7 +159,7 @@ describe("Render Fixture Tests", () => {
         const missing = casesRequiringOutput.map((c) => c.category);
         throw new Error(
           `Missing output.html for ${missing.length} fixture(s):\n  - ${missing.join("\n  - ")}\n\n` +
-            `Add output.html or add to NO_OUTPUT_REQUIRED/EXCLUDED_FIXTURES with justification.`,
+          `Add output.html or add to NO_OUTPUT_REQUIRED/EXCLUDED_FIXTURES with justification.`,
         );
       }
     });

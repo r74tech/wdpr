@@ -26,6 +26,7 @@ import { embedBlockRule } from "./embed-block";
 import { iframeRule } from "./iframe";
 import { iftagsRule } from "./iftags";
 import { tocRule } from "./toc";
+import { orphanLiRule } from "./orphan-li";
 
 export { headingRule } from "./heading";
 export { horizontalRuleRule } from "./horizontal-rule";
@@ -54,6 +55,7 @@ export { embedBlockRule } from "./embed-block";
 export { iframeRule } from "./iframe";
 export { iftagsRule } from "./iftags";
 export { tocRule } from "./toc";
+export { orphanLiRule } from "./orphan-li";
 
 /**
  * All block rules in priority order
@@ -70,6 +72,7 @@ export const blockRules: BlockRule[] = [
   tableBlockRule,
   listRule,
   blockListRule,
+  orphanLiRule,
   blockquoteRule,
   definitionListRule,
   codeBlockRule,

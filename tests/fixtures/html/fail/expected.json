@@ -55,7 +55,5 @@
       }
     }
   ],
-  "html-blocks": [
-    "body { display: none; }"
-  ]
+  "html-blocks": ["body { display: none; }"]
 }

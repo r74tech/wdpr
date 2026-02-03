@@ -3,6 +3,19 @@ import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName } from "./utils";
 
+// Allowed attributes for iframe (Wikidot filters out class/id)
+const ALLOWED_IFRAME_ATTRS = new Set(["width", "height", "style", "scrolling", "frameborder"]);
+
+/**
+ * Check if URL has a dangerous scheme (javascript:, data:, vbscript:)
+ * Handles whitespace and control character evasion attempts
+ */
+function isDangerousUrl(url: string): boolean {
+  // Normalize: remove whitespace and control characters
+  const normalized = url.replace(/[\s\u0000-\u001f\u007f-\u009f]/g, "").toLowerCase();
+  return /^(javascript|data|vbscript):/i.test(normalized);
+}
+
 export const iframeRule: BlockRule = {
   name: "iframe",
   startTokens: ["BLOCK_OPEN"],
@@ -45,6 +58,18 @@ export const iframeRule: BlockRule = {
     }
 
     if (!url) {
+      return { success: false };
+    }
+
+    // Reject dangerous URLs (javascript:, data:, vbscript:)
+    // These will fall back to text rendering
+    if (isDangerousUrl(url)) {
+      return { success: false };
+    }
+
+    // Only allow http:// and https:// URLs
+    // This blocks relative URLs and other schemes
+    if (!/^https?:\/\//i.test(url)) {
       return { success: false };
     }
 
@@ -114,7 +139,10 @@ export const iframeRule: BlockRule = {
             }
           }
 
-          attributes[key] = value;
+          // Only allow specific attributes (Wikidot filters out class/id)
+          if (ALLOWED_IFRAME_ATTRS.has(key.toLowerCase())) {
+            attributes[key.toLowerCase()] = value;
+          }
         }
       } else {
         pos++;

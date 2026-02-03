@@ -56,6 +56,15 @@ export const underlineRule: InlineRule = {
       }
     }
 
+    // Empty underline (____) is discarded entirely in Wikidot
+    if (children.length === 0) {
+      return {
+        success: true,
+        elements: [],
+        consumed,
+      };
+    }
+
     return {
       success: true,
       elements: [

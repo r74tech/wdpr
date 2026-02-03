@@ -18,7 +18,7 @@ const EXCLUDED_FIXTURES = new Set<string>([
   "module/listusers/basic", // ListUsersは動的コンテンツ
   "module/listusers/fail", // 同上
   "module/pagetree", // PageTreeは動的コンテンツ（resolver未実装）
-  "table/fail-paragraph", // リンク解釈・段落内改行処理の問題（別issueで対応）
+  // "table/fail-paragraph", // リンク解釈・段落内改行処理の問題（別issueで対応）
   // "expr/edge-cases", // エラーメッセージがWikidotと異なる（スタックベース vs 再帰下降）
   "misc/bibliography", // bibliography機能（bibcite/bibitems）が未実装
 ]);
@@ -141,7 +141,9 @@ describe("Render Fixture Tests", () => {
         const syntaxTree: SyntaxTree = JSON.parse(expectedJson);
         const expectedHtml = fs.readFileSync(testCase.outputPath!, "utf-8");
 
-        const rendered = renderToHtml(syntaxTree);
+        const rendered = renderToHtml(syntaxTree, {
+          page: { pageName: "some-page" },
+        });
         expect(normalizeHtml(rendered)).toBe(normalizeHtml(expectedHtml));
       });
     }

@@ -12,7 +12,7 @@ function generateDefaultUrl(pageName: string, contents: string): string {
   return path;
 }
 
-/** Render HTML block as iframe */
+/** Render HTML block as iframe wrapped in paragraph */
 export function renderHtmlBlock(ctx: RenderContext, data: HtmlData): void {
   const index = ctx.nextHtmlBlockIndex();
   const pageName = ctx.page?.pageName ?? "";
@@ -25,7 +25,11 @@ export function renderHtmlBlock(ctx: RenderContext, data: HtmlData): void {
   const sandbox = ctx.options.htmlBlockSandbox;
   const sandboxAttr = sandbox ? ` sandbox="${escapeAttr(sandbox)}"` : "";
 
+  // Build style attribute (from [[html style="..."]])
+  const styleAttr = data.style ? ` style="${escapeAttr(data.style)}"` : "";
+
+  // Wikidot wraps html block iframe in a paragraph
   ctx.push(
-    `<iframe src="${escapeAttr(src)}"${sandboxAttr} allowtransparency="true" frameborder="0" class="html-block-iframe"></iframe>`,
+    `<p><iframe src="${escapeAttr(src)}"${sandboxAttr} allowtransparency="true" frameborder="0" class="html-block-iframe"${styleAttr}></iframe></p>`,
   );
 }

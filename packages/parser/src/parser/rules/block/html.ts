@@ -1,7 +1,7 @@
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
-import { parseBlockName } from "./utils";
+import { parseBlockName, parseAttributesRaw } from "./utils";
 
 export const htmlBlockRule: BlockRule = {
   name: "html",
@@ -25,11 +25,12 @@ export const htmlBlockRule: BlockRule = {
     pos += nameResult.consumed;
     consumed += nameResult.consumed;
 
-    // Skip whitespace
-    while (ctx.tokens[pos]?.type === "WHITESPACE") {
-      pos++;
-      consumed++;
-    }
+    // Parse attributes (type="css", style="...", etc.)
+    // Only style attribute is used by Wikidot (applied to iframe)
+    const attrResult = parseAttributesRaw(ctx, pos);
+    pos += attrResult.consumed;
+    consumed += attrResult.consumed;
+    const style = attrResult.attrs.style;
 
     // Expect ]]
     if (ctx.tokens[pos]?.type !== "BLOCK_CLOSE") {
@@ -40,15 +41,17 @@ export const htmlBlockRule: BlockRule = {
 
     // Collect HTML content until [[/html]]
     let contents = "";
+    let foundClose = false;
 
     while (pos < ctx.tokens.length) {
       const token = ctx.tokens[pos];
-      if (!token) break;
+      if (!token || token.type === "EOF") break;
 
       // Check for closing [[/html]]
       if (token.type === "BLOCK_END_OPEN") {
         const closeNameResult = parseBlockName(ctx, pos + 1);
         if (closeNameResult?.name.toLowerCase() === "html") {
+          foundClose = true;
           break;
         }
       }
@@ -56,6 +59,11 @@ export const htmlBlockRule: BlockRule = {
       contents += token.value;
       pos++;
       consumed++;
+    }
+
+    // If no closing tag found, fail (Wikidot treats unclosed [[html]] as text)
+    if (!foundClose) {
+      return { success: false };
     }
 
     // Consume [[/html]]
@@ -90,6 +98,7 @@ export const htmlBlockRule: BlockRule = {
           element: "html",
           data: {
             contents,
+            ...(style && { style }),
           },
         },
       ],

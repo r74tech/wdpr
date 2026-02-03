@@ -423,6 +423,7 @@ export interface MathInlineData {
 
 export interface HtmlData {
   contents: string;
+  style?: string;
 }
 
 /**

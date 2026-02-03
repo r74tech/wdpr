@@ -12,9 +12,7 @@ export function renderFootnoteRef(ctx: RenderContext, index: number): void {
 
 /** Render a footnote block */
 export function renderFootnoteBlock(ctx: RenderContext, data: FootnoteBlockData): void {
-  if (data.hide) return;
   if (ctx.footnotes.length === 0) return;
-
   const title = data.title ?? "Footnotes";
 
   ctx.push(`<div class="footnotes-footer">`);

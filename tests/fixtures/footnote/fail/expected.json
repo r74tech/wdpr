@@ -56,15 +56,23 @@
           },
           {
             "element": "footnote"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "footnoteblock"
+          },
+          {
+            "element": "text",
+            "data": "]]"
           }
         ]
-      }
-    },
-    {
-      "element": "footnote-block",
-      "data": {
-        "title": null,
-        "hide": false
       }
     }
   ],

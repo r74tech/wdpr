@@ -15,6 +15,8 @@ export interface ParseContext {
   tocEntries: TocEntry[];
   codeBlocks: CodeBlockData[];
   htmlBlocks: string[];
+  // State flags
+  footnoteBlockParsed: boolean;
   // Rules (injected to avoid circular dependency)
   blockRules: BlockRule[];
   blockFallbackRule: BlockRule;

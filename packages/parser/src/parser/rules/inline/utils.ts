@@ -109,6 +109,20 @@ export function parseInlineUntil(ctx: ParseContext, endType: TokenType): InlineP
             isInvalidBlockOpen = true;
           }
         }
+        // Check if this is [[footnoteblock]] but already parsed (2nd+ occurrence)
+        let skipWhitespace = 0;
+        while (ctx.tokens[afterOpen + skipWhitespace]?.type === "WHITESPACE") {
+          skipWhitespace++;
+        }
+        const blockNameToken = ctx.tokens[afterOpen + skipWhitespace];
+        if (
+          blockNameToken &&
+          (blockNameToken.type === "TEXT" || blockNameToken.type === "IDENTIFIER") &&
+          blockNameToken.value.toLowerCase() === "footnoteblock" &&
+          ctx.footnoteBlockParsed
+        ) {
+          isInvalidBlockOpen = true;
+        }
       }
 
       // Check if HEADING_MARKER would actually succeed as a heading

@@ -22,6 +22,7 @@ import { tabviewRule } from "./tabview";
 import { includeRule } from "./include";
 import { mathBlockRule } from "./math";
 import { htmlBlockRule } from "./html";
+import { embedBlockRule } from "./embed-block";
 import { iframeRule } from "./iframe";
 import { iftagsRule } from "./iftags";
 import { tocRule } from "./toc";
@@ -49,6 +50,7 @@ export { tabviewRule } from "./tabview";
 export { includeRule } from "./include";
 export { mathBlockRule } from "./math";
 export { htmlBlockRule } from "./html";
+export { embedBlockRule } from "./embed-block";
 export { iframeRule } from "./iframe";
 export { iftagsRule } from "./iftags";
 export { tocRule } from "./toc";
@@ -80,6 +82,7 @@ export const blockRules: BlockRule[] = [
   includeRule,
   mathBlockRule,
   htmlBlockRule,
+  embedBlockRule,
   iframeRule,
   iftagsRule,
   divRule,

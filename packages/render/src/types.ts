@@ -68,4 +68,11 @@ export interface RenderOptions {
    * - Allow scripts: htmlBlockSandbox: "allow-scripts allow-same-origin"
    */
   htmlBlockSandbox?: string | null;
+  /**
+   * Allowlist patterns for [[embed]] content.
+   * Only content matching at least one pattern will be rendered.
+   * If not provided, uses default allowlist (YouTube, Vimeo, etc.).
+   * Set to empty array to block all embeds.
+   */
+  embedAllowlist?: RegExp[];
 }

@@ -259,7 +259,10 @@ function splitParagraphAtEmptyExpr(para: Element): Element[] {
     if (isEmptyExpr(child)) {
       // Skip the empty expr and surrounding line-breaks
       // Check if prev element is line-break, remove it
-      if (currentElements.length > 0 && currentElements[currentElements.length - 1]?.element === "line-break") {
+      if (
+        currentElements.length > 0 &&
+        currentElements[currentElements.length - 1]?.element === "line-break"
+      ) {
         currentElements.pop();
       }
       // Save current paragraph if not empty

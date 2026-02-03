@@ -332,7 +332,8 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
     }
   }
 
-  // Second pass: merge span_ paragraphs
+  // Second pass: merge span_ paragraphs and unwrap them (no <p> tag)
+  // span_ removes paragraph boundaries, so merged content becomes top-level elements
   const result: Element[] = [];
   let i = 0;
 
@@ -346,15 +347,17 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
       continue;
     }
 
-    // Check if this paragraph contains a span_ marker
-    if (!hasParagraphStripSpan(node)) {
+    // Check if THIS paragraph contains span_
+    const thisHasSpanStrip = hasParagraphStripSpan(node);
+
+    // If this paragraph doesn't have span_, just output as normal paragraph
+    if (!thisHasSpanStrip) {
       result.push(node);
       i++;
       continue;
     }
 
-    // Found a paragraph with span_ - merge with ALL subsequent paragraphs
-    // until we hit a non-paragraph or a paragraph with special markers
+    // Start merging: collect elements from current and subsequent paragraphs
     const paraData = getContainerData(node);
     if (!paraData) {
       result.push(node);
@@ -364,26 +367,27 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
     const mergedChildren: Element[] = [...paraData.elements];
     i++;
 
+    // Continue merging subsequent paragraphs
     while (i < expandedChildren.length) {
-      const nextNode = expandedChildren[i];
-      if (!nextNode || !isContainer(nextNode, "paragraph")) {
+      const nextPara = expandedChildren[i];
+      if (!nextPara || !isContainer(nextPara, "paragraph")) {
         break;
       }
 
-      const nextParaData = getContainerData(nextNode);
+      const nextParaData = getContainerData(nextPara);
       if (!nextParaData) {
         break;
       }
 
-      // Merge: add the next paragraph's children to the current one
+      const hasSpanStrip = hasParagraphStripSpan(nextPara);
+
+      // Merge: add the next paragraph's children
       mergedChildren.push(...nextParaData.elements);
       i++;
 
-      // If this paragraph doesn't have span_, continue merging
-      // but we need to stop somewhere - stop after absorbing a non-span_ paragraph
-      // if the next one is also non-span_
-      if (!hasParagraphStripSpan(nextNode)) {
-        // Check if next paragraph also has span_ - if yes, continue merging
+      // If this paragraph doesn't have span_, check if the next one does
+      // If not, stop merging
+      if (!hasSpanStrip) {
         const peekNext = expandedChildren[i];
         if (!peekNext || !isContainer(peekNext, "paragraph") || !hasParagraphStripSpan(peekNext)) {
           break;
@@ -392,24 +396,33 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
     }
 
     // Extract escaped spans (content after blank line in span_)
-    // These go outside the paragraph
+    // These go outside the merged content
     const escapedSpans = extractEscapedSpans(mergedChildren);
 
     // Remove line-breaks that are adjacent to span_ elements
-    // Wikidot behavior: span_ removes paragraph breaks, including line-breaks
     removeLineBreaksAroundSpanStrip(mergedChildren);
 
-    // Create merged paragraph (without escaped spans)
-    if (mergedChildren.length > 0) {
-      const mergedPara: Element = {
-        element: "container",
-        data: {
-          type: "paragraph",
-          attributes: {},
-          elements: mergedChildren,
-        },
-      };
-      result.push(mergedPara);
+    // If there are escaped spans, wrap the main content in a paragraph
+    // This is because escaped spans split the content, and the main part needs <p>
+    // If no escaped spans, unwrap (no <p> tag) - span_ removes paragraph boundaries
+    if (escapedSpans.length > 0) {
+      // Wrap main content in paragraph
+      if (mergedChildren.length > 0) {
+        const para: Element = {
+          element: "container",
+          data: {
+            type: "paragraph",
+            attributes: {},
+            elements: mergedChildren,
+          },
+        };
+        result.push(para);
+      }
+    } else {
+      // UNWRAP: push merged children directly (no paragraph wrapper = no <p> tag)
+      for (const child of mergedChildren) {
+        result.push(child);
+      }
     }
 
     // Add escaped spans as top-level spans (outside paragraph)

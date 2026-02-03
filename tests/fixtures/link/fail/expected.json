@@ -283,10 +283,6 @@
           {
             "element": "text",
             "data": "page"
-          },
-          {
-            "element": "text",
-            "data": " "
           }
         ]
       }

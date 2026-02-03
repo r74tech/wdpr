@@ -8,8 +8,22 @@ import { currentToken } from "../types";
 import { parseBlockName } from "../utils";
 import { parseInlineUntil } from "./utils";
 
+// Wikidot supports these CSS size units
+const VALID_SIZE_UNITS = ["px", "em", "rem", "ex", "%", "cm", "mm", "in", "pc"];
+
 /**
- * Parse size value (e.g., "12pt", "90%", "2vh", "4px")
+ * Validate size value against Wikidot-supported units
+ */
+function isValidSizeValue(size: string): boolean {
+  // Match number + unit pattern
+  const match = size.match(/^(\d+(?:\.\d+)?)(px|em|rem|ex|%|cm|mm|in|pc)$/i);
+  return match !== null;
+}
+
+/**
+ * Parse size value (e.g., "90%", "4px", "1.5em")
+ * Only Wikidot-supported units are accepted (px, em, rem, ex, %, cm, mm, in, pc)
+ * Units like pt, vh, vw are NOT supported and will cause parse failure
  */
 function parseSizeValue(
   ctx: ParseContext,
@@ -48,7 +62,14 @@ function parseSizeValue(
     return null;
   }
 
-  return { size: parts.join(""), consumed };
+  const size = parts.join("");
+
+  // Validate against supported units
+  if (!isValidSizeValue(size)) {
+    return null;
+  }
+
+  return { size, consumed };
 }
 
 export const sizeRule: InlineRule = {

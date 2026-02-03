@@ -64,10 +64,6 @@
             "data": " "
           },
           {
-            "element": "raw",
-            "data": ""
-          },
-          {
             "element": "line-break"
           },
           {
@@ -79,7 +75,7 @@
             "data": " "
           },
           {
-            "element": "raw",
+            "element": "text",
             "data": "@"
           },
           {
@@ -94,7 +90,7 @@
             "data": " "
           },
           {
-            "element": "raw",
+            "element": "text",
             "data": "@@"
           }
         ]
@@ -122,14 +118,11 @@
           },
           {
             "element": "raw",
-            "data": ">@"
+            "data": ">"
           },
           {
-            "element": "line-break"
-          },
-          {
-            "element": "raw",
-            "data": "foo @< >@ bar"
+            "element": "text",
+            "data": "@"
           }
         ]
       }

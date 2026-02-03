@@ -27,38 +27,36 @@ function parseDoubleAtRaw(ctx: ParseContext): RuleResult<Element> {
   let pos = ctx.pos + 1;
 
   const next1 = ctx.tokens[pos];
-  const next2 = ctx.tokens[pos + 1];
 
-  // Special cases based on Wikidot:
-  // @@@@@@ (RAW_OPEN RAW_OPEN RAW_OPEN) -> Raw("@@")
-  if (next1?.type === "RAW_OPEN" && next2?.type === "RAW_OPEN") {
-    return {
-      success: true,
-      elements: [{ element: "raw", data: "@@" }],
-      consumed: 3,
-    };
-  }
-
-  // @@@@@ (RAW_OPEN RAW_OPEN AT) -> Raw("@")
-  if (next1?.type === "RAW_OPEN" && next2?.type === "AT") {
-    return {
-      success: true,
-      elements: [{ element: "raw", data: "@" }],
-      consumed: 3,
-    };
-  }
-
-  // @@@@ (RAW_OPEN RAW_OPEN !RAW_OPEN) -> Raw("")
+  // Wikidot behavior for consecutive @@:
+  // @@@@ (RAW_OPEN RAW_OPEN) -> empty raw (no output), rest becomes plain text
+  // @@@@@ (5 @s) -> empty raw + @ (text)
+  // @@@@@@ (6 @s) -> empty raw + @@ (text)
+  // Empty raw produces no output, so we just consume the tokens.
   if (next1?.type === "RAW_OPEN") {
     return {
       success: true,
-      elements: [{ element: "raw", data: "" }],
-      consumed: 2,
+      elements: [], // Empty raw produces no output
+      consumed: 2, // Only consume the two RAW_OPEN tokens (@@@@)
     };
   }
 
   // Check if closing @@ exists before newline
   if (!hasClosingMarkerBeforeNewline({ ...ctx, pos }, "RAW_OPEN")) {
+    // Special case: @@\n@@ (empty raw spanning newline)
+    // Wikidot treats this as an empty raw that produces no output
+    const nextToken = ctx.tokens[pos];
+    if (nextToken?.type === "NEWLINE") {
+      const afterNewline = ctx.tokens[pos + 1];
+      if (afterNewline?.type === "RAW_OPEN") {
+        // Consume @@, NEWLINE, @@ and produce no output
+        return {
+          success: true,
+          elements: [],
+          consumed: 3, // @@ + NEWLINE + @@
+        };
+      }
+    }
     return {
       success: true,
       elements: [{ element: "text", data: startToken.value }],
@@ -66,14 +64,46 @@ function parseDoubleAtRaw(ctx: ParseContext): RuleResult<Element> {
     };
   }
 
-  // Collect raw content
+  // Collect raw content and check for embedded @< and >@
   let value = "";
   let consumed = 1; // opening @@
+  let hasBlockOpen = false; // has @<
+  let hasBlockClose = false; // has >@
 
+  // In @@...@@ syntax, only RAW_OPEN (@@) acts as closer.
+  // Special handling for RAW_BLOCK_CLOSE (>@) followed by RAW_OPEN (@@):
+  // Wikidot treats ">@@@" as ">@@" + "@", so we only take ">" and let the
+  // @ combine with the following @@ to form the closer.
   while (pos < ctx.tokens.length) {
     const token = ctx.tokens[pos];
     if (!token || token.type === "RAW_OPEN" || token.type === "NEWLINE" || token.type === "EOF") {
       break;
+    }
+    // Check if RAW_BLOCK_CLOSE (>@) is followed by RAW_OPEN (@@)
+    // Wikidot interprets ">@@@" as ">" (raw content) + "@@" (closer) + "@" (text)
+    // We need to only take ">" and output "@" as trailing text after the raw element
+    if (token.type === "RAW_BLOCK_CLOSE") {
+      const nextToken = ctx.tokens[pos + 1];
+      if (nextToken?.type === "RAW_OPEN") {
+        // Only take the ">" part
+        value += ">";
+        consumed += 2; // Consume both RAW_BLOCK_CLOSE and RAW_OPEN (as closer)
+        // Return raw element followed by "@" text (from the >@ token's @)
+        return {
+          success: true,
+          elements: [
+            { element: "raw", data: value },
+            { element: "text", data: "@" },
+          ],
+          consumed,
+        };
+      }
+      // Mark that we have embedded >@ (not followed by @@)
+      hasBlockClose = true;
+    }
+    // Track embedded @< token
+    if (token.type === "RAW_BLOCK_OPEN") {
+      hasBlockOpen = true;
     }
     value += token.value;
     consumed++;
@@ -83,6 +113,18 @@ function parseDoubleAtRaw(ctx: ParseContext): RuleResult<Element> {
   // Consume closing @@
   if (ctx.tokens[pos]?.type === "RAW_OPEN") {
     consumed++;
+    pos++;
+  }
+
+  // Wikidot quirk: @@...@@ containing BOTH @< AND >@ is discarded entirely
+  // (produces no output, not even text fallback)
+  // Having only @< or only >@ is fine - they're treated as raw content.
+  if (hasBlockOpen && hasBlockClose) {
+    return {
+      success: true,
+      elements: [],
+      consumed,
+    };
   }
 
   return {
@@ -101,6 +143,20 @@ function parseAngleRaw(ctx: ParseContext): RuleResult<Element> {
 
   // Check if closing >@ exists before newline
   if (!hasClosingMarkerBeforeNewline({ ...ctx, pos }, "RAW_BLOCK_CLOSE")) {
+    // Special case: @<\n>@ (empty raw spanning newline)
+    // Wikidot treats @< as text and >@ disappears
+    const nextToken = ctx.tokens[pos];
+    if (nextToken?.type === "NEWLINE") {
+      const afterNewline = ctx.tokens[pos + 1];
+      if (afterNewline?.type === "RAW_BLOCK_CLOSE") {
+        // Consume @<, NEWLINE, >@ - output only @< as text
+        return {
+          success: true,
+          elements: [{ element: "text", data: startToken.value }],
+          consumed: 3, // @< + NEWLINE + >@
+        };
+      }
+    }
     return {
       success: true,
       elements: [{ element: "text", data: startToken.value }],

@@ -159,7 +159,7 @@ describe("Render Fixture Tests", () => {
         const missing = casesRequiringOutput.map((c) => c.category);
         throw new Error(
           `Missing output.html for ${missing.length} fixture(s):\n  - ${missing.join("\n  - ")}\n\n` +
-          `Add output.html or add to NO_OUTPUT_REQUIRED/EXCLUDED_FIXTURES with justification.`,
+            `Add output.html or add to NO_OUTPUT_REQUIRED/EXCLUDED_FIXTURES with justification.`,
         );
       }
     });

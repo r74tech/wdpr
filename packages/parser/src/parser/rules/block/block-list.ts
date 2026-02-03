@@ -473,11 +473,7 @@ function parseListBlock(
           consumed++;
         }
         // Check if next meaningful token is a close tag or li open
-        if (
-          isListClose(ctx, pos, listType) ||
-          isLiOpen(ctx, pos) ||
-          isNestedListOpen(ctx, pos)
-        ) {
+        if (isListClose(ctx, pos, listType) || isLiOpen(ctx, pos) || isNestedListOpen(ctx, pos)) {
           break;
         }
         // Multiple newlines = paragraph break

@@ -158,12 +158,7 @@ export const linkTripleRule: InlineRule = {
 };
 
 // Known interwiki prefixes
-const INTERWIKI_PREFIXES = new Set([
-  "wikipedia",
-  "google",
-  "dictionary",
-  "wikidot",
-]);
+const INTERWIKI_PREFIXES = new Set(["wikipedia", "google", "dictionary", "wikidot"]);
 
 function determineLinkTypeAndLocation(target: string): { linkType: LinkType; link: LinkLocation } {
   if (target.startsWith("#")) {

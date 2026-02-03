@@ -64,10 +64,7 @@ function renderNoMarkerElements(ctx: RenderContext, elements: Element[]): void {
   const paragraphIndices: number[] = [];
   for (let i = 0; i < trimmed.length; i++) {
     const el = trimmed[i]!;
-    if (
-      el.element === "container" &&
-      (el.data as ContainerData).type === "paragraph"
-    ) {
+    if (el.element === "container" && (el.data as ContainerData).type === "paragraph") {
       paragraphIndices.push(i);
     }
   }
@@ -83,10 +80,7 @@ function renderNoMarkerElements(ctx: RenderContext, elements: Element[]): void {
 
   for (let i = 0; i < trimmed.length; i++) {
     const el = trimmed[i]!;
-    if (
-      el.element === "container" &&
-      (el.data as ContainerData).type === "paragraph"
-    ) {
+    if (el.element === "container" && (el.data as ContainerData).type === "paragraph") {
       const data = el.data as ContainerData;
       // First paragraph: unwrap
       if (i === firstParagraphIdx) {

@@ -552,7 +552,7 @@ function cleanElement(el: Element): Element {
             return {
               "item-type": "sub-list",
               element: "list",
-              data: cleanedList.data,
+              data: "data" in cleanedList ? cleanedList.data : item.data,
             };
           }
           return item;

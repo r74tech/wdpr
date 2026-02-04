@@ -1,4 +1,11 @@
-import type { Element, ImageSource, LinkLocation, SyntaxTree, BibliographyBlockData, DefinitionListItem } from "@wdprlib/ast";
+import type {
+  Element,
+  ImageSource,
+  LinkLocation,
+  SyntaxTree,
+  BibliographyBlockData,
+  DefinitionListItem,
+} from "@wdprlib/ast";
 import type { RenderOptions, PageContext } from "./types";
 import { escapeHtml, escapeAttr, sanitizeAttributes } from "./escape";
 
@@ -51,8 +58,11 @@ export class RenderContext {
         }
       }
       // Recursively check nested elements
-      if (el.data && typeof el.data === "object" && "elements" in el.data && Array.isArray(el.data.elements)) {
-        this.buildBibliographyMap(el.data.elements);
+      if ("data" in el && el.data && typeof el.data === "object") {
+        const data = el.data as Record<string, unknown>;
+        if ("elements" in data && Array.isArray(data.elements)) {
+          this.buildBibliographyMap(data.elements as Element[]);
+        }
       }
     }
   }

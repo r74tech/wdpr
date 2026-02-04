@@ -54,6 +54,10 @@ export function renderLink(ctx: RenderContext, data: LinkData): void {
     };
     const targetValue = targetMap[data.target] ?? "_blank";
     attrs.push(`target="${targetValue}"`);
+    // Prevent tabnabbing for _blank targets
+    if (targetValue === "_blank") {
+      attrs.push(`rel="noopener noreferrer"`);
+    }
   }
 
   ctx.push(`<a ${attrs.join(" ")}>`);
@@ -111,6 +115,10 @@ export function renderAnchor(ctx: RenderContext, data: AnchorData): void {
     };
     const targetValue = targetMap[data.target] ?? "_blank";
     attrs.push(`target="${targetValue}"`);
+    // Prevent tabnabbing for _blank targets
+    if (targetValue === "_blank") {
+      attrs.push(`rel="noopener noreferrer"`);
+    }
   }
 
   for (const [key, value] of Object.entries(safe)) {

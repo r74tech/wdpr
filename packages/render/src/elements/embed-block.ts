@@ -32,9 +32,14 @@ const BOOLEAN_ATTRIBUTES = [
 /**
  * Default allowlist patterns for embed content (ported from Wikidot's default.php)
  * Only content matching these patterns will be rendered.
+ *
+ * Security: The 'anyiframe' pattern is kept for Wikidot compatibility, but
+ * hasDangerousIframeAttributes() blocks dangerous attributes like srcdoc and
+ * non-https src URLs. hasDangerousScripts() blocks all script tags.
  */
 export const DEFAULT_EMBED_ALLOWLIST: RegExp[] = [
   // Any iframe with standard attributes (Wikidot's 'anyiframe' pattern)
+  // Note: Dangerous attributes are blocked separately by hasDangerousIframeAttributes()
   /^<iframe(\s+[a-z0-9_]+\s*=\s*"[^"]*")+>\s*<\/iframe>$/is,
 
   // YouTube embed
@@ -56,8 +61,7 @@ export const DEFAULT_EMBED_ALLOWLIST: RegExp[] = [
   // SoundCloud
   /^<iframe[^>]*\s+src="https?:\/\/w\.soundcloud\.com\/player\/[^"]*"[^>]*>\s*<\/iframe>$/is,
 
-  // Twitter/X embed
-  /^<blockquote[^>]*class="twitter-tweet"[^>]*>[\s\S]*<\/blockquote>\s*<script[^>]*src="https?:\/\/platform\.twitter\.com\/widgets\.js"[^>]*>\s*<\/script>$/is,
+  // Note: Twitter/X embed pattern removed due to XSS risks with blockquote content injection
 
   // CodePen
   /^<iframe[^>]*\s+src="https?:\/\/codepen\.io\/[^"]*"[^>]*>\s*<\/iframe>$/is,
@@ -72,6 +76,38 @@ function hasJsEventHandlers(content: string): boolean {
 }
 
 /**
+ * Check if content has any script tags (XSS prevention)
+ * All script tags are blocked - no external widget scripts are allowed
+ */
+function hasDangerousScripts(content: string): boolean {
+  // Block all script tags - \s* handles potential whitespace between < and script
+  return /<\s*script\b/i.test(content);
+}
+
+/**
+ * Check if iframe has dangerous attributes that could lead to XSS
+ */
+function hasDangerousIframeAttributes(content: string): boolean {
+  // Check for srcdoc attribute (can contain arbitrary HTML/scripts)
+  if (/\s+srcdoc\s*=/i.test(content)) {
+    return true;
+  }
+
+  // Check ALL src attributes for dangerous schemes (not just the first one)
+  // This prevents bypass via duplicate src attributes
+  const srcMatches = content.matchAll(/\s+src\s*=\s*["']([^"']*)/gi);
+  for (const match of srcMatches) {
+    const srcValue = match[1]?.toLowerCase().trim();
+    // Only allow https:// scheme (http:// blocked to prevent mixed content / MITM)
+    if (srcValue && !srcValue.startsWith("https://")) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Validate embed content against allowlist
  */
 function isAllowedEmbed(content: string, allowlist: RegExp[]): boolean {
@@ -79,6 +115,16 @@ function isAllowedEmbed(content: string, allowlist: RegExp[]): boolean {
 
   // Check for JS event handlers
   if (hasJsEventHandlers(trimmed)) {
+    return false;
+  }
+
+  // Check for dangerous inline scripts or non-whitelisted script sources
+  if (hasDangerousScripts(trimmed)) {
+    return false;
+  }
+
+  // Check for dangerous iframe attributes (srcdoc, javascript: src, etc.)
+  if (/<iframe/i.test(trimmed) && hasDangerousIframeAttributes(trimmed)) {
     return false;
   }
 

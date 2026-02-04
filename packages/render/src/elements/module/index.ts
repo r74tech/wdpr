@@ -14,7 +14,7 @@ export function renderModule(ctx: RenderContext, data: Module): void {
     case "unknown":
       // Render error block for unknown modules
       ctx.push(
-        `<div class="error-block">[[module <em>${data.name}</em>]] No such module, please <a href="http://www.wikidot.com/doc:modules" target="_blank">check available modules</a> and fix this page.</div>`,
+        `<div class="error-block">[[module <em>${data.name}</em>]] No such module, please <a href="https://www.wikidot.com/doc:modules" target="_blank" rel="noopener noreferrer">check available modules</a> and fix this page.</div>`,
       );
       break;
     case "backlinks":

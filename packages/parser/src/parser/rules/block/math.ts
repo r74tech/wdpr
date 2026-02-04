@@ -75,6 +75,8 @@ export const mathBlockRule: BlockRule = {
     }
 
     // Collect LaTeX content until [[/math]]
+    // BACKSLASH_BREAK (U+E000) was created by preprocessing from "\\\n"
+    // In math blocks, we need to restore this as "\\\n" for LaTeX line breaks
     let latexSource = "";
 
     while (pos < ctx.tokens.length) {
@@ -89,7 +91,12 @@ export const mathBlockRule: BlockRule = {
         }
       }
 
-      latexSource += token.value;
+      // Restore BACKSLASH_BREAK to original "\\\n" for LaTeX
+      if (token.type === "BACKSLASH_BREAK") {
+        latexSource += "\\\n";
+      } else {
+        latexSource += token.value;
+      }
       pos++;
       consumed++;
     }

@@ -45,6 +45,8 @@ export default defineWorkspace([
       dts: true,
       minify: false,
       clean: true,
+      external: ["hfmath"],
+      target: "browser",
     },
   },
 ]);

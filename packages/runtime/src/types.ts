@@ -5,9 +5,6 @@ export interface RuntimeOptions {
   /** Use fade animation for collapsible open/close (default: true) */
   fade?: boolean;
 
-  /** MathJax or KaTeX CDN URL - auto-loads script when math elements are detected */
-  mathUrl?: string;
-
   /** Callback when user votes on a page rate widget */
   onRate?: (pageId: string, points: number) => Promise<RateResult>;
 

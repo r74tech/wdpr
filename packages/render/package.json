@@ -39,6 +39,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@wdprlib/ast": "workspace:*"
+    "@wdprlib/ast": "workspace:*",
+    "temml": "^0.13.1"
   }
 }

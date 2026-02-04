@@ -16,6 +16,7 @@
     "@wdprlib/parser": "workspace:*",
     "@wdprlib/render": "workspace:*",
     "@wdprlib/runtime": "workspace:*",
+    "hfmath": "^0.0.2",
     "hono": "^4.7.5"
   },
   "devDependencies": {

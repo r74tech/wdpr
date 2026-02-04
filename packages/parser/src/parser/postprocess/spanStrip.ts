@@ -492,6 +492,11 @@ function removeEmptySpansAndAdjacentWhitespace(elements: Element[]): Element[] {
  * Clean a single element and its children
  */
 function cleanElement(el: Element): Element {
+  // Remove internal flags from line-break elements
+  if (el.element === "line-break") {
+    return { element: "line-break" };
+  }
+
   if (el.element === "container") {
     const data = el.data as ContainerData;
 
@@ -525,6 +530,47 @@ function cleanElement(el: Element): Element {
         ...el.data,
         elements: cleanInternalFlags(el.data.elements),
       },
+    };
+  }
+
+  // Clean list items recursively
+  if (el.element === "list") {
+    const data = el.data as any;
+    return {
+      element: "list",
+      data: {
+        ...data,
+        items: data.items.map((item: any) => {
+          if (item["item-type"] === "elements") {
+            return {
+              ...item,
+              elements: cleanInternalFlags(item.elements),
+            };
+          } else if (item["item-type"] === "sub-list") {
+            // Recursively clean the nested list
+            const cleanedList = cleanElement({ element: "list", data: item.data } as Element);
+            return {
+              "item-type": "sub-list",
+              element: "list",
+              data: cleanedList.data,
+            };
+          }
+          return item;
+        }),
+      },
+    };
+  }
+
+  // Clean definition-list items recursively
+  if (el.element === "definition-list") {
+    const items = el.data as any[];
+    return {
+      element: "definition-list",
+      data: items.map((item: any) => ({
+        ...item,
+        key: cleanInternalFlags(item.key),
+        value: cleanInternalFlags(item.value),
+      })),
     };
   }
 

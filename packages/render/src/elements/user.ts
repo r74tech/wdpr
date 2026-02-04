@@ -4,6 +4,14 @@ import { escapeHtml, escapeAttr } from "../escape";
 
 /** Render a user element */
 export function renderUser(ctx: RenderContext, data: UserData): void {
+  const normalized = data.name.toLowerCase().trim();
+
+  // Special case: "anonymous" renders as "Anonymous" text only
+  if (normalized === "anonymous") {
+    ctx.push("Anonymous");
+    return;
+  }
+
   const resolved = ctx.options.resolvers?.user?.(data.name) ?? null;
 
   if (resolved === null) {
@@ -20,10 +28,13 @@ export function renderUser(ctx: RenderContext, data: UserData): void {
 
   if (showAvatar) {
     // With avatar
+    const styleAttr = resolved.karmaUrl
+      ? ` style="background-image:url(${escapeAttr(resolved.karmaUrl)})"`
+      : "";
     ctx.push(`<span class="printuser avatarhover">`);
     ctx.push(`<a${hrefAttr}>`);
     ctx.push(
-      `<img class="small" src="${escapeAttr(resolved.avatarUrl!)}" alt="${escapeAttr(displayName)}" />`,
+      `<img class="small" src="${escapeAttr(resolved.avatarUrl!)}" alt="${escapeAttr(displayName)}"${styleAttr} />`,
     );
     ctx.push("</a>");
     ctx.push(`<a${hrefAttr}>`);

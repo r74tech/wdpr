@@ -26,6 +26,8 @@ export interface ResolvedUser {
   url?: string;
   /** Avatar image URL. If not provided, no avatar is rendered */
   avatarUrl?: string;
+  /** Karma image URL for avatar background (Wikidot-specific feature) */
+  karmaUrl?: string;
 }
 
 /**

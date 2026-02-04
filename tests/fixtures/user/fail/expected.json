@@ -8,14 +8,74 @@
         "elements": [
           {
             "element": "text",
-            "data": "No argument [[user]]"
+            "data": "No"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "argument"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "user"
+          },
+          {
+            "element": "text",
+            "data": "]]"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "Some Spaces [[ user Alice]]"
+            "data": "Some"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "Spaces"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "user"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "Alice"
+          },
+          {
+            "element": "text",
+            "data": "]]"
           }
         ]
       }

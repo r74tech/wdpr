@@ -1,10 +1,48 @@
 import { describe, expect, it } from "bun:test";
 import type { SyntaxTree } from "@wdprlib/ast";
-import { renderToHtml } from "@wdprlib/render";
+import { renderToHtml, type ResolvedUser, type RenderOptions } from "@wdprlib/render";
 import * as fs from "fs";
 import * as path from "path";
 
 const FIXTURES_DIR = path.join(import.meta.dir, "../fixtures");
+
+/**
+ * Mock user database for testing
+ * Simulates Wikidot's user resolution behavior
+ */
+const MOCK_USERS: Record<string, { id: number; name: string }> = {
+  alice: { id: 1, name: "Alice" },
+  bob: { id: 2, name: "Bob" },
+  system: { id: 3, name: "system" },
+};
+
+/**
+ * Create a mock user resolver that mimics Wikidot's behavior
+ */
+function createMockUserResolver(): (username: string) => ResolvedUser | null {
+  return (username: string): ResolvedUser | null => {
+    const normalized = username.toLowerCase().trim();
+
+    // "anonymous" is special - returns null to render as "Anonymous" text
+    if (normalized === "anonymous") {
+      return null;
+    }
+
+    const user = MOCK_USERS[normalized];
+    if (!user) {
+      return null;
+    }
+
+    // Generate Wikidot-style URLs
+    const baseUrl = "http://www.wikidot.com";
+    return {
+      name: user.name,
+      url: `${baseUrl}/user:info/${normalized}`,
+      avatarUrl: `${baseUrl}/avatar.php?userid=${user.id}&size=small&timestamp=0`,
+      karmaUrl: `${baseUrl}/userkarma.php?u=${user.id}`,
+    };
+  };
+}
 
 /**
  * renderテストから除外するfixture
@@ -12,15 +50,15 @@ const FIXTURES_DIR = path.join(import.meta.dir, "../fixtures");
  */
 const EXCLUDED_FIXTURES = new Set<string>([
   // "include/wikidot", // includeは外部ページ展開後のHTMLのため比較不可
-  "module/listpages", // ListPagesは動的コンテンツのため比較不可
-  "module/listpages-misc", // 同上
-  "module/backlinks/basic", // Backlinksは動的コンテンツ
-  "module/listusers/basic", // ListUsersは動的コンテンツ
-  "module/listusers/fail", // 同上
-  "module/pagetree", // PageTreeは動的コンテンツ（resolver未実装）
+  // "module/listpages", // ListPagesは動的コンテンツのため比較不可
+  // "module/listpages-misc", // 同上
+  // "module/backlinks/basic", // Backlinksは動的コンテンツ
+  // "module/listusers/basic", // ListUsersは動的コンテンツ
+  // "module/listusers/fail", // 同上
+  // "module/pagetree", // PageTreeは動的コンテンツ（resolver未実装）
   // "table/fail-paragraph", // リンク解釈・段落内改行処理の問題（別issueで対応）
   // "expr/edge-cases", // エラーメッセージがWikidotと異なる（スタックベース vs 再帰下降）
-  "misc/bibliography", // bibliography機能（bibcite/bibitems）が未実装
+  // "misc/bibliography", // bibliography機能（bibcite/bibitems）が未実装
   // "image/basic", // アライメント付き画像の段落エスケープが未実装
   // "image/fail", // 同上
 ]);
@@ -143,11 +181,15 @@ describe("Render Fixture Tests", () => {
         const syntaxTree: SyntaxTree = JSON.parse(expectedJson);
         const expectedHtml = fs.readFileSync(testCase.outputPath!, "utf-8");
 
-        const rendered = renderToHtml(syntaxTree, {
+        const options: RenderOptions = {
           page: {
             pageName: "some-page",
           },
-        });
+          resolvers: {
+            user: createMockUserResolver(),
+          },
+        };
+        const rendered = renderToHtml(syntaxTree, options);
         expect(normalizeHtml(rendered)).toBe(normalizeHtml(expectedHtml));
       });
     }
@@ -159,7 +201,7 @@ describe("Render Fixture Tests", () => {
         const missing = casesRequiringOutput.map((c) => c.category);
         throw new Error(
           `Missing output.html for ${missing.length} fixture(s):\n  - ${missing.join("\n  - ")}\n\n` +
-            `Add output.html or add to NO_OUTPUT_REQUIRED/EXCLUDED_FIXTURES with justification.`,
+          `Add output.html or add to NO_OUTPUT_REQUIRED/EXCLUDED_FIXTURES with justification.`,
         );
       }
     });

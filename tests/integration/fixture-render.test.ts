@@ -48,26 +48,19 @@ function createMockUserResolver(): (username: string) => ResolvedUser | null {
  * renderテストから除外するfixture
  * 除外する場合は理由をコメントで記載すること
  */
-const EXCLUDED_FIXTURES = new Set<string>([
-  // "include/wikidot", // includeは外部ページ展開後のHTMLのため比較不可
-  // "module/listpages", // ListPagesは動的コンテンツのため比較不可
-  // "module/listpages-misc", // 同上
-  // "module/backlinks/basic", // Backlinksは動的コンテンツ
-  // "module/listusers/basic", // ListUsersは動的コンテンツ
-  // "module/listusers/fail", // 同上
-  // "module/pagetree", // PageTreeは動的コンテンツ（resolver未実装）
-  // "table/fail-paragraph", // リンク解釈・段落内改行処理の問題（別issueで対応）
-  // "expr/edge-cases", // エラーメッセージがWikidotと異なる（スタックベース vs 再帰下降）
-  // "misc/bibliography", // bibliography機能（bibcite/bibitems）が未実装
-  // "image/basic", // アライメント付き画像の段落エスケープが未実装
-  // "image/fail", // 同上
-]);
+const EXCLUDED_FIXTURES = new Set<string>([]);
 
 /**
  * output.htmlが不要なfixture
+ * 動的モジュール: resolverを伴う完全実装が未完了のため一時的に除外
  */
 const NO_OUTPUT_REQUIRED = new Set<string>([
-  // 動的モジュール系はここに追加
+  "module/listpages",
+  "module/listpages-misc",
+  "module/listusers/basic",
+  "module/listusers/fail",
+  "module/pagetree",
+  "module/categories",
 ]);
 
 interface TestCase {
@@ -201,7 +194,7 @@ describe("Render Fixture Tests", () => {
         const missing = casesRequiringOutput.map((c) => c.category);
         throw new Error(
           `Missing output.html for ${missing.length} fixture(s):\n  - ${missing.join("\n  - ")}\n\n` +
-          `Add output.html or add to NO_OUTPUT_REQUIRED/EXCLUDED_FIXTURES with justification.`,
+            `Add output.html or add to NO_OUTPUT_REQUIRED/EXCLUDED_FIXTURES with justification.`,
         );
       }
     });

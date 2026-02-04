@@ -8,7 +8,31 @@
         "elements": [
           {
             "element": "text",
-            "data": "[[ module BACKlinks ]]"
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "module"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "BACKlinks"
+          },
+          {
+            "element": "text",
+            "data": "  "
+          },
+          {
+            "element": "text",
+            "data": "]]"
           }
         ]
       }

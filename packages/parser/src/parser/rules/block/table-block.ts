@@ -443,11 +443,7 @@ function parseCellContent(
     // Trim trailing whitespace and line-breaks
     while (currentSegment.length > 0) {
       const last = currentSegment[currentSegment.length - 1];
-      if (
-        last?.element === "text" &&
-        typeof last.data === "string" &&
-        last.data.trim() === ""
-      ) {
+      if (last?.element === "text" && typeof last.data === "string" && last.data.trim() === "") {
         currentSegment.pop();
       } else if (last?.element === "line-break") {
         currentSegment.pop();
@@ -459,11 +455,7 @@ function parseCellContent(
     // Trim leading whitespace
     while (currentSegment.length > 0) {
       const first = currentSegment[0];
-      if (
-        first?.element === "text" &&
-        typeof first.data === "string" &&
-        first.data.trim() === ""
-      ) {
+      if (first?.element === "text" && typeof first.data === "string" && first.data.trim() === "") {
         currentSegment.shift();
       } else {
         break;

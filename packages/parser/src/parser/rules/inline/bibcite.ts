@@ -37,7 +37,11 @@ export const bibciteRule: InlineRule = {
     }
 
     const nameToken = ctx.tokens[pos];
-    if (!nameToken || nameToken.type !== "IDENTIFIER" || nameToken.value.toLowerCase() !== "bibcite") {
+    if (
+      !nameToken ||
+      nameToken.type !== "IDENTIFIER" ||
+      nameToken.value.toLowerCase() !== "bibcite"
+    ) {
       return { success: false };
     }
     pos++;

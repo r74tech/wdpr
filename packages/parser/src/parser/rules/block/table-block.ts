@@ -6,7 +6,8 @@
 import type { Element, TableData, TableRow, TableCell, Alignment } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
-import { parseBlockName, parseAttributes, parseBlocksUntil } from "./utils";
+import { parseBlockName, parseAttributes, canApplyBlockRule } from "./utils";
+import { canApplyInlineRule } from "../inline/utils";
 
 export const tableBlockRule: BlockRule = {
   name: "table-block",
@@ -306,11 +307,12 @@ function parseCell(
     return false;
   };
 
-  // Parse cell content using parseBlocksUntil (supports block elements like div, blockquote, etc.)
+  // Parse cell content using parseCellContent (supports inline blocks like nested tables)
   const bodyCtx: ParseContext = { ...ctx, pos };
-  const bodyResult = parseBlocksUntil(bodyCtx, closeCondition);
+  const bodyResult = parseCellContent(bodyCtx, closeCondition);
   consumed += bodyResult.consumed;
   pos += bodyResult.consumed;
+  const hadParagraphBreaks = bodyResult.hadParagraphBreaks;
 
   // Consume [[/cell]] or [[/hcell]]
   if (ctx.tokens[pos]?.type === "BLOCK_END_OPEN") {
@@ -331,7 +333,13 @@ function parseCell(
     }
   }
 
-  const processedElements = bodyResult.elements;
+  // Process cell elements: unwrap single paragraph if it contains only inline elements
+  // Wikidot behavior:
+  // - Simple inline content (no newlines/blank lines) → direct elements (no paragraph wrapper)
+  // - Content with blank lines or blocks → keep paragraph wrappers
+  const processedElements = hadParagraphBreaks
+    ? bodyResult.elements
+    : unwrapSingleInlineParagraph(bodyResult.elements);
 
   return {
     cell: {
@@ -343,4 +351,266 @@ function parseCell(
     },
     consumed,
   };
+}
+
+/**
+ * Unwrap a single paragraph that contains only inline elements.
+ * If the cell content is a single paragraph with no block elements, extract its contents.
+ * This matches Wikidot's behavior where simple cell content is not wrapped in a paragraph.
+ */
+function unwrapSingleInlineParagraph(elements: Element[]): Element[] {
+  // Only unwrap if there's exactly one element and it's a paragraph container
+  if (elements.length !== 1) {
+    return elements;
+  }
+
+  const first = elements[0];
+  if (
+    first?.element !== "container" ||
+    typeof first.data !== "object" ||
+    first.data === null ||
+    !("type" in first.data) ||
+    first.data.type !== "paragraph"
+  ) {
+    return elements;
+  }
+
+  // Check if paragraph contains any block elements
+  // If it does, keep the paragraph wrapper
+  const paragraphData = first.data as { elements?: Element[] };
+  const innerElements = paragraphData.elements ?? [];
+
+  const hasBlockElement = innerElements.some((el) => isBlockElement(el));
+  if (hasBlockElement) {
+    return elements;
+  }
+
+  // Unwrap: return the paragraph's inner elements directly
+  return innerElements;
+}
+
+/**
+ * Check if an element is a block-level element
+ */
+function isBlockElement(el: Element): boolean {
+  // Block elements that should prevent unwrapping
+  const blockTypes = ["table", "div", "blockquote", "code", "list", "iframe", "image-block"];
+
+  if (blockTypes.includes(el.element)) {
+    return true;
+  }
+
+  // Also check for container types that are block-level
+  if (el.element === "container" && typeof el.data === "object" && el.data !== null) {
+    const data = el.data as { type?: string };
+    if (data.type === "paragraph" || data.type === "div" || data.type === "blockquote") {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Parse cell content with support for inline blocks (nested tables, etc.)
+ * Unlike parseBlocksUntil, this function recognizes block elements even when not at line start.
+ *
+ * Behavior:
+ * - Simple inline content on a single line → no paragraph wrapper
+ * - Content with newlines or block elements → wrapped in paragraphs
+ * - Blank lines create separate paragraphs
+ */
+function parseCellContent(
+  ctx: ParseContext,
+  closeCondition: (ctx: ParseContext) => boolean,
+): { elements: Element[]; consumed: number; hadParagraphBreaks: boolean } {
+  const elements: Element[] = [];
+  let consumed = 0;
+  let pos = ctx.pos;
+
+  // Collect inline content segments
+  let currentSegment: Element[] = [];
+  // Track if content spans multiple "parts" (blocks, blank lines, or newlines before blocks)
+  let hasMultipleParts = false;
+  // Track if we've added any block element
+  let hasBlockElement = false;
+  // Track if we've seen any blank line (paragraph break)
+  let hadParagraphBreaks = false;
+
+  const flushSegment = (wrapInParagraph: boolean) => {
+    if (currentSegment.length === 0) return;
+
+    // Trim trailing whitespace and line-breaks
+    while (currentSegment.length > 0) {
+      const last = currentSegment[currentSegment.length - 1];
+      if (
+        last?.element === "text" &&
+        typeof last.data === "string" &&
+        last.data.trim() === ""
+      ) {
+        currentSegment.pop();
+      } else if (last?.element === "line-break") {
+        currentSegment.pop();
+      } else {
+        break;
+      }
+    }
+
+    // Trim leading whitespace
+    while (currentSegment.length > 0) {
+      const first = currentSegment[0];
+      if (
+        first?.element === "text" &&
+        typeof first.data === "string" &&
+        first.data.trim() === ""
+      ) {
+        currentSegment.shift();
+      } else {
+        break;
+      }
+    }
+
+    if (currentSegment.length === 0) return;
+
+    if (wrapInParagraph) {
+      elements.push({
+        element: "container",
+        data: {
+          type: "paragraph",
+          attributes: {},
+          elements: [...currentSegment],
+        },
+      });
+    } else {
+      elements.push(...currentSegment);
+    }
+    currentSegment = [];
+  };
+
+  while (pos < ctx.tokens.length) {
+    const token = ctx.tokens[pos];
+    if (!token || token.type === "EOF") {
+      break;
+    }
+
+    // Check close condition
+    const checkCtx: ParseContext = { ...ctx, pos };
+    if (closeCondition(checkCtx)) {
+      break;
+    }
+
+    // Handle newlines
+    if (token.type === "NEWLINE") {
+      pos++;
+      consumed++;
+
+      // Check for blank line (paragraph break)
+      if (ctx.tokens[pos]?.type === "NEWLINE") {
+        // Skip additional newlines
+        while (ctx.tokens[pos]?.type === "NEWLINE") {
+          pos++;
+          consumed++;
+        }
+
+        // Flush current segment as paragraph
+        flushSegment(true);
+        // Blank line means all subsequent content should be in paragraphs
+        hasMultipleParts = true;
+        hadParagraphBreaks = true;
+
+        // Skip whitespace after blank line
+        while (ctx.tokens[pos]?.type === "WHITESPACE") {
+          pos++;
+          consumed++;
+        }
+        continue;
+      }
+
+      // Single newline - check if next is block start or close
+      const nextToken = ctx.tokens[pos];
+      if (!nextToken || nextToken.type === "BLOCK_END_OPEN" || nextToken.type === "EOF") {
+        continue;
+      }
+
+      // Check if next token would start a block
+      if (nextToken.type === "BLOCK_OPEN") {
+        // This newline separates text from block - flush as paragraph
+        flushSegment(true);
+        hasMultipleParts = true;
+        continue;
+      }
+
+      // If we have no content yet, this is just leading whitespace - skip
+      if (currentSegment.length === 0 && elements.length === 0) {
+        continue;
+      }
+
+      // Otherwise, treat as line break within same segment
+      currentSegment.push({ element: "line-break" });
+      continue;
+    }
+
+    // Skip whitespace at line start
+    if (token.type === "WHITESPACE" && token.lineStart) {
+      pos++;
+      consumed++;
+      continue;
+    }
+
+    // Try block rules first (for nested tables, divs, etc.)
+    let matched = false;
+    const blockCtx: ParseContext = { ...ctx, pos };
+
+    for (const rule of ctx.blockRules) {
+      if (canApplyBlockRule(rule, token)) {
+        const result = rule.parse(blockCtx);
+        if (result.success) {
+          // Flush current segment before adding block
+          if (currentSegment.length > 0) {
+            flushSegment(true);
+            hasMultipleParts = true;
+          }
+
+          elements.push(...result.elements);
+          hasBlockElement = true;
+          hasMultipleParts = true;
+          consumed += result.consumed;
+          pos += result.consumed;
+          matched = true;
+          break;
+        }
+      }
+    }
+
+    if (matched) continue;
+
+    // Try inline rules
+    const inlineCtx: ParseContext = { ...ctx, pos };
+
+    for (const rule of ctx.inlineRules) {
+      if (canApplyInlineRule(rule, token)) {
+        const result = rule.parse(inlineCtx);
+        if (result.success) {
+          currentSegment.push(...result.elements);
+          consumed += result.consumed;
+          pos += result.consumed;
+          matched = true;
+          break;
+        }
+      }
+    }
+
+    if (!matched) {
+      // Fallback to text
+      currentSegment.push({ element: "text", data: token.value });
+      consumed++;
+      pos++;
+    }
+  }
+
+  // Flush remaining segment
+  // Wrap in paragraph if we had multiple parts or block elements
+  flushSegment(hasMultipleParts || hasBlockElement);
+
+  return { elements, consumed, hadParagraphBreaks };
 }

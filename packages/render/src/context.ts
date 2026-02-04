@@ -1,4 +1,4 @@
-import type { Element, ImageSource, LinkLocation, SyntaxTree } from "@wdprlib/ast";
+import type { Element, ImageSource, LinkLocation, SyntaxTree, BibliographyBlockData, DefinitionListItem } from "@wdprlib/ast";
 import type { RenderOptions, PageContext } from "./types";
 import { escapeHtml, escapeAttr, sanitizeAttributes } from "./escape";
 
@@ -11,12 +11,17 @@ export class RenderContext {
   private _footnoteIndex = 0;
   private _equationIndex = 0;
   private _htmlBlockIndex = 0;
+  private _bibciteCounter = 0;
 
   readonly options: RenderOptions;
   readonly footnotes: Element[][];
   readonly styles: string[];
   readonly htmlBlocks: string[];
   readonly tocElements: Element[];
+  /** Map from bibliography label to citation number (1-indexed) */
+  readonly bibliographyMap: Map<string, number>;
+  /** Bibliography entries (from bibliography-block) */
+  readonly bibliographyEntries: DefinitionListItem[];
 
   constructor(tree: SyntaxTree, options: RenderOptions = {}) {
     this.options = options;
@@ -24,6 +29,32 @@ export class RenderContext {
     this.styles = tree.styles ?? [];
     this.htmlBlocks = tree["html-blocks"] ?? [];
     this.tocElements = tree["table-of-contents"] ?? [];
+
+    // Build bibliography map from tree elements
+    this.bibliographyMap = new Map();
+    this.bibliographyEntries = [];
+    this.buildBibliographyMap(tree.elements);
+  }
+
+  /** Build bibliography label to number mapping from AST */
+  private buildBibliographyMap(elements: Element[]): void {
+    for (const el of elements) {
+      if (el.element === "bibliography-block") {
+        const data = el.data as BibliographyBlockData;
+        let index = 1;
+        for (const entry of data.entries) {
+          if (!this.bibliographyMap.has(entry.key_string)) {
+            this.bibliographyMap.set(entry.key_string, index);
+            this.bibliographyEntries.push(entry);
+            index++;
+          }
+        }
+      }
+      // Recursively check nested elements
+      if (el.data && typeof el.data === "object" && "elements" in el.data && Array.isArray(el.data.elements)) {
+        this.buildBibliographyMap(el.data.elements);
+      }
+    }
   }
 
   /** Append raw HTML to the output */
@@ -59,6 +90,11 @@ export class RenderContext {
   /** Get and increment the htmlBlock index */
   nextHtmlBlockIndex(): number {
     return this._htmlBlockIndex++;
+  }
+
+  /** Get and increment the bibcite counter (for unique IDs) */
+  nextBibciteCounter(): number {
+    return ++this._bibciteCounter;
   }
 
   /** Get page context */

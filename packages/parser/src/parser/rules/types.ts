@@ -17,6 +17,8 @@ export interface ParseContext {
   htmlBlocks: string[];
   // State flags
   footnoteBlockParsed: boolean;
+  // Bibliography citation labels collected during parsing
+  bibcites: string[];
   // Rules (injected to avoid circular dependency)
   blockRules: BlockRule[];
   blockFallbackRule: BlockRule;

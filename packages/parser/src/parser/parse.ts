@@ -36,6 +36,7 @@ export class Parser {
       htmlBlocks: [],
       // State flags
       footnoteBlockParsed: false,
+      bibcites: [],
       // Rules (injected to avoid circular dependency)
       blockRules,
       blockFallbackRule,

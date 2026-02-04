@@ -391,7 +391,7 @@ export interface BibliographyCiteData {
 }
 
 export interface BibliographyBlockData {
-  index: number;
+  entries: DefinitionListItem[];
   title: string | null;
   hide: boolean;
 }

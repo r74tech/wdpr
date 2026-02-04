@@ -29,6 +29,7 @@ import { anchorRule } from "./anchor";
 import { mathInlineRule } from "./math-inline";
 import { equationRefRule } from "./equation-ref";
 import { exprRule, ifRule, ifExprRule } from "./expr";
+import { bibciteRule } from "./bibcite";
 import { textRule, fallbackRule } from "./text";
 
 export { boldRule } from "./bold";
@@ -61,6 +62,7 @@ export { anchorRule } from "./anchor";
 export { mathInlineRule } from "./math-inline";
 export { equationRefRule } from "./equation-ref";
 export { exprRule, ifRule, ifExprRule } from "./expr";
+export { bibciteRule } from "./bibcite";
 export { textRule, fallbackRule } from "./text";
 
 /**
@@ -81,25 +83,25 @@ export const inlineRules: InlineRule[] = [
   colorRule,
   backslashLineBreakRule,
   underscoreLineBreakRule,
-  newlineLineBreakRule, // Must come after underscore rule
+  newlineLineBreakRule,
   commentRule,
   rawRule,
   imageRule,
   sizeRule,
   footnoteRule,
   spanRule,
-  closeSpanRule, // Must come after spanRule to handle orphaned [[/span]]
+  closeSpanRule,
   userRule,
-  exprRule, // [[#expr ...]] - must come before anchorNameRule
-  ifRule, // [[#if ... | ... | ...]]
-  ifExprRule, // [[#ifexpr ... | ... | ...]]
-  anchorNameRule, // [[# name]] - has space after #
+  exprRule,
+  ifRule,
+  ifExprRule,
+  anchorNameRule,
   anchorRule,
   mathInlineRule,
   equationRefRule,
+  bibciteRule,
   guillemetRule,
   textRule,
-  // fallbackRule is not included - used explicitly when no rule matches
 ];
 
 export { fallbackRule as inlineFallbackRule };

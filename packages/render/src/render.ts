@@ -118,7 +118,7 @@ export function renderElement(ctx: RenderContext, element: Element): void {
       renderBibliographyCite(ctx, element.data);
       break;
     case "bibliography-block":
-      renderBibliographyBlock(ctx, element.data);
+      renderBibliographyBlock(ctx, element.data, renderElements);
       break;
     case "table-of-contents":
       renderTableOfContents(ctx, element.data);

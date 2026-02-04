@@ -1,0 +1,6 @@
+[test]
+coverageSkipTestFiles = true
+coveragePathIgnorePatterns = [
+  "**/dist/**",
+  "**/node_modules/**"
+]

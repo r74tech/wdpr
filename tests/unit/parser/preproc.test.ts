@@ -27,10 +27,10 @@ describe("whitespace", () => {
       "apple\nbanana\n\ncherry\n\npineapple\n\nstrawberry\n\nblueberry",
     ],
 
-    // Backslash line concatenation
+    // Backslash at end of line → U+E000 marker (line break)
     [
       "concat:\napple banana \\\nCherry\\\nPineapple \\ grape\nblueberry\n",
-      "concat:\napple banana CherryPineapple \\ grape\nblueberry",
+      "concat:\napple banana \uE000Cherry\uE000Pineapple \\ grape\nblueberry",
     ],
 
     // Whitespace-only lines

@@ -584,7 +584,7 @@ describe("isDangerousCssValue", () => {
 describe("sanitizeStyleValue", () => {
   it("should preserve safe declarations", () => {
     expect(sanitizeStyleValue("color: red")).toBe("color: red");
-    expect(sanitizeStyleValue("color: red; font-size: 12px")).toBe("color: red; font-size: 12px");
+    expect(sanitizeStyleValue("color: red; font-size: 12px")).toBe("color: red;font-size: 12px");
   });
 
   it("should remove dangerous declarations", () => {

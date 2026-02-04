@@ -115,17 +115,24 @@ describe("spanStrip postprocessing", () => {
         });
       });
 
-      it("paragraph with span_ merges with next paragraph", () => {
+      it("paragraph with span_ is unwrapped (children become top-level)", () => {
         const input = [paragraph(spanStrip([text("First")])), paragraph(text("Second"))];
 
         const result = mergeSpanStripParagraphs(input);
 
-        expect(result).toHaveLength(1);
-        const merged = result[0]?.data as { elements: Element[] };
-        expect(merged.elements).toHaveLength(2);
+        // span_ removes paragraph boundaries: children are unwrapped to top level
+        expect(result).toHaveLength(2);
+        expect(result[0]).toMatchObject({
+          element: "container",
+          data: { type: "span" },
+        });
+        expect(result[1]).toMatchObject({
+          element: "text",
+          data: "Second",
+        });
       });
 
-      it("paragraph with span_ merges with multiple consecutive paragraphs", () => {
+      it("multiple span_ paragraphs all get unwrapped", () => {
         const input = [
           paragraph(spanStrip([text("First")])),
           paragraph(text("Second")),
@@ -135,8 +142,12 @@ describe("spanStrip postprocessing", () => {
 
         const result = mergeSpanStripParagraphs(input);
 
-        // All merged into one paragraph
-        expect(result).toHaveLength(1);
+        // All paragraph wrappers are removed, children become top-level
+        expect(result).toHaveLength(4);
+        expect(result[0]).toMatchObject({ element: "container", data: { type: "span" } });
+        expect(result[1]).toMatchObject({ element: "text", data: "Second" });
+        expect(result[2]).toMatchObject({ element: "container", data: { type: "span" } });
+        expect(result[3]).toMatchObject({ element: "text", data: "Fourth" });
       });
     });
 
@@ -184,8 +195,8 @@ describe("spanStrip postprocessing", () => {
 
         const result = mergeSpanStripParagraphs(input);
 
-        const merged = result[0]?.data as { elements: Element[] };
-        const hasLineBreak = merged.elements.some((el) => el.element === "line-break");
+        // span_ causes paragraph unwrap, line-break is removed
+        const hasLineBreak = result.some((el) => el.element === "line-break");
         expect(hasLineBreak).toBe(false);
       });
 
@@ -206,11 +217,10 @@ describe("spanStrip postprocessing", () => {
 
         const result = mergeSpanStripParagraphs(input);
 
-        const merged = result[0]?.data as { elements: Element[] };
-        // Empty span_ should be removed
-        expect(merged.elements).toHaveLength(2);
-        expect(merged.elements[0]).toMatchObject({ data: "Before" });
-        expect(merged.elements[1]).toMatchObject({ data: "After" });
+        // Empty span_ causes paragraph unwrap, and the empty span_ itself is removed
+        expect(result).toHaveLength(2);
+        expect(result[0]).toMatchObject({ element: "text", data: "Before" });
+        expect(result[1]).toMatchObject({ element: "text", data: "After" });
       });
     });
 

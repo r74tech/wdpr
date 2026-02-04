@@ -170,16 +170,22 @@ export const backslashLineBreakRule: InlineRule = {
 
         if (isFollowedByUnderscoreBreak) {
           // Don't include the space, let underscore rule handle the rest
+          // Mark as explicit line-break to preserve at paragraph end
+          const lb: any = { element: "line-break" };
+          lb._preservedTrailingBreak = true;
           return {
             success: true,
-            elements: [{ element: "line-break" }],
+            elements: [lb],
             consumed: 2,
           };
         }
 
+        // Mark as explicit line-break to preserve at paragraph end
+        const lb: any = { element: "line-break" };
+        lb._preservedTrailingBreak = true;
         return {
           success: true,
-          elements: [{ element: "line-break" }, { element: "text", data: " " }],
+          elements: [lb, { element: "text", data: " " }],
           consumed: 2,
         };
       }
@@ -187,10 +193,13 @@ export const backslashLineBreakRule: InlineRule = {
     }
 
     // Standalone BACKSLASH_BREAK
+    // Mark as explicit line-break to preserve at paragraph end
     if (currentTok.type === "BACKSLASH_BREAK") {
+      const lb: any = { element: "line-break" };
+      lb._preservedTrailingBreak = true;
       return {
         success: true,
-        elements: [{ element: "line-break" }],
+        elements: [lb],
         consumed: 1,
       };
     }
@@ -215,6 +224,7 @@ export const underscoreLineBreakRule: InlineRule = {
     }
 
     // Pattern 1: WHITESPACE followed by UNDERSCORE, then NEWLINE
+    // Mark as explicit line-break to preserve at paragraph end
     if (currentTok.type === "WHITESPACE") {
       const nextTok = ctx.tokens[ctx.pos + 1];
       const afterTok = ctx.tokens[ctx.pos + 2];
@@ -224,21 +234,26 @@ export const underscoreLineBreakRule: InlineRule = {
         afterTok &&
         (afterTok.type === "NEWLINE" || afterTok.type === "EOF")
       ) {
+        const lb: any = { element: "line-break" };
+        lb._preservedTrailingBreak = true;
         return {
           success: true,
-          elements: [{ element: "line-break" }],
+          elements: [lb],
           consumed: 3, // WHITESPACE + UNDERSCORE + NEWLINE
         };
       }
     }
 
     // Pattern 2: UNDERSCORE at start of line, then NEWLINE
+    // Mark as explicit line-break to preserve at paragraph end
     if (currentTok.type === "UNDERSCORE" && currentTok.lineStart) {
       const nextTok = ctx.tokens[ctx.pos + 1];
       if (nextTok && (nextTok.type === "NEWLINE" || nextTok.type === "EOF")) {
+        const lb: any = { element: "line-break" };
+        lb._preservedTrailingBreak = true;
         return {
           success: true,
-          elements: [{ element: "line-break" }],
+          elements: [lb],
           consumed: 2, // UNDERSCORE + NEWLINE
         };
       }

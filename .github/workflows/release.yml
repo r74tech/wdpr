@@ -45,10 +45,17 @@ jobs:
 
       - name: Publish to npm
         run: |
+          # Determine npm tag from git tag (rc/alpha/beta -> rc, otherwise latest)
+          if [[ "${{ github.ref_name }}" == *"-rc"* ]] || [[ "${{ github.ref_name }}" == *"-alpha"* ]] || [[ "${{ github.ref_name }}" == *"-beta"* ]]; then
+            NPM_TAG="rc"
+          else
+            NPM_TAG="latest"
+          fi
+          echo "Publishing with tag: $NPM_TAG"
           for pkg in packages/*/; do
             if [ -f "$pkg/package.json" ]; then
               echo "Publishing $pkg"
-              (cd "$pkg" && npm publish --provenance --access public)
+              (cd "$pkg" && npm publish --provenance --access public --tag "$NPM_TAG")
             fi
           done
 

@@ -76,7 +76,8 @@ const purify = DOMPurify(window);
 // Add hook to validate src attribute (only allow https://)
 purify.addHook("uponSanitizeAttribute", (_node, data) => {
   if (data.attrName === "src" && data.attrValue) {
-    if (!data.attrValue.startsWith("https://")) {
+    // Case-insensitive check for https:// scheme
+    if (!data.attrValue.toLowerCase().startsWith("https://")) {
       data.attrValue = "";
       data.forceKeepAttr = false;
     }

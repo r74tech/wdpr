@@ -1,6 +1,6 @@
 import type { HtmlData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
-import { escapeAttr } from "../escape";
+import { escapeAttr, sanitizeStyleValue } from "../escape";
 import { syncHashSha1 } from "../hash";
 
 /** Generate default URL for htmlBlock (fallback when callback is not provided) */
@@ -25,8 +25,8 @@ export function renderHtmlBlock(ctx: RenderContext, data: HtmlData): void {
   const sandbox = ctx.options.htmlBlockSandbox;
   const sandboxAttr = sandbox ? ` sandbox="${escapeAttr(sandbox)}"` : "";
 
-  // Build style attribute (from [[html style="..."]])
-  const styleAttr = data.style ? ` style="${escapeAttr(data.style)}"` : "";
+  // Build style attribute (from [[html style="..."]]) with CSS injection protection
+  const styleAttr = data.style ? ` style="${escapeAttr(sanitizeStyleValue(data.style))}"` : "";
 
   // Wikidot wraps html block iframe in a paragraph
   ctx.push(

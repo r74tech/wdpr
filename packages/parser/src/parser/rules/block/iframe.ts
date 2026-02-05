@@ -7,13 +7,18 @@ import { parseBlockName } from "./utils";
 const ALLOWED_IFRAME_ATTRS = new Set(["width", "height", "style", "scrolling", "frameborder"]);
 
 /**
- * Check if URL has a dangerous scheme (javascript:, data:, vbscript:)
- * Handles whitespace and control character evasion attempts
+ * Normalize URL for security checks
+ * Removes whitespace and control characters that could be used for evasion
  */
-function isDangerousUrl(url: string): boolean {
-  // Normalize: remove whitespace and control characters
-  const normalized = url.replace(/[\s\u0000-\u001f\u007f-\u009f]/g, "").toLowerCase();
-  return /^(javascript|data|vbscript):/i.test(normalized);
+function normalizeUrl(url: string): string {
+  return url.replace(/[\s\u0000-\u001f\u007f-\u009f]/g, "").toLowerCase();
+}
+
+/**
+ * Check if URL has a dangerous scheme (javascript:, data:, vbscript:)
+ */
+function isDangerousUrl(normalizedUrl: string): boolean {
+  return /^(javascript|data|vbscript):/i.test(normalizedUrl);
 }
 
 export const iframeRule: BlockRule = {
@@ -61,15 +66,18 @@ export const iframeRule: BlockRule = {
       return { success: false };
     }
 
+    // Normalize URL for consistent security checks
+    const normalizedUrl = normalizeUrl(url);
+
     // Reject dangerous URLs (javascript:, data:, vbscript:)
     // These will fall back to text rendering
-    if (isDangerousUrl(url)) {
+    if (isDangerousUrl(normalizedUrl)) {
       return { success: false };
     }
 
-    // Only allow http:// and https:// URLs
+    // Only allow http:// and https:// URLs (checked against normalized URL)
     // This blocks relative URLs and other schemes
-    if (!/^https?:\/\//i.test(url)) {
+    if (!/^https?:\/\//i.test(normalizedUrl)) {
       return { success: false };
     }
 

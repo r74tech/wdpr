@@ -165,11 +165,13 @@ export class RenderContext {
     }
 
     const normalizedPage = this.normalizePageName(page);
+    // Remove leading slash to prevent protocol-relative URLs (//...)
+    const safePage = normalizedPage.startsWith("/") ? normalizedPage.slice(1) : normalizedPage;
 
     if (location.site) {
-      return `https://${location.site}.wikidot.com/${normalizedPage}`;
+      return `https://${location.site}.wikidot.com/${safePage}`;
     }
-    return `/${normalizedPage}`;
+    return `/${safePage}`;
   }
 
   /** Normalize a page name according to Wikidot rules */

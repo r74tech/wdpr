@@ -1,6 +1,6 @@
 import type { BibliographyCiteData, BibliographyBlockData, Element } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
-import { escapeHtml } from "../escape";
+import { escapeAttr, escapeHtml } from "../escape";
 
 /**
  * Generate a short hash for unique IDs (Wikidot uses random-ish suffixes)
@@ -36,7 +36,7 @@ export function renderBibliographyCite(ctx: RenderContext, data: BibliographyCit
   const id = `bibcite-${number}-${idSuffix}`;
   const onclick = `WIKIDOT.page.utils.scrollToReference('bibitem-${number}')`;
 
-  ctx.push(`<a href="javascript:;" class="bibcite" id="${id}" onclick="${escapeHtml(onclick)}">`);
+  ctx.push(`<a href="javascript:;" class="bibcite" id="${id}" onclick="${escapeAttr(onclick)}">`);
   ctx.push(String(number));
   ctx.push("</a>");
 }

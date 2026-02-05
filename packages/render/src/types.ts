@@ -1,4 +1,5 @@
 import type { Element } from "@wdprlib/ast";
+import type { EmbedAllowlistEntry } from "./elements/embed-block";
 
 /**
  * Page context for resolving links, images, etc.
@@ -12,6 +13,8 @@ export interface PageContext {
   domain?: string;
   /** Check if a page exists (for "newpage" class on links) */
   pageExists?: (page: string) => boolean;
+  /** Page tags for [[iftags]] conditional rendering */
+  tags?: string[];
 }
 
 /**
@@ -24,6 +27,8 @@ export interface ResolvedUser {
   url?: string;
   /** Avatar image URL. If not provided, no avatar is rendered */
   avatarUrl?: string;
+  /** Karma image URL for avatar background (Wikidot-specific feature) */
+  karmaUrl?: string;
 }
 
 /**
@@ -68,4 +73,12 @@ export interface RenderOptions {
    * - Allow scripts: htmlBlockSandbox: "allow-scripts allow-same-origin"
    */
   htmlBlockSandbox?: string | null;
+  /**
+   * Allowlist for [[embed]] content with host and optional path validation.
+   * - undefined: Uses default allowlist (YouTube, Vimeo, etc. with path restrictions)
+   * - EmbedAllowlistEntry[]: Custom allowlist with host patterns and optional path prefixes
+   * - []: Block all embeds
+   * - null: Allow any HTTPS iframe (Wikidot's 'anyiframe' behavior)
+   */
+  embedAllowlist?: EmbedAllowlistEntry[] | null;
 }

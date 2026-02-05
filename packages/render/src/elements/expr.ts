@@ -28,13 +28,17 @@ export function renderIf(ctx: RenderContext, data: IfCondData): void {
 
 /**
  * Render #ifexpr - evaluates expression and branches based on result
- * On error, selects else branch (Wikidot-compatible)
+ * On error, outputs Wikidot-compatible error message
  */
 export function renderIfExpr(ctx: RenderContext, data: IfExprData): void {
   const result = evaluateExpression(data.expression);
-  // ifexpr: error or 0 selects else branch
-  const isTrue = result.success && result.value !== 0;
-  const elements = isTrue ? data.then : data.else;
+  if (!result.success) {
+    // ifexpr: error outputs error message (Wikidot-compatible)
+    ctx.pushEscaped(`run-time error: ${result.error}`);
+    return;
+  }
+  // 0 selects else branch, non-zero selects then branch
+  const elements = result.value !== 0 ? data.then : data.else;
   renderBranchElements(ctx, elements);
 }
 

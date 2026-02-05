@@ -6,8 +6,8 @@
  * - " _\n" pattern → line-break
  * - "^_\n" pattern → line-break (underscore at start of line)
  *
- * Note: Backslash line break (\ at end of line) is handled by preproc,
- * which removes \\\n and joins lines.
+ * Note: Backslash line break (\ at end of line) is preprocessed to U+E000
+ * by preproc, then handled by backslashLineBreakRule.
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
@@ -62,15 +62,56 @@ export const newlineLineBreakRule: InlineRule = {
 
     const nextMeaningfulToken = ctx.tokens[ctx.pos + lookAhead];
 
+    // Check if HEADING_MARKER would actually form a valid heading
+    // Also check lineStart for list markers - they're only valid at true line start
+    let isValidBlock = isBlockStartToken(nextMeaningfulToken?.type as TokenType);
+    if (
+      isValidBlock &&
+      (nextMeaningfulToken?.type === "LIST_BULLET" || nextMeaningfulToken?.type === "LIST_NUMBER")
+    ) {
+      // List markers are only valid block starts when at actual line start
+      if (!nextMeaningfulToken.lineStart) {
+        isValidBlock = false;
+      }
+    }
+    if (isValidBlock && nextMeaningfulToken?.type === "HEADING_MARKER") {
+      const markerLen = nextMeaningfulToken.value.length;
+      const afterPos = ctx.pos + lookAhead + 1;
+      const afterMarker = ctx.tokens[afterPos];
+      if (markerLen > 6) {
+        isValidBlock = false;
+      } else if (afterMarker?.type === "STAR") {
+        if (ctx.tokens[afterPos + 1]?.type !== "WHITESPACE") isValidBlock = false;
+      } else if (afterMarker?.type !== "WHITESPACE") {
+        isValidBlock = false;
+      }
+    }
+
+    // Check if there's a BACKSLASH_BREAK ahead (skip whitespace)
+    // Pattern: NEWLINE + WHITESPACE? + BACKSLASH_BREAK
+    // In this case, the BACKSLASH_BREAK rule will handle the line-break
+    let hasBackslashBreak = false;
+    {
+      let ahead = 1;
+      while (ctx.tokens[ctx.pos + ahead]?.type === "WHITESPACE") {
+        ahead++;
+      }
+      if (ctx.tokens[ctx.pos + ahead]?.type === "BACKSLASH_BREAK") {
+        hasBackslashBreak = true;
+      }
+    }
+
     // Skip line-break if:
     // - End of input
     // - Another NEWLINE (paragraph break will handle this)
-    // - Block start token
+    // - Valid block start token
+    // - BACKSLASH_BREAK ahead (that rule will create the line-break)
     if (
       !nextMeaningfulToken ||
       nextMeaningfulToken.type === "EOF" ||
       nextMeaningfulToken.type === "NEWLINE" ||
-      isBlockStartToken(nextMeaningfulToken.type)
+      isValidBlock ||
+      hasBackslashBreak
     ) {
       // Don't generate line-break, return empty array
       return {
@@ -85,6 +126,85 @@ export const newlineLineBreakRule: InlineRule = {
       elements: [{ element: "line-break" }],
       consumed: 1,
     };
+  },
+};
+
+/**
+ * Backslash line break: \ at end of line (preprocessed to U+E000)
+ *
+ * In Wikidot, " \" at end of line creates a line break.
+ * The space before the backslash is preserved after the line break.
+ *
+ * Since preprocessing converts "\\\n" → U+E000, the actual token sequence is:
+ * - NEWLINE + WHITESPACE + BACKSLASH_BREAK + content
+ *
+ * This rule is triggered by WHITESPACE when followed by BACKSLASH_BREAK,
+ * producing: line-break + space (in that order).
+ *
+ * Also handles standalone BACKSLASH_BREAK (without preceding whitespace).
+ */
+export const backslashLineBreakRule: InlineRule = {
+  name: "backslashLineBreak",
+  startTokens: ["WHITESPACE", "BACKSLASH_BREAK"],
+
+  parse(ctx: ParseContext): RuleResult<Element> {
+    const currentTok = ctx.tokens[ctx.pos];
+    if (!currentTok) {
+      return { success: false };
+    }
+
+    // Pattern: WHITESPACE + BACKSLASH_BREAK → line-break + text(" ")
+    // But if followed by underscore line-break pattern, don't include the space
+    if (currentTok.type === "WHITESPACE") {
+      const nextTok = ctx.tokens[ctx.pos + 1];
+      if (nextTok?.type === "BACKSLASH_BREAK") {
+        // Check if followed by " _\n" pattern (underscore line-break)
+        const afterBreak = ctx.tokens[ctx.pos + 2];
+        const afterAfter = ctx.tokens[ctx.pos + 3];
+        const afterAfterAfter = ctx.tokens[ctx.pos + 4];
+
+        const isFollowedByUnderscoreBreak =
+          afterBreak?.type === "WHITESPACE" &&
+          afterAfter?.type === "UNDERSCORE" &&
+          (afterAfterAfter?.type === "NEWLINE" || afterAfterAfter?.type === "EOF");
+
+        if (isFollowedByUnderscoreBreak) {
+          // Don't include the space, let underscore rule handle the rest
+          // Mark as explicit line-break to preserve at paragraph end
+          const lb: any = { element: "line-break" };
+          lb._preservedTrailingBreak = true;
+          return {
+            success: true,
+            elements: [lb],
+            consumed: 2,
+          };
+        }
+
+        // Mark as explicit line-break to preserve at paragraph end
+        const lb: any = { element: "line-break" };
+        lb._preservedTrailingBreak = true;
+        return {
+          success: true,
+          elements: [lb, { element: "text", data: " " }],
+          consumed: 2,
+        };
+      }
+      return { success: false };
+    }
+
+    // Standalone BACKSLASH_BREAK
+    // Mark as explicit line-break to preserve at paragraph end
+    if (currentTok.type === "BACKSLASH_BREAK") {
+      const lb: any = { element: "line-break" };
+      lb._preservedTrailingBreak = true;
+      return {
+        success: true,
+        elements: [lb],
+        consumed: 1,
+      };
+    }
+
+    return { success: false };
   },
 };
 
@@ -104,6 +224,7 @@ export const underscoreLineBreakRule: InlineRule = {
     }
 
     // Pattern 1: WHITESPACE followed by UNDERSCORE, then NEWLINE
+    // Mark as explicit line-break to preserve at paragraph end
     if (currentTok.type === "WHITESPACE") {
       const nextTok = ctx.tokens[ctx.pos + 1];
       const afterTok = ctx.tokens[ctx.pos + 2];
@@ -113,21 +234,26 @@ export const underscoreLineBreakRule: InlineRule = {
         afterTok &&
         (afterTok.type === "NEWLINE" || afterTok.type === "EOF")
       ) {
+        const lb: any = { element: "line-break" };
+        lb._preservedTrailingBreak = true;
         return {
           success: true,
-          elements: [{ element: "line-break" }],
+          elements: [lb],
           consumed: 3, // WHITESPACE + UNDERSCORE + NEWLINE
         };
       }
     }
 
     // Pattern 2: UNDERSCORE at start of line, then NEWLINE
+    // Mark as explicit line-break to preserve at paragraph end
     if (currentTok.type === "UNDERSCORE" && currentTok.lineStart) {
       const nextTok = ctx.tokens[ctx.pos + 1];
       if (nextTok && (nextTok.type === "NEWLINE" || nextTok.type === "EOF")) {
+        const lb: any = { element: "line-break" };
+        lb._preservedTrailingBreak = true;
         return {
           success: true,
-          elements: [{ element: "line-break" }],
+          elements: [lb],
           consumed: 2, // UNDERSCORE + NEWLINE
         };
       }

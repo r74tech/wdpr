@@ -59,8 +59,9 @@ export function substitute(text: string): string {
   // Strip lines with only whitespace
   result = result.replace(WHITESPACE_ONLY_LINE, "");
 
-  // Join concatenated lines (ending with '\')
-  result = result.replace(CONCAT_LINES, "");
+  // Backslash at end of line → line break marker (U+E000)
+  // Wikidot treats \ at end of line as <br />
+  result = result.replace(CONCAT_LINES, String.fromCharCode(0xe000));
 
   // Tabs to spaces
   result = result.replace(TABS, "    ");

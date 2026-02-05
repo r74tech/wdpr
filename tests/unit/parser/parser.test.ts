@@ -165,7 +165,7 @@ describe("Parser", () => {
   });
 
   describe("raw escape special cases", () => {
-    it("@@@@ produces empty raw", () => {
+    it("@@@@ produces text with @@", () => {
       const doc = parse("@@@@");
       const content = getContentElements(doc);
 
@@ -175,13 +175,13 @@ describe("Parser", () => {
           data: {
             type: "paragraph",
             attributes: {},
-            elements: [{ element: "raw", data: "" }],
+            elements: [{ element: "text", data: "@@" }],
           },
         },
       ]);
     });
 
-    it("@@@@@ produces raw with single @", () => {
+    it("@@@@@ produces text with single @", () => {
       const doc = parse("@@@@@");
       const content = getContentElements(doc);
 
@@ -191,13 +191,13 @@ describe("Parser", () => {
           data: {
             type: "paragraph",
             attributes: {},
-            elements: [{ element: "raw", data: "@" }],
+            elements: [{ element: "text", data: "@" }],
           },
         },
       ]);
     });
 
-    it("@@@@@@ produces raw with @@", () => {
+    it("@@@@@@ produces text with @@", () => {
       const doc = parse("@@@@@@");
       const content = getContentElements(doc);
 
@@ -207,7 +207,7 @@ describe("Parser", () => {
           data: {
             type: "paragraph",
             attributes: {},
-            elements: [{ element: "raw", data: "@@" }],
+            elements: [{ element: "text", data: "@@" }],
           },
         },
       ]);

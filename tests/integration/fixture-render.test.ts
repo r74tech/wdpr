@@ -1,32 +1,66 @@
 import { describe, expect, it } from "bun:test";
 import type { SyntaxTree } from "@wdprlib/ast";
-import { renderToHtml } from "@wdprlib/render";
+import { renderToHtml, type ResolvedUser, type RenderOptions } from "@wdprlib/render";
 import * as fs from "fs";
 import * as path from "path";
 
 const FIXTURES_DIR = path.join(import.meta.dir, "../fixtures");
 
 /**
+ * Mock user database for testing
+ * Simulates Wikidot's user resolution behavior
+ */
+const MOCK_USERS: Record<string, { id: number; name: string }> = {
+  alice: { id: 1, name: "Alice" },
+  bob: { id: 2, name: "Bob" },
+  system: { id: 3, name: "system" },
+};
+
+/**
+ * Create a mock user resolver that mimics Wikidot's behavior
+ */
+function createMockUserResolver(): (username: string) => ResolvedUser | null {
+  return (username: string): ResolvedUser | null => {
+    const normalized = username.toLowerCase().trim();
+
+    // "anonymous" is special - returns null to render as "Anonymous" text
+    if (normalized === "anonymous") {
+      return null;
+    }
+
+    const user = MOCK_USERS[normalized];
+    if (!user) {
+      return null;
+    }
+
+    // Generate Wikidot-style URLs
+    const baseUrl = "http://www.wikidot.com";
+    return {
+      name: user.name,
+      url: `${baseUrl}/user:info/${normalized}`,
+      avatarUrl: `${baseUrl}/avatar.php?userid=${user.id}&size=small&timestamp=0`,
+      karmaUrl: `${baseUrl}/userkarma.php?u=${user.id}`,
+    };
+  };
+}
+
+/**
  * renderテストから除外するfixture
  * 除外する場合は理由をコメントで記載すること
  */
-const EXCLUDED_FIXTURES = new Set<string>([
-  "include/wikidot", // includeは外部ページ展開後のHTMLのため比較不可
-  "module/listpages", // ListPagesは動的コンテンツのため比較不可
-  "module/listpages-misc", // 同上
-  "module/backlinks/basic", // Backlinksは動的コンテンツ
-  "module/listusers/basic", // ListUsersは動的コンテンツ
-  "module/listusers/fail", // 同上
-  "module/pagetree", // PageTreeは動的コンテンツ（resolver未実装）
-  "table/fail-paragraph", // リンク解釈・段落内改行処理の問題（別issueで対応）
-  "expr/edge-cases", // エラーメッセージがWikidotと異なる（スタックベース vs 再帰下降）
-]);
+const EXCLUDED_FIXTURES = new Set<string>([]);
 
 /**
  * output.htmlが不要なfixture
+ * 動的モジュール: resolverを伴う完全実装が未完了のため一時的に除外
  */
 const NO_OUTPUT_REQUIRED = new Set<string>([
-  // 動的モジュール系はここに追加
+  "module/listpages",
+  "module/listpages-misc",
+  "module/listusers/basic",
+  "module/listusers/fail",
+  "module/pagetree",
+  "module/categories",
 ]);
 
 interface TestCase {
@@ -74,8 +108,20 @@ function normalizeHtml(html: string): string {
       .replace(/\r\n/g, "\n")
       // onclick属性を削除（Wikidot固有のJS）
       .replace(/ onclick="[^"]*"/g, "")
-      // 連続する空白・改行を単一スペースに（HTML的に等価）
-      .replace(/\s+/g, " ")
+      // タグ前後の改行を削除（ブロック要素の前後の改行はHTML的に無意味）
+      .replace(/\n\s*</g, "<")
+      .replace(/>\s*\n/g, ">")
+      // 残りの連続空白を単一スペースに（HTML的に等価）
+      .replace(/[ \t]+/g, " ")
+      // 属性順序を正規化（HTML的に等価）
+      .replace(
+        /<(\w+)((?:\s+[a-zA-Z_][\w-]*(?:="[^"]*")?)+)\s*(\/?)>/g,
+        (_match, tag, attrStr, selfClose) => {
+          const attrs = attrStr.trim().match(/[a-zA-Z_][\w-]*(?:="[^"]*")?/g) || [];
+          attrs.sort();
+          return `<${tag} ${attrs.join(" ")}${selfClose ? " /" : ""}>`;
+        },
+      )
       // タグ間の空白を削除
       .replace(/>\s+</g, "><")
       // <br />前後の空白を削除（HTML的に等価）
@@ -128,7 +174,15 @@ describe("Render Fixture Tests", () => {
         const syntaxTree: SyntaxTree = JSON.parse(expectedJson);
         const expectedHtml = fs.readFileSync(testCase.outputPath!, "utf-8");
 
-        const rendered = renderToHtml(syntaxTree);
+        const options: RenderOptions = {
+          page: {
+            pageName: "some-page",
+          },
+          resolvers: {
+            user: createMockUserResolver(),
+          },
+        };
+        const rendered = renderToHtml(syntaxTree, options);
         expect(normalizeHtml(rendered)).toBe(normalizeHtml(expectedHtml));
       });
     }

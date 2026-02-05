@@ -22,6 +22,15 @@ export const subscriptRule: InlineRule = {
     // Parse content between markers
     const result = parseInlineUntil({ ...ctx, pos: ctx.pos + 1 }, "SUB_MARKER");
 
+    // Empty subscript (,,,,) is ignored in Wikidot
+    if (result.elements.length === 0) {
+      return {
+        success: true,
+        elements: [],
+        consumed: 1 + result.consumed + 1,
+      };
+    }
+
     return {
       success: true,
       elements: [
@@ -34,7 +43,7 @@ export const subscriptRule: InlineRule = {
           },
         },
       ],
-      consumed: 1 + result.consumed + 1, // open + content + close
+      consumed: 1 + result.consumed + 1,
     };
   },
 };

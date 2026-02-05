@@ -1,4 +1,11 @@
-import type { Element, ImageSource, LinkLocation, SyntaxTree } from "@wdprlib/ast";
+import type {
+  Element,
+  ImageSource,
+  LinkLocation,
+  SyntaxTree,
+  BibliographyBlockData,
+  DefinitionListItem,
+} from "@wdprlib/ast";
 import type { RenderOptions, PageContext } from "./types";
 import { escapeHtml, escapeAttr, sanitizeAttributes } from "./escape";
 
@@ -11,12 +18,17 @@ export class RenderContext {
   private _footnoteIndex = 0;
   private _equationIndex = 0;
   private _htmlBlockIndex = 0;
+  private _bibciteCounter = 0;
 
   readonly options: RenderOptions;
   readonly footnotes: Element[][];
   readonly styles: string[];
   readonly htmlBlocks: string[];
   readonly tocElements: Element[];
+  /** Map from bibliography label to citation number (1-indexed) */
+  readonly bibliographyMap: Map<string, number>;
+  /** Bibliography entries (from bibliography-block) */
+  readonly bibliographyEntries: DefinitionListItem[];
 
   constructor(tree: SyntaxTree, options: RenderOptions = {}) {
     this.options = options;
@@ -24,6 +36,35 @@ export class RenderContext {
     this.styles = tree.styles ?? [];
     this.htmlBlocks = tree["html-blocks"] ?? [];
     this.tocElements = tree["table-of-contents"] ?? [];
+
+    // Build bibliography map from tree elements
+    this.bibliographyMap = new Map();
+    this.bibliographyEntries = [];
+    this.buildBibliographyMap(tree.elements);
+  }
+
+  /** Build bibliography label to number mapping from AST */
+  private buildBibliographyMap(elements: Element[]): void {
+    for (const el of elements) {
+      if (el.element === "bibliography-block") {
+        const data = el.data as BibliographyBlockData;
+        for (const entry of data.entries) {
+          if (!this.bibliographyMap.has(entry.key_string)) {
+            // Use continuous numbering across all bibliography blocks
+            const index = this.bibliographyMap.size + 1;
+            this.bibliographyMap.set(entry.key_string, index);
+            this.bibliographyEntries.push(entry);
+          }
+        }
+      }
+      // Recursively check nested elements
+      if ("data" in el && el.data && typeof el.data === "object") {
+        const data = el.data as Record<string, unknown>;
+        if ("elements" in data && Array.isArray(data.elements)) {
+          this.buildBibliographyMap(data.elements as Element[]);
+        }
+      }
+    }
   }
 
   /** Append raw HTML to the output */
@@ -61,6 +102,11 @@ export class RenderContext {
     return this._htmlBlockIndex++;
   }
 
+  /** Get and increment the bibcite counter (for unique IDs) */
+  nextBibciteCounter(): number {
+    return ++this._bibciteCounter;
+  }
+
   /** Get page context */
   get page(): PageContext | undefined {
     return this.options.page;
@@ -68,11 +114,21 @@ export class RenderContext {
 
   /** Resolve an ImageSource to a src URL */
   resolveImageSource(source: ImageSource): string {
+    const pageName = this.page?.pageName;
     switch (source.type) {
-      case "url":
-        return source.data;
+      case "url": {
+        // Convert /path to /local--files/path (Wikidot file reference)
+        const url = source.data;
+        if (url.startsWith("/") && !url.startsWith("//")) {
+          return `/local--files${url}`;
+        }
+        return url;
+      }
       case "file1":
-        return `/local--files/${source.data.file}`;
+        // file1 uses current page context
+        return pageName
+          ? `/local--files/${pageName}/${source.data.file}`
+          : `/local--files/${source.data.file}`;
       case "file2":
         return `/local--files/${source.data.page}/${source.data.file}`;
       case "file3":
@@ -85,11 +141,52 @@ export class RenderContext {
     if (typeof location === "string") {
       return location;
     }
-    // PageRef
-    if (location.site) {
-      return `https://${location.site}.wikidot.com/${location.page}`;
+    // PageRef - Wikidot normalizes page names
+    const page = location.page;
+
+    // Handle special cases first
+    // //path - protocol-relative or special routing
+    if (page.startsWith("//")) {
+      return page.toLowerCase();
     }
-    return `/${location.page}`;
+
+    // Handle # in page name (anchor routing like scp-series#001 or MAIN/#/page)
+    // The # and everything after should be preserved as-is
+    const hashIdx = page.indexOf("#");
+    if (hashIdx !== -1) {
+      let pagePart = page.slice(0, hashIdx);
+      const anchor = page.slice(hashIdx);
+      // Remove trailing slash before # (MAIN/ -> MAIN for MAIN/#/page)
+      if (pagePart.endsWith("/")) {
+        pagePart = pagePart.slice(0, -1);
+      }
+      // Don't apply slash-to-hyphen conversion for page part before #
+      return `/${pagePart.toLowerCase()}${anchor.toLowerCase()}`;
+    }
+
+    const normalizedPage = this.normalizePageName(page);
+    // Remove leading slash to prevent protocol-relative URLs (//...)
+    const safePage = normalizedPage.startsWith("/") ? normalizedPage.slice(1) : normalizedPage;
+
+    if (location.site) {
+      return `https://${location.site}.wikidot.com/${safePage}`;
+    }
+    return `/${safePage}`;
+  }
+
+  /** Normalize a page name according to Wikidot rules */
+  private normalizePageName(page: string): string {
+    // Lowercase
+    let normalized = page.toLowerCase();
+    // Remove space after category separator (system: Recent -> system:Recent)
+    normalized = normalized.replace(/:\s+/g, ":");
+    // Replace spaces with hyphens (Wikidot URL normalization)
+    normalized = normalized.replace(/\s+/g, "-").trim();
+    // Replace / with - (except at start)
+    if (!normalized.startsWith("/")) {
+      normalized = normalized.replace(/\//g, "-");
+    }
+    return normalized;
   }
 
   /** Render an AttributeMap to HTML attribute string (with leading space) */

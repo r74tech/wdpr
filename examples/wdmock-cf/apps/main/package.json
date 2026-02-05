@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && vite build --mode client",
+    "build": "vite build --mode client && vite build",
     "preview": "wrangler pages dev",
     "deploy": "bun run build && wrangler pages deploy dist",
     "typecheck": "bunx tsc --noEmit"
@@ -16,6 +16,7 @@
     "@wdprlib/parser": "workspace:*",
     "@wdprlib/render": "workspace:*",
     "@wdprlib/runtime": "workspace:*",
+    "hfmath": "^0.0.2",
     "hono": "^4.7.5"
   },
   "devDependencies": {

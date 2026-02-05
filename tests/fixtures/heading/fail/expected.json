@@ -8,84 +8,300 @@
         "elements": [
           {
             "element": "text",
-            "data": "+Fail h1"
+            "data": "+"
+          },
+          {
+            "element": "text",
+            "data": "Fail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h1"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "++Fail h2"
+            "data": "++"
+          },
+          {
+            "element": "text",
+            "data": "Fail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h2"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "+++Fail h3"
+            "data": "+++"
+          },
+          {
+            "element": "text",
+            "data": "Fail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h3"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "++++Fail h4"
+            "data": "++++"
+          },
+          {
+            "element": "text",
+            "data": "Fail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h4"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "+++++Fail h5"
+            "data": "+++++"
+          },
+          {
+            "element": "text",
+            "data": "Fail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h5"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "++++++Fail h6"
+            "data": "++++++"
+          },
+          {
+            "element": "text",
+            "data": "Fail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h6"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "+*Fail notoc h1"
+            "data": "+"
+          },
+          {
+            "element": "text",
+            "data": "*"
+          },
+          {
+            "element": "text",
+            "data": "Fail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "notoc"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h1"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "++*Fail notoc h2"
+            "data": "++"
+          },
+          {
+            "element": "text",
+            "data": "*"
+          },
+          {
+            "element": "text",
+            "data": "Fail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "notoc"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h2"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "+++*Fail notoc h3"
+            "data": "+++"
+          },
+          {
+            "element": "text",
+            "data": "*"
+          },
+          {
+            "element": "text",
+            "data": "Fail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "notoc"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h3"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "++++*Fail notoc h4"
+            "data": "++++"
+          },
+          {
+            "element": "text",
+            "data": "*"
+          },
+          {
+            "element": "text",
+            "data": "Fail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "notoc"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h4"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "+++++*Fail notoc h5"
+            "data": "+++++"
+          },
+          {
+            "element": "text",
+            "data": "*"
+          },
+          {
+            "element": "text",
+            "data": "Fail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "notoc"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h5"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "++++++*Fail notoc h6"
+            "data": "++++++"
+          },
+          {
+            "element": "text",
+            "data": "*"
+          },
+          {
+            "element": "text",
+            "data": "Fail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "notoc"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h6"
           }
         ]
       }
@@ -98,28 +314,68 @@
         "elements": [
           {
             "element": "text",
-            "data": "+++++++ h7"
+            "data": "+++++++"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h7"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "++++++++ h8"
+            "data": "++++++++"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h8"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "+++++++* h7"
+            "data": "+++++++"
+          },
+          {
+            "element": "text",
+            "data": "*"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h7"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "++++++++* h8"
+            "data": "++++++++"
+          },
+          {
+            "element": "text",
+            "data": "*"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "h8"
           }
         ]
       }

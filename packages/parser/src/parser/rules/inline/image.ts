@@ -46,7 +46,7 @@ function parseImageBlockName(
     pos++;
     consumed++;
   } else if (token?.type === "IDENTIFIER" && token.value.toLowerCase() === "f") {
-    // Check for f< or f>
+    // Check for f<, f>, or f=
     const nextToken = ctx.tokens[pos + 1];
     if (nextToken?.type === "TEXT" && nextToken.value === "<") {
       prefix = "f<";
@@ -58,6 +58,11 @@ function parseImageBlockName(
       consumed += 2;
     } else if (nextToken?.type === "BLOCKQUOTE_MARKER" && nextToken.value === ">") {
       prefix = "f>";
+      pos += 2;
+      consumed += 2;
+    } else if (nextToken?.type === "EQUALS") {
+      // f=image (float center)
+      prefix = "f=";
       pos += 2;
       consumed += 2;
     }
@@ -81,14 +86,14 @@ function parseImageSource(src: string): ImageSource {
   }
 
   // File references - determine type based on format
-  // file3: site:page/file
-  // file2: page/file
-  // file1: file
+  // file3: site:page/file or site/page/file (2+ slashes)
+  // file2: page/file (1 slash)
+  // file1: file (no slash)
   const colonIdx = src.indexOf(":");
   const slashIdx = src.indexOf("/");
 
   if (colonIdx > 0 && slashIdx > colonIdx) {
-    // site:page/file format
+    // site:page/file format (colon-based)
     const site = src.substring(0, colonIdx);
     const rest = src.substring(colonIdx + 1);
     const lastSlash = rest.lastIndexOf("/");
@@ -96,8 +101,20 @@ function parseImageSource(src: string): ImageSource {
     const file = rest.substring(lastSlash + 1);
     return { type: "file3", data: { site, page, file } };
   }
+
+  // Count slashes to determine format
+  const slashes = src.split("/").length - 1;
+  if (slashes >= 2) {
+    // site/page/file format (2+ slashes = file3)
+    const firstSlash = src.indexOf("/");
+    const lastSlash = src.lastIndexOf("/");
+    const site = src.substring(0, firstSlash);
+    const page = src.substring(firstSlash + 1, lastSlash);
+    const file = src.substring(lastSlash + 1);
+    return { type: "file3", data: { site, page, file } };
+  }
   if (slashIdx > 0) {
-    // page/file format
+    // page/file format (1 slash = file2)
     const page = src.substring(0, slashIdx);
     const file = src.substring(slashIdx + 1);
     return { type: "file2", data: { page, file } };
@@ -126,6 +143,9 @@ function parseAlignment(blockName: string): FloatAlignment | null {
   } else if (blockName === "f>image") {
     align = "right";
     float = true;
+  } else if (blockName === "f=image") {
+    align = "center";
+    float = true;
   } else if (blockName === "image") {
     return null;
   }
@@ -151,9 +171,9 @@ export const imageRule: InlineRule = {
       return { success: false };
     }
 
-    // Check for image, =image, <image, >image, f<image, f>image
+    // Check for image, =image, <image, >image, f<image, f>image, f=image
     const blockName = nameResult.name;
-    const imageNames = ["image", "=image", "<image", ">image", "f<image", "f>image"];
+    const imageNames = ["image", "=image", "<image", ">image", "f<image", "f>image", "f=image"];
     if (!imageNames.includes(blockName)) {
       return { success: false };
     }

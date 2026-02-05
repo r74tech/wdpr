@@ -22,9 +22,12 @@ import { tabviewRule } from "./tabview";
 import { includeRule } from "./include";
 import { mathBlockRule } from "./math";
 import { htmlBlockRule } from "./html";
+import { embedBlockRule } from "./embed-block";
 import { iframeRule } from "./iframe";
 import { iftagsRule } from "./iftags";
 import { tocRule } from "./toc";
+import { orphanLiRule } from "./orphan-li";
+import { bibliographyRule } from "./bibliography";
 
 export { headingRule } from "./heading";
 export { horizontalRuleRule } from "./horizontal-rule";
@@ -49,9 +52,12 @@ export { tabviewRule } from "./tabview";
 export { includeRule } from "./include";
 export { mathBlockRule } from "./math";
 export { htmlBlockRule } from "./html";
+export { embedBlockRule } from "./embed-block";
 export { iframeRule } from "./iframe";
 export { iftagsRule } from "./iftags";
 export { tocRule } from "./toc";
+export { orphanLiRule } from "./orphan-li";
+export { bibliographyRule } from "./bibliography";
 
 /**
  * All block rules in priority order
@@ -68,6 +74,7 @@ export const blockRules: BlockRule[] = [
   tableBlockRule,
   listRule,
   blockListRule,
+  orphanLiRule,
   blockquoteRule,
   definitionListRule,
   codeBlockRule,
@@ -80,8 +87,10 @@ export const blockRules: BlockRule[] = [
   includeRule,
   mathBlockRule,
   htmlBlockRule,
+  embedBlockRule,
   iframeRule,
   iftagsRule,
+  bibliographyRule,
   divRule,
   // paragraphRule is not included - used as fallback
 ];

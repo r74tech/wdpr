@@ -15,6 +15,7 @@ import { renderFootnoteRef, renderFootnoteBlock } from "./elements/footnote";
 import { renderMath, renderMathInline, renderEquationRef } from "./elements/math";
 import { renderModule } from "./elements/module/index";
 import { renderEmbed } from "./elements/embed";
+import { renderEmbedBlock } from "./elements/embed-block";
 import { renderUser } from "./elements/user";
 import { renderBibliographyCite, renderBibliographyBlock } from "./elements/bibliography";
 import { renderTableOfContents } from "./elements/toc";
@@ -117,7 +118,7 @@ export function renderElement(ctx: RenderContext, element: Element): void {
       renderBibliographyCite(ctx, element.data);
       break;
     case "bibliography-block":
-      renderBibliographyBlock(ctx, element.data);
+      renderBibliographyBlock(ctx, element.data, renderElements);
       break;
     case "table-of-contents":
       renderTableOfContents(ctx, element.data);
@@ -133,6 +134,9 @@ export function renderElement(ctx: RenderContext, element: Element): void {
       break;
     case "embed":
       renderEmbed(ctx, element.data);
+      break;
+    case "embed-block":
+      renderEmbedBlock(ctx, element.data);
       break;
     case "user":
       renderUser(ctx, element.data);

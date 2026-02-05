@@ -183,9 +183,6 @@
             }
           },
           {
-            "element": "line-break"
-          },
-          {
             "element": "text",
             "data": "BASIC"
           },
@@ -207,9 +204,6 @@
                 }
               ]
             }
-          },
-          {
-            "element": "line-break"
           },
           {
             "element": "text",
@@ -242,16 +236,7 @@
                 }
               ]
             }
-          }
-        ]
-      }
-    },
-    {
-      "element": "container",
-      "data": {
-        "type": "paragraph",
-        "attributes": {},
-        "elements": [
+          },
           {
             "element": "container",
             "data": {

@@ -1,12 +1,7 @@
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
-import {
-  parseBlockName,
-  parseAttributes,
-  parseBlocksUntil,
-  parseInlineContentUntil,
-} from "./utils";
+import { parseBlockName, parseAttributes, parseBlocksUntil } from "./utils";
 
 export const divRule: BlockRule = {
   name: "div",
@@ -54,8 +49,10 @@ export const divRule: BlockRule = {
 
     // Wikidot: [[div]] must be followed by newline to be recognized as block
     // [[div]]inline[[/div]] is NOT recognized as div
+    // When this fails, Wikidot consumes everything up to the last [[/div]]
+    // as text in a single paragraph (blank lines are ignored)
     if (ctx.tokens[pos]?.type !== "NEWLINE") {
-      return { success: false };
+      return consumeFailedDiv(ctx);
     }
     pos++;
     consumed++;
@@ -76,11 +73,12 @@ export const divRule: BlockRule = {
     let children: Element[];
 
     if (paragraphStrip) {
-      // div_ - parse inline content without paragraph wrapping
-      const bodyResult = parseInlineContentUntil(bodyCtx, closeCondition);
+      // div_ - parse as blocks, then unwrap first/last paragraphs
+      // Wikidot: blank lines create <p> for middle blocks only
+      const bodyResult = parseBlocksUntil(bodyCtx, closeCondition);
       consumed += bodyResult.consumed;
       pos += bodyResult.consumed;
-      children = bodyResult.elements;
+      children = unwrapEdgeParagraphs(bodyResult.elements);
     } else {
       // div - parse blocks with paragraph wrapping
       const bodyResult = parseBlocksUntil(bodyCtx, closeCondition);
@@ -124,3 +122,130 @@ export const divRule: BlockRule = {
     };
   },
 };
+
+/**
+ * When [[div]] fails as a block (no newline after ]]),
+ * consume everything up to the last [[/div]] as text elements.
+ * Wikidot merges failed div blocks into a single paragraph,
+ * ignoring blank lines between them.
+ */
+function consumeFailedDiv(ctx: ParseContext): RuleResult<Element> {
+  const elements: Element[] = [];
+  let pos = ctx.pos;
+  let consumed = 0;
+  let lastClosePos = -1;
+  let lastCloseConsumed = 0;
+
+  // Find the last [[/div]] in the contiguous block
+  let scanPos = pos;
+  while (scanPos < ctx.tokens.length) {
+    const t = ctx.tokens[scanPos];
+    if (!t || t.type === "EOF") break;
+    if (t.type === "BLOCK_END_OPEN") {
+      const nameResult = parseBlockName(ctx, scanPos + 1);
+      if (nameResult?.name === "div") {
+        // Found [[/div]] - record position after ]]
+        lastClosePos = scanPos;
+        lastCloseConsumed = 1 + nameResult.consumed; // [[/ + div
+        const closeToken = ctx.tokens[scanPos + 1 + nameResult.consumed];
+        if (closeToken?.type === "BLOCK_CLOSE") {
+          lastCloseConsumed++;
+        }
+      }
+    }
+    scanPos++;
+  }
+
+  if (lastClosePos === -1) {
+    // No [[/div]] found, fall back to normal failure
+    return { success: false };
+  }
+
+  // Consume everything from current position to after the last [[/div]]
+  const endPos = lastClosePos + lastCloseConsumed;
+  while (pos < endPos && pos < ctx.tokens.length) {
+    const t = ctx.tokens[pos];
+    if (!t || t.type === "EOF") break;
+
+    if (t.type === "NEWLINE") {
+      // Check if this is a blank line (NEWLINE+NEWLINE or NEWLINE+WHITESPACE+NEWLINE)
+      let peekPos = pos + 1;
+      while (ctx.tokens[peekPos]?.type === "WHITESPACE") peekPos++;
+      if (ctx.tokens[peekPos]?.type === "NEWLINE") {
+        // Blank line — skip all newlines and whitespace
+        while (ctx.tokens[pos]?.type === "NEWLINE" || ctx.tokens[pos]?.type === "WHITESPACE") {
+          pos++;
+          consumed++;
+        }
+        continue;
+      }
+      // Single newline → line-break
+      elements.push({ element: "line-break" });
+      pos++;
+      consumed++;
+      continue;
+    }
+
+    elements.push({ element: "text", data: t.value });
+    pos++;
+    consumed++;
+  }
+
+  // Consume trailing newline after [[/div]] if present
+  if (ctx.tokens[pos]?.type === "NEWLINE") {
+    pos++;
+    consumed++;
+  }
+
+  return {
+    success: true,
+    elements: [
+      {
+        element: "container",
+        data: {
+          type: "paragraph",
+          attributes: {},
+          elements,
+        },
+      },
+    ],
+    consumed,
+  };
+}
+
+/**
+ * Wikidot div_ (paragraph strip):
+ * First and last paragraph containers are unwrapped to bare elements.
+ * Middle paragraphs keep their <p> wrapping.
+ */
+function unwrapEdgeParagraphs(elements: Element[]): Element[] {
+  if (elements.length === 0) return elements;
+
+  const result = [...elements];
+
+  // Unwrap first element if paragraph
+  if (isParagraphContainer(result[0])) {
+    const inner = (result[0] as any).data.elements as Element[];
+    result.splice(0, 1, ...inner);
+  }
+
+  // Unwrap last element if paragraph (find new last index after splice)
+  const lastIdx = result.length - 1;
+  if (lastIdx >= 0 && isParagraphContainer(result[lastIdx])) {
+    const inner = (result[lastIdx] as any).data.elements as Element[];
+    result.splice(lastIdx, 1, ...inner);
+  }
+
+  return result;
+}
+
+function isParagraphContainer(el: Element | undefined): boolean {
+  return (
+    el !== undefined &&
+    el.element === "container" &&
+    typeof el.data === "object" &&
+    el.data !== null &&
+    "type" in el.data &&
+    el.data.type === "paragraph"
+  );
+}

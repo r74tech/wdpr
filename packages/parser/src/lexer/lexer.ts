@@ -27,6 +27,8 @@ interface LexerState {
 export class Lexer {
   private state: LexerState;
   private options: Required<LexerOptions>;
+  // Positions where ]] should be split into ] + ] (for invalid anchor names)
+  private splitBlockClosePositions: Set<number> = new Set();
 
   constructor(source: string, options: LexerOptions = {}) {
     this.options = {
@@ -66,6 +68,60 @@ export class Lexer {
    */
   private current(): string {
     return this.state.source[this.state.pos] ?? "";
+  }
+
+  /**
+   * Check if [[# is followed by an invalid anchor name that closes with ]].
+   * Valid: [[# valid-name]] where name matches [-_A-Za-z0-9.%]+
+   * Invalid: [[# name with spaces]] or [[# name$special]]
+   * When invalid, returns the position of the closing ]] so the lexer can
+   * emit tokens that allow the inner [# text] to be parsed as a described link.
+   */
+  private findInvalidAnchorNameEnd(): number | null {
+    const src = this.state.source;
+    const pos = this.state.pos;
+
+    // Must start with [[#
+    if (src[pos] !== "[" || src[pos + 1] !== "[" || src[pos + 2] !== "#") {
+      return null;
+    }
+
+    // Must have space after #
+    if (src[pos + 3] !== " ") {
+      return null;
+    }
+
+    // Skip spaces after #
+    let i = pos + 4;
+    while (i < src.length && src[i] === " ") {
+      i++;
+    }
+
+    // Scan for invalid characters
+    let foundInvalid = false;
+    while (i < src.length) {
+      const ch = src[i]!;
+      if (ch === "\n") return null;
+      if (ch === "]" && src[i + 1] === "]") {
+        // Reached ]] - if we found invalid chars, this is an invalid anchor name
+        return foundInvalid ? i : null;
+      }
+      const code = ch.charCodeAt(0);
+      const isValid =
+        (code >= 48 && code <= 57) || // 0-9
+        (code >= 65 && code <= 90) || // A-Z
+        (code >= 97 && code <= 122) || // a-z
+        code === 45 || // -
+        code === 95 || // _
+        code === 46 || // .
+        code === 37; // %
+      if (!isValid) {
+        foundInvalid = true;
+      }
+      i++;
+    }
+
+    return null;
   }
 
   /**
@@ -172,6 +228,18 @@ export class Lexer {
 
     // Block open [[
     if (this.match("[[")) {
+      // Check for invalid anchor name pattern: [[# name-with-spaces]]
+      // Wikidot's Anchor regex requires [-_A-Za-z0-9.%] only after [[# .
+      // If [[# is followed by invalid anchor name, decompose into
+      // TEXT "[" so the inner [# text] is parsed as a described anchor link.
+      // The closing ]] will also be split: ] (BRACKET_CLOSE) + ] (TEXT).
+      const invalidEnd = this.findInvalidAnchorNameEnd();
+      if (invalidEnd !== null) {
+        this.splitBlockClosePositions.add(invalidEnd);
+        this.advance(1);
+        this.addToken("TEXT", "[");
+        return;
+      }
       this.advance(2);
       this.addToken("BLOCK_OPEN", "[[");
       return;
@@ -186,6 +254,15 @@ export class Lexer {
 
     // Block close ]]
     if (this.match("]]")) {
+      // For invalid anchor names, split ]] into ] (BRACKET_CLOSE) + ] (TEXT)
+      if (this.splitBlockClosePositions.has(this.state.pos)) {
+        this.splitBlockClosePositions.delete(this.state.pos);
+        this.advance(1);
+        this.addToken("BRACKET_CLOSE", "]");
+        this.advance(1);
+        this.addToken("TEXT", "]");
+        return;
+      }
       this.advance(2);
       this.addToken("BLOCK_CLOSE", "]]");
       return;
@@ -233,8 +310,8 @@ export class Lexer {
       return;
     }
 
-    // Horizontal rule --- or more (check before --)
-    if (isLineStart && this.match("---")) {
+    // Horizontal rule ---- or more (4+ hyphens, check before --)
+    if (isLineStart && this.match("----")) {
       let dashes = "";
       while (this.current() === "-") {
         dashes += this.advance();
@@ -502,6 +579,13 @@ export class Lexer {
     if (char === "\\") {
       this.advance();
       this.addToken("BACKSLASH", "\\");
+      return;
+    }
+
+    // Backslash line break marker (U+E000, inserted by preproc)
+    if (char.charCodeAt(0) === 0xe000) {
+      this.advance();
+      this.addToken("BACKSLASH_BREAK", char);
       return;
     }
 

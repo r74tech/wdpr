@@ -22,6 +22,28 @@ export function renderLink(ctx: RenderContext, data: LinkData): void {
   // Build <a> tag
   const attrs: string[] = [`href="${escapeAttr(href)}"`];
 
+  // Add "newpage" class for page links that don't exist
+  // Only for page-type links (not direct URLs, anchors, etc.)
+  if (data.type === "page" && typeof data.link === "object") {
+    const page = data.link.page;
+    // Skip newpage class for special pages:
+    // - //path (protocol-relative or special routing)
+    // - category pages (contain :)
+    // - paths with #/ (hash routing like MAIN/#/page)
+    const isSpecialPage = page.startsWith("//") || page.includes(":") || page.includes("#/");
+    if (!isSpecialPage) {
+      // For anchor links (page#anchor), check if the page part exists
+      const hashIdx = page.indexOf("#");
+      const pageToCheck = hashIdx !== -1 ? page.slice(0, hashIdx) : page;
+      const pageExists = ctx.page?.pageExists;
+      // If pageExists is not provided, assume page doesn't exist (show newpage class)
+      const exists = pageExists ? pageExists(pageToCheck) : false;
+      if (!exists) {
+        attrs.push(`class="newpage"`);
+      }
+    }
+  }
+
   // Target attribute
   if (data.target) {
     const targetMap: Record<string, string> = {
@@ -32,6 +54,7 @@ export function renderLink(ctx: RenderContext, data: LinkData): void {
     };
     const targetValue = targetMap[data.target] ?? "_blank";
     attrs.push(`target="${targetValue}"`);
+    // Prevent tabnabbing for _blank targets
     if (targetValue === "_blank") {
       attrs.push(`rel="noopener noreferrer"`);
     }
@@ -92,6 +115,7 @@ export function renderAnchor(ctx: RenderContext, data: AnchorData): void {
     };
     const targetValue = targetMap[data.target] ?? "_blank";
     attrs.push(`target="${targetValue}"`);
+    // Prevent tabnabbing for _blank targets
     if (targetValue === "_blank") {
       attrs.push(`rel="noopener noreferrer"`);
     }

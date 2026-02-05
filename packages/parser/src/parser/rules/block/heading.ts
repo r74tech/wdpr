@@ -33,7 +33,11 @@ export const headingRule: BlockRule = {
       return { success: false };
     }
 
-    const depth = Math.min(marker.value.length, 6) as 1 | 2 | 3 | 4 | 5 | 6;
+    // Wikidot only supports h1-h6 (1-6 plus signs). 7+ is not a heading.
+    if (marker.value.length > 6) {
+      return { success: false };
+    }
+    const depth = marker.value.length as 1 | 2 | 3 | 4 | 5 | 6;
 
     // Skip whitespace
     while (ctx.tokens[pos]?.type === "WHITESPACE") {

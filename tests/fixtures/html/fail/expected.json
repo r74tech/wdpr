@@ -1,18 +1,9 @@
 {
   "elements": [
     {
-      "element": "container",
+      "element": "html",
       "data": {
-        "type": "paragraph",
-        "attributes": {},
-        "elements": [
-          {
-            "element": "html",
-            "data": {
-              "contents": "body { display: none; }"
-            }
-          }
-        ]
+        "contents": "body { display: none; }"
       }
     },
     {
@@ -23,7 +14,35 @@
         "elements": [
           {
             "element": "text",
-            "data": "[[html]]Forgot to close"
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "html"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          },
+          {
+            "element": "text",
+            "data": "Forgot"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "to"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "close"
           }
         ]
       }

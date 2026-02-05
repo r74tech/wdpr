@@ -8,7 +8,23 @@
         "elements": [
           {
             "element": "text",
-            "data": "[[ code ]]"
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "code"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "]]"
           },
           {
             "element": "line-break"

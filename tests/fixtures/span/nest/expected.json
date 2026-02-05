@@ -52,9 +52,17 @@
     {
       "element": "container",
       "data": {
-        "type": "paragraph",
+        "type": "span",
         "attributes": {},
         "elements": [
+          {
+            "element": "text",
+            "data": "outer"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
           {
             "element": "container",
             "data": {
@@ -63,35 +71,18 @@
               "elements": [
                 {
                   "element": "text",
-                  "data": "outer"
-                },
-                {
-                  "element": "text",
-                  "data": " "
-                },
-                {
-                  "element": "container",
-                  "data": {
-                    "type": "span",
-                    "attributes": {},
-                    "elements": [
-                      {
-                        "element": "text",
-                        "data": "inner"
-                      }
-                    ]
-                  }
-                },
-                {
-                  "element": "text",
-                  "data": " "
-                },
-                {
-                  "element": "text",
-                  "data": "more"
+                  "data": "inner"
                 }
               ]
             }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "more"
           }
         ]
       }
@@ -147,9 +138,17 @@
     {
       "element": "container",
       "data": {
-        "type": "paragraph",
+        "type": "span",
         "attributes": {},
         "elements": [
+          {
+            "element": "text",
+            "data": "outer"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
           {
             "element": "container",
             "data": {
@@ -158,35 +157,18 @@
               "elements": [
                 {
                   "element": "text",
-                  "data": "outer"
-                },
-                {
-                  "element": "text",
-                  "data": " "
-                },
-                {
-                  "element": "container",
-                  "data": {
-                    "type": "span",
-                    "attributes": {},
-                    "elements": [
-                      {
-                        "element": "text",
-                        "data": "inner"
-                      }
-                    ]
-                  }
-                },
-                {
-                  "element": "text",
-                  "data": " "
-                },
-                {
-                  "element": "text",
-                  "data": "more"
+                  "data": "inner"
                 }
               ]
             }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "more"
           }
         ]
       }

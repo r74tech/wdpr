@@ -13,6 +13,7 @@
   ],
   "scripts": {
     "build": "bunup",
+    "clean": "rm -rf packages/**/dist",
     "dev": "bunup --watch",
     "test": "bun test",
     "test:unit": "bun test tests/unit",

@@ -375,10 +375,11 @@
             "element": "image",
             "data": {
               "source": {
-                "type": "file2",
+                "type": "file3",
                 "data": {
-                  "page": "scp-wiki",
-                  "file": "some-other-page/my-picture.png"
+                  "site": "scp-wiki",
+                  "page": "some-other-page",
+                  "file": "my-picture.png"
                 }
               },
               "link": null,

@@ -8,42 +8,380 @@
         "elements": [
           {
             "element": "text",
-            "data": "[[iframe javascript:alert(1)]]"
-          },
-          {
-            "element": "line-break"
+            "data": "[["
           },
           {
             "element": "text",
-            "data": "[[iframe javascript: alert(1)]]"
-          },
-          {
-            "element": "line-break"
+            "data": "iframe"
           },
           {
             "element": "text",
-            "data": "[[iframe java script:alert(1)]]"
-          },
-          {
-            "element": "line-break"
+            "data": " "
           },
           {
             "element": "text",
-            "data": "[[iframe java\\nscript:alert(1)]]"
-          },
-          {
-            "element": "line-break"
+            "data": "javascript"
           },
           {
             "element": "text",
-            "data": "[[iframe data:,Foobar]]"
-          },
-          {
-            "element": "line-break"
+            "data": ":"
           },
           {
             "element": "text",
-            "data": "[[iframe data:text/html,%3Cscript%3Ealert%28%27XSS%27%29%3B%3C%2Fscript%3E]]"
+            "data": "alert"
+          },
+          {
+            "element": "text",
+            "data": "("
+          },
+          {
+            "element": "text",
+            "data": "1"
+          },
+          {
+            "element": "text",
+            "data": ")"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "iframe"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "javascript"
+          },
+          {
+            "element": "text",
+            "data": ":"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "alert"
+          },
+          {
+            "element": "text",
+            "data": "("
+          },
+          {
+            "element": "text",
+            "data": "1"
+          },
+          {
+            "element": "text",
+            "data": ")"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "iframe"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "java"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "script"
+          },
+          {
+            "element": "text",
+            "data": ":"
+          },
+          {
+            "element": "text",
+            "data": "alert"
+          },
+          {
+            "element": "text",
+            "data": "("
+          },
+          {
+            "element": "text",
+            "data": "1"
+          },
+          {
+            "element": "text",
+            "data": ")"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "iframe"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "java"
+          },
+          {
+            "element": "text",
+            "data": "\\"
+          },
+          {
+            "element": "text",
+            "data": "nscript"
+          },
+          {
+            "element": "text",
+            "data": ":"
+          },
+          {
+            "element": "text",
+            "data": "alert"
+          },
+          {
+            "element": "text",
+            "data": "("
+          },
+          {
+            "element": "text",
+            "data": "1"
+          },
+          {
+            "element": "text",
+            "data": ")"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "iframe"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "data"
+          },
+          {
+            "element": "text",
+            "data": ":"
+          },
+          {
+            "element": "text",
+            "data": ","
+          },
+          {
+            "element": "text",
+            "data": "Foobar"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "iframe"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "data"
+          },
+          {
+            "element": "text",
+            "data": ":"
+          },
+          {
+            "element": "text",
+            "data": "text"
+          },
+          {
+            "element": "text",
+            "data": "/"
+          },
+          {
+            "element": "text",
+            "data": "html"
+          },
+          {
+            "element": "text",
+            "data": ","
+          },
+          {
+            "element": "text",
+            "data": "%"
+          },
+          {
+            "element": "text",
+            "data": "3Cscript"
+          },
+          {
+            "element": "text",
+            "data": "%"
+          },
+          {
+            "element": "text",
+            "data": "3Ealert"
+          },
+          {
+            "element": "text",
+            "data": "%"
+          },
+          {
+            "element": "text",
+            "data": "28"
+          },
+          {
+            "element": "text",
+            "data": "%"
+          },
+          {
+            "element": "text",
+            "data": "27XSS"
+          },
+          {
+            "element": "text",
+            "data": "%"
+          },
+          {
+            "element": "text",
+            "data": "27"
+          },
+          {
+            "element": "text",
+            "data": "%"
+          },
+          {
+            "element": "text",
+            "data": "29"
+          },
+          {
+            "element": "text",
+            "data": "%"
+          },
+          {
+            "element": "text",
+            "data": "3B"
+          },
+          {
+            "element": "text",
+            "data": "%"
+          },
+          {
+            "element": "text",
+            "data": "3C"
+          },
+          {
+            "element": "text",
+            "data": "%"
+          },
+          {
+            "element": "text",
+            "data": "2Fscript"
+          },
+          {
+            "element": "text",
+            "data": "%"
+          },
+          {
+            "element": "text",
+            "data": "3E"
+          },
+          {
+            "element": "text",
+            "data": "]]"
           }
         ]
       }

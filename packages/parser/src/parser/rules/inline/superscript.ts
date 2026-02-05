@@ -22,6 +22,15 @@ export const superscriptRule: InlineRule = {
     // Parse content between markers
     const result = parseInlineUntil({ ...ctx, pos: ctx.pos + 1 }, "SUPER_MARKER");
 
+    // Empty superscript (^^^^) is ignored in Wikidot
+    if (result.elements.length === 0) {
+      return {
+        success: true,
+        elements: [],
+        consumed: 1 + result.consumed + 1,
+      };
+    }
+
     return {
       success: true,
       elements: [

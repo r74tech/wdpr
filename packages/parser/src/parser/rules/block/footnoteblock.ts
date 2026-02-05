@@ -128,6 +128,12 @@ export const footnoteBlockRule: BlockRule = {
     pos++;
     consumed++;
 
+    // Only first footnoteblock is valid; subsequent ones become text
+    if (ctx.footnoteBlockParsed) {
+      return { success: false };
+    }
+    ctx.footnoteBlockParsed = true;
+
     // Extract title and hide from attributes
     const title = attrs.title !== undefined ? attrs.title : null;
     const hide = attrs.hide === "true" || attrs.hide === "yes";

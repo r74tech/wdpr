@@ -11,6 +11,10 @@
             "data": "EMPTY"
           },
           {
+            "element": "text",
+            "data": " "
+          },
+          {
             "element": "line-break"
           },
           {

@@ -46,7 +46,27 @@
         "elements": [
           {
             "element": "text",
-            "data": "Then empty superscript:"
+            "data": "Then"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "empty"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "superscript"
+          },
+          {
+            "element": "text",
+            "data": ":"
           }
         ]
       }

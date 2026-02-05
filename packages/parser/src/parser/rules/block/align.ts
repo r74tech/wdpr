@@ -125,6 +125,12 @@ export const alignRule: BlockRule = {
   name: "align",
   startTokens: ["BLOCK_OPEN"],
   requiresLineStart: true,
+  preservesPrecedingLineBreak: true,
+
+  isStartPattern(ctx: ParseContext, pos: number): boolean {
+    if (ctx.tokens[pos]?.type !== "BLOCK_OPEN") return false;
+    return parseAlignOpen(ctx, pos + 1) !== null;
+  },
 
   parse(ctx: ParseContext): RuleResult<Element> {
     const openToken = currentToken(ctx);

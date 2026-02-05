@@ -34,6 +34,9 @@ export class Parser {
       tocEntries: [],
       codeBlocks: [],
       htmlBlocks: [],
+      // State flags
+      footnoteBlockParsed: false,
+      bibcites: [],
       // Rules (injected to avoid circular dependency)
       blockRules,
       blockFallbackRule,

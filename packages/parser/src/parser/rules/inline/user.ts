@@ -20,10 +20,10 @@ export const userRule: InlineRule = {
     let pos = ctx.pos + 1;
     let consumed = 1;
 
-    // Skip whitespace
-    while (ctx.tokens[pos]?.type === "WHITESPACE") {
-      pos++;
-      consumed++;
+    // Wikidot requires no whitespace immediately after [[
+    // [[ user]] is invalid, [[user]] is valid
+    if (ctx.tokens[pos]?.type === "WHITESPACE") {
+      return { success: false };
     }
 
     // Check for star (avatar flag)

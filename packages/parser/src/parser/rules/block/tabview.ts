@@ -220,7 +220,12 @@ export const tabviewRule: BlockRule = {
       }
     }
 
-    // Empty tabview is invalid
+    // Empty tabview is invalid - return failure so it falls back to plain text.
+    // Note: Ideally, a failed tabview like "EMPTY:\n[[tabview]]\n[[/tabview]]" should
+    // render as a single paragraph with <br /> separators (matching original Wikidot).
+    // Currently, the paragraph parser treats [[tabview]] as a block-start token and
+    // splits it into separate paragraphs. We chose to wrap each in <p> tags instead
+    // of implementing complex lookahead to detect invalid tabviews.
     if (tabs.length === 0) {
       return { success: false };
     }

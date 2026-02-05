@@ -11,7 +11,11 @@ import { linkSingleRule } from "./link-single";
 import { linkAnchorRule } from "./link-anchor";
 import { linkStarRule } from "./link-star";
 import { colorRule } from "./color";
-import { newlineLineBreakRule, underscoreLineBreakRule } from "./line-break";
+import {
+  backslashLineBreakRule,
+  newlineLineBreakRule,
+  underscoreLineBreakRule,
+} from "./line-break";
 import { commentRule } from "./comment";
 import { rawRule } from "./raw";
 import { spanRule, closeSpanRule } from "./span";
@@ -25,6 +29,7 @@ import { anchorRule } from "./anchor";
 import { mathInlineRule } from "./math-inline";
 import { equationRefRule } from "./equation-ref";
 import { exprRule, ifRule, ifExprRule } from "./expr";
+import { bibciteRule } from "./bibcite";
 import { textRule, fallbackRule } from "./text";
 
 export { boldRule } from "./bold";
@@ -39,7 +44,11 @@ export { linkSingleRule } from "./link-single";
 export { linkAnchorRule } from "./link-anchor";
 export { linkStarRule } from "./link-star";
 export { colorRule } from "./color";
-export { newlineLineBreakRule, underscoreLineBreakRule } from "./line-break";
+export {
+  backslashLineBreakRule,
+  newlineLineBreakRule,
+  underscoreLineBreakRule,
+} from "./line-break";
 export { commentRule } from "./comment";
 export { rawRule } from "./raw";
 export { spanRule, closeSpanRule } from "./span";
@@ -53,6 +62,7 @@ export { anchorRule } from "./anchor";
 export { mathInlineRule } from "./math-inline";
 export { equationRefRule } from "./equation-ref";
 export { exprRule, ifRule, ifExprRule } from "./expr";
+export { bibciteRule } from "./bibcite";
 export { textRule, fallbackRule } from "./text";
 
 /**
@@ -71,26 +81,27 @@ export const inlineRules: InlineRule[] = [
   linkAnchorRule,
   linkStarRule,
   colorRule,
+  backslashLineBreakRule,
   underscoreLineBreakRule,
-  newlineLineBreakRule, // Must come after underscore rule
+  newlineLineBreakRule,
   commentRule,
   rawRule,
   imageRule,
   sizeRule,
   footnoteRule,
   spanRule,
-  closeSpanRule, // Must come after spanRule to handle orphaned [[/span]]
+  closeSpanRule,
   userRule,
-  exprRule, // [[#expr ...]] - must come before anchorNameRule
-  ifRule, // [[#if ... | ... | ...]]
-  ifExprRule, // [[#ifexpr ... | ... | ...]]
-  anchorNameRule, // [[# name]] - has space after #
+  exprRule,
+  ifRule,
+  ifExprRule,
+  anchorNameRule,
   anchorRule,
   mathInlineRule,
   equationRefRule,
+  bibciteRule,
   guillemetRule,
   textRule,
-  // fallbackRule is not included - used explicitly when no rule matches
 ];
 
 export { fallbackRule as inlineFallbackRule };

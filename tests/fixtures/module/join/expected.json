@@ -24,7 +24,43 @@
         "elements": [
           {
             "element": "text",
-            "data": "[[ module JOIN button=\"Join our site!! ;-)\"]]"
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "module"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "JOIN"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "button"
+          },
+          {
+            "element": "text",
+            "data": "="
+          },
+          {
+            "element": "text",
+            "data": "\"Join our site!! ;-)\""
+          },
+          {
+            "element": "text",
+            "data": "]]"
           }
         ]
       }
@@ -35,7 +71,9 @@
         "module": "join",
         "button-text": null,
         "attributes": {
-          "class": "join-module"
+          "id": "join-btn",
+          "class": "join-module",
+          "style": "display: flex"
         }
       }
     },

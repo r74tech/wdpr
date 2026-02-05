@@ -63,8 +63,8 @@ export const colorRule: InlineRule = {
 
     const trimmedColor = colorSpec.trim();
 
-    // Wikidot allows empty color (##|text##), but text must have content
-    if (textChildren.length === 0) {
+    // Wikidot requires non-empty color spec and non-empty content
+    if (trimmedColor === "" || textChildren.length === 0) {
       return { success: false };
     }
 

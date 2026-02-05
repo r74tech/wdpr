@@ -98,6 +98,10 @@ function renderStringContainer(
       ctx.push("</span>");
       break;
     case "div":
+      // Wikidot skips empty divs without attributes
+      if (elements.length === 0 && Object.keys(attributes).length === 0) {
+        break;
+      }
       ctx.push(`<div${renderAttrs(attributes)}>`);
       renderElements(ctx, elements);
       ctx.push("</div>");

@@ -8,7 +8,39 @@
         "elements": [
           {
             "element": "text",
-            "data": "[[size 12pt]]Apple[[/size]]"
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "size"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "12pt"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          },
+          {
+            "element": "text",
+            "data": "Apple"
+          },
+          {
+            "element": "text",
+            "data": "[[/"
+          },
+          {
+            "element": "text",
+            "data": "size"
+          },
+          {
+            "element": "text",
+            "data": "]]"
           }
         ]
       }
@@ -45,7 +77,39 @@
         "elements": [
           {
             "element": "text",
-            "data": "[[size 2vh]]Melon[[/size]]"
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "size"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "2vh"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          },
+          {
+            "element": "text",
+            "data": "Melon"
+          },
+          {
+            "element": "text",
+            "data": "[[/"
+          },
+          {
+            "element": "text",
+            "data": "size"
+          },
+          {
+            "element": "text",
+            "data": "]]"
           }
         ]
       }

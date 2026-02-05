@@ -8,14 +8,122 @@
         "elements": [
           {
             "element": "text",
-            "data": "[[div]]inline[[/div]][[div]]inline, closing tag is on a new line"
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "div"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          },
+          {
+            "element": "text",
+            "data": "inline"
+          },
+          {
+            "element": "text",
+            "data": "[[/"
+          },
+          {
+            "element": "text",
+            "data": "div"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          },
+          {
+            "element": "text",
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "div"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          },
+          {
+            "element": "text",
+            "data": "inline"
+          },
+          {
+            "element": "text",
+            "data": ","
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "closing"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "tag"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "is"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "on"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "a"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "new"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "line"
           },
           {
             "element": "line-break"
           },
           {
             "element": "text",
-            "data": "[[/div]]"
+            "data": "[[/"
+          },
+          {
+            "element": "text",
+            "data": "div"
+          },
+          {
+            "element": "text",
+            "data": "]]"
           }
         ]
       }

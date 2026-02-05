@@ -10,7 +10,8 @@ export function renderText(ctx: RenderContext, data: string): void {
 export function renderRaw(ctx: RenderContext, data: string): void {
   if (data === "") return;
   ctx.push(`<span style="white-space: pre-wrap;">`);
-  ctx.push(escapeHtml(data));
+  // Wikidot encodes spaces as &#32; in raw content
+  ctx.push(escapeHtml(data).replace(/ /g, "&#32;"));
   ctx.push("</span>");
 }
 

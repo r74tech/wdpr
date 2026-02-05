@@ -28,28 +28,6 @@ export const blockquoteRule: BlockRule = {
     let consumed = 0;
 
     while (pos < ctx.tokens.length) {
-      // Skip empty lines (paragraph breaks) within blockquote
-      // This allows blockquotes to continue after blank lines
-      while (ctx.tokens[pos]?.type === "NEWLINE" && ctx.tokens[pos]?.lineStart) {
-        // Check if the next meaningful token is a blockquote marker
-        const nextPos = pos + 1;
-        const nextToken = ctx.tokens[nextPos];
-        if (nextToken?.type === "BLOCKQUOTE_MARKER" && nextToken.lineStart) {
-          // Empty line followed by blockquote - add line break to content and continue
-          // hasLineBreak: false because this is just marking an empty line,
-          // the next blockquote line will have its own line break
-          depths.push({
-            depth: 0,
-            ltype: null,
-            value: { elements: [], hasLineBreak: false },
-          });
-          pos++;
-          consumed++;
-        } else {
-          break;
-        }
-      }
-
       const markerToken = ctx.tokens[pos];
       if (!markerToken || !markerToken.lineStart || markerToken.type !== "BLOCKQUOTE_MARKER") {
         break;
@@ -67,6 +45,21 @@ export const blockquoteRule: BlockRule = {
       // Skip marker
       pos++;
       consumed++;
+
+      // Wikidot requires a space after > markers
+      // Lines without space (e.g. ">No") are consumed but not output
+      if (ctx.tokens[pos]?.type !== "WHITESPACE") {
+        // Consume rest of line silently
+        while (pos < ctx.tokens.length && ctx.tokens[pos]?.type !== "NEWLINE") {
+          pos++;
+          consumed++;
+        }
+        if (ctx.tokens[pos]?.type === "NEWLINE") {
+          pos++;
+          consumed++;
+        }
+        continue;
+      }
 
       // Skip whitespace after marker
       while (ctx.tokens[pos]?.type === "WHITESPACE") {
@@ -97,8 +90,12 @@ export const blockquoteRule: BlockRule = {
       });
     }
 
-    // No rows parsed - rule fails
+    // No rows parsed
     if (depths.length === 0) {
+      // If we consumed tokens (e.g. lines without space after >), return empty success
+      if (consumed > 0) {
+        return { success: true, elements: [], consumed };
+      }
       return { success: false };
     }
 
@@ -158,6 +155,11 @@ function buildBlockquoteElement(
 
   for (const item of list) {
     if (item.kind === "item") {
+      // Empty content line (e.g. "> ") acts as paragraph separator
+      if (item.value.elements.length === 0) {
+        flushParagraph();
+        continue;
+      }
       // Add elements to current paragraph
       currentParagraphChildren.push(...item.value.elements);
       // Add line break after this line

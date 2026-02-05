@@ -391,7 +391,7 @@ export interface BibliographyCiteData {
 }
 
 export interface BibliographyBlockData {
-  index: number;
+  entries: DefinitionListItem[];
   title: string | null;
   hide: boolean;
 }
@@ -422,6 +422,16 @@ export interface MathInlineData {
 }
 
 export interface HtmlData {
+  contents: string;
+  style?: string;
+}
+
+/**
+ * Embed block data (Wikidot style [[embed]]..[[/embed]])
+ * Contains raw HTML that is validated against an allowlist at render time.
+ * Unlike html element, embed-block is paragraph-safe.
+ */
+export interface EmbedBlockData {
   contents: string;
 }
 
@@ -505,6 +515,7 @@ export type ElementDataMap = {
   "math-inline": MathInlineData;
   "equation-reference": string;
   embed: Embed;
+  "embed-block": EmbedBlockData;
   html: HtmlData;
   iframe: IframeData;
   include: IncludeData;
@@ -784,6 +795,8 @@ export function isParagraphSafe(element: Element): boolean {
       return true;
     case "embed":
       return false;
+    case "embed-block":
+      return true;
     case "html":
     case "iframe":
       return false;

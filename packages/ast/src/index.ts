@@ -43,6 +43,7 @@ export type {
   Heading,
   DateItem,
   Embed,
+  EmbedBlockData,
   TocEntry,
   AnchorData,
   LinkData,

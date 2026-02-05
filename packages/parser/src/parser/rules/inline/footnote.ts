@@ -49,7 +49,11 @@ export const footnoteRule: InlineRule = {
     consumed++;
 
     // Parse content until [[/footnote]]
-    const children: Element[] = [];
+    // Wikidot footnote behavior:
+    // - First paragraph: inline content (no <p> tag)
+    // - After blank line: content wrapped in <p> tag
+    const paragraphs: Element[][] = [[]];
+    let currentParagraph = 0;
 
     while (pos < ctx.tokens.length) {
       const token = ctx.tokens[pos];
@@ -80,11 +84,25 @@ export const footnoteRule: InlineRule = {
         }
       }
 
-      // Handle NEWLINE as line-break within footnotes
+      // Handle NEWLINE - check if it's a paragraph break (blank line)
       if (token.type === "NEWLINE") {
-        children.push({ element: "line-break" });
         pos++;
         consumed++;
+        // Look ahead for another NEWLINE (blank line = paragraph break)
+        if (ctx.tokens[pos]?.type === "NEWLINE") {
+          // Skip all consecutive newlines
+          while (ctx.tokens[pos]?.type === "NEWLINE") {
+            pos++;
+            consumed++;
+          }
+          // Start new paragraph
+          currentParagraph++;
+          paragraphs[currentParagraph] = [];
+        } else {
+          // Single newline - just continue (becomes space or line-break)
+          // For Wikidot compatibility, single newlines in footnotes become <br />
+          paragraphs[currentParagraph]!.push({ element: "line-break" });
+        }
         continue;
       }
 
@@ -92,14 +110,44 @@ export const footnoteRule: InlineRule = {
       const inlineCtx: ParseContext = { ...ctx, pos };
       const inlineResult = parseInlineUntil(inlineCtx, "BLOCK_END_OPEN");
       if (inlineResult.elements.length > 0) {
-        children.push(...inlineResult.elements);
+        paragraphs[currentParagraph]!.push(...inlineResult.elements);
         pos += inlineResult.consumed;
         consumed += inlineResult.consumed;
       } else {
         // Fallback: just add as text
-        children.push({ element: "text", data: token.value });
+        paragraphs[currentParagraph]!.push({ element: "text", data: token.value });
         pos++;
         consumed++;
+      }
+    }
+
+    // Build children: first paragraph inline, subsequent paragraphs wrapped in <p>
+    const children: Element[] = [];
+    for (let i = 0; i < paragraphs.length; i++) {
+      const para = paragraphs[i]!;
+      if (para.length === 0) continue;
+      // Remove leading/trailing line-breaks
+      while (para.length > 0 && para[0]?.element === "line-break") {
+        para.shift();
+      }
+      while (para.length > 0 && para[para.length - 1]?.element === "line-break") {
+        para.pop();
+      }
+      if (para.length === 0) continue;
+
+      if (i === 0) {
+        // First paragraph: inline
+        children.push(...para);
+      } else {
+        // Subsequent paragraphs: wrapped in <p>
+        children.push({
+          element: "container",
+          data: {
+            type: "paragraph",
+            attributes: {},
+            elements: para,
+          },
+        });
       }
     }
 

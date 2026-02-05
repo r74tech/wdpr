@@ -2,8 +2,9 @@
  * Post-processing for parsed AST
  *
  * Handles span_ (paragraph strip) paragraph merging
+ * Handles empty expr splitting paragraphs
  */
-import type { Element, ContainerData } from "@wdprlib/ast";
+import type { Element, ContainerData, ExprData } from "@wdprlib/ast";
 
 /**
  * Check if an element is a container with specific type
@@ -227,6 +228,80 @@ function splitParagraphAtBlankLineSpans(para: Element): Element[] {
 }
 
 /**
+ * Check if an element is an empty expr (expression is empty string)
+ */
+function isEmptyExpr(el: Element): boolean {
+  if (el.element !== "expr") return false;
+  const data = el.data as ExprData;
+  return data.expression === "";
+}
+
+/**
+ * Split paragraph at empty expr elements
+ * Empty expr acts as a paragraph break
+ * Returns array of paragraphs (original may be split into multiple)
+ */
+function splitParagraphAtEmptyExpr(para: Element): Element[] {
+  const data = getContainerData(para);
+  if (!data || data.type !== "paragraph") return [para];
+
+  // Check if paragraph contains empty expr
+  const hasEmptyExpr = data.elements.some(isEmptyExpr);
+  if (!hasEmptyExpr) return [para];
+
+  const result: Element[] = [];
+  let currentElements: Element[] = [];
+
+  for (let i = 0; i < data.elements.length; i++) {
+    const child = data.elements[i];
+    if (!child) continue;
+
+    if (isEmptyExpr(child)) {
+      // Skip the empty expr and surrounding line-breaks
+      // Check if prev element is line-break, remove it
+      if (
+        currentElements.length > 0 &&
+        currentElements[currentElements.length - 1]?.element === "line-break"
+      ) {
+        currentElements.pop();
+      }
+      // Save current paragraph if not empty
+      if (currentElements.length > 0) {
+        result.push({
+          element: "container",
+          data: {
+            type: "paragraph",
+            attributes: {},
+            elements: currentElements,
+          },
+        });
+        currentElements = [];
+      }
+      // Skip next line-break if present
+      if (i + 1 < data.elements.length && data.elements[i + 1]?.element === "line-break") {
+        i++;
+      }
+    } else {
+      currentElements.push(child);
+    }
+  }
+
+  // Add remaining elements as final paragraph
+  if (currentElements.length > 0) {
+    result.push({
+      element: "container",
+      data: {
+        type: "paragraph",
+        attributes: {},
+        elements: currentElements,
+      },
+    });
+  }
+
+  return result.length > 0 ? result : [];
+}
+
+/**
  * Merge consecutive paragraphs that contain span_ (paragraph strip mode)
  * Wikidot behavior: span_ removes paragraph breaks around it
  *
@@ -237,15 +312,18 @@ function splitParagraphAtBlankLineSpans(para: Element): Element[] {
  * outside the paragraph.
  *
  * Also splits paragraphs containing spans with _splitByBlankLine marker.
+ * Also splits paragraphs at empty [[#expr ]] elements.
  */
 export function mergeSpanStripParagraphs(children: Element[]): Element[] {
-  // First pass: split paragraphs at _splitByBlankLine markers
+  // First pass: split paragraphs at _splitByBlankLine markers and empty expr
   const expandedChildren: Element[] = [];
   for (const child of children) {
     if (isContainer(child, "paragraph")) {
       const data = getContainerData(child);
       if (data && data.elements.some(isSplitSpan)) {
         expandedChildren.push(...splitParagraphAtBlankLineSpans(child));
+      } else if (data && data.elements.some(isEmptyExpr)) {
+        expandedChildren.push(...splitParagraphAtEmptyExpr(child));
       } else {
         expandedChildren.push(child);
       }
@@ -254,7 +332,8 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
     }
   }
 
-  // Second pass: merge span_ paragraphs
+  // Second pass: merge span_ paragraphs and unwrap them (no <p> tag)
+  // span_ removes paragraph boundaries, so merged content becomes top-level elements
   const result: Element[] = [];
   let i = 0;
 
@@ -268,15 +347,17 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
       continue;
     }
 
-    // Check if this paragraph contains a span_ marker
-    if (!hasParagraphStripSpan(node)) {
+    // Check if THIS paragraph contains span_
+    const thisHasSpanStrip = hasParagraphStripSpan(node);
+
+    // If this paragraph doesn't have span_, just output as normal paragraph
+    if (!thisHasSpanStrip) {
       result.push(node);
       i++;
       continue;
     }
 
-    // Found a paragraph with span_ - merge with ALL subsequent paragraphs
-    // until we hit a non-paragraph or a paragraph with special markers
+    // Start merging: collect elements from current and subsequent paragraphs
     const paraData = getContainerData(node);
     if (!paraData) {
       result.push(node);
@@ -286,26 +367,27 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
     const mergedChildren: Element[] = [...paraData.elements];
     i++;
 
+    // Continue merging subsequent paragraphs
     while (i < expandedChildren.length) {
-      const nextNode = expandedChildren[i];
-      if (!nextNode || !isContainer(nextNode, "paragraph")) {
+      const nextPara = expandedChildren[i];
+      if (!nextPara || !isContainer(nextPara, "paragraph")) {
         break;
       }
 
-      const nextParaData = getContainerData(nextNode);
+      const nextParaData = getContainerData(nextPara);
       if (!nextParaData) {
         break;
       }
 
-      // Merge: add the next paragraph's children to the current one
+      const hasSpanStrip = hasParagraphStripSpan(nextPara);
+
+      // Merge: add the next paragraph's children
       mergedChildren.push(...nextParaData.elements);
       i++;
 
-      // If this paragraph doesn't have span_, continue merging
-      // but we need to stop somewhere - stop after absorbing a non-span_ paragraph
-      // if the next one is also non-span_
-      if (!hasParagraphStripSpan(nextNode)) {
-        // Check if next paragraph also has span_ - if yes, continue merging
+      // If this paragraph doesn't have span_, check if the next one does
+      // If not, stop merging
+      if (!hasSpanStrip) {
         const peekNext = expandedChildren[i];
         if (!peekNext || !isContainer(peekNext, "paragraph") || !hasParagraphStripSpan(peekNext)) {
           break;
@@ -314,24 +396,33 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
     }
 
     // Extract escaped spans (content after blank line in span_)
-    // These go outside the paragraph
+    // These go outside the merged content
     const escapedSpans = extractEscapedSpans(mergedChildren);
 
     // Remove line-breaks that are adjacent to span_ elements
-    // Wikidot behavior: span_ removes paragraph breaks, including line-breaks
     removeLineBreaksAroundSpanStrip(mergedChildren);
 
-    // Create merged paragraph (without escaped spans)
-    if (mergedChildren.length > 0) {
-      const mergedPara: Element = {
-        element: "container",
-        data: {
-          type: "paragraph",
-          attributes: {},
-          elements: mergedChildren,
-        },
-      };
-      result.push(mergedPara);
+    // If there are escaped spans, wrap the main content in a paragraph
+    // This is because escaped spans split the content, and the main part needs <p>
+    // If no escaped spans, unwrap (no <p> tag) - span_ removes paragraph boundaries
+    if (escapedSpans.length > 0) {
+      // Wrap main content in paragraph
+      if (mergedChildren.length > 0) {
+        const para: Element = {
+          element: "container",
+          data: {
+            type: "paragraph",
+            attributes: {},
+            elements: mergedChildren,
+          },
+        };
+        result.push(para);
+      }
+    } else {
+      // UNWRAP: push merged children directly (no paragraph wrapper = no <p> tag)
+      for (const child of mergedChildren) {
+        result.push(child);
+      }
     }
 
     // Add escaped spans as top-level spans (outside paragraph)
@@ -401,6 +492,11 @@ function removeEmptySpansAndAdjacentWhitespace(elements: Element[]): Element[] {
  * Clean a single element and its children
  */
 function cleanElement(el: Element): Element {
+  // Remove internal flags from line-break elements
+  if (el.element === "line-break") {
+    return { element: "line-break" };
+  }
+
   if (el.element === "container") {
     const data = el.data as ContainerData;
 
@@ -434,6 +530,47 @@ function cleanElement(el: Element): Element {
         ...el.data,
         elements: cleanInternalFlags(el.data.elements),
       },
+    };
+  }
+
+  // Clean list items recursively
+  if (el.element === "list") {
+    const data = el.data as any;
+    return {
+      element: "list",
+      data: {
+        ...data,
+        items: data.items.map((item: any) => {
+          if (item["item-type"] === "elements") {
+            return {
+              ...item,
+              elements: cleanInternalFlags(item.elements),
+            };
+          } else if (item["item-type"] === "sub-list") {
+            // Recursively clean the nested list
+            const cleanedList = cleanElement({ element: "list", data: item.data } as Element);
+            return {
+              "item-type": "sub-list",
+              element: "list",
+              data: "data" in cleanedList ? cleanedList.data : item.data,
+            };
+          }
+          return item;
+        }),
+      },
+    };
+  }
+
+  // Clean definition-list items recursively
+  if (el.element === "definition-list") {
+    const items = el.data as any[];
+    return {
+      element: "definition-list",
+      data: items.map((item: any) => ({
+        ...item,
+        key: cleanInternalFlags(item.key),
+        value: cleanInternalFlags(item.value),
+      })),
     };
   }
 

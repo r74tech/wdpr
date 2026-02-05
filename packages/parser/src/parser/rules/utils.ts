@@ -133,12 +133,8 @@ export function parseBlockName(
   let pos = startPos;
   let consumed = 0;
 
-  // Skip whitespace
-  while (ctx.tokens[pos]?.type === "WHITESPACE") {
-    pos++;
-    consumed++;
-  }
-
+  // Wikidot does NOT allow whitespace between [[ and block name
+  // e.g. [[ code ]] is treated as plain text, not a code block
   const token = ctx.tokens[pos];
   if (!token || (token.type !== "TEXT" && token.type !== "IDENTIFIER")) {
     return null;

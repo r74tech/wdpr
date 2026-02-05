@@ -30,7 +30,7 @@ export function initWdprRuntime(options?: RuntimeOptions): WdprRuntime {
   cleanups.push(initJoin(root, options));
   cleanups.push(initHtmlBlockResize(root));
 
-  cleanups.push(initMath(root, options));
+  cleanups.push(initMath(root));
 
   initOdate(root);
   initEmail(root);

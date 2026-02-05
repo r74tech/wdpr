@@ -21,7 +21,7 @@ melon
 [[div data-paragraph="1"]]
 A paragraph here of text.
 
-Yet another paragraph underneath it.
+Yet another paragraph __underneath__ it.
 [[/div]]
 
 [[div]]
@@ -55,7 +55,7 @@ Apple
 [[div_]]
 alpha
 
-beta
+**beta**
 
 gamma
 [[/div]]

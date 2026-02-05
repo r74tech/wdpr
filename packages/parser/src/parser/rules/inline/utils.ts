@@ -109,24 +109,74 @@ export function parseInlineUntil(ctx: ParseContext, endType: TokenType): InlineP
             isInvalidBlockOpen = true;
           }
         }
+        // Check if this is [[footnoteblock]] but already parsed (2nd+ occurrence)
+        let skipWhitespace = 0;
+        while (ctx.tokens[afterOpen + skipWhitespace]?.type === "WHITESPACE") {
+          skipWhitespace++;
+        }
+        const blockNameToken = ctx.tokens[afterOpen + skipWhitespace];
+        if (
+          blockNameToken &&
+          (blockNameToken.type === "TEXT" || blockNameToken.type === "IDENTIFIER") &&
+          blockNameToken.value.toLowerCase() === "footnoteblock" &&
+          ctx.footnoteBlockParsed
+        ) {
+          isInvalidBlockOpen = true;
+        }
+      }
+
+      // Check if HEADING_MARKER would actually succeed as a heading
+      // Wikidot requires: 1-6 plus signs + whitespace. Otherwise it's plain text.
+      let isInvalidHeading = false;
+      if (nextMeaningfulToken?.type === "HEADING_MARKER") {
+        const markerLen = nextMeaningfulToken.value.length;
+        const afterMarkerPos = pos + lookAhead + 1;
+        const afterMarker = ctx.tokens[afterMarkerPos];
+        // Invalid if: 7+ plus signs, or no whitespace after marker (or after optional *)
+        if (markerLen > 6) {
+          isInvalidHeading = true;
+        } else if (afterMarker?.type === "STAR") {
+          // +* pattern - check whitespace after *
+          const afterStar = ctx.tokens[afterMarkerPos + 1];
+          if (afterStar?.type !== "WHITESPACE") {
+            isInvalidHeading = true;
+          }
+        } else if (afterMarker?.type !== "WHITESPACE") {
+          isInvalidHeading = true;
+        }
       }
 
       // Stop at double NEWLINE, EOF, or block start token (at line start)
-      // But don't stop at [[/span]], [[# name]], or [[>/[[< - they're not valid blocks
+      // But don't stop at [[/span]], [[# name]], [[>/[[<, or invalid headings
       const isBlockStart =
         nextMeaningfulToken &&
         BLOCK_START_TOKENS.includes(nextMeaningfulToken.type) &&
         nextMeaningfulToken.lineStart &&
         !isOrphanCloseSpan &&
         !isAnchorName &&
-        !isInvalidBlockOpen;
+        !isInvalidBlockOpen &&
+        !isInvalidHeading;
       if (
         !nextMeaningfulToken ||
         nextMeaningfulToken.type === "NEWLINE" ||
         nextMeaningfulToken.type === "EOF" ||
         isBlockStart
       ) {
-        // Consume the NEWLINE and stop (don't add line-break before block)
+        // Check if a block rule with preservesPrecedingLineBreak matches at the next position.
+        // Wikidot's Divalign expands content inline, so \n before it becomes <br />.
+        // Other blocks (Code, Div, etc.) suppress this by prepending \n\n to their token.
+        if (isBlockStart && nodes.length > 0) {
+          const nextPos = pos + lookAhead;
+          const shouldPreserve = ctx.blockRules.some(
+            (rule) => rule.preservesPrecedingLineBreak && rule.isStartPattern?.(ctx, nextPos),
+          );
+          if (shouldPreserve) {
+            const lb: any = { element: "line-break" };
+            lb._preservedTrailingBreak = true;
+            nodes.push(lb);
+          }
+        }
+        // Consume the NEWLINE and stop
         consumed++;
         if (nextMeaningfulToken?.type === "NEWLINE") {
           consumed++; // Also consume second newline for paragraph break

@@ -36,5 +36,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "hfmath": "^0.0.2"
   }
 }

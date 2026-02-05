@@ -177,9 +177,6 @@
     ],
     [
       {
-        "element": "line-break"
-      },
-      {
         "element": "text",
         "data": "This"
       },
@@ -228,217 +225,217 @@
         "data": "."
       },
       {
-        "element": "line-break"
-      },
-      {
-        "element": "line-break"
-      },
-      {
-        "element": "text",
-        "data": "It"
-      },
-      {
-        "element": "text",
-        "data": "'"
-      },
-      {
-        "element": "text",
-        "data": "s"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "a"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "large"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "explanation"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "about"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "something"
-      },
-      {
-        "element": "text",
-        "data": "."
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "Like"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "the"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "etymology"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "of"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "the"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "word"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "\"fruit\""
-      },
-      {
-        "element": "text",
-        "data": "."
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "Or"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "\"vegetable\""
-      },
-      {
-        "element": "text",
-        "data": "."
-      },
-      {
-        "element": "line-break"
-      },
-      {
-        "element": "text",
-        "data": "There"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "is"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "some"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
         "element": "container",
         "data": {
-          "type": "bold",
+          "type": "paragraph",
           "attributes": {},
           "elements": [
             {
               "element": "text",
-              "data": "formatting"
+              "data": "It"
+            },
+            {
+              "element": "text",
+              "data": "'"
+            },
+            {
+              "element": "text",
+              "data": "s"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "a"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "large"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "explanation"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "about"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "something"
+            },
+            {
+              "element": "text",
+              "data": "."
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "Like"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "the"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "etymology"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "of"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "the"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "word"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "\"fruit\""
+            },
+            {
+              "element": "text",
+              "data": "."
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "Or"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "\"vegetable\""
+            },
+            {
+              "element": "text",
+              "data": "."
+            },
+            {
+              "element": "line-break"
+            },
+            {
+              "element": "text",
+              "data": "There"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "is"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "some"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "container",
+              "data": {
+                "type": "bold",
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "formatting"
+                  }
+                ]
+              }
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "in"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "here"
+            },
+            {
+              "element": "text",
+              "data": " "
+            },
+            {
+              "element": "text",
+              "data": "too"
+            },
+            {
+              "element": "text",
+              "data": "."
             }
           ]
         }
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "in"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "here"
-      },
-      {
-        "element": "text",
-        "data": " "
-      },
-      {
-        "element": "text",
-        "data": "too"
-      },
-      {
-        "element": "text",
-        "data": "."
-      },
-      {
-        "element": "line-break"
       }
     ]
   ]

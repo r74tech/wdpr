@@ -227,8 +227,17 @@
                   "data": " "
                 },
                 {
-                  "element": "text",
-                  "data": "underneath"
+                  "element": "container",
+                  "data": {
+                    "type": "underline",
+                    "attributes": {},
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "underneath"
+                      }
+                    ]
+                  }
                 },
                 {
                   "element": "text",
@@ -440,14 +449,26 @@
             "data": "alpha"
           },
           {
-            "element": "line-break"
-          },
-          {
-            "element": "text",
-            "data": "beta"
-          },
-          {
-            "element": "line-break"
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "bold",
+                    "attributes": {},
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "beta"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           },
           {
             "element": "text",

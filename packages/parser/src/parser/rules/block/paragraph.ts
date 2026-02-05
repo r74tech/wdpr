@@ -81,8 +81,29 @@ export const paragraphRule: BlockRule = {
     let elements = processCloseSpanMarkers(result.elements);
 
     // Remove trailing line-breaks (they shouldn't appear at end of paragraph)
+    // Exception: line-breaks flagged by preserveTrailingLineBreak context are kept
     while (elements.length > 0 && elements[elements.length - 1]?.element === "line-break") {
+      const lastEl = elements[elements.length - 1] as any;
+      if (lastEl._preservedTrailingBreak) {
+        delete lastEl._preservedTrailingBreak;
+        break;
+      }
       elements.pop();
+    }
+
+    // Remove trailing whitespace-only text nodes
+    while (elements.length > 0) {
+      const last = elements[elements.length - 1];
+      if (
+        last?.element === "text" &&
+        "data" in last &&
+        typeof last.data === "string" &&
+        last.data.trim() === ""
+      ) {
+        elements.pop();
+      } else {
+        break;
+      }
     }
 
     // Remove leading line-breaks
@@ -92,6 +113,18 @@ export const paragraphRule: BlockRule = {
 
     if (elements.length === 0) {
       return { success: false };
+    }
+
+    // Wikidot: text lines immediately before a definition list are not
+    // wrapped in <p>. Check if next token starts a definition list.
+    const nextPos = ctx.pos + result.consumed;
+    const nextToken = ctx.tokens[nextPos];
+    if (nextToken?.type === "COLON" && nextToken.lineStart) {
+      return {
+        success: true,
+        elements: [...elements, { element: "line-break" }],
+        consumed: result.consumed,
+      };
     }
 
     return {

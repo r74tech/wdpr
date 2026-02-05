@@ -283,10 +283,6 @@
           {
             "element": "text",
             "data": "page"
-          },
-          {
-            "element": "text",
-            "data": " "
           }
         ]
       }
@@ -345,19 +341,28 @@
         "attributes": {},
         "elements": [
           {
-            "element": "link",
-            "data": {
-              "type": "page",
-              "link": {
-                "site": null,
-                "page": ""
-              },
-              "extra": null,
-              "label": {
-                "text": "some-page"
-              },
-              "target": null
-            }
+            "element": "text",
+            "data": "[[["
+          },
+          {
+            "element": "text",
+            "data": "|"
+          },
+          {
+            "element": "text",
+            "data": "some"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "page"
+          },
+          {
+            "element": "text",
+            "data": "]]]"
           },
           {
             "element": "line-break"
@@ -368,7 +373,7 @@
               "type": "page",
               "link": {
                 "site": null,
-                "page": "*"
+                "page": ""
               },
               "extra": null,
               "label": {
@@ -387,39 +392,19 @@
         "attributes": {},
         "elements": [
           {
-            "element": "text",
-            "data": "[[["
-          },
-          {
-            "element": "text",
-            "data": "some"
-          },
-          {
-            "element": "text",
-            "data": "-"
-          },
-          {
-            "element": "text",
-            "data": "page"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "text",
-            "data": "|"
-          },
-          {
-            "element": "line-break"
-          },
-          {
-            "element": "text",
-            "data": "Label"
-          },
-          {
-            "element": "text",
-            "data": "]]]"
+            "element": "link",
+            "data": {
+              "type": "page",
+              "link": {
+                "site": null,
+                "page": "some-page"
+              },
+              "extra": null,
+              "label": {
+                "text": "Label"
+              },
+              "target": null
+            }
           }
         ]
       }
@@ -525,7 +510,7 @@
                   "type": "page",
                   "link": {
                     "site": null,
-                    "page": "*SCP-001"
+                    "page": "SCP-001"
                   },
                   "extra": null,
                   "label": {
@@ -572,19 +557,32 @@
             "attributes": {},
             "elements": [
               {
-                "element": "link",
-                "data": {
-                  "type": "page",
-                  "link": {
-                    "site": null,
-                    "page": "home###"
-                  },
-                  "extra": null,
-                  "label": {
-                    "text": "Home"
-                  },
-                  "target": null
-                }
+                "element": "text",
+                "data": "[[["
+              },
+              {
+                "element": "text",
+                "data": "home"
+              },
+              {
+                "element": "text",
+                "data": "##"
+              },
+              {
+                "element": "text",
+                "data": "#"
+              },
+              {
+                "element": "text",
+                "data": "|"
+              },
+              {
+                "element": "text",
+                "data": "Home"
+              },
+              {
+                "element": "text",
+                "data": "]]]"
               }
             ]
           }
@@ -624,19 +622,56 @@
             "attributes": {},
             "elements": [
               {
-                "element": "link",
-                "data": {
-                  "type": "page",
-                  "link": {
-                    "site": null,
-                    "page": "MAIN/##/page#toc1"
-                  },
-                  "extra": null,
-                  "label": {
-                    "text": "Hash routing"
-                  },
-                  "target": null
-                }
+                "element": "text",
+                "data": "[[["
+              },
+              {
+                "element": "text",
+                "data": "MAIN"
+              },
+              {
+                "element": "text",
+                "data": "/"
+              },
+              {
+                "element": "text",
+                "data": "##"
+              },
+              {
+                "element": "text",
+                "data": "/"
+              },
+              {
+                "element": "text",
+                "data": "page"
+              },
+              {
+                "element": "text",
+                "data": "#"
+              },
+              {
+                "element": "text",
+                "data": "toc1"
+              },
+              {
+                "element": "text",
+                "data": "|"
+              },
+              {
+                "element": "text",
+                "data": "Hash"
+              },
+              {
+                "element": "text",
+                "data": " "
+              },
+              {
+                "element": "text",
+                "data": "routing"
+              },
+              {
+                "element": "text",
+                "data": "]]]"
               }
             ]
           }

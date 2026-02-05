@@ -1,5 +1,7 @@
 import type { EmbedBlockData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
+import DOMPurify, { type Config } from "dompurify";
+import { JSDOM } from "jsdom";
 
 /**
  * Boolean attributes that should be normalized to attr="attr" format
@@ -67,74 +69,66 @@ export const DEFAULT_EMBED_ALLOWLIST: RegExp[] = [
   /^<iframe[^>]*\s+src="https?:\/\/codepen\.io\/[^"]*"[^>]*>\s*<\/iframe>$/is,
 ];
 
-/**
- * Check if JS event handlers are present in the content (XSS prevention)
- */
-function hasJsEventHandlers(content: string): boolean {
-  // Match on* event handlers (onclick, onerror, onload, etc.)
-  return /<[^>]*\s+on[a-z]+\s*=/i.test(content);
-}
+// Initialize DOMPurify with jsdom
+const window = new JSDOM("").window;
+const purify = DOMPurify(window);
 
 /**
- * Check if content has any script tags (XSS prevention)
- * All script tags are blocked - no external widget scripts are allowed
+ * DOMPurify configuration for embed content
+ * Only allows iframe elements with safe attributes
  */
-function hasDangerousScripts(content: string): boolean {
-  // Block all script tags - \s* handles potential whitespace between < and script
-  return /<\s*script\b/i.test(content);
-}
+const DOMPURIFY_CONFIG: Config = {
+  ALLOWED_TAGS: ["iframe"],
+  ALLOWED_ATTR: [
+    "src",
+    "width",
+    "height",
+    "frameborder",
+    "allow",
+    "allowfullscreen",
+    "loading",
+    "referrerpolicy",
+    "sandbox",
+    "title",
+    "style",
+    "class",
+  ],
+  // Block data: and javascript: URIs
+  ALLOWED_URI_REGEXP: /^https:\/\//i,
+  // Forbid dangerous attributes
+  FORBID_ATTR: ["srcdoc", "onload", "onerror", "onclick"],
+};
 
 /**
- * Check if iframe has dangerous attributes that could lead to XSS
+ * Sanitize embed content using DOMPurify
+ * Returns null if content is completely removed or src is missing (dangerous content)
  */
-function hasDangerousIframeAttributes(content: string): boolean {
-  // Check for srcdoc attribute (can contain arbitrary HTML/scripts)
-  if (/\s+srcdoc\s*=/i.test(content)) {
-    return true;
+function sanitizeEmbed(content: string): string | null {
+  const sanitized = purify.sanitize(content.trim(), {
+    ...DOMPURIFY_CONFIG,
+    RETURN_TRUSTED_TYPE: false,
+  }) as string;
+  // If DOMPurify removed everything, the content was dangerous
+  if (!sanitized.trim()) {
+    return null;
   }
-
-  // Check ALL src attributes for dangerous schemes (not just the first one)
-  // This prevents bypass via duplicate src attributes
-  const srcMatches = content.matchAll(/\s+src\s*=\s*["']([^"']*)/gi);
-  for (const match of srcMatches) {
-    const srcValue = match[1]?.toLowerCase().trim();
-    // Only allow https:// scheme (http:// blocked to prevent mixed content / MITM)
-    if (srcValue && !srcValue.startsWith("https://")) {
-      return true;
-    }
+  // If iframe exists but has no src (was removed due to dangerous scheme), reject it
+  if (/<iframe[^>]*>/i.test(sanitized) && !/<iframe[^>]*\s+src\s*=/i.test(sanitized)) {
+    return null;
   }
-
-  return false;
+  return sanitized;
 }
 
 /**
- * Validate embed content against allowlist
+ * Validate embed content against allowlist (pattern-based pre-check)
  */
-function isAllowedEmbed(content: string, allowlist: RegExp[]): boolean {
+function matchesAllowlist(content: string, allowlist: RegExp[]): boolean {
   const trimmed = content.trim();
-
-  // Check for JS event handlers
-  if (hasJsEventHandlers(trimmed)) {
-    return false;
-  }
-
-  // Check for dangerous inline scripts or non-whitelisted script sources
-  if (hasDangerousScripts(trimmed)) {
-    return false;
-  }
-
-  // Check for dangerous iframe attributes (srcdoc, javascript: src, etc.)
-  if (/<iframe/i.test(trimmed) && hasDangerousIframeAttributes(trimmed)) {
-    return false;
-  }
-
-  // Check against allowlist patterns
   for (const pattern of allowlist) {
     if (pattern.test(trimmed)) {
       return true;
     }
   }
-
   return false;
 }
 
@@ -155,18 +149,29 @@ function normalizeBooleanAttributes(html: string): string {
 /**
  * Render embed-block element (Wikidot style [[embed]]..[[/embed]])
  *
- * Content is validated against an allowlist to prevent XSS.
- * Only matching content is rendered; otherwise an error message is shown.
+ * Content is validated in two stages:
+ * 1. Pattern-based allowlist check (for Wikidot compatibility)
+ * 2. DOMPurify sanitization (for XSS protection)
+ *
+ * Both stages must pass for content to be rendered.
  */
 export function renderEmbedBlock(ctx: RenderContext, data: EmbedBlockData): void {
   const allowlist = ctx.options.embedAllowlist ?? DEFAULT_EMBED_ALLOWLIST;
 
-  if (!isAllowedEmbed(data.contents, allowlist)) {
+  // Stage 1: Pattern-based allowlist check
+  if (!matchesAllowlist(data.contents, allowlist)) {
+    ctx.push('<div class="error-block">Sorry, no match for the embedded content.</div>');
+    return;
+  }
+
+  // Stage 2: DOMPurify sanitization (defense in depth)
+  const sanitized = sanitizeEmbed(data.contents);
+  if (sanitized === null) {
     ctx.push('<div class="error-block">Sorry, no match for the embedded content.</div>');
     return;
   }
 
   // Normalize boolean attributes and output
-  const normalized = normalizeBooleanAttributes(data.contents);
+  const normalized = normalizeBooleanAttributes(sanitized);
   ctx.push(normalized);
 }

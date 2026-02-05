@@ -6,10 +6,10 @@ Wikidot markup parser and renderer.
 
 | Package | Description |
 |---------|-------------|
-| [@wdprlib/ast](./packages/ast) | AST type definitions |
-| [@wdprlib/parser](./packages/parser) | Wikidot markup parser |
-| [@wdprlib/render](./packages/render) | HTML renderer |
-| [@wdprlib/runtime](./packages/runtime) | Client-side runtime for interactive elements |
+| [@wdprlib/ast](./packages/ast) | AST types for Wikidot markup |
+| [@wdprlib/parser](./packages/parser) | Parser for Wikidot markup |
+| [@wdprlib/render](./packages/render) | HTML renderer for Wikidot markup |
+| [@wdprlib/runtime](./packages/runtime) | Client-side runtime for Wikidot markup |
 
 ## Installation
 

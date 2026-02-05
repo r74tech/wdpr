@@ -208,6 +208,7 @@ export const bibliographyRule: BlockRule = {
 
     // Parse bibliography entries
     const entries: BibliographyEntry[] = [];
+    let foundClose = false;
 
     while (pos < ctx.tokens.length) {
       const token = ctx.tokens[pos];
@@ -219,6 +220,7 @@ export const bibliographyRule: BlockRule = {
       if (token.type === "BLOCK_END_OPEN") {
         const closeNameResult = parseBlockName(ctx, pos + 1);
         if (closeNameResult?.name === "bibliography") {
+          foundClose = true;
           // Consume [[/bibliography]]
           pos++;
           consumed++;
@@ -259,6 +261,11 @@ export const bibliographyRule: BlockRule = {
       // Skip unknown tokens
       pos++;
       consumed++;
+    }
+
+    // Require closing tag - without it, fail to prevent consuming entire document
+    if (!foundClose) {
+      return { success: false };
     }
 
     // Convert to definition list format for AST storage

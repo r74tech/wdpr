@@ -72,6 +72,7 @@ export const orphanLiRule: BlockRule = {
 
     // Collect content until [[/li]]
     const elements: Element[] = [];
+    let foundClose = false;
 
     // Output [[li]] as text
     elements.push({ element: "text", data: "[[" });
@@ -90,6 +91,7 @@ export const orphanLiRule: BlockRule = {
       // Check for [[/li]] close
       const liClose = isLiClose(ctx, pos);
       if (liClose) {
+        foundClose = true;
         // Output [[/li]] as text (no <br /> before it)
         elements.push({ element: "text", data: "[[/" });
         elements.push({ element: "text", data: "li" });
@@ -123,6 +125,11 @@ export const orphanLiRule: BlockRule = {
       elements.push({ element: "text", data: token.value });
       pos++;
       consumed++;
+    }
+
+    // Require closing tag - without it, fail to prevent consuming entire document
+    if (!foundClose) {
+      return { success: false };
     }
 
     return {

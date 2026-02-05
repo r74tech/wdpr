@@ -10,7 +10,7 @@ export function renderInclude(ctx: RenderContext, data: IncludeData): void {
     // Wikidot normalizes page names to lowercase
     const pageName = data.location.page.toLowerCase();
     // Encode page name for URL path (/ should not be encoded, but special chars should)
-    const encodedPageName = pageName.replace(/[^a-z0-9\-_:\/]/g, (c) => encodeURIComponent(c));
+    const encodedPageName = pageName.replace(/[^a-z0-9\-_:/]/g, (c) => encodeURIComponent(c));
     // Prevent protocol-relative URLs
     const safePath = encodedPageName.startsWith("/") ? encodedPageName.slice(1) : encodedPageName;
     ctx.push(

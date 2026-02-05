@@ -52,6 +52,7 @@ export const embedBlockRule: BlockRule = {
 
     // Collect content until [[/embed]], [[/embedvideo]], or [[/embedaudio]]
     let contents = "";
+    let foundClose = false;
 
     while (pos < ctx.tokens.length) {
       const token = ctx.tokens[pos];
@@ -63,6 +64,7 @@ export const embedBlockRule: BlockRule = {
         if (closeNameResult) {
           const closeName = closeNameResult.name.toLowerCase();
           if (closeName === "embed" || closeName === "embedvideo" || closeName === "embedaudio") {
+            foundClose = true;
             break;
           }
         }
@@ -71,6 +73,11 @@ export const embedBlockRule: BlockRule = {
       contents += token.value;
       pos++;
       consumed++;
+    }
+
+    // Require closing tag - without it, fail to prevent consuming entire document
+    if (!foundClose) {
+      return { success: false };
     }
 
     // Consume [[/embed*]]

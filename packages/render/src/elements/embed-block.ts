@@ -73,28 +73,31 @@ export const DEFAULT_EMBED_ALLOWLIST: RegExp[] = [
 const window = new JSDOM("").window;
 const purify = DOMPurify(window);
 
+// Add hook to validate src attribute (only allow https://)
+purify.addHook("uponSanitizeAttribute", (_node, data) => {
+  if (data.attrName === "src" && data.attrValue) {
+    if (!data.attrValue.startsWith("https://")) {
+      data.attrValue = "";
+      data.forceKeepAttr = false;
+    }
+  }
+});
+
 /**
  * DOMPurify configuration for embed content
  * Only allows iframe elements with safe attributes
  */
 const DOMPURIFY_CONFIG: Config = {
   ALLOWED_TAGS: ["iframe"],
-  ALLOWED_ATTR: [
-    "src",
-    "width",
-    "height",
-    "frameborder",
+  // Add iframe-specific attributes to the default allowlist
+  ADD_ATTR: [
     "allow",
     "allowfullscreen",
+    "frameborder",
     "loading",
     "referrerpolicy",
     "sandbox",
-    "title",
-    "style",
-    "class",
   ],
-  // Block data: and javascript: URIs
-  ALLOWED_URI_REGEXP: /^https:\/\//i,
   // Forbid dangerous attributes
   FORBID_ATTR: ["srcdoc", "onload", "onerror", "onclick"],
 };
@@ -112,9 +115,12 @@ function sanitizeEmbed(content: string): string | null {
   if (!sanitized.trim()) {
     return null;
   }
-  // If iframe exists but has no src (was removed due to dangerous scheme), reject it
-  if (/<iframe[^>]*>/i.test(sanitized) && !/<iframe[^>]*\s+src\s*=/i.test(sanitized)) {
-    return null;
+  // If iframe exists but has no valid src (empty or removed), reject it
+  if (/<iframe[^>]*>/i.test(sanitized)) {
+    const srcMatch = sanitized.match(/\s+src\s*=\s*["']([^"']*)["']/i);
+    if (!srcMatch || !srcMatch[1]) {
+      return null;
+    }
   }
   return sanitized;
 }
@@ -133,15 +139,19 @@ function matchesAllowlist(content: string, allowlist: RegExp[]): boolean {
 }
 
 /**
- * Normalize boolean attributes to Wikidot format (attr -> attr="attr")
+ * Normalize boolean attributes to Wikidot format (attr -> attr="attr" or attr="" -> attr="attr")
  */
 function normalizeBooleanAttributes(html: string): string {
   let result = html;
   for (const attr of BOOLEAN_ATTRIBUTES) {
     // Match standalone boolean attribute (not already having a value)
     // Pattern: attr followed by whitespace, > or />
-    const pattern = new RegExp(`\\s${attr}(?=\\s|>|/>)`, "gi");
-    result = result.replace(pattern, ` ${attr}="${attr}"`);
+    const standalonePattern = new RegExp(`\\s${attr}(?=\\s|>|/>)`, "gi");
+    result = result.replace(standalonePattern, ` ${attr}="${attr}"`);
+
+    // Match attr="" (empty value, DOMPurify output)
+    const emptyValuePattern = new RegExp(`\\s${attr}=""`, "gi");
+    result = result.replace(emptyValuePattern, ` ${attr}="${attr}"`);
   }
   return result;
 }

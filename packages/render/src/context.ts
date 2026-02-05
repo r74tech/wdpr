@@ -48,12 +48,12 @@ export class RenderContext {
     for (const el of elements) {
       if (el.element === "bibliography-block") {
         const data = el.data as BibliographyBlockData;
-        let index = 1;
         for (const entry of data.entries) {
           if (!this.bibliographyMap.has(entry.key_string)) {
+            // Use continuous numbering across all bibliography blocks
+            const index = this.bibliographyMap.size + 1;
             this.bibliographyMap.set(entry.key_string, index);
             this.bibliographyEntries.push(entry);
-            index++;
           }
         }
       }

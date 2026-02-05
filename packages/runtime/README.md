@@ -11,24 +11,24 @@ bun add @wdprlib/runtime
 ## Usage
 
 ```ts
-import { initWdprRuntime } from '@wdprlib/runtime'
-import type { WdprRuntime, RuntimeOptions } from '@wdprlib/runtime'
+import { initWdprRuntime } from "@wdprlib/runtime";
+import type { WdprRuntime, RuntimeOptions } from "@wdprlib/runtime";
 
 // Initialize after DOM is ready
 const runtime: WdprRuntime = initWdprRuntime({
-  root: document.getElementById('page-content') as HTMLElement,
+  root: document.getElementById("page-content") as HTMLElement,
   onRate: async (pageId, points) => {
-    const res = await fetch('/api/rate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("/api/rate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ page_id: pageId, points }),
-    })
-    return res.json()
+    });
+    return res.json();
   },
-})
+});
 
 // Cleanup when navigating away or re-rendering
-runtime.destroy()
+runtime.destroy();
 ```
 
 ## Features

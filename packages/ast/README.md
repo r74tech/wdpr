@@ -11,18 +11,13 @@ bun add @wdprlib/ast
 ## Usage
 
 ```ts
-import type { SyntaxTree, Element } from '@wdprlib/ast'
-import { text, paragraph, bold } from '@wdprlib/ast'
+import type { SyntaxTree, Element } from "@wdprlib/ast";
+import { text, paragraph, bold } from "@wdprlib/ast";
 
 // Create AST nodes
 const tree: SyntaxTree = {
-  elements: [
-    paragraph([
-      bold([text('Hello')]),
-      text(' world'),
-    ]),
-  ],
-}
+  elements: [paragraph([bold([text("Hello")]), text(" world")])],
+};
 ```
 
 ## Exports

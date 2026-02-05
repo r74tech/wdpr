@@ -11,31 +11,31 @@ bun add @wdprlib/render
 ## Usage
 
 ```ts
-import { parse } from '@wdprlib/parser'
-import { renderToHtml } from '@wdprlib/render'
-import type { PageContext, RenderOptions } from '@wdprlib/render'
+import { parse } from "@wdprlib/parser";
+import { renderToHtml } from "@wdprlib/render";
+import type { PageContext, RenderOptions } from "@wdprlib/render";
 
-const ast = parse('**Hello** world')
+const ast = parse("**Hello** world");
 
 // Basic rendering
-const html = renderToHtml(ast)
+const html = renderToHtml(ast);
 
 // With page context and resolvers
 const pageContext: PageContext = {
-  pageName: 'main',
-  site: 'mysite',
-  domain: 'mysite.example.com',
+  pageName: "main",
+  site: "mysite",
+  domain: "mysite.example.com",
   pageExists: (name) => checkPageExists(name),
-}
+};
 
 const html = renderToHtml(ast, {
   page: pageContext,
   footnotes: ast.footnotes,
   resolvers: {
-    user: (username) => ({ name: username, displayName: 'Display Name' }),
+    user: (username) => ({ name: username, displayName: "Display Name" }),
     htmlBlockUrl: (index) => `/local--html/page/${index}`,
   },
-})
+});
 ```
 
 ## Features

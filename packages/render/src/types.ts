@@ -1,4 +1,5 @@
 import type { Element } from "@wdprlib/ast";
+import type { EmbedAllowlistEntry } from "./elements/embed-block";
 
 /**
  * Page context for resolving links, images, etc.
@@ -73,10 +74,11 @@ export interface RenderOptions {
    */
   htmlBlockSandbox?: string | null;
   /**
-   * Allowlist patterns for [[embed]] content.
-   * Only content matching at least one pattern will be rendered.
-   * If not provided, uses default allowlist (YouTube, Vimeo, etc.).
-   * Set to empty array to block all embeds.
+   * Allowlist for [[embed]] content with host and optional path validation.
+   * - undefined: Uses default allowlist (YouTube, Vimeo, etc. with path restrictions)
+   * - EmbedAllowlistEntry[]: Custom allowlist with host patterns and optional path prefixes
+   * - []: Block all embeds
+   * - null: Allow any HTTPS iframe (Wikidot's 'anyiframe' behavior)
    */
-  embedAllowlist?: RegExp[];
+  embedAllowlist?: EmbedAllowlistEntry[] | null;
 }

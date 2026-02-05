@@ -32,41 +32,39 @@ const BOOLEAN_ATTRIBUTES = [
 ];
 
 /**
- * Default allowlist patterns for embed content (ported from Wikidot's default.php)
- * Only content matching these patterns will be rendered.
- *
- * Security: The 'anyiframe' pattern is kept for Wikidot compatibility, but
- * hasDangerousIframeAttributes() blocks dangerous attributes like srcdoc and
- * non-https src URLs. hasDangerousScripts() blocks all script tags.
+ * Allowlist entry for embed content validation
+ * Each entry specifies a host pattern and optional path prefix
  */
-export const DEFAULT_EMBED_ALLOWLIST: RegExp[] = [
-  // Any iframe with standard attributes (Wikidot's 'anyiframe' pattern)
-  // Note: Dangerous attributes are blocked separately by hasDangerousIframeAttributes()
-  /^<iframe(\s+[a-z0-9_]+\s*=\s*"[^"]*")+>\s*<\/iframe>$/is,
+export interface EmbedAllowlistEntry {
+  /** Host pattern. Supports wildcard prefix '*.' (e.g., '*.youtube.com') */
+  host: string;
+  /** Optional path prefix that must match (e.g., '/embed/') */
+  pathPrefix?: string;
+}
 
-  // YouTube embed
-  /^<iframe[^>]*\s+src="https?:\/\/(www\.)?youtube\.com\/embed\/[a-zA-Z0-9_-]+"[^>]*>\s*<\/iframe>$/is,
-  /^<iframe[^>]*\s+src="https?:\/\/(www\.)?youtube-nocookie\.com\/embed\/[a-zA-Z0-9_-]+"[^>]*>\s*<\/iframe>$/is,
-
-  // Vimeo embed
-  /^<iframe[^>]*\s+src="https?:\/\/player\.vimeo\.com\/video\/[0-9]+"[^>]*>\s*<\/iframe>$/is,
-
+/**
+ * Default allowlist for embed content (ported from Wikidot's default.php)
+ * Only iframes with src matching these host+path patterns will be rendered.
+ *
+ * Note: Set to null to allow any HTTPS iframe (Wikidot's 'anyiframe' behavior).
+ * DOMPurify still enforces HTTPS-only and blocks dangerous attributes.
+ */
+export const DEFAULT_EMBED_ALLOWLIST: EmbedAllowlistEntry[] | null = [
+  // YouTube
+  { host: "*.youtube.com", pathPrefix: "/embed/" },
+  { host: "*.youtube-nocookie.com", pathPrefix: "/embed/" },
+  // Vimeo
+  { host: "player.vimeo.com", pathPrefix: "/video/" },
   // Google Maps
-  /^<iframe[^>]*\s+src="https?:\/\/www\.google\.com\/maps\/embed[^"]*"[^>]*>\s*<\/iframe>$/is,
-
+  { host: "*.google.com", pathPrefix: "/maps/embed" },
   // Google Calendar
-  /^<iframe[^>]*\s+src="https?:\/\/calendar\.google\.com\/calendar\/embed[^"]*"[^>]*>\s*<\/iframe>$/is,
-
+  { host: "calendar.google.com", pathPrefix: "/calendar/embed" },
   // Spotify
-  /^<iframe[^>]*\s+src="https?:\/\/open\.spotify\.com\/embed\/[^"]*"[^>]*>\s*<\/iframe>$/is,
-
+  { host: "open.spotify.com", pathPrefix: "/embed/" },
   // SoundCloud
-  /^<iframe[^>]*\s+src="https?:\/\/w\.soundcloud\.com\/player\/[^"]*"[^>]*>\s*<\/iframe>$/is,
-
-  // Note: Twitter/X embed pattern removed due to XSS risks with blockquote content injection
-
+  { host: "w.soundcloud.com", pathPrefix: "/player/" },
   // CodePen
-  /^<iframe[^>]*\s+src="https?:\/\/codepen\.io\/[^"]*"[^>]*>\s*<\/iframe>$/is,
+  { host: "codepen.io" },
 ];
 
 // Initialize DOMPurify with jsdom
@@ -97,39 +95,111 @@ const DOMPURIFY_CONFIG: Config = {
 };
 
 /**
- * Sanitize embed content using DOMPurify
- * Returns null if content is completely removed or src is missing (dangerous content)
+ * Check if a hostname matches an allowlist entry
+ * Supports wildcard prefix with '*.' (e.g., '*.youtube.com' matches 'www.youtube.com')
  */
-function sanitizeEmbed(content: string): string | null {
+function matchesHostPattern(hostname: string, pattern: string): boolean {
+  const lowerHostname = hostname.toLowerCase();
+  const lowerPattern = pattern.toLowerCase();
+
+  if (lowerPattern.startsWith("*.")) {
+    // Wildcard match: *.example.com matches example.com and sub.example.com
+    // But not evil-example.com (must be exact or have dot boundary)
+    const base = lowerPattern.slice(2); // Remove '*.'
+    return lowerHostname === base || lowerHostname.endsWith("." + base);
+  }
+  // Exact match
+  return lowerHostname === lowerPattern;
+}
+
+/**
+ * Check if URL matches an allowlist entry (host and optional path prefix)
+ * Path prefix must match at a boundary (followed by /, ?, #, or end of path)
+ */
+function matchesAllowlistEntry(url: URL, entry: EmbedAllowlistEntry): boolean {
+  if (!matchesHostPattern(url.hostname, entry.host)) {
+    return false;
+  }
+  if (entry.pathPrefix) {
+    const pathLower = url.pathname.toLowerCase();
+    const prefixLower = entry.pathPrefix.toLowerCase();
+    if (!pathLower.startsWith(prefixLower)) {
+      return false;
+    }
+    // If prefix ends with /, boundary check is already satisfied
+    // Otherwise ensure prefix matches at a boundary (not partial, e.g., /embed vs /embedX)
+    if (!prefixLower.endsWith("/")) {
+      const remainder = pathLower.slice(prefixLower.length);
+      if (remainder && !/^[/?#]/.test(remainder)) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+/**
+ * Validate and sanitize embed content
+ * Returns sanitized HTML string or null if content is invalid/dangerous
+ *
+ * Validation rules:
+ * - Content must contain exactly one iframe element
+ * - iframe must have a valid HTTPS src URL
+ * - src URL must match the allowlist (host + path prefix)
+ * - DOMPurify removes dangerous attributes
+ */
+function validateAndSanitizeEmbed(
+  content: string,
+  allowlist: EmbedAllowlistEntry[] | null,
+): string | null {
+  // First, sanitize with DOMPurify to remove dangerous content
   const sanitized = purify.sanitize(content.trim(), {
     ...DOMPURIFY_CONFIG,
     RETURN_TRUSTED_TYPE: false,
   }) as string;
-  // If DOMPurify removed everything, the content was dangerous
+
   if (!sanitized.trim()) {
     return null;
   }
-  // If iframe exists but has no valid src (empty or removed), reject it
-  if (/<iframe[^>]*>/i.test(sanitized)) {
-    const srcMatch = sanitized.match(/\s+src\s*=\s*["']([^"']*)["']/i);
-    if (!srcMatch || !srcMatch[1]) {
+
+  // Parse sanitized content once (avoid multiple JSDOM instances)
+  const dom = new JSDOM(sanitized);
+  const iframes = dom.window.document.querySelectorAll("iframe");
+
+  // Must have exactly one iframe
+  if (iframes.length !== 1) {
+    return null;
+  }
+
+  const iframe = iframes[0]!;
+  const src = iframe.getAttribute("src")?.trim();
+  if (!src) {
+    return null;
+  }
+
+  // Parse URL
+  let url: URL;
+  try {
+    url = new URL(src);
+  } catch {
+    return null;
+  }
+
+  // Only allow HTTPS
+  if (url.protocol !== "https:") {
+    return null;
+  }
+
+  // If allowlist is null, allow any HTTPS iframe (Wikidot's 'anyiframe' behavior)
+  if (allowlist !== null) {
+    // Check if URL matches any allowlist entry
+    const matched = allowlist.some((entry) => matchesAllowlistEntry(url, entry));
+    if (!matched) {
       return null;
     }
   }
-  return sanitized;
-}
 
-/**
- * Validate embed content against allowlist (pattern-based pre-check)
- */
-function matchesAllowlist(content: string, allowlist: RegExp[]): boolean {
-  const trimmed = content.trim();
-  for (const pattern of allowlist) {
-    if (pattern.test(trimmed)) {
-      return true;
-    }
-  }
-  return false;
+  return sanitized;
 }
 
 /**
@@ -153,23 +223,17 @@ function normalizeBooleanAttributes(html: string): string {
 /**
  * Render embed-block element (Wikidot style [[embed]]..[[/embed]])
  *
- * Content is validated in two stages:
- * 1. Pattern-based allowlist check (for Wikidot compatibility)
- * 2. DOMPurify sanitization (for XSS protection)
- *
- * Both stages must pass for content to be rendered.
+ * Content is validated in a single pass:
+ * 1. DOMPurify sanitization (removes dangerous attributes)
+ * 2. Single iframe requirement check
+ * 3. HTTPS-only and allowlist (host + path) validation
  */
 export function renderEmbedBlock(ctx: RenderContext, data: EmbedBlockData): void {
-  const allowlist = ctx.options.embedAllowlist ?? DEFAULT_EMBED_ALLOWLIST;
+  // Use explicit undefined check to allow null (anyiframe mode)
+  const allowlist =
+    ctx.options.embedAllowlist !== undefined ? ctx.options.embedAllowlist : DEFAULT_EMBED_ALLOWLIST;
 
-  // Stage 1: Pattern-based allowlist check
-  if (!matchesAllowlist(data.contents, allowlist)) {
-    ctx.push('<div class="error-block">Sorry, no match for the embedded content.</div>');
-    return;
-  }
-
-  // Stage 2: DOMPurify sanitization (defense in depth)
-  const sanitized = sanitizeEmbed(data.contents);
+  const sanitized = validateAndSanitizeEmbed(data.contents, allowlist);
   if (sanitized === null) {
     ctx.push('<div class="error-block">Sorry, no match for the embedded content.</div>');
     return;

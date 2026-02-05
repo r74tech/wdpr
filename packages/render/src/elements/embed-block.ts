@@ -91,14 +91,7 @@ purify.addHook("uponSanitizeAttribute", (_node, data) => {
 const DOMPURIFY_CONFIG: Config = {
   ALLOWED_TAGS: ["iframe"],
   // Add iframe-specific attributes to the default allowlist
-  ADD_ATTR: [
-    "allow",
-    "allowfullscreen",
-    "frameborder",
-    "loading",
-    "referrerpolicy",
-    "sandbox",
-  ],
+  ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "loading", "referrerpolicy", "sandbox"],
   // Forbid dangerous attributes
   FORBID_ATTR: ["srcdoc", "onload", "onerror", "onclick"],
 };

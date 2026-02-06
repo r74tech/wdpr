@@ -81,16 +81,24 @@ const SANITIZE_CONFIG: sanitizeHtml.IOptions = {
 };
 
 /**
- * Find all iframe elements in the top level of parsed HTML
+ * Find all iframe elements in parsed HTML (recursive to detect nested iframes)
  */
 function findIframes(html: string): Element[] {
   const doc = parseDocument(html);
   const iframes: Element[] = [];
-  for (const node of doc.children) {
-    if (node.type === "tag" && node.name === "iframe") {
-      iframes.push(node);
+  function walk(nodes: typeof doc.children): void {
+    for (const node of nodes) {
+      if (node.type === "tag") {
+        if (node.name === "iframe") {
+          iframes.push(node);
+        }
+        if (node.children) {
+          walk(node.children);
+        }
+      }
     }
   }
+  walk(doc.children);
   return iframes;
 }
 

@@ -75,7 +75,18 @@ export const DEFAULT_EMBED_ALLOWLIST: EmbedAllowlistEntry[] | null = [
 const SANITIZE_CONFIG: sanitizeHtml.IOptions = {
   allowedTags: ["iframe"],
   allowedAttributes: {
-    iframe: ["src", "allow", "allowfullscreen", "frameborder", "height", "loading", "referrerpolicy", "sandbox", "title", "width"],
+    iframe: [
+      "src",
+      "allow",
+      "allowfullscreen",
+      "frameborder",
+      "height",
+      "loading",
+      "referrerpolicy",
+      "sandbox",
+      "title",
+      "width",
+    ],
   },
   allowedSchemes: ["https"],
 };

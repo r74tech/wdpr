@@ -20,14 +20,15 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - name: Extract package name from tag
+      - name: Extract package directory from tag
         id: package
         run: |
           TAG="${GITHUB_REF_NAME}"
-          # @wdprlib/render@1.0.1 → @wdprlib/render
-          PACKAGE="${TAG%@*}"
-          echo "name=${PACKAGE}" >> "$GITHUB_OUTPUT"
-          echo "Publishing package: ${PACKAGE}"
+          # @wdprlib/render@1.0.1 → render
+          SCOPED="${TAG%@*}"
+          DIR="${SCOPED#@wdprlib/}"
+          echo "dir=packages/${DIR}" >> "$GITHUB_OUTPUT"
+          echo "Publishing: ${SCOPED} from packages/${DIR}"
 
       - uses: actions/checkout@v6
         with:
@@ -56,6 +57,7 @@ jobs:
           done
 
       - name: Publish to npm (OIDC Trusted Publishing)
-        run: npx nx release publish --projects=${{ steps.package.outputs.name }}
+        working-directory: ${{ steps.package.outputs.dir }}
+        run: npm publish --access public
         env:
           NPM_CONFIG_PROVENANCE: true

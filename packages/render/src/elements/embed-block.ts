@@ -88,7 +88,7 @@ const SANITIZE_CONFIG: sanitizeHtml.IOptions = {
       "width",
     ],
   },
-  allowedSchemes: ["https"],
+  allowedSchemes: ["https", "http"],
 };
 
 /**
@@ -170,6 +170,7 @@ function matchesAllowlistEntry(url: URL, entry: EmbedAllowlistEntry): boolean {
 function validateAndSanitizeEmbed(
   content: string,
   allowlist: EmbedAllowlistEntry[] | null,
+  baseUrl?: string,
 ): string | null {
   // Sanitize with sanitize-html to remove dangerous content
   const sanitized = sanitizeHtml(content.trim(), SANITIZE_CONFIG);
@@ -192,20 +193,26 @@ function validateAndSanitizeEmbed(
     return null;
   }
 
-  // Parse URL
+  // Parse URL (protocol-relative URLs are resolved against baseUrl)
   let url: URL;
   try {
-    url = new URL(src);
+    if (src.startsWith("//")) {
+      // Protocol-relative URL: resolve against baseUrl, defaulting to https:
+      const base = baseUrl ?? "https://localhost";
+      url = new URL(src, base);
+    } else {
+      url = new URL(src);
+    }
   } catch {
     return null;
   }
 
-  // Only allow HTTPS
-  if (url.protocol !== "https:") {
+  // Only allow HTTP and HTTPS
+  if (url.protocol !== "https:" && url.protocol !== "http:") {
     return null;
   }
 
-  // If allowlist is null, allow any HTTPS iframe (Wikidot's 'anyiframe' behavior)
+  // If allowlist is null, allow any HTTP(S) iframe (Wikidot's 'anyiframe' behavior)
   if (allowlist !== null) {
     // Check if URL matches any allowlist entry
     const matched = allowlist.some((entry) => matchesAllowlistEntry(url, entry));
@@ -248,7 +255,7 @@ export function renderEmbedBlock(ctx: RenderContext, data: EmbedBlockData): void
   const allowlist =
     ctx.options.embedAllowlist !== undefined ? ctx.options.embedAllowlist : DEFAULT_EMBED_ALLOWLIST;
 
-  const sanitized = validateAndSanitizeEmbed(data.contents, allowlist);
+  const sanitized = validateAndSanitizeEmbed(data.contents, allowlist, ctx.options.baseUrl);
   if (sanitized === null) {
     ctx.push('<div class="error-block">Sorry, no match for the embedded content.</div>');
     return;

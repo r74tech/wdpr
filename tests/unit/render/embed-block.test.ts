@@ -159,13 +159,13 @@ describe("embed-block security", () => {
   });
 
   describe("blocked content", () => {
-    test("Non-HTTPS is blocked", () => {
+    test("HTTP iframe is allowed for allowlisted host", () => {
       const ctx = createMockContext();
       const data = {
         contents: '<iframe src="http://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>',
       };
       renderEmbedBlock(ctx, data);
-      expect(ctx.getOutput()).toContain("error-block");
+      expect(ctx.getOutput()).not.toContain("error-block");
     });
 
     test("Unknown host is blocked", () => {
@@ -235,13 +235,13 @@ describe("embed-block security", () => {
       expect(ctx.getOutput()).not.toContain("error-block");
     });
 
-    test("HTTP is still blocked when allowlist is null", () => {
+    test("HTTP is allowed when allowlist is null", () => {
       const ctx = createMockContext({ embedAllowlist: null });
       const data = {
         contents: '<iframe src="http://any-site.example.com/embed"></iframe>',
       };
       renderEmbedBlock(ctx, data);
-      expect(ctx.getOutput()).toContain("error-block");
+      expect(ctx.getOutput()).not.toContain("error-block");
     });
 
     test("Multiple iframes are still blocked when allowlist is null", () => {
@@ -251,6 +251,57 @@ describe("embed-block security", () => {
       };
       renderEmbedBlock(ctx, data);
       expect(ctx.getOutput()).toContain("error-block");
+    });
+  });
+
+  describe("protocol-relative URLs", () => {
+    test("protocol-relative URL is resolved with HTTPS baseUrl", () => {
+      const ctx = createMockContext({
+        embedAllowlist: null,
+        baseUrl: "https://scp-wiki.wikidot.com",
+      });
+      const data = {
+        contents: '<iframe src="//interwiki.scp-jp.org/interwikiFrame.html"></iframe>',
+      };
+      renderEmbedBlock(ctx, data);
+      expect(ctx.getOutput()).not.toContain("error-block");
+    });
+
+    test("protocol-relative URL is resolved with HTTP baseUrl", () => {
+      const ctx = createMockContext({ embedAllowlist: null, baseUrl: "http://scp-jp.wikidot.com" });
+      const data = {
+        contents: '<iframe src="//interwiki.scp-jp.org/interwikiFrame.html"></iframe>',
+      };
+      renderEmbedBlock(ctx, data);
+      expect(ctx.getOutput()).not.toContain("error-block");
+    });
+
+    test("protocol-relative URL defaults to HTTPS when baseUrl is not provided", () => {
+      const ctx = createMockContext({ embedAllowlist: null });
+      const data = {
+        contents: '<iframe src="//interwiki.scp-jp.org/interwikiFrame.html"></iframe>',
+      };
+      renderEmbedBlock(ctx, data);
+      expect(ctx.getOutput()).not.toContain("error-block");
+    });
+
+    test("protocol-relative URL is checked against allowlist", () => {
+      const ctx = createMockContext({ baseUrl: "https://example.com" });
+      const data = {
+        contents: '<iframe src="//unknown-host.example.com/page"></iframe>',
+      };
+      renderEmbedBlock(ctx, data);
+      expect(ctx.getOutput()).toContain("error-block");
+    });
+
+    test("protocol-relative URL with allowlisted host is allowed", () => {
+      const allowlist = [{ host: "*.youtube.com", pathPrefix: "/embed/" }];
+      const ctx = createMockContext({ embedAllowlist: allowlist, baseUrl: "https://example.com" });
+      const data = {
+        contents: '<iframe src="//www.youtube.com/embed/abc123"></iframe>',
+      };
+      renderEmbedBlock(ctx, data);
+      expect(ctx.getOutput()).not.toContain("error-block");
     });
   });
 

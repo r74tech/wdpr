@@ -1,7 +1,8 @@
 import type { EmbedBlockData } from "@wdprlib/ast";
+import type { Element } from "domhandler";
+import { parseDocument } from "htmlparser2";
+import sanitizeHtml from "sanitize-html";
 import type { RenderContext } from "../context";
-import DOMPurify, { type Config } from "dompurify";
-import { JSDOM } from "jsdom";
 
 /**
  * Boolean attributes that should be normalized to attr="attr" format
@@ -47,7 +48,7 @@ export interface EmbedAllowlistEntry {
  * Only iframes with src matching these host+path patterns will be rendered.
  *
  * Note: Set to null to allow any HTTPS iframe (Wikidot's 'anyiframe' behavior).
- * DOMPurify still enforces HTTPS-only and blocks dangerous attributes.
+ * sanitize-html still enforces HTTPS-only and blocks dangerous attributes.
  */
 export const DEFAULT_EMBED_ALLOWLIST: EmbedAllowlistEntry[] | null = [
   // YouTube
@@ -67,32 +68,50 @@ export const DEFAULT_EMBED_ALLOWLIST: EmbedAllowlistEntry[] | null = [
   { host: "codepen.io" },
 ];
 
-// Initialize DOMPurify with jsdom
-const window = new JSDOM("").window;
-const purify = DOMPurify(window);
-
-// Add hook to validate src attribute (only allow https://)
-purify.addHook("uponSanitizeAttribute", (_node, data) => {
-  if (data.attrName === "src" && data.attrValue) {
-    // Case-insensitive check for https:// scheme
-    if (!data.attrValue.toLowerCase().startsWith("https://")) {
-      data.attrValue = "";
-      data.forceKeepAttr = false;
-    }
-  }
-});
+/**
+ * sanitize-html configuration for embed content.
+ * Only allows iframe elements with safe attributes, HTTPS scheme only.
+ */
+const SANITIZE_CONFIG: sanitizeHtml.IOptions = {
+  allowedTags: ["iframe"],
+  allowedAttributes: {
+    iframe: [
+      "src",
+      "allow",
+      "allowfullscreen",
+      "frameborder",
+      "height",
+      "loading",
+      "referrerpolicy",
+      "sandbox",
+      "title",
+      "width",
+    ],
+  },
+  allowedSchemes: ["https"],
+};
 
 /**
- * DOMPurify configuration for embed content
- * Only allows iframe elements with safe attributes
+ * Find all iframe elements in parsed HTML (recursive to detect nested iframes)
  */
-const DOMPURIFY_CONFIG: Config = {
-  ALLOWED_TAGS: ["iframe"],
-  // Add iframe-specific attributes to the default allowlist
-  ADD_ATTR: ["allow", "allowfullscreen", "frameborder", "loading", "referrerpolicy", "sandbox"],
-  // Forbid dangerous attributes
-  FORBID_ATTR: ["srcdoc", "onload", "onerror", "onclick"],
-};
+function findIframes(html: string): Element[] {
+  const doc = parseDocument(html);
+  const iframes: Element[] = [];
+  function walk(nodes: typeof doc.children): void {
+    for (const node of nodes) {
+      if (node.type === "tag") {
+        if (node.name === "iframe") {
+          iframes.push(node);
+        }
+        if (node.children) {
+          walk(node.children);
+        }
+      }
+    }
+  }
+  walk(doc.children);
+  return iframes;
+}
 
 /**
  * Check if a hostname matches an allowlist entry
@@ -146,25 +165,21 @@ function matchesAllowlistEntry(url: URL, entry: EmbedAllowlistEntry): boolean {
  * - Content must contain exactly one iframe element
  * - iframe must have a valid HTTPS src URL
  * - src URL must match the allowlist (host + path prefix)
- * - DOMPurify removes dangerous attributes
+ * - sanitize-html removes dangerous attributes
  */
 function validateAndSanitizeEmbed(
   content: string,
   allowlist: EmbedAllowlistEntry[] | null,
 ): string | null {
-  // First, sanitize with DOMPurify to remove dangerous content
-  const sanitized = purify.sanitize(content.trim(), {
-    ...DOMPURIFY_CONFIG,
-    RETURN_TRUSTED_TYPE: false,
-  }) as string;
+  // Sanitize with sanitize-html to remove dangerous content
+  const sanitized = sanitizeHtml(content.trim(), SANITIZE_CONFIG);
 
   if (!sanitized.trim()) {
     return null;
   }
 
-  // Parse sanitized content once (avoid multiple JSDOM instances)
-  const dom = new JSDOM(sanitized);
-  const iframes = dom.window.document.querySelectorAll("iframe");
+  // Parse sanitized content to find iframes
+  const iframes = findIframes(sanitized);
 
   // Must have exactly one iframe
   if (iframes.length !== 1) {
@@ -172,7 +187,7 @@ function validateAndSanitizeEmbed(
   }
 
   const iframe = iframes[0]!;
-  const src = iframe.getAttribute("src")?.trim();
+  const src = iframe.attribs.src?.trim();
   if (!src) {
     return null;
   }
@@ -213,7 +228,7 @@ function normalizeBooleanAttributes(html: string): string {
     const standalonePattern = new RegExp(`\\s${attr}(?=\\s|>|/>)`, "gi");
     result = result.replace(standalonePattern, ` ${attr}="${attr}"`);
 
-    // Match attr="" (empty value, DOMPurify output)
+    // Match attr="" (empty value, sanitize-html output)
     const emptyValuePattern = new RegExp(`\\s${attr}=""`, "gi");
     result = result.replace(emptyValuePattern, ` ${attr}="${attr}"`);
   }
@@ -224,7 +239,7 @@ function normalizeBooleanAttributes(html: string): string {
  * Render embed-block element (Wikidot style [[embed]]..[[/embed]])
  *
  * Content is validated in a single pass:
- * 1. DOMPurify sanitization (removes dangerous attributes)
+ * 1. sanitize-html sanitization (removes dangerous attributes)
  * 2. Single iframe requirement check
  * 3. HTTPS-only and allowlist (host + path) validation
  */

@@ -3,7 +3,10 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      - "@wdprlib/ast@*"
+      - "@wdprlib/parser@*"
+      - "@wdprlib/render@*"
+      - "@wdprlib/runtime@*"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -17,6 +20,15 @@ jobs:
       contents: write
       id-token: write
     steps:
+      - name: Extract package name from tag
+        id: package
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          # @wdprlib/render@1.0.1 → @wdprlib/render
+          PACKAGE="${TAG%@*}"
+          echo "name=${PACKAGE}" >> "$GITHUB_OUTPUT"
+          echo "Publishing package: ${PACKAGE}"
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
@@ -43,25 +55,7 @@ jobs:
             fi
           done
 
-      - name: Publish to npm
-        run: |
-          # Determine npm tag from git tag (rc/alpha/beta -> rc, otherwise latest)
-          if [[ "${{ github.ref_name }}" == *"-rc"* ]] || [[ "${{ github.ref_name }}" == *"-alpha"* ]] || [[ "${{ github.ref_name }}" == *"-beta"* ]]; then
-            NPM_TAG="rc"
-          else
-            NPM_TAG="latest"
-          fi
-          echo "Publishing with tag: $NPM_TAG"
-          for pkg in packages/*/; do
-            if [ -f "$pkg/package.json" ]; then
-              echo "Publishing $pkg"
-              (cd "$pkg" && npm publish --provenance --access public --tag "$NPM_TAG")
-            fi
-          done
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          generate_release_notes: true
+      - name: Publish to npm (OIDC Trusted Publishing)
+        run: npx nx release publish --projects=${{ steps.package.outputs.name }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true

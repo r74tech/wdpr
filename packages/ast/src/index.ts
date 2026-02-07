@@ -84,3 +84,7 @@ export {
   isContainerTypeParagraphSafe,
   isParagraphSafe,
 } from "./element";
+
+// Wikitext settings
+export type { WikitextMode, WikitextSettings } from "./settings";
+export { createSettings, DEFAULT_SETTINGS } from "./settings";

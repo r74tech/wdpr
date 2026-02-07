@@ -1,6 +1,6 @@
 import type { Element, ListData, ListItem, TableOfContentsData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
-import { escapeHtml } from "../escape";
+import { escapeAttr, escapeHtml } from "../escape";
 
 /** Extract text content from a link element label */
 function extractLinkText(element: Element): { href: string; text: string } | null {
@@ -48,7 +48,7 @@ function renderTocItem(ctx: RenderContext, item: ListItem, depth: number): void 
       if (link) {
         const href = rewriteTocAnchor(ctx, link.href);
         ctx.push(
-          `<div style="margin-left: ${depth}em;"><a href="${escapeHtml(href)}">${escapeHtml(link.text)}</a></div>`,
+          `<div style="margin-left: ${depth}em;"><a href="${escapeAttr(href)}">${escapeHtml(link.text)}</a></div>`,
         );
       }
     }

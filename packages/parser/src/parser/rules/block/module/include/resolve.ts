@@ -75,8 +75,8 @@ export function resolveIncludes(
  * Regex to match [[include ...]] directives.
  * Captures the content between [[include and ]] (may span multiple lines).
  */
-// Avoid [\s\S]*? which causes polynomial backtracking (CodeQL #20)
-const INCLUDE_PATTERN = /\[\[include\s+([^\]]*(?:\](?!\])[^\]]*)*)\]\]/gi;
+// \s (single char, no quantifier) avoids overlap with [^\]]* that causes polynomial backtracking
+const INCLUDE_PATTERN = /\[\[include\s([^\]]*(?:\](?!\])[^\]]*)*)\]\]/gi;
 
 /**
  * Parse an include directive's inner content into page reference and variables.

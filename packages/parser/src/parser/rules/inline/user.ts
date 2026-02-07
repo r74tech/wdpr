@@ -1,16 +1,54 @@
 /**
- * User rule: [[user name]] or [[*user name]]
+ * @module user
  *
- * Displays a user reference. With star (*), shows avatar.
+ * Parses the Wikidot user reference syntax: `[[user name]]` and
+ * `[[*user name]]`.
+ *
+ * A user reference displays a linked username (typically linking to
+ * the user's profile page). The variant with a star prefix (`[[*user]]`)
+ * also displays the user's avatar alongside the username.
+ *
+ * Wikidot syntax:
+ * - `[[user some-user]]` -- displays username as a link
+ * - `[[*user some-user]]` -- displays avatar and username
+ *
+ * Note: Wikidot requires no whitespace immediately after `[[`. This
+ * means `[[ user name]]` is invalid, but `[[user name]]` and
+ * `[[*user name]]` are valid.
+ *
+ * The username may contain any characters except `]]` and newlines.
+ * Leading/trailing whitespace around the username is trimmed.
+ *
+ * Produces a `"user"` AST element with `data.name` (the username)
+ * and `data["show-avatar"]` (boolean).
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 
+/**
+ * Inline rule for parsing `[[user name]]` and `[[*user name]]` references.
+ *
+ * Triggered by a `BLOCK_OPEN` (`[[`) token. Optionally detects a `*`
+ * prefix for avatar display, then verifies the keyword `user`, and
+ * collects the username until `]]`.
+ *
+ * Fails if:
+ * - Whitespace immediately follows `[[` (Wikidot requires no leading space)
+ * - The keyword is not `user`
+ * - The username is empty
+ * - No closing `]]` is found
+ */
 export const userRule: InlineRule = {
   name: "user",
   startTokens: ["BLOCK_OPEN"],
 
+  /**
+   * Attempts to parse a user reference at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with a `"user"` element, or `{ success: false }`
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const openToken = currentToken(ctx);
     if (openToken.type !== "BLOCK_OPEN") {

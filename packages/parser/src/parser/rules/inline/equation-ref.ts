@@ -1,16 +1,49 @@
+/**
+ * @module equation-ref
+ *
+ * Parses the Wikidot equation reference syntax: `[[eref name]]`.
+ *
+ * An equation reference creates a clickable link that points to a
+ * named equation block defined elsewhere on the page (via
+ * `[[equation name]]` block syntax in the block-level parser). The
+ * reference is rendered as the equation's assigned number.
+ *
+ * Only the short form `eref` is recognized as a valid keyword.
+ * The long form `[[equation name]]` is NOT supported by Wikidot for
+ * inline references and is rendered as plain text.
+ *
+ * Produces an `"equation-reference"` AST element whose `data` field
+ * contains the reference name string.
+ *
+ * Wikidot syntax example:
+ * - `[[eref myEquation]]` -- references equation named "myEquation"
+ */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName } from "../utils";
 
 /**
- * Equation reference: [[eref name]]
- * Note: [[equation name]] is NOT supported in Wikidot - it's rendered as plain text
+ * Inline rule for parsing `[[eref name]]` equation references.
+ *
+ * Triggered by a `BLOCK_OPEN` (`[[`) token. The rule verifies the
+ * block name is `eref` (case-insensitive), then collects the
+ * reference name until the closing `]]`.
+ *
+ * Fails if the block name is not `eref`, the reference name is empty,
+ * or `]]` is not found.
  */
 export const equationRefRule: InlineRule = {
   name: "equation-ref",
   startTokens: ["BLOCK_OPEN"],
 
+  /**
+   * Attempts to parse an `[[eref name]]` reference at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with an `"equation-reference"` element,
+   *          or `{ success: false }`
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const openToken = currentToken(ctx);
     if (openToken.type !== "BLOCK_OPEN") {

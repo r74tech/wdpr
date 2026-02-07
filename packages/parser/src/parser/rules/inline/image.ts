@@ -1,3 +1,33 @@
+/**
+ * @module image
+ *
+ * Parses the Wikidot image block syntax: `[[image source attributes]]`.
+ *
+ * Images support several alignment/float prefixes that modify how the
+ * image is positioned on the page:
+ * - `[[image src]]` -- default (no alignment)
+ * - `[[=image src]]` -- centered
+ * - `[[<image src]]` -- left-aligned
+ * - `[[>image src]]` -- right-aligned
+ * - `[[f<image src]]` -- float left
+ * - `[[f>image src]]` -- float right
+ * - `[[f=image src]]` -- float center
+ *
+ * Image sources can be:
+ * - Full URLs (`http://...`, `https://...`, `/path`)
+ * - Local file references in three formats:
+ *   - `file.ext` (file on current page, type `file1`)
+ *   - `page/file.ext` (file on another page, type `file2`)
+ *   - `site:page/file.ext` or `site/page/file.ext` (cross-site file, type `file3`)
+ *
+ * Optional attributes follow the source (e.g. `alt`, `title`, `width`,
+ * `height`, `style`, `class`, `link`). The `link` attribute is treated
+ * specially: it wraps the image in a hyperlink rather than being applied
+ * as an HTML attribute. Unsafe attributes are filtered out.
+ *
+ * Produces an `"image"` AST element with source, alignment, link, and
+ * attribute data.
+ */
 import type { Element, ImageSource, FloatAlignment, Alignment, AttributeMap } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
@@ -5,8 +35,18 @@ import { filterUnsafeAttributes } from "../utils";
 import { parseAttributesRaw } from "../block/utils";
 
 /**
- * Parse image block name with alignment prefix handling
- * Handles =image, <image, >image, f<image, f>image
+ * Parses the block name portion of an image tag, including alignment
+ * prefix characters.
+ *
+ * The alignment prefix may consist of `=`, `<`, `>`, `f<`, `f>`, or `f=`,
+ * each tokenized differently depending on the lexer's context (e.g. `>`
+ * may appear as either a `TEXT` token or a `BLOCKQUOTE_MARKER`).
+ *
+ * @param ctx - The current parse context
+ * @param startPos - Token index at which to begin scanning
+ * @returns An object with the combined lowercased name (prefix + "image")
+ *          and the number of tokens consumed, or `null` if no valid image
+ *          block name was found
  */
 function parseImageBlockName(
   ctx: ParseContext,
@@ -77,7 +117,18 @@ function parseImageBlockName(
 }
 
 /**
- * Determine ImageSource from source string
+ * Determines the {@link ImageSource} type and data from a raw source string.
+ *
+ * Classification logic:
+ * - Strings starting with `http://`, `https://`, or `/` are URL sources.
+ * - Strings containing a colon before a slash (e.g. `site:page/file`) are
+ *   `file3` (cross-site) references.
+ * - Strings with 2+ slashes (e.g. `site/page/file`) are also `file3`.
+ * - Strings with exactly 1 slash (e.g. `page/file`) are `file2` references.
+ * - Strings with no slashes are `file1` (current-page file) references.
+ *
+ * @param src - The raw image source string from the markup
+ * @returns An {@link ImageSource} object describing the source type and data
  */
 function parseImageSource(src: string): ImageSource {
   // URL sources
@@ -125,7 +176,16 @@ function parseImageSource(src: string): ImageSource {
 }
 
 /**
- * Convert alignment string to FloatAlignment
+ * Converts the image block name (including its alignment prefix) into a
+ * {@link FloatAlignment} descriptor.
+ *
+ * The prefix portion of the block name determines both the alignment
+ * direction and whether the image should float. A plain `"image"` name
+ * (no prefix) returns `null`, indicating no explicit alignment.
+ *
+ * @param blockName - The lowercased block name (e.g. `"f>image"`, `"=image"`, `"image"`)
+ * @returns A {@link FloatAlignment} object with `align` and `float` fields,
+ *          or `null` for the unprefixed `"image"` form
  */
 function parseAlignment(blockName: string): FloatAlignment | null {
   let align: Alignment = "left";
@@ -153,10 +213,27 @@ function parseAlignment(blockName: string): FloatAlignment | null {
   return { align, float };
 }
 
+/**
+ * Inline rule for parsing `[[image source attributes]]` and its alignment variants.
+ *
+ * Triggered by a `BLOCK_OPEN` (`[[`) token. The rule identifies the image
+ * block name (with optional alignment prefix), extracts the image source,
+ * parses remaining attributes, filters unsafe attributes, and extracts the
+ * `link` attribute for special handling.
+ *
+ * Fails if the block name is not an image variant, if no source is provided,
+ * or if `]]` is not found.
+ */
 export const imageRule: InlineRule = {
   name: "image",
   startTokens: ["BLOCK_OPEN"],
 
+  /**
+   * Attempts to parse an image block at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with an `"image"` element, or `{ success: false }`
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const openToken = currentToken(ctx);
     if (openToken.type !== "BLOCK_OPEN") {

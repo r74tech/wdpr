@@ -1,11 +1,53 @@
+/**
+ * @module raw
+ *
+ * Parses the Wikidot raw (verbatim) text syntaxes: `@@...@@` and `@<...>@`.
+ *
+ * Raw text bypasses all inline formatting -- the content between the
+ * delimiters is emitted as-is without interpretation of any Wikidot
+ * markup characters.
+ *
+ * Two syntax variants are supported:
+ *
+ * 1. Double-at syntax (`@@...@@`): The more common form. Content between
+ *    the markers is treated as raw text. Several Wikidot quirks apply:
+ *    - Empty raw (`@@@@` = two consecutive `RAW_OPEN` tokens) produces
+ *      no output
+ *    - `@@\n@@` (raw spanning a newline with no content) also produces
+ *      no output
+ *    - Content containing both `@<` and `>@` is discarded entirely
+ *    - `>@` followed immediately by `@@` is split: `>` becomes raw
+ *      content, `@@` acts as the closer, and the leftover `@` becomes text
+ *
+ * 2. Angle-bracket syntax (`@<...>@`): A less common form that also
+ *    treats content as raw text. If the closing `>@` is not found on the
+ *    same line, `@<` is treated as literal text. The `@<\n>@` spanning
+ *    pattern outputs only `@<` as text.
+ *
+ * Produces a `"raw"` AST element whose `data` field contains the
+ * verbatim text string, or empty elements when the raw content is discarded.
+ */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken, hasClosingMarkerBeforeNewline } from "../types";
 
+/**
+ * Inline rule for parsing `@@...@@` and `@<...>@` raw (verbatim) text.
+ *
+ * Triggered by either `RAW_OPEN` (`@@`) or `RAW_BLOCK_OPEN` (`@<`) tokens.
+ * Delegates to the appropriate handler based on the opening token type.
+ */
 export const rawRule: InlineRule = {
   name: "raw",
   startTokens: ["RAW_OPEN", "RAW_BLOCK_OPEN"],
 
+  /**
+   * Attempts to parse raw text at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with `"raw"` element(s), text fallback,
+   *          or empty elements depending on the variant and content
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const startToken = currentToken(ctx);
 
@@ -20,7 +62,19 @@ export const rawRule: InlineRule = {
 };
 
 /**
- * Parse @@...@@ raw syntax
+ * Parses the `@@...@@` double-at raw text syntax.
+ *
+ * Handles several Wikidot-specific edge cases:
+ * - Consecutive `@@@@` (two RAW_OPEN tokens) = empty raw, no output
+ * - `@@\n@@` = empty raw spanning newline, no output
+ * - Content with both `@<` and `>@` embedded = entirely discarded
+ * - `>@` immediately before `@@` = split into raw content + text
+ *
+ * When no closing `@@` is found on the same line, the opening `@@`
+ * is emitted as literal text.
+ *
+ * @param ctx - Parse context positioned at the opening `@@` token
+ * @returns Parse result with raw element(s), empty array, or text fallback
  */
 function parseDoubleAtRaw(ctx: ParseContext): RuleResult<Element> {
   const startToken = currentToken(ctx);
@@ -135,7 +189,18 @@ function parseDoubleAtRaw(ctx: ParseContext): RuleResult<Element> {
 }
 
 /**
- * Parse @<...>@ raw syntax
+ * Parses the `@<...>@` angle-bracket raw text syntax.
+ *
+ * This is the less common raw text form. Content between `@<` and `>@`
+ * is treated as verbatim text.
+ *
+ * Edge cases:
+ * - `@<\n>@` (spanning a newline) outputs only `@<` as text and
+ *   consumes all three tokens
+ * - No closing `>@` on the same line = `@<` emitted as literal text
+ *
+ * @param ctx - Parse context positioned at the opening `@<` token
+ * @returns Parse result with a raw element or text fallback
  */
 function parseAngleRaw(ctx: ParseContext): RuleResult<Element> {
   const startToken = currentToken(ctx);

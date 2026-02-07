@@ -1,3 +1,35 @@
+/**
+ * @module span
+ *
+ * Parses the Wikidot span block syntax: `[[span attributes]]content[[/span]]`
+ * and its paragraph-strip variant `[[span_]]`.
+ *
+ * A span wraps inline content in an HTML `<span>` element with arbitrary
+ * attributes (class, style, id, etc.). It supports multiline content
+ * where single newlines become `<br />` elements.
+ *
+ * Blank lines (double newlines) within spans trigger special behavior:
+ *
+ * Regular span (`[[span]]`):
+ * - Blank lines split the content into separate spans, each placed in
+ *   its own paragraph. Segments after the first are marked with
+ *   `_splitByBlankLine: true` for postprocessing.
+ *
+ * Paragraph-strip span (`[[span_]]`):
+ * - Content before a blank line gets `_paragraphStrip: true`, indicating
+ *   it should merge with the surrounding paragraph.
+ * - Content after a blank line gets `_escapedFromParagraph: true`,
+ *   indicating it should appear outside any paragraph wrapper.
+ * - An empty `[[span_]][[/span]]` produces a marker with
+ *   `_emptyParagraphStrip: true` that absorbs adjacent line breaks.
+ *
+ * Spans support nesting -- a `[[span]]` inside another `[[span]]` will
+ * correctly find its own `[[/span]]` closing tag.
+ *
+ * The `closeSpanRule` handles orphaned `[[/span]]` tags that result
+ * from paragraph-break splitting. These wrap preceding inline content
+ * into a span, matching Wikidot's behavior.
+ */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
@@ -6,10 +38,30 @@ import { parseBlockName } from "../utils";
 import { parseAttributes } from "../block/utils";
 import { canApplyInlineRule } from "./utils";
 
+/**
+ * Inline rule for parsing `[[span attributes]]content[[/span]]`.
+ *
+ * Triggered by a `BLOCK_OPEN` (`[[`) token. Recognizes both `span`
+ * and `span_` block names. Parses HTML attributes after the block name,
+ * then recursively parses inline content (including nested spans) until
+ * the matching `[[/span]]` closing tag.
+ *
+ * Fails if:
+ * - The block name is not `span` or `span_`
+ * - No `]]` follows the attributes
+ * - No matching `[[/span]]` closing tag is found
+ */
 export const spanRule: InlineRule = {
   name: "span",
   startTokens: ["BLOCK_OPEN"],
 
+  /**
+   * Attempts to parse a span block at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with one or more `"container"` elements
+   *          of type `"span"`, or `{ success: false }`
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const openToken = currentToken(ctx);
     if (openToken.type !== "BLOCK_OPEN") {
@@ -298,15 +350,31 @@ export const spanRule: InlineRule = {
 };
 
 /**
- * Rule to handle orphaned [[/span]] tags (from split spans)
- * When [[/span]] appears without a matching [[span]], it wraps
- * all preceding content in the current inline context into a span.
- * This is Wikidot behavior when a span is split by a paragraph break.
+ * Inline rule for handling orphaned `[[/span]]` closing tags.
+ *
+ * When a span is split across paragraphs by a blank line, the closing
+ * `[[/span]]` tag appears without a matching opening tag in the current
+ * inline context. This rule detects such orphaned closing tags and
+ * produces a special marker element with `_closeSpan: true`.
+ *
+ * The paragraph parser uses this marker to retroactively wrap all
+ * preceding inline content in the current paragraph into a span,
+ * replicating Wikidot's behavior for paragraph-split spans.
+ *
+ * Triggered by a `BLOCK_END_OPEN` (`[[/`) token, and only matches
+ * when the block name is `span`.
  */
 export const closeSpanRule: InlineRule = {
   name: "closeSpan",
   startTokens: ["BLOCK_END_OPEN"],
 
+  /**
+   * Attempts to parse an orphaned `[[/span]]` tag at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with a span marker element (with `_closeSpan: true`),
+   *          or `{ success: false }` if this is not a `[[/span]]` tag
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const token = currentToken(ctx);
     if (token.type !== "BLOCK_END_OPEN") {

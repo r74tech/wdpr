@@ -1,8 +1,25 @@
 /**
- * Footnote rule: [[footnote]]content[[/footnote]]
+ * @module footnote
  *
- * The footnote content is stored separately and the inline element
- * just marks where the footnote reference appears.
+ * Parses the Wikidot footnote syntax: `[[footnote]]content[[/footnote]]`.
+ *
+ * Footnotes work in two parts: the inline `[[footnote]]` block produces
+ * a numbered superscript reference marker at the point of use, while the
+ * actual footnote content is collected separately and rendered by a
+ * `[[footnoteblock]]` element (typically at the bottom of the page).
+ *
+ * Footnote content supports multiple paragraphs:
+ * - The first paragraph is rendered as inline content (no wrapping `<p>` tag)
+ * - Subsequent paragraphs (separated by blank lines) are each wrapped
+ *   in `<p>` tags, matching Wikidot's rendering behavior
+ * - Single newlines within a paragraph become `<br />` elements
+ *
+ * The parsed footnote content is pushed into `ctx.footnotes` (an array
+ * of Element arrays) so the renderer can later assign sequential numbers
+ * and generate the footnote block.
+ *
+ * Produces a simple `"footnote"` AST element (a marker with no data)
+ * at the inline reference point.
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
@@ -10,10 +27,26 @@ import { currentToken } from "../types";
 import { parseBlockName } from "../utils";
 import { parseInlineUntil } from "./utils";
 
+/**
+ * Inline rule for parsing `[[footnote]]content[[/footnote]]`.
+ *
+ * Triggered by a `BLOCK_OPEN` (`[[`) token. Verifies the block name
+ * is `footnote`, then parses multiline inline content until the matching
+ * `[[/footnote]]` closing tag is found.
+ *
+ * Side effect: appends the parsed footnote content to `ctx.footnotes`.
+ */
 export const footnoteRule: InlineRule = {
   name: "footnote",
   startTokens: ["BLOCK_OPEN"],
 
+  /**
+   * Attempts to parse a footnote block at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with a `"footnote"` marker element,
+   *          or `{ success: false }` if this is not a valid footnote
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const openToken = currentToken(ctx);
     if (openToken.type !== "BLOCK_OPEN") {

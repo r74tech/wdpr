@@ -1,3 +1,22 @@
+/**
+ * @module inline/index
+ *
+ * Central registry and priority-ordered list of all inline parsing rules.
+ *
+ * This module imports every inline rule, re-exports them for individual use,
+ * and assembles them into the {@link inlineRules} array, which defines the
+ * order in which rules are attempted during inline parsing.
+ *
+ * Rule ordering matters: earlier rules take priority when multiple rules
+ * could match the same token. For example, formatting rules (bold, italic,
+ * etc.) are tried before link rules, and the text/fallback rules are
+ * placed last as catch-alls.
+ *
+ * The `fallbackRule` is exported separately as `inlineFallbackRule` because
+ * it matches any token type and is used as a last resort when no other rule
+ * succeeds. It is NOT included in the `inlineRules` array to prevent it
+ * from short-circuiting more specific rules.
+ */
 import type { InlineRule } from "../types";
 import { boldRule } from "./bold";
 import { italicRule } from "./italic";
@@ -66,7 +85,27 @@ export { bibciteRule } from "./bibcite";
 export { textRule, fallbackRule } from "./text";
 
 /**
- * All inline rules in priority order
+ * All inline rules in priority order.
+ *
+ * Rules are tried top-to-bottom against the current token. The first
+ * rule whose `startTokens` match the token type and whose `parse()`
+ * returns `{ success: true }` wins.
+ *
+ * Ordering rationale:
+ * 1. Paired formatting markers (bold, italic, underline, strikethrough,
+ *    superscript, subscript, monospace) -- most common inline syntax
+ * 2. Link rules (triple, single, anchor, star) -- order matters because
+ *    `[[[` must be tried before `[`
+ * 3. Color, line-break, and comment rules
+ * 4. Raw (verbatim) text
+ * 5. Block-open-triggered rules (image, size, footnote, span, user,
+ *    expr/if/ifexpr, anchor-name, anchor, math-inline, equation-ref)
+ * 6. Bibcite (double-parenthesis syntax)
+ * 7. Guillemet (typographic angle quotes)
+ * 8. Text rule (catch-all for TEXT and WHITESPACE tokens)
+ *
+ * The `fallbackRule` is intentionally excluded; it is used as a
+ * separate last-resort handler.
  */
 export const inlineRules: InlineRule[] = [
   boldRule,

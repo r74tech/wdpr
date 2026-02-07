@@ -2,10 +2,10 @@
  *
  * Renderers for Wikidot's expression and conditional constructs:
  *
- * - `[[# expr EXPRESSION]]` -- evaluate a mathematical expression and
+ * - `[[#expr EXPRESSION]]` -- evaluate a mathematical expression and
  *   display the numeric result.
- * - `[[# if VALUE | THEN | ELSE]]` -- simple string-based truthiness check.
- * - `[[# ifexpr EXPRESSION | THEN | ELSE]]` -- evaluate a math expression
+ * - `[[#if VALUE | THEN | ELSE]]` -- simple string-based truthiness check.
+ * - `[[#ifexpr EXPRESSION | THEN | ELSE]]` -- evaluate a math expression
  *   and branch on the numeric result (0 = false, non-zero = true).
  *
  * All error messages match Wikidot's format (`"run-time error: ..."`).
@@ -19,7 +19,7 @@ import { renderElements } from "../render";
 import { evaluateExpression, isTruthy } from "../utils/expr-eval";
 
 /**
- * Render a `[[# expr]]` element.
+ * Render a `[[#expr]]` element.
  *
  * Evaluates the mathematical expression and outputs the formatted numeric
  * result. On evaluation error, a Wikidot-compatible error message is
@@ -39,7 +39,7 @@ export function renderExpr(ctx: RenderContext, data: ExprData): void {
 }
 
 /**
- * Render a `[[# if]]` conditional element.
+ * Render a `[[#if]]` conditional element.
  *
  * The condition is treated as a string: values `"false"`, `"null"`,
  * `""`, and `"0"` are falsy; everything else is truthy. The selected
@@ -54,7 +54,7 @@ export function renderIf(ctx: RenderContext, data: IfCondData): void {
 }
 
 /**
- * Render a `[[# ifexpr]]` conditional expression element.
+ * Render a `[[#ifexpr]]` conditional expression element.
  *
  * Evaluates the mathematical expression; a result of 0 selects the
  * `else` branch, any non-zero result selects the `then` branch.

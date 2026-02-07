@@ -26,7 +26,9 @@
     "release": "nx release",
     "release:dry-run": "nx release --dry-run",
     "docs": "typedoc",
-    "docs:watch": "typedoc --watch"
+    "docs:watch": "typedoc --watch",
+    "docs:llms": "typedoc --options typedoc.llms.json && bun scripts/build-llms.ts",
+    "docs:all": "bun run docs && bun run docs:llms"
   },
   "devDependencies": {
     "@nx/js": "^22.4.5",
@@ -39,6 +41,8 @@
     "oxfmt": "^0.27.0",
     "oxlint": "^1.42.0",
     "typedoc": "^0.28.16",
+    "typedoc-plugin-llms-txt": "^0.1.2",
+    "typedoc-plugin-markdown": "^4.10.0",
     "typescript": "^5.9.3"
   },
   "trustedDependencies": [

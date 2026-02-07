@@ -331,16 +331,21 @@ export function isValidCssColor(color: string): boolean {
     return true;
   }
 
-  // rgb() / rgba() - strict pattern to prevent injection
-  if (/^rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(,\s*(0|1|0?\.\d+))?\s*\)$/.test(trimmed)) {
-    return true;
-  }
-
-  // hsl() / hsla() - strict pattern to prevent injection
-  if (
-    /^hsla?\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*(,\s*(0|1|0?\.\d+))?\s*\)$/.test(trimmed)
-  ) {
-    return true;
+  // Extract function name and args separately to avoid ReDoS from repeated \s* quantifiers.
+  // Only strip whitespace from args, keeping function name validation strict.
+  const fnMatch = trimmed.match(/^(rgba?|hsla?)\(([^)]*)\)$/);
+  if (fnMatch) {
+    const fn = fnMatch[1]!;
+    // Only trim whitespace around commas (structural delimiters), not within tokens
+    const args = fnMatch[2]!
+      .split(",")
+      .map((s) => s.trim())
+      .join(",");
+    if (fn.startsWith("rgb")) {
+      if (/^\d{1,3},\d{1,3},\d{1,3}(,(0|1|0?\.\d+))?$/.test(args)) return true;
+    } else {
+      if (/^\d{1,3},\d{1,3}%,\d{1,3}%(,(0|1|0?\.\d+))?$/.test(args)) return true;
+    }
   }
 
   // Reject everything else (including semicolons, url(), expression(), etc.)

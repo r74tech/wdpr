@@ -75,7 +75,8 @@ export function resolveIncludes(
  * Regex to match [[include ...]] directives.
  * Captures the content between [[include and ]] (may span multiple lines).
  */
-const INCLUDE_PATTERN = /\[\[include\s+([\s\S]*?)\]\]/gi;
+// \s (single char, no quantifier) avoids overlap with [^\]]* that causes polynomial backtracking
+const INCLUDE_PATTERN = /\[\[include\s([^\]]*(?:\](?!\])[^\]]*)*)\]\]/gi;
 
 /**
  * Parse an include directive's inner content into page reference and variables.

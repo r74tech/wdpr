@@ -8,7 +8,7 @@ const draftSettings: WikitextSettings = createSettings("draft");
 
 describe("WikitextSettings - Renderer", () => {
   describe("allowLocalPaths = false (forum-post mode)", () => {
-    it("file1 画像がスキップされる", () => {
+    it("skips file1 images", () => {
       const tree: SyntaxTree = {
         elements: [
           {
@@ -30,7 +30,7 @@ describe("WikitextSettings - Renderer", () => {
       expect(html).not.toContain("local--files");
     });
 
-    it("file2 画像がスキップされる", () => {
+    it("skips file2 images", () => {
       const tree: SyntaxTree = {
         elements: [
           {
@@ -48,7 +48,7 @@ describe("WikitextSettings - Renderer", () => {
       expect(html).not.toContain("<img");
     });
 
-    it("ローカルパス URL がスキップされる", () => {
+    it("skips local path URLs", () => {
       const tree: SyntaxTree = {
         elements: [
           {
@@ -66,7 +66,7 @@ describe("WikitextSettings - Renderer", () => {
       expect(html).not.toContain("<img");
     });
 
-    it("外部 URL 画像は許可される", () => {
+    it("allows external URL images", () => {
       const tree: SyntaxTree = {
         elements: [
           {
@@ -87,7 +87,7 @@ describe("WikitextSettings - Renderer", () => {
   });
 
   describe("allowLocalPaths = true (page mode)", () => {
-    it("file1 画像がレンダリングされる", () => {
+    it("renders file1 images", () => {
       const tree: SyntaxTree = {
         elements: [
           {
@@ -111,7 +111,7 @@ describe("WikitextSettings - Renderer", () => {
   });
 
   describe("useTrueIds = true (page mode)", () => {
-    it("heading ID が sequential になる", () => {
+    it("generates sequential heading IDs", () => {
       const tree: SyntaxTree = {
         elements: [
           {
@@ -137,7 +137,7 @@ describe("WikitextSettings - Renderer", () => {
       expect(html).toContain('id="toc1"');
     });
 
-    it("TOC コンテナ ID が固定値になる", () => {
+    it("generates fixed TOC container IDs", () => {
       const tree: SyntaxTree = {
         elements: [
           {
@@ -155,7 +155,7 @@ describe("WikitextSettings - Renderer", () => {
   });
 
   describe("useTrueIds = false (draft mode)", () => {
-    it("heading ID にランダムサフィックスが付く", () => {
+    it("appends random suffix to heading IDs", () => {
       const tree: SyntaxTree = {
         elements: [
           {
@@ -169,11 +169,10 @@ describe("WikitextSettings - Renderer", () => {
         ],
       };
       const html = renderToHtml(tree, { settings: draftSettings });
-      // toc0 のあとにランダムサフィックスが付く
       expect(html).toMatch(/id="toc0-[0-9a-f]{6}"/);
     });
 
-    it("TOC コンテナ ID は固定値のまま (runtime 互換)", () => {
+    it("keeps TOC container IDs fixed (runtime compat)", () => {
       const tree: SyntaxTree = {
         elements: [
           {
@@ -189,7 +188,7 @@ describe("WikitextSettings - Renderer", () => {
       expect(html).toContain('id="toc-list"');
     });
 
-    it("footnote ID にランダムサフィックスが付く", () => {
+    it("appends random suffix to footnote IDs", () => {
       const tree: SyntaxTree = {
         elements: [
           {
@@ -205,7 +204,7 @@ describe("WikitextSettings - Renderer", () => {
   });
 
   describe("allowStyleElements = false (draft mode)", () => {
-    it("style が出力されない", () => {
+    it("suppresses style output", () => {
       const tree: SyntaxTree = {
         elements: [],
         styles: ["body { color: red; }"],
@@ -215,7 +214,7 @@ describe("WikitextSettings - Renderer", () => {
       expect(html).not.toContain("body { color: red; }");
     });
 
-    it("forum-post モードでも style が出力されない", () => {
+    it("suppresses style output in forum-post mode", () => {
       const tree: SyntaxTree = {
         elements: [],
         styles: [".custom { display: none; }"],
@@ -226,7 +225,7 @@ describe("WikitextSettings - Renderer", () => {
   });
 
   describe("allowStyleElements = true (page mode)", () => {
-    it("style が出力される", () => {
+    it("outputs style elements", () => {
       const tree: SyntaxTree = {
         elements: [],
         styles: ["body { color: red; }"],
@@ -237,8 +236,8 @@ describe("WikitextSettings - Renderer", () => {
     });
   });
 
-  describe("settings 未指定時のデフォルト動作", () => {
-    it("デフォルトで file1 画像がレンダリングされる (page モード)", () => {
+  describe("default behavior (no settings specified)", () => {
+    it("renders file1 images by default (page mode)", () => {
       const tree: SyntaxTree = {
         elements: [
           {
@@ -257,7 +256,7 @@ describe("WikitextSettings - Renderer", () => {
       expect(html).toContain("/local--files/test-page/test.png");
     });
 
-    it("デフォルトで style が出力される (page モード)", () => {
+    it("outputs style elements by default (page mode)", () => {
       const tree: SyntaxTree = {
         elements: [],
         styles: ["body { color: red; }"],
@@ -267,7 +266,7 @@ describe("WikitextSettings - Renderer", () => {
       expect(html).toContain("body { color: red; }");
     });
 
-    it("デフォルトで heading ID が sequential になる", () => {
+    it("generates sequential heading IDs by default", () => {
       const tree: SyntaxTree = {
         elements: [
           {

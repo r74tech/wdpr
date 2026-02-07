@@ -6,7 +6,7 @@
   "name": "wdpr",
   "packageOptions": {
     "entryPoints": ["src/index.ts"],
-    "validation": {
+"validation": {
       "notExported": false
     }
   }

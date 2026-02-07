@@ -5,7 +5,9 @@ import type {
   SyntaxTree,
   BibliographyBlockData,
   DefinitionListItem,
+  WikitextSettings,
 } from "@wdprlib/ast";
+import { DEFAULT_SETTINGS } from "@wdprlib/ast";
 import type { RenderOptions, PageContext } from "./types";
 import { escapeHtml, escapeAttr, sanitizeAttributes } from "./escape";
 
@@ -20,6 +22,7 @@ export class RenderContext {
   private _htmlBlockIndex = 0;
   private _bibciteCounter = 0;
 
+  readonly settings: WikitextSettings;
   readonly options: RenderOptions;
   readonly footnotes: Element[][];
   readonly styles: string[];
@@ -31,6 +34,7 @@ export class RenderContext {
   readonly bibliographyEntries: DefinitionListItem[];
 
   constructor(tree: SyntaxTree, options: RenderOptions = {}) {
+    this.settings = options.settings ?? DEFAULT_SETTINGS;
     this.options = options;
     this.footnotes = options.footnotes ?? tree.footnotes ?? [];
     this.styles = tree.styles ?? [];

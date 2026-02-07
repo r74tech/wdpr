@@ -1,4 +1,4 @@
-import type { Element } from "@wdprlib/ast";
+import type { Element, WikitextSettings } from "@wdprlib/ast";
 import type { EmbedAllowlistEntry } from "./elements/embed-block";
 
 /**
@@ -56,6 +56,8 @@ export interface RenderResolvers {
  * Options for HTML rendering
  */
 export interface RenderOptions {
+  /** Wikitext settings controlling rendering behavior */
+  settings?: WikitextSettings;
   /** Page context for resolving file paths, links, etc. */
   page?: PageContext;
   /** Pre-collected footnote elements from SyntaxTree.footnotes */

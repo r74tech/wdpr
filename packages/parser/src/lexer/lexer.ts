@@ -2,15 +2,21 @@ import { createPoint, createPosition } from "@wdprlib/ast";
 import { createToken, type Token, type TokenType } from "./tokens";
 
 /**
- * Lexer options
+ * Configuration for the {@link Lexer}.
+ *
+ * @group Lexer
  */
 export interface LexerOptions {
-  /** Track position information */
+  /**
+   * When `true` (default), every token carries accurate line/column/offset
+   * data. Set to `false` to skip position tracking for faster tokenisation
+   * when source-map information is not needed.
+   */
   trackPositions?: boolean;
 }
 
 /**
- * Lexer state
+ * Internal mutable state carried through a single tokenisation pass.
  */
 interface LexerState {
   source: string;
@@ -22,7 +28,17 @@ interface LexerState {
 }
 
 /**
- * Wikidot markup lexer
+ * Converts a Wikidot markup source string into a flat array of {@link Token}s.
+ *
+ * The lexer is single-pass and greedy: it tries the longest-matching
+ * multi-character pattern first (e.g. `[[[` before `[[`, `**` before `*`).
+ * Context-sensitive constructs (line-start headings, blockquote markers)
+ * are disambiguated via the `lineStart` state flag.
+ *
+ * For convenience, use the standalone {@link tokenize} function instead
+ * of constructing a `Lexer` directly.
+ *
+ * @group Lexer
  */
 export class Lexer {
   private state: LexerState;
@@ -618,7 +634,15 @@ export class Lexer {
 }
 
 /**
- * Tokenize source string
+ * Tokenise a Wikidot markup source string in one call.
+ *
+ * Shorthand for `new Lexer(source, options).tokenize()`.
+ *
+ * @param source - Raw Wikidot markup
+ * @param options - Optional lexer configuration
+ * @returns A flat array of tokens, ending with an `EOF` token
+ *
+ * @group Lexer
  */
 export function tokenize(source: string, options?: LexerOptions): Token[] {
   return new Lexer(source, options).tokenize();

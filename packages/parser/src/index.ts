@@ -1,3 +1,25 @@
+/**
+ * Wikidot markup parser.
+ *
+ * This package converts Wikidot wikitext source into an abstract syntax
+ * tree (AST) defined by `@wdprlib/ast`. It also provides module-resolution
+ * utilities for dynamic constructs such as `[[module ListPages]]`,
+ * `[[module ListUsers]]`, `[[include]]`, and `[[iftags]]`.
+ *
+ * Typical usage:
+ *
+ * ```ts
+ * import { parse } from "@wdprlib/parser";
+ *
+ * const ast = parse("**bold** and //italic//");
+ * ```
+ *
+ * For server-side module resolution, see {@link extractDataRequirements},
+ * {@link resolveModules}, and {@link resolveIncludes}.
+ *
+ * @packageDocumentation
+ */
+
 // Re-export AST types and utilities from @wdprlib/ast
 export type {
   Position,

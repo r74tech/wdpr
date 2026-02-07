@@ -1,7 +1,13 @@
 import type { Position } from "@wdprlib/ast";
 
 /**
- * Token types for Wikidot markup
+ * Every distinct lexeme the Wikidot lexer can produce.
+ *
+ * Each value corresponds to a fixed character sequence (or class of
+ * sequences) in Wikidot markup. The inline comments show the literal
+ * text that produces each token type.
+ *
+ * @group Lexer
  */
 export type TokenType =
   // Special
@@ -89,18 +95,41 @@ export type TokenType =
   | "RIGHT_DOUBLE_ANGLE"; // >> (non-line-start)
 
 /**
- * Token
+ * A single lexical token produced by the {@link Lexer}.
+ *
+ * Tokens are the input to the parser stage. Each token carries its
+ * literal text (`value`), source location (`position`), and a flag
+ * indicating whether it appeared at the beginning of a line — which
+ * matters because several Wikidot constructs (headings, lists,
+ * blockquotes, horizontal rules) are only valid at line start.
+ *
+ * @group Lexer
  */
 export interface Token {
+  /** The lexeme category */
   type: TokenType;
+  /** The literal source text that produced this token */
   value: string;
+  /** Start/end location in the original source string */
   position: Position;
-  /** Whether this token appears at the start of a line */
+  /**
+   * `true` when this token is the first non-whitespace token on its
+   * line. Block-level rules (headings, lists, blockquotes) check this
+   * flag before attempting to match.
+   */
   lineStart: boolean;
 }
 
 /**
- * Create a token
+ * Construct a {@link Token} value.
+ *
+ * @param type - The lexeme category
+ * @param value - Literal source text
+ * @param position - Source location range
+ * @param lineStart - Whether the token starts a new line
+ * @returns A new token object
+ *
+ * @group Lexer
  */
 export function createToken(
   type: TokenType,

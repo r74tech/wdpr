@@ -1,6 +1,6 @@
 import type { Element, ListData, ListItem, TableOfContentsData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
-import { escapeHtml } from "../escape";
+import { escapeAttr, escapeHtml } from "../escape";
 
 /** Extract text content from a link element label */
 function extractLinkText(element: Element): { href: string; text: string } | null {
@@ -30,14 +30,25 @@ function renderTocList(ctx: RenderContext, listData: ListData, depth: number): v
   }
 }
 
+/**
+ * Rewrite a TOC anchor href (e.g., "#toc0") to match the rendered heading ID.
+ * When useTrueIds is false, heading IDs have a random suffix appended.
+ */
+function rewriteTocAnchor(ctx: RenderContext, href: string): string {
+  const match = /^#toc(\d+)$/.exec(href);
+  if (!match) return href;
+  return `#${ctx.generateId("toc", Number(match[1]))}`;
+}
+
 /** Render a single TOC list item */
 function renderTocItem(ctx: RenderContext, item: ListItem, depth: number): void {
   if (item["item-type"] === "elements") {
     for (const el of item.elements) {
       const link = extractLinkText(el);
       if (link) {
+        const href = rewriteTocAnchor(ctx, link.href);
         ctx.push(
-          `<div style="margin-left: ${depth}em;"><a href="${escapeHtml(link.href)}">${escapeHtml(link.text)}</a></div>`,
+          `<div style="margin-left: ${depth}em;"><a href="${escapeAttr(href)}">${escapeHtml(link.text)}</a></div>`,
         );
       }
     }
@@ -55,6 +66,7 @@ export function renderTableOfContents(ctx: RenderContext, data: TableOfContentsD
     ctx.push(`<table style="margin:0; padding:0"><tr><td style="margin:0; padding:0">`);
   }
 
+  // TOC container IDs are fixed — the runtime queries them by ID (#toc, #toc-action-bar, #toc-list)
   if (isFloat) {
     const floatClass = data.align === "left" ? "floatleft" : "floatright";
     ctx.push(`<div id="toc" class="${floatClass}">`);

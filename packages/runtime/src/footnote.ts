@@ -23,7 +23,8 @@ export function initFootnote(root: HTMLElement): ModuleCleanup {
     const footnote = doc.getElementById(id);
     if (!footnote) continue;
 
-    const numId = id.replace(/^footnote-/, "");
+    // Use link text (always the clean number) for tooltip label
+    const numId = fref.textContent?.trim() ?? id.replace(/^footnote-/, "");
     const tip = buildFootnoteTooltip(doc, footnote, numId);
     container.appendChild(tip);
     tooltipMap.set(fref.id, tip);

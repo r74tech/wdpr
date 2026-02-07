@@ -33,8 +33,9 @@ export function renderBibliographyCite(ctx: RenderContext, data: BibliographyCit
   }
 
   const idSuffix = generateIdSuffix(data.label, counter);
-  const id = `bibcite-${number}-${idSuffix}`;
-  const onclick = `WIKIDOT.page.utils.scrollToReference('bibitem-${number}')`;
+  const id = ctx.generateId(`bibcite-${number}-`, idSuffix);
+  const bibitemId = ctx.generateId("bibitem-", number);
+  const onclick = `WIKIDOT.page.utils.scrollToReference('${bibitemId}')`;
 
   ctx.push(`<a href="javascript:;" class="bibcite" id="${id}" onclick="${escapeAttr(onclick)}">`);
   ctx.push(String(number));
@@ -65,7 +66,8 @@ export function renderBibliographyBlock(
 
   let index = 1;
   for (const entry of data.entries) {
-    ctx.push(`<div class="bibitem" id="bibitem-${index}">`);
+    const itemId = ctx.generateId("bibitem-", index);
+    ctx.push(`<div class="bibitem" id="${itemId}">`);
     ctx.push(`${index}. `);
     renderElements(ctx, entry.value);
     ctx.push("</div>");

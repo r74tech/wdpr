@@ -1,7 +1,8 @@
 import type { Token } from "../lexer";
 import { tokenize } from "../lexer";
 import { preprocess } from "./preprocess";
-import type { Element, SyntaxTree } from "@wdprlib/ast";
+import type { Element, SyntaxTree, WikitextSettings } from "@wdprlib/ast";
+import { DEFAULT_SETTINGS } from "@wdprlib/ast";
 import { blockRules, blockFallbackRule, inlineRules, type ParseContext } from "./rules";
 import { canApplyBlockRule } from "./rules/block/utils";
 import { mergeSpanStripParagraphs, cleanInternalFlags } from "./postprocess";
@@ -15,6 +16,8 @@ export interface ParserOptions {
   version?: "wikidot";
   /** Track position information */
   trackPositions?: boolean;
+  /** Wikitext settings controlling syntax availability */
+  settings?: WikitextSettings;
 }
 
 /**
@@ -29,6 +32,7 @@ export class Parser {
       pos: 0,
       version: options.version ?? "wikidot",
       trackPositions: options.trackPositions ?? true,
+      settings: options.settings ?? DEFAULT_SETTINGS,
       // Collections for SyntaxTree output (populated during parsing)
       footnotes: [],
       tocEntries: [],

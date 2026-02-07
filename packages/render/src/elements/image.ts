@@ -5,6 +5,7 @@ import { escapeAttr, isDangerousUrl, sanitizeAttributes } from "../escape";
 /** Render an image element */
 export function renderImage(ctx: RenderContext, data: ImageData): void {
   let src = ctx.resolveImageSource(data.source);
+  if (src === null) return; // Local path blocked by settings
   if (isDangerousUrl(src)) {
     src = "#invalid-url";
   }

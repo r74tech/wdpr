@@ -45,7 +45,9 @@ export function renderMath(ctx: RenderContext, data: MathData): void {
   const latex = data["latex-source"];
   const mathml = renderLatexToMathML(latex, true);
 
-  const id = data.name ? `equation-${data.name}` : `equation-${index}`;
+  const id = data.name
+    ? ctx.generateId("equation-", data.name)
+    : ctx.generateId("equation-", index);
   const dataName = data.name ? ` data-name="${escapeAttr(data.name)}"` : "";
 
   ctx.push(`<div class="math-block" id="${escapeAttr(id)}"${dataName}>`);
@@ -104,7 +106,7 @@ export function renderMathInline(ctx: RenderContext, data: MathInlineData): void
 
 /** Render an equation reference (link to named equation) */
 export function renderEquationRef(ctx: RenderContext, name: string): void {
-  const id = `equation-${name}`;
+  const id = ctx.generateId("equation-", name);
   ctx.push(`<span class="eref" data-target="${escapeAttr(id)}">`);
   ctx.push(`<a class="eref-link" href="#${escapeAttr(id)}">`);
   ctx.push(escapeHtml(name));

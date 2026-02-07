@@ -1,5 +1,5 @@
 import type { Token, TokenType } from "../../lexer";
-import type { Version } from "@wdprlib/ast";
+import type { Version, WikitextSettings } from "@wdprlib/ast";
 import type { Element, CodeBlockData, TocEntry } from "@wdprlib/ast";
 
 /**
@@ -10,6 +10,7 @@ export interface ParseContext {
   pos: number;
   version: Version;
   trackPositions: boolean;
+  settings: WikitextSettings;
   // Collections for SyntaxTree output
   footnotes: Element[][];
   tocEntries: TocEntry[];

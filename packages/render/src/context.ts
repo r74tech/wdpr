@@ -5,7 +5,9 @@ import type {
   SyntaxTree,
   BibliographyBlockData,
   DefinitionListItem,
+  WikitextSettings,
 } from "@wdprlib/ast";
+import { DEFAULT_SETTINGS } from "@wdprlib/ast";
 import type { RenderOptions, PageContext } from "./types";
 import { escapeHtml, escapeAttr, sanitizeAttributes } from "./escape";
 
@@ -19,7 +21,9 @@ export class RenderContext {
   private _equationIndex = 0;
   private _htmlBlockIndex = 0;
   private _bibciteCounter = 0;
+  private _idSuffix: string | null;
 
+  readonly settings: WikitextSettings;
   readonly options: RenderOptions;
   readonly footnotes: Element[][];
   readonly styles: string[];
@@ -31,6 +35,9 @@ export class RenderContext {
   readonly bibliographyEntries: DefinitionListItem[];
 
   constructor(tree: SyntaxTree, options: RenderOptions = {}) {
+    this.settings = options.settings ?? DEFAULT_SETTINGS;
+    // When useTrueIds is false, generate a per-context random suffix for all IDs
+    this._idSuffix = this.settings.useTrueIds ? null : Math.random().toString(16).slice(2, 8);
     this.options = options;
     this.footnotes = options.footnotes ?? tree.footnotes ?? [];
     this.styles = tree.styles ?? [];
@@ -107,31 +114,57 @@ export class RenderContext {
     return ++this._bibciteCounter;
   }
 
+  /**
+   * Generate an element ID.
+   * When useTrueIds is true, returns `${prefix}${index}`.
+   * When false, appends a random suffix to prevent collisions across fragments.
+   */
+  generateId(prefix: string, index: number | string): string {
+    if (this._idSuffix === null) {
+      return `${prefix}${index}`;
+    }
+    return `${prefix}${index}-${this._idSuffix}`;
+  }
+
+  /**
+   * Generate a fixed element ID (no index).
+   * When useTrueIds is false, appends a random suffix.
+   */
+  generateFixedId(name: string): string {
+    if (this._idSuffix === null) {
+      return name;
+    }
+    return `${name}-${this._idSuffix}`;
+  }
+
   /** Get page context */
   get page(): PageContext | undefined {
     return this.options.page;
   }
 
-  /** Resolve an ImageSource to a src URL */
-  resolveImageSource(source: ImageSource): string {
+  /** Resolve an ImageSource to a src URL. Returns null if blocked by settings. */
+  resolveImageSource(source: ImageSource): string | null {
     const pageName = this.page?.pageName;
     switch (source.type) {
       case "url": {
-        // Convert /path to /local--files/path (Wikidot file reference)
         const url = source.data;
+        // Local path (e.g., /local-file.png) — blocked when allowLocalPaths is false
         if (url.startsWith("/") && !url.startsWith("//")) {
+          if (!this.settings.allowLocalPaths) return null;
           return `/local--files${url}`;
         }
         return url;
       }
       case "file1":
-        // file1 uses current page context
+        if (!this.settings.allowLocalPaths) return null;
         return pageName
           ? `/local--files/${pageName}/${source.data.file}`
           : `/local--files/${source.data.file}`;
       case "file2":
+        if (!this.settings.allowLocalPaths) return null;
         return `/local--files/${source.data.page}/${source.data.file}`;
       case "file3":
+        if (!this.settings.allowLocalPaths) return null;
         return `/local--files/${source.data.site}/${source.data.page}/${source.data.file}`;
     }
   }

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://typedoc-plugin-markdown.org/schema.json",
+  "entryPointStrategy": "packages",
+  "entryPoints": ["packages/*"],
+  "out": "docs/llms",
+  "name": "wdpr",
+  "plugin": ["typedoc-plugin-markdown", "typedoc-plugin-llms-txt"],
+  "packageOptions": {
+    "entryPoints": ["src/**/*.ts"],
+    "validation": {
+      "notExported": false
+    }
+  },
+  "hidePageHeader": true,
+  "hideBreadcrumbs": true,
+  "useCodeBlocks": true,
+  "llmsTxtHeader": {
+    "description": "Wikidot markup parser and HTML renderer for TypeScript"
+  }
+}

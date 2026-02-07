@@ -30,7 +30,18 @@ import { renderDate } from "./elements/date";
 import { renderExpr, renderIf, renderIfExpr } from "./elements/expr";
 
 /**
- * Render a SyntaxTree to HTML string
+ * Render a {@link SyntaxTree} to an HTML string.
+ *
+ * This is the main entry point of `@wdprlib/render`. It walks the AST
+ * produced by `@wdprlib/parser`, serialises each element to HTML, and
+ * appends any collected `[[module CSS]]` styles at the end (when
+ * {@link WikitextSettings.allowStyleElements} is `true`).
+ *
+ * @param tree - Parsed AST (from `parse()` or `resolveModules()`)
+ * @param options - Rendering configuration
+ * @returns Complete HTML string
+ *
+ * @group Render
  */
 export function renderToHtml(tree: SyntaxTree, options: RenderOptions = {}): string {
   const ctx = new RenderContext(tree, options);
@@ -47,7 +58,11 @@ export function renderToHtml(tree: SyntaxTree, options: RenderOptions = {}): str
 }
 
 /**
- * Render an array of elements
+ * Render a list of sibling AST elements in document order.
+ *
+ * Used internally by container renderers that need to emit their
+ * children. Not exported from the package barrel — call
+ * {@link renderToHtml} instead for top-level rendering.
  */
 export function renderElements(ctx: RenderContext, elements: Element[]): void {
   for (const element of elements) {
@@ -56,7 +71,10 @@ export function renderElements(ctx: RenderContext, elements: Element[]): void {
 }
 
 /**
- * Render a single element by dispatching on element type
+ * Dispatch a single AST element to its type-specific renderer.
+ *
+ * The switch covers every {@link ElementName} value defined by
+ * `@wdprlib/ast`. Unknown element types are silently ignored.
  */
 export function renderElement(ctx: RenderContext, element: Element): void {
   switch (element.element) {

@@ -56,6 +56,13 @@ export interface RenderResolvers {
  * Options for HTML rendering
  */
 export interface RenderOptions {
+  /**
+   * Base URL used to resolve protocol-relative URLs (e.g., "//example.com/path").
+   * The protocol of this URL is inherited by protocol-relative references.
+   * Example: "https://scp-wiki.wikidot.com" or "http://scp-jp.wikidot.com"
+   * If not provided, protocol-relative URLs default to HTTPS.
+   */
+  baseUrl?: string;
   /** Wikitext settings controlling rendering behavior */
   settings?: WikitextSettings;
   /** Page context for resolving file paths, links, etc. */

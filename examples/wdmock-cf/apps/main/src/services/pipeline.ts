@@ -102,6 +102,7 @@ export async function renderPage(
       user: (username) => ({ name: username }),
     },
     htmlBlockSandbox: null,
+    embedAllowlist: null,
   });
 
   return { html, styles };

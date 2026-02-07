@@ -156,17 +156,15 @@ export class RenderContext {
         return url;
       }
       case "file1":
+        if (!this.settings.allowLocalPaths) return null;
+        return pageName
+          ? `/local--files/${pageName}/${source.data.file}`
+          : `/local--files/${source.data.file}`;
       case "file2":
+        if (!this.settings.allowLocalPaths) return null;
+        return `/local--files/${source.data.page}/${source.data.file}`;
       case "file3":
         if (!this.settings.allowLocalPaths) return null;
-        if (source.type === "file1") {
-          return pageName
-            ? `/local--files/${pageName}/${source.data.file}`
-            : `/local--files/${source.data.file}`;
-        }
-        if (source.type === "file2") {
-          return `/local--files/${source.data.page}/${source.data.file}`;
-        }
         return `/local--files/${source.data.site}/${source.data.page}/${source.data.file}`;
     }
   }

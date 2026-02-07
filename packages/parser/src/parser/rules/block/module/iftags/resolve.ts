@@ -1,14 +1,19 @@
 /**
- * IfTags resolution
+ * @module iftags/resolve
  *
- * Evaluates [[iftags]] conditions and returns matching elements.
+ * Resolution of `[[iftags]]` conditional blocks.
+ *
+ * During the resolve phase, each `[[iftags]]` element is evaluated against
+ * the current page's tags. If the condition matches, the element's children
+ * are included in the output; otherwise, they are omitted. If page tags are
+ * not available (null), the element is kept as-is for later resolution.
  */
 
 import type { Element } from "@wdprlib/ast";
 import { parseTagCondition, evaluateTagCondition } from "./condition";
 
 /**
- * IfTags element data structure
+ * Data structure for an `[[iftags]]` element in the AST.
  */
 export interface IfTagsData {
   condition: string;
@@ -16,7 +21,11 @@ export interface IfTagsData {
 }
 
 /**
- * Result of resolving an iftags element
+ * Result of attempting to resolve an `[[iftags]]` element.
+ *
+ * The `evaluated` flag indicates whether the condition was actually tested.
+ * When `pageTags` is null (tags not available), the condition is not evaluated
+ * and the element should be kept in the AST for later resolution.
  */
 export interface IfTagsResolveResult {
   /**
@@ -33,7 +42,10 @@ export interface IfTagsResolveResult {
 }
 
 /**
- * Check if an element is an iftags element
+ * Type guard to check if an element is an `[[iftags]]` element.
+ *
+ * @param element - The element to check
+ * @returns true if the element has `element: "if-tags"` and appropriate data structure
  */
 export function isIfTagsElement(
   element: Element,

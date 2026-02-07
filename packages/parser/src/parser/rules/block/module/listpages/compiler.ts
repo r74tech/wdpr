@@ -1,23 +1,48 @@
 /**
- * Template compiler for ListPages module
+ * @module listpages/compiler
  *
- * Compiles template strings like "%%title%% by %%created_by%%"
- * into executable functions for fast rendering.
+ * Template compiler for the ListPages module.
+ *
+ * Compiles ListPages template strings (e.g., `"%%title%% by %%created_by%%"`)
+ * into executable functions that can be called repeatedly with different page
+ * data for fast rendering. The compilation step splits the template into static
+ * string segments and dynamic getter functions, avoiding repeated regex matching
+ * during rendering.
+ *
+ * Supported variable syntax:
+ * - `%%name%%` - Simple variable (e.g., `%%title%%`, `%%rating%%`)
+ * - `%%name{param}%%` - Parameterized variable (e.g., `%%content{2}%%`, `%%form_data{color}%%`)
+ * - `%%name(param)%%` - Parenthesized parameter (e.g., `%%preview(100)%%`)
+ * - `%%name|format%%` - Formatted variable (e.g., `%%created_at|%Y-%m-%d%%`, `%%tags_linked|/tag/%%`)
+ *
+ * The compiled function is a closure over the parsed template parts, providing
+ * O(n) rendering time proportional to the number of template segments.
  */
 
 import type { CompiledTemplate, VariableContext, PageData, UserInfo } from "./types";
 
-/** Default preview length for %%preview%% variable (Wikidot default) */
+/** Default character count for `%%preview%%` when no length is specified (Wikidot default). */
 const DEFAULT_PREVIEW_LENGTH = 200;
 
-// Variable pattern: %%name%%, %%name{param}%%, %%name(param)%%, %%name|format%%
-// Format can contain single % (e.g., %Y-%m-%d), but not %% (which ends the variable)
-// Pattern breakdown for format: [^%]* matches non-% chars, (?:%(?!%)[^%]*)* allows single % followed by non-%
+/**
+ * Regex pattern for matching ListPages template variables with all parameter variants.
+ *
+ * Captures: [1] variable name, [2] brace parameter, [3] paren parameter, [4] format string.
+ * The format portion allows single `%` characters (for strftime tokens like `%Y`)
+ * but stops at `%%` (which terminates the variable).
+ */
 const VARIABLE_REGEX =
   /%%([a-z_]+)(?:\{([^}]+)\})?(?:\((\d+)\))?(?:\|([^%]*(?:%(?!%)[^%]*)*))?%%/gi;
 
 /**
- * Compile a template string into an executable function
+ * Compile a ListPages template string into an executable function.
+ *
+ * The template is split into alternating static strings and dynamic getter
+ * functions. The returned function concatenates these parts with the getter
+ * functions evaluated against the provided variable context.
+ *
+ * @param template - The template string containing `%%variable%%` placeholders
+ * @returns A compiled function that accepts a `VariableContext` and returns the rendered string
  */
 export function compileTemplate(template: string): CompiledTemplate {
   const parts: (string | ((ctx: VariableContext) => string))[] = [];
@@ -55,7 +80,20 @@ export function compileTemplate(template: string): CompiledTemplate {
 }
 
 /**
- * Create a getter function for a specific variable
+ * Create a getter function for a specific template variable.
+ *
+ * Handles all variable variants: parameterized (`{param}`), parenthesized (`(param)`),
+ * formatted (`|format`), and simple. Returns a function that extracts the appropriate
+ * value from a `VariableContext`.
+ *
+ * Unknown variable names return a function that always returns an empty string,
+ * matching Wikidot's behavior of silently ignoring unknown variables.
+ *
+ * @param name - Lowercase variable name
+ * @param braceParam - Content inside `{...}`, if present
+ * @param parenParam - Content inside `(...)`, if present
+ * @param format - Content after `|`, if present
+ * @returns A function that extracts the variable's value from a VariableContext
  */
 function createVariableGetter(
   name: string,
@@ -201,7 +239,13 @@ const SIMPLE_GETTERS: Record<string, (ctx: VariableContext) => string> = {
 // =============================================================================
 
 /**
- * Format a date using strftime-like format
+ * Format a Date object using an optional strftime-like format string.
+ *
+ * When no format is provided, returns the ISO 8601 string representation.
+ *
+ * @param date - The date to format
+ * @param format - Optional strftime format string (e.g., `"%Y-%m-%d"`)
+ * @returns Formatted date string
  */
 function formatDate(date: Date, format?: string): string {
   if (!format) {
@@ -212,7 +256,10 @@ function formatDate(date: Date, format?: string): string {
 }
 
 /**
- * Format user as [[*user name]] syntax
+ * Format a user as Wikidot's `[[*user name]]` inline syntax for linked display.
+ *
+ * @param user - User info, or undefined for anonymous display
+ * @returns Wikidot user link syntax, or "Anonymous" if no user
  */
 function formatUserLinked(user?: UserInfo): string {
   if (!user) return "Anonymous";
@@ -220,7 +267,14 @@ function formatUserLinked(user?: UserInfo): string {
 }
 
 /**
- * Format tags as linked list
+ * Format an array of tags as space-separated Wikidot link syntax.
+ *
+ * Each tag becomes `[prefix/tag tag]` where prefix defaults to
+ * `/system:page-tags/tag/` unless overridden by the template's pipe format.
+ *
+ * @param tags - Array of tag names
+ * @param prefix - URL prefix for tag links
+ * @returns Space-separated string of Wikidot link syntax, or empty string if no tags
  */
 function formatTagsLinked(tags: string[], prefix: string): string {
   if (tags.length === 0) return "";
@@ -238,8 +292,13 @@ function splitContentSections(content: string): string[] {
 }
 
 /**
- * Get summary from page content
- * Returns content{1} if sections exist, otherwise first paragraph
+ * Extract a summary from page content.
+ *
+ * If the content contains `====` section separators, returns the first section
+ * (equivalent to `%%content{1}%%`). Otherwise, returns the first paragraph.
+ *
+ * @param page - Page data containing content
+ * @returns Summary text extracted from the page content
  */
 function getSummary(page: PageData): string {
   if (page.content) {
@@ -252,7 +311,13 @@ function getSummary(page: PageData): string {
 }
 
 /**
- * Extract first paragraph from content
+ * Extract the first paragraph from wikitext content.
+ *
+ * Strips headings, TOC directives, div blocks, and module blocks before
+ * splitting on double newlines to find the first content paragraph.
+ *
+ * @param content - Raw wikitext content, or undefined
+ * @returns The first paragraph text, or empty string if no content
  */
 function getFirstParagraph(content?: string): string {
   if (!content) return "";
@@ -270,7 +335,7 @@ function getFirstParagraph(content?: string): string {
   return paragraphs[0]?.trim() ?? "";
 }
 
-// Static arrays for strftime (avoid recreating on each call)
+/** Full month names for strftime `%B` token. Static to avoid per-call allocation. */
 const MONTHS = [
   "January",
   "February",
@@ -285,6 +350,7 @@ const MONTHS = [
   "November",
   "December",
 ];
+/** Abbreviated month names for strftime `%b` token. */
 const MONTHS_SHORT = [
   "Jan",
   "Feb",
@@ -299,15 +365,29 @@ const MONTHS_SHORT = [
   "Nov",
   "Dec",
 ];
+/** Full day names for strftime `%A` token. */
 const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+/** Abbreviated day names for strftime `%a` token. */
 const DAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// Pre-compiled regex for strftime tokens (matches %X where X is a letter or %)
+/** Pre-compiled regex matching strftime tokens (`%X` where X is a supported letter or `%`). */
 const STRFTIME_REGEX = /%([YymdHeHIMSpbBaAwjZz%])/g;
 
 /**
- * strftime implementation for common tokens
- * Uses single-pass regex replace for O(n) performance
+ * Minimal strftime implementation supporting common tokens.
+ *
+ * Uses a single-pass regex replace for O(n) performance. All dates are
+ * treated as UTC to match Wikidot's server-side rendering behavior.
+ *
+ * Supported tokens: `%Y` (4-digit year), `%y` (2-digit year), `%m` (month),
+ * `%d` (zero-padded day), `%e` (day), `%H` (24h hour), `%I` (12h hour),
+ * `%M` (minute), `%S` (second), `%p` (AM/PM), `%b`/`%B` (month name),
+ * `%a`/`%A` (day name), `%w` (weekday number), `%j` (day of year),
+ * `%Z`/`%z` (timezone), `%%` (literal percent).
+ *
+ * @param date - The date to format
+ * @param format - strftime format string
+ * @returns Formatted date string
  */
 function strftime(date: Date, format: string): string {
   const pad = (n: number, len = 2) => String(n).padStart(len, "0");
@@ -359,7 +439,10 @@ function strftime(date: Date, format: string): string {
 }
 
 /**
- * Get day of year (1-366)
+ * Calculate the day of year (1-366) for a given date.
+ *
+ * @param date - The date to calculate for
+ * @returns Day of year as an integer (1 = January 1st)
  */
 function getDayOfYear(date: Date): number {
   const start = new Date(date.getFullYear(), 0, 0);

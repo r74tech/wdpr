@@ -1,8 +1,22 @@
 /**
- * Extract data requirements from AST
+ * @module listpages/extract
  *
- * Analyzes the AST to find ListPages modules and determine
- * what external data they need.
+ * Data requirement extraction from parsed ASTs.
+ *
+ * After parsing, the AST may contain ListPages and ListUsers module nodes that
+ * need external data (page lists, user information) to be resolved. This module
+ * analyzes the AST to find all such modules, determines what variables their
+ * templates use (and therefore what data fields the external provider must supply),
+ * and pre-compiles their templates for efficient rendering during the resolution phase.
+ *
+ * The extraction result includes:
+ * - `DataRequirements` listing all ListPages/ListUsers queries with their needed variables
+ * - Pre-compiled template functions keyed by module ID for fast rendering
+ *
+ * This is the first phase of the three-phase ListPages lifecycle:
+ * 1. **Extract** (this module) - Analyze AST, determine data needs, compile templates
+ * 2. **Fetch** (external) - Application fetches data based on requirements
+ * 3. **Resolve** - Substitute fetched data into compiled templates and re-parse
  */
 
 import type { SyntaxTree, Module } from "@wdprlib/ast";
@@ -18,16 +32,28 @@ import { extractListUsersVariables, compileListUsersTemplate } from "../listuser
 import { walkElements } from "../walk";
 
 /**
- * Type guard for list-pages module
+ * Type guard to narrow a Module union to the list-pages variant.
+ *
+ * @param module - A Module discriminated union value
+ * @returns true if the module is a list-pages module
  */
 function isListPagesModule(module: Module): module is Extract<Module, { module: "list-pages" }> {
   return module.module === "list-pages";
 }
 
-// Variable pattern for extraction
+/**
+ * Regex pattern for matching ListPages template variables.
+ *
+ * Matches `%%name%%`, `%%name{param}%%`, `%%name(param)%%`, and `%%name|format%%`.
+ * The captured groups are: [1] variable name, [2] brace parameter, [3] paren parameter,
+ * [4] format/pipe parameter.
+ */
 const VARIABLE_REGEX = /%%([a-z_]+)(?:\{([^}]+)\})?(?:\((\d+)\))?(?:\|([^%]+))?%%/gi;
 
-// Wikidot default template used when body is not specified
+/**
+ * Default template used when a ListPages module has no body specified.
+ * This matches Wikidot's built-in default template that shows title, author, date, and summary.
+ */
 const DEFAULT_BODY_TEMPLATE = `+ %%title_linked%%
 
 by %%created_by_linked%% %%created_at%%
@@ -35,7 +61,11 @@ by %%created_by_linked%% %%created_at%%
 %%summary%%`;
 
 /**
- * Result of extraction including compiled templates
+ * Complete result of extracting data requirements from an AST.
+ *
+ * Contains everything needed to fetch external data and then resolve modules:
+ * the data requirements tell the application what to fetch, and the pre-compiled
+ * templates are used during the resolution phase to efficiently render results.
  */
 export interface ExtractionResult {
   /** Data requirements for external fetching */
@@ -47,19 +77,34 @@ export interface ExtractionResult {
 }
 
 /**
- * ListPages module data extracted from Module type
+ * Narrowed type for the list-pages variant of the Module union.
+ * Used internally for type-safe access to list-pages-specific fields.
  */
 type ListPagesModuleData = Extract<Module, { module: "list-pages" }>;
 
 /**
- * Type guard for list-users module
+ * Type guard to narrow a Module union to the list-users variant.
+ *
+ * @param module - A Module discriminated union value
+ * @returns true if the module is a list-users module
  */
 function isListUsersModule(module: Module): module is Extract<Module, { module: "list-users" }> {
   return module.module === "list-users";
 }
 
 /**
- * Extract data requirements from a parsed AST
+ * Extract all data requirements from a parsed AST.
+ *
+ * Walks the entire AST to find ListPages and ListUsers module elements,
+ * analyzes their templates to determine which variables are used, builds
+ * query objects from their attributes, and pre-compiles their templates.
+ *
+ * Each module is assigned a sequential ID (separate counters for ListPages
+ * and ListUsers) that is used to correlate requirements with fetched data
+ * and compiled templates during the resolution phase.
+ *
+ * @param ast - The parsed syntax tree to analyze
+ * @returns Extraction result containing requirements and compiled templates
  */
 export function extractDataRequirements(ast: SyntaxTree): ExtractionResult {
   const requirements: DataRequirements = {
@@ -130,7 +175,14 @@ export function extractDataRequirements(ast: SyntaxTree): ExtractionResult {
 }
 
 /**
- * Build query parameters from list-pages module
+ * Build a ListPagesQuery from the parsed module attributes.
+ *
+ * Maps module attribute names (which use kebab-case in the AST) to the
+ * query's camelCase property names. Also extracts data form fields
+ * (attributes prefixed with `_`) into a separate record.
+ *
+ * @param module - Parsed list-pages module data from the AST
+ * @returns Query parameters ready for normalization and external fetching
  */
 function buildQuery(module: ListPagesModuleData): ListPagesQuery {
   return {
@@ -158,7 +210,14 @@ function buildQuery(module: ListPagesModuleData): ListPagesQuery {
 }
 
 /**
- * Extract data form fields from attributes (keys starting with _)
+ * Extract data form field selectors from module attributes.
+ *
+ * Wikidot's ListPages supports filtering by data form fields using attribute
+ * names prefixed with `_` (e.g., `_color="red"`). The prefix is stripped from
+ * the key in the returned record.
+ *
+ * @param attributes - Raw module attributes
+ * @returns Record of field name to value (without `_` prefix), or undefined if no fields found
  */
 function extractDataFormFields(
   attributes: Record<string, string>,
@@ -177,7 +236,7 @@ function extractDataFormFields(
 }
 
 /**
- * Extraction result from template
+ * Internal result of analyzing a ListPages template string for variable usage.
  */
 interface TemplateExtraction {
   variables: ListPagesVariable[];
@@ -189,7 +248,16 @@ interface TemplateExtraction {
 }
 
 /**
- * Extract all variable information from template
+ * Extract all variable references from a ListPages template string.
+ *
+ * Scans the template for `%%variable%%` patterns and categorizes them:
+ * - Simple variables (e.g., `%%title%%`, `%%created_at%%`)
+ * - Parameterized variables (e.g., `%%content{2}%%`, `%%form_data{color}%%`)
+ * - Preview with length (e.g., `%%preview(100)%%`)
+ * - Tags with prefix (e.g., `%%tags_linked|/tag/%%`)
+ *
+ * @param template - The template string to analyze
+ * @returns Structured extraction result with categorized variable information
  */
 function extractVariablesFromTemplate(template: string): TemplateExtraction {
   const variables = new Set<ListPagesVariable>();
@@ -266,7 +334,14 @@ function extractVariablesFromTemplate(template: string): TemplateExtraction {
 }
 
 /**
- * Normalize variable name to canonical form
+ * Normalize a variable name to its canonical `ListPagesVariable` form.
+ *
+ * Only known variable names are accepted. Unknown names return null,
+ * causing them to be silently ignored (matching Wikidot's behavior of
+ * rendering unknown variables as empty strings).
+ *
+ * @param name - Lowercase variable name extracted from the template
+ * @returns The canonical variable name, or null if not recognized
  */
 function normalizeVariableName(name: string): ListPagesVariable | null {
   // Direct mapping for known variables

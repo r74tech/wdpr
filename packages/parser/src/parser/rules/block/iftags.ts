@@ -1,8 +1,35 @@
+/**
+ * @module iftags
+ *
+ * Block rule for Wikidot conditional tag blocks: `[[iftags]]...[[/iftags]]`.
+ *
+ * The `[[iftags]]` construct conditionally includes or excludes its body
+ * content based on the page's tags. The condition expression is everything
+ * between the block name and `]]`, e.g.:
+ *
+ * ```
+ * [[iftags +scp -tale]]
+ * This content only shows if the page has tag "scp" and not "tale".
+ * [[/iftags]]
+ * ```
+ *
+ * The condition string is stored as-is in the AST; actual evaluation is
+ * performed at render time based on the page's tag set.
+ *
+ * Body content is parsed as normal block-level markup using
+ * {@link parseBlocksUntil}.
+ */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName, parseBlocksUntil } from "./utils";
 
+/**
+ * Block rule for `[[iftags condition]]...[[/iftags]]`.
+ *
+ * Produces an `if-tags` element containing the condition string and
+ * the parsed body elements.
+ */
 export const iftagsRule: BlockRule = {
   name: "iftags",
   startTokens: ["BLOCK_OPEN"],

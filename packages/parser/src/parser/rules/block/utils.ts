@@ -1,3 +1,25 @@
+/**
+ * @module block/utils
+ *
+ * Shared utilities used by block-level parser rules.
+ *
+ * This module provides the core building blocks that most block rules
+ * depend on:
+ *
+ * - {@link canApplyBlockRule} -- fast pre-check for whether a rule's start
+ *   tokens match the current token.
+ * - {@link parseBlocksUntil} -- the main block-level content parser that
+ *   iterates rules until a close condition is met (used by div, collapsible,
+ *   tabview, iftags, align, etc.).
+ * - {@link parseInlineContentUntil} -- similar to `parseBlocksUntil` but
+ *   without paragraph wrapping, used for `div_` paragraph-strip mode.
+ * - {@link parseAttributes} / {@link parseAttributesRaw} -- attribute
+ *   parsers for block opening tags (with and without safety filtering).
+ * - {@link createBlockEndCondition} -- factory for close-condition predicates.
+ *
+ * Re-exports {@link filterUnsafeAttributes} and {@link parseBlockName} from
+ * the shared `../utils` module for backward compatibility.
+ */
 import type { Token } from "../../../lexer";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext, BlockRule } from "../types";
@@ -8,15 +30,26 @@ import { filterUnsafeAttributes, parseBlockName } from "../utils";
 export { filterUnsafeAttributes, parseBlockName } from "../utils";
 
 /**
- * Result of parsing block content
+ * Result of parsing a sequence of block-level content.
  */
 export interface BlockParseResult {
+  /** The parsed AST elements. */
   elements: Element[];
+  /** Total number of tokens consumed from the stream. */
   consumed: number;
 }
 
 /**
- * Check if a block rule can be applied
+ * Determines whether a block rule is eligible for the current token.
+ *
+ * A rule is eligible if:
+ * 1. The token is at line start (when `rule.requiresLineStart` is true).
+ * 2. The token's type is in the rule's `startTokens` list (or the list
+ *    is empty, meaning the rule is a universal fallback).
+ *
+ * @param rule  - The block rule to check.
+ * @param token - The current token.
+ * @returns `true` if the rule may be attempted.
  */
 export function canApplyBlockRule(rule: BlockRule, token: Token): boolean {
   if (rule.requiresLineStart && !token.lineStart) {
@@ -29,7 +62,26 @@ export function canApplyBlockRule(rule: BlockRule, token: Token): boolean {
 }
 
 /**
- * Parse block elements until close condition is met
+ * Parses block-level elements from the token stream until a close
+ * condition is satisfied.
+ *
+ * This is the workhorse parser used by container blocks (div, collapsible,
+ * tabview, iftags, align, etc.) to parse their body content. It loops
+ * through tokens, trying each block rule in priority order, and falls back
+ * to the paragraph rule when nothing else matches.
+ *
+ * Whitespace and newline tokens between blocks are silently consumed.
+ * The close condition receives a ParseContext snapshot at the current
+ * position and should return `true` to stop parsing (the close tag
+ * itself is NOT consumed here -- the caller handles that).
+ *
+ * The close condition is also injected into `blockCloseCondition` on
+ * the context so that the paragraph parser can respect the enclosing
+ * block's boundary.
+ *
+ * @param ctx            - Parse context positioned at the start of the body.
+ * @param closeCondition - Predicate that signals the end of the block body.
+ * @returns Parsed elements and total tokens consumed.
  */
 export function parseBlocksUntil(
   ctx: ParseContext,
@@ -104,10 +156,22 @@ export function parseBlocksUntil(
 }
 
 /**
- * Parse mixed content until close condition is met (no paragraph wrapping)
- * Used for div_ (paragraph strip mode)
- * Newlines become line-breaks, paragraph breaks become double line-breaks
- * Block elements (like nested div) are returned as-is (mixed into inline stream)
+ * Parses mixed inline/block content until a close condition is met,
+ * WITHOUT paragraph wrapping.
+ *
+ * This is used for `div_` (paragraph strip mode) where newlines become
+ * `<br />` elements rather than paragraph separators. Blank lines
+ * (multiple consecutive newlines) are collapsed into a single `<br />`.
+ *
+ * Block-level elements (nested div, collapsible, etc.) are mixed directly
+ * into the inline element stream. Newlines immediately before a BLOCK_OPEN
+ * or BLOCK_END_OPEN are silently consumed (no `<br />` generated).
+ *
+ * Trailing line-break elements are stripped from the result.
+ *
+ * @param ctx            - Parse context positioned at the start of the body.
+ * @param closeCondition - Predicate that signals the end of the content.
+ * @returns Parsed elements and total tokens consumed.
  */
 export function parseInlineContentUntil(
   ctx: ParseContext,
@@ -221,8 +285,24 @@ export function parseInlineContentUntil(
 }
 
 /**
- * Parse attributes from tokens like: id="foo" class="bar" data-custom="value"
- * Handles hyphenated attribute names like data-paragraph
+ * Parses HTML-style attributes from block opening tags.
+ *
+ * Supports:
+ * - `name="value"` (quoted string)
+ * - `name=value` (unquoted single-token value)
+ * - `name` (boolean attribute, stored as `"true"`)
+ * - Hyphenated names like `data-paragraph` or `aria-label` (composed
+ *   from TEXT `-` IDENTIFIER token sequences).
+ *
+ * Attribute names are lowercased (Wikidot is case-insensitive).
+ * The result is filtered through {@link filterUnsafeAttributes} to strip
+ * potentially dangerous attributes (e.g. `onload`, `onclick`).
+ *
+ * Stops at BLOCK_CLOSE, NEWLINE, or EOF.
+ *
+ * @param ctx      - Parse context.
+ * @param startPos - Token index to begin scanning.
+ * @returns Parsed (filtered) attributes and total tokens consumed.
  */
 export function parseAttributes(
   ctx: ParseContext,
@@ -311,9 +391,27 @@ export function parseAttributes(
 }
 
 /**
- * Parse attributes without safety filtering.
- * Use this for block-specific parameters that are not HTML attributes.
- * @param hyphenatedNames - If true, handles hyphenated attribute names like data-paragraph (default: true)
+ * Parses attributes from block opening tags WITHOUT safety filtering.
+ *
+ * Use this for block-specific parameters (like `type` on `[[code]]`) that
+ * are not emitted as HTML attributes and therefore do not need XSS
+ * protection. The parsing logic is identical to {@link parseAttributes}
+ * except the result is returned as-is.
+ *
+ * Hyphenated name handling is configurable because some contexts (e.g.
+ * code block with `data-src`) should treat hyphens as part of the name,
+ * while others should not.
+ *
+ * Also handles STRIKE_MARKER tokens (`--`) in attribute name positions,
+ * which can appear when a double hyphen is used in names like
+ * `data--something`.
+ *
+ * @param ctx             - Parse context.
+ * @param startPos        - Token index to begin scanning.
+ * @param hyphenatedNames - When `true` (default), hyphens are collected
+ *                          into the attribute name. When `false`, only
+ *                          the first segment before a hyphen is used.
+ * @returns Parsed (unfiltered) attributes and total tokens consumed.
  */
 export function parseAttributesRaw(
   ctx: ParseContext,
@@ -413,7 +511,16 @@ export function parseAttributesRaw(
 }
 
 /**
- * Create a close condition for block end tags like [[/name]]
+ * Creates a reusable close-condition function that matches block end tags
+ * (`[[/name]]`) for one or more block names.
+ *
+ * The returned function inspects the tokens at `ctx.pos` and returns both
+ * whether a match was found and how many tokens the closing tag occupies
+ * (including the optional trailing NEWLINE).
+ *
+ * @param blockNames - Array of block names to match (e.g. `["div"]`).
+ * @returns A function suitable for use as a `closeCondition` argument,
+ *          returning `{ matched, consumed }`.
  */
 export function createBlockEndCondition(
   blockNames: string[],

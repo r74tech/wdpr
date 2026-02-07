@@ -1,27 +1,49 @@
+/**
+ * @module block-list
+ *
+ * Block rule for the explicit list syntax: `[[ul]]`/`[[ol]]` with `[[li]]` items.
+ *
+ * Wikidot supports two kinds of lists: the lightweight "marker" syntax
+ * (`* item`, `# item`) handled by `list.ts`, and the block-level syntax
+ * handled here:
+ *
+ * ```
+ * [[ul]]
+ *   [[li]]Item 1[[/li]]
+ *   [[li]]Item 2[[/li]]
+ * [[/ul]]
+ * ```
+ *
+ * Block lists can carry HTML attributes on both the list wrapper and
+ * individual items, and support arbitrary nesting. Content inside `[[li]]`
+ * may include inline markup, block elements (divs, nested tables, etc.),
+ * and even nested `[[ul]]`/`[[ol]]` sub-lists.
+ *
+ * Key Wikidot-specific behaviors reproduced here:
+ * - `[[li_]]` is NOT a valid tag and is treated as plain text.
+ * - Bare content inside `[[ul]]`/`[[ol]]` (without `[[li]]`) is wrapped in
+ *   a `<li style="list-style: none">` equivalent (the `_noMarker` flag).
+ * - A `<br />` is appended after the entire block list.
+ * - Newline handling inside `[[li]]` follows Wikidot rules: single newlines
+ *   become `<br />`, including trailing newlines before `[[/li]]`.
+ * - Content after `[[/li]]` but before the next `[[li]]` or close tag is
+ *   included in the same list item.
+ */
 import type { Element, ListData, ListItem } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName, parseAttributes, canApplyBlockRule } from "./utils";
 
-/**
- * Block list rule for [[ul]]/[[ol]]/[[li]] syntax
- *
- * Wikidot supports block-based list syntax:
- * [[ul]]
- *   [[li]]Item 1[[/li]]
- *   [[li]]Item 2[[/li]]
- * [[/ul]]
- *
- * This syntax supports attributes on both lists and items:
- * [[ul class="custom-list"]]
- *   [[li class="item"]]Content[[/li]]
- * [[/ul]]
- */
-
+/** Discriminated list type for `[[ul]]` (unordered) vs `[[ol]]` (ordered). */
 type ListBlockType = "ul" | "ol";
 
 /**
- * Check if the next tokens form [[/ul]] or [[/ol]] close tag
+ * Checks whether the tokens at `pos` form a `[[/ul]]` or `[[/ol]]` closing tag.
+ *
+ * @param ctx          - Parse context.
+ * @param pos          - Token index to inspect.
+ * @param expectedType - When provided, only matches that specific list type.
+ * @returns `true` if a matching close tag is found.
  */
 function isListClose(ctx: ParseContext, pos: number, expectedType?: ListBlockType): boolean {
   if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") return false;
@@ -35,7 +57,11 @@ function isListClose(ctx: ParseContext, pos: number, expectedType?: ListBlockTyp
 }
 
 /**
- * Check if the next tokens form [[/li]] close tag
+ * Checks whether the tokens at `pos` form a `[[/li]]` closing tag.
+ *
+ * @param ctx - Parse context.
+ * @param pos - Token index to inspect.
+ * @returns `true` if `[[/li]]` is found.
  */
 function isLiClose(ctx: ParseContext, pos: number): boolean {
   if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") return false;
@@ -44,8 +70,14 @@ function isLiClose(ctx: ParseContext, pos: number): boolean {
 }
 
 /**
- * Check if the next tokens form [[li]] open tag
- * Note: [[li_]] is NOT recognized by Wikidot and treated as text
+ * Checks whether the tokens at `pos` form a `[[li]]` opening tag.
+ *
+ * Only the exact name `"li"` is accepted. Wikidot does NOT recognise
+ * `[[li_]]` (paragraph-strip variant) -- it is treated as plain text.
+ *
+ * @param ctx - Parse context.
+ * @param pos - Token index to inspect.
+ * @returns The block name and token count consumed, or `null` if not matched.
  */
 function isLiOpen(ctx: ParseContext, pos: number): { name: string; consumed: number } | null {
   if (ctx.tokens[pos]?.type !== "BLOCK_OPEN") return null;
@@ -59,7 +91,12 @@ function isLiOpen(ctx: ParseContext, pos: number): { name: string; consumed: num
 }
 
 /**
- * Check if the next tokens form [[ul]] or [[ol]] open tag (for nested lists)
+ * Checks whether the tokens at `pos` form a `[[ul]]` or `[[ol]]` opening tag,
+ * which indicates a nested list inside the current list or list item.
+ *
+ * @param ctx - Parse context.
+ * @param pos - Token index to inspect.
+ * @returns The detected list type and token count, or `null` if not matched.
  */
 function isNestedListOpen(
   ctx: ParseContext,
@@ -75,7 +112,12 @@ function isNestedListOpen(
 }
 
 /**
- * Consume close tag tokens [[/name]] and optional trailing newline
+ * Consumes the tokens of a closing tag `[[/name]]` and an optional trailing
+ * NEWLINE, returning the total number of tokens consumed.
+ *
+ * @param ctx - Parse context.
+ * @param pos - Token index at the BLOCK_END_OPEN token.
+ * @returns Number of tokens consumed.
  */
 function consumeCloseTag(ctx: ParseContext, pos: number): number {
   let closeConsumed = 1; // BLOCK_END_OPEN
@@ -87,7 +129,24 @@ function consumeCloseTag(ctx: ParseContext, pos: number): number {
 }
 
 /**
- * Parse a single [[li]] ... [[/li]] item
+ * Parses a single `[[li]]...[[/li]]` list item, including its attributes
+ * and body content.
+ *
+ * Body content may include inline markup, block-level elements (except
+ * block-list itself, to prevent infinite recursion), and nested
+ * `[[ul]]`/`[[ol]]` sub-lists. Newlines inside the item follow Wikidot
+ * rules: a single newline produces `<br />`, even right before `[[/li]]`.
+ *
+ * After the `[[/li]]` tag, any trailing content before the next `[[li]]`,
+ * close tag, or nested list open is also captured into the same item,
+ * matching Wikidot's behaviour of appending post-close content to the
+ * preceding `<li>`.
+ *
+ * @param ctx       - Parse context.
+ * @param startPos  - Token index at the expected `[[li]]` open.
+ * @param listType  - The parent list type, used to detect the list-level
+ *                    closing tag (`[[/ul]]` or `[[/ol]]`).
+ * @returns The parsed list item and token count, or `null` on failure.
  */
 function parseLiItem(
   ctx: ParseContext,
@@ -325,7 +384,20 @@ function parseLiItem(
 }
 
 /**
- * Parse a [[ul]] or [[ol]] block
+ * Parses a complete `[[ul]]...[[/ul]]` or `[[ol]]...[[/ol]]` block,
+ * including its attributes, child `[[li]]` items, bare content, and
+ * nested sub-lists.
+ *
+ * Bare content (text without an enclosing `[[li]]`) is wrapped in an
+ * item with the `_noMarker` attribute, which the renderer translates
+ * to `<li style="list-style: none">`. When there is only a single
+ * paragraph of bare content, the paragraph wrapper is removed to match
+ * Wikidot's output.
+ *
+ * @param ctx       - Parse context.
+ * @param startPos  - Token index at the BLOCK_OPEN for `[[ul]]`/`[[ol]]`.
+ * @param listType  - Whether this is an unordered or ordered list.
+ * @returns The list element and consumed token count, or `null` on failure.
  */
 function parseListBlock(
   ctx: ParseContext,
@@ -548,6 +620,13 @@ function parseListBlock(
   };
 }
 
+/**
+ * Block rule for Wikidot explicit list syntax (`[[ul]]`/`[[ol]]`).
+ *
+ * The entry point verifies that the BLOCK_OPEN is followed by the name
+ * `"ul"` or `"ol"`, then delegates to {@link parseListBlock}. On success
+ * a trailing `<br />` element is appended, matching Wikidot's rendering.
+ */
 export const blockListRule: BlockRule = {
   name: "block-list",
   startTokens: ["BLOCK_OPEN"],

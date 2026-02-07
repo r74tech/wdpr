@@ -1,5 +1,19 @@
 /**
- * ListPages module types
+ * @module listpages/types
+ *
+ * Type definitions for the ListPages module system.
+ *
+ * This file defines the complete type vocabulary for the ListPages lifecycle:
+ *
+ * - **Query types**: Raw and normalized representations of ListPages filter/sort parameters
+ * - **Variable types**: The `%%variable%%` names supported in ListPages templates
+ * - **Data requirement types**: What the parser tells the application it needs to fetch
+ * - **External data types**: What the application provides back (page data, user info, site context)
+ * - **Template types**: Compiled template function signatures and their execution context
+ * - **Normalized query types**: Structured representations of parsed query parameters
+ *
+ * Security note: Several fields contain untrusted user input from wikitext.
+ * See `ListPagesQuery` documentation for safe usage guidelines.
  */
 
 // =============================================================================

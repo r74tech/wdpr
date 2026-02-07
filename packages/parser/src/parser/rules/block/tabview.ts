@@ -1,10 +1,48 @@
+/**
+ * @module tabview
+ *
+ * Block rule for Wikidot tabbed content: `[[tabview]]` (or `[[tabs]]`).
+ *
+ * A tabview contains one or more `[[tab Label]]...[[/tab]]` blocks:
+ *
+ * ```
+ * [[tabview]]
+ * [[tab First Tab]]
+ * Content of the first tab.
+ * [[/tab]]
+ * [[tab Second Tab]]
+ * Content of the second tab.
+ * [[/tab]]
+ * [[/tabview]]
+ * ```
+ *
+ * Key behaviours:
+ * - Both `[[tabview]]` and `[[tabs]]` are accepted as the outer wrapper.
+ * - Any attributes or text after the block name on the opening tag are
+ *   silently ignored (Wikidot behaviour: `[[tabview Foo]]` is valid).
+ * - If a tab has no label, it defaults to `"untitled"`.
+ * - Tab body content is parsed as block-level markup.
+ * - An empty tabview (no tabs) fails the rule, falling back to text.
+ * - Non-tab content between tabs (other than whitespace/newlines) causes
+ *   the rule to fail.
+ */
 import type { Element, TabData } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName, parseBlocksUntil } from "./utils";
 
 /**
- * Parse a single [[tab label]]...[[/tab]] block
+ * Parses a single `[[tab Label]]...[[/tab]]` block within a tabview.
+ *
+ * The label is everything between the block name and `]]` (leading
+ * whitespace is trimmed). An empty label defaults to `"untitled"`.
+ * Newlines are not allowed in the label -- if one is encountered, the
+ * parse fails.
+ *
+ * Body content is parsed as block-level markup via {@link parseBlocksUntil}.
+ *
+ * @param ctx - Parse context, positioned before the expected `[[tab ...]]`.
+ * @returns The tab data and consumed count, or `null` on failure.
  */
 function parseTab(ctx: ParseContext): { tab: TabData; consumed: number } | null {
   let pos = ctx.pos;
@@ -117,6 +155,19 @@ function parseTab(ctx: ParseContext): { tab: TabData; consumed: number } | null 
   };
 }
 
+/**
+ * Block rule for `[[tabview]]`/`[[tabs]]` with `[[tab]]` children.
+ *
+ * Parsing strategy:
+ * 1. Match BLOCK_OPEN + name "tabview" or "tabs" (case-insensitive).
+ * 2. Skip any trailing text/attributes on the opening tag (ignored).
+ * 3. Consume `]]` and optional newline.
+ * 4. Repeatedly parse `[[tab Label]]...[[/tab]]` blocks via {@link parseTab}.
+ * 5. Whitespace and newlines between tabs are skipped; other content fails.
+ * 6. Consume `[[/tabview]]` or `[[/tabs]]`.
+ * 7. If no tabs were found, fail the rule.
+ * 8. Emit a `tab-view` element containing the array of tab data.
+ */
 export const tabviewRule: BlockRule = {
   name: "tabview",
   startTokens: ["BLOCK_OPEN"],

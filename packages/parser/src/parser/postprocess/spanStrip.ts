@@ -1,13 +1,34 @@
 /**
- * Post-processing for parsed AST
+ * @module postprocess/spanStrip
  *
- * Handles span_ (paragraph strip) paragraph merging
- * Handles empty expr splitting paragraphs
+ * Post-processing pass for paragraph merging and cleanup in the parsed AST.
+ *
+ * This module handles two related Wikidot behaviors:
+ *
+ * 1. **Paragraph strip (`span_`)**: In Wikidot, the `[[span_]]` inline element
+ *    removes paragraph boundaries around it. When a paragraph contains a `span_`
+ *    marker, it becomes a "merge anchor" that absorbs adjacent paragraphs. The
+ *    merged content is unwrapped (no `<p>` tag), matching Wikidot's rendering.
+ *    Content after a blank line inside `span_` becomes "escaped" and is placed
+ *    outside the merged paragraph.
+ *
+ * 2. **Empty `[[#expr ]]` paragraph splitting**: An `[[#expr ]]` element with
+ *    an empty expression acts as a paragraph break, splitting the containing
+ *    paragraph into separate paragraphs.
+ *
+ * Additionally, this module recursively cleans internal flags (`_paragraphStrip`,
+ * `_emptyParagraphStrip`, `_escapedFromParagraph`, `_splitByBlankLine`) from AST
+ * elements. These flags are used during parsing as inter-pass communication and
+ * must not appear in the final output.
  */
 import type { Element, ContainerData, ExprData } from "@wdprlib/ast";
 
 /**
- * Check if an element is a container with specific type
+ * Check if an element is a container with a specific container type.
+ *
+ * @param el - The element to check
+ * @param type - The container type to match (e.g., "paragraph", "span", "div")
+ * @returns true if the element is a container of the specified type
  */
 function isContainer(el: Element, type: string): boolean {
   if (el.element !== "container") return false;
@@ -16,7 +37,10 @@ function isContainer(el: Element, type: string): boolean {
 }
 
 /**
- * Get container data from element
+ * Extract ContainerData from an element, if it is a container.
+ *
+ * @param el - The element to extract data from
+ * @returns The container's data, or null if the element is not a container
  */
 function getContainerData(el: Element): ContainerData | null {
   if (el.element !== "container") return null;
@@ -24,7 +48,14 @@ function getContainerData(el: Element): ContainerData | null {
 }
 
 /**
- * Check if a node is a span_ marker (paragraph strip)
+ * Check if an element is a `span_` marker (paragraph strip indicator).
+ *
+ * During parsing, `[[span_]]` elements are annotated with `_paragraphStrip`
+ * or `_emptyParagraphStrip` internal flags. This function detects those markers
+ * so the post-processor can merge adjacent paragraphs.
+ *
+ * @param el - The element to check (may be undefined for boundary checks)
+ * @returns true if the element is a span with a paragraph-strip flag
  */
 function isSpanStripMarker(el: Element | undefined): boolean {
   if (!el || el.element !== "container") return false;
@@ -38,7 +69,13 @@ function isSpanStripMarker(el: Element | undefined): boolean {
 }
 
 /**
- * Check if a paragraph contains a span with _paragraphStrip marker
+ * Check if a paragraph contains at least one `span_` marker among its children.
+ *
+ * A paragraph with a `span_` marker becomes a "merge anchor" that can absorb
+ * adjacent paragraphs during post-processing.
+ *
+ * @param para - A paragraph element to inspect
+ * @returns true if the paragraph contains a child with a paragraph-strip flag
  */
 function hasParagraphStripSpan(para: Element): boolean {
   const data = getContainerData(para);
@@ -47,7 +84,14 @@ function hasParagraphStripSpan(para: Element): boolean {
 }
 
 /**
- * Check if an element is an escaped span (content after blank line in span_)
+ * Check if an element is an "escaped span" (content after a blank line inside `span_`).
+ *
+ * In Wikidot, when a blank line appears inside a `[[span_]]` block, the content
+ * after the blank line escapes the paragraph and is rendered outside it. These
+ * spans are marked with `_escapedFromParagraph` during parsing.
+ *
+ * @param el - The element to check
+ * @returns true if the element is a span marked as escaped from its paragraph
  */
 function isEscapedSpan(el: Element): boolean {
   if (el.element !== "container") return false;
@@ -56,11 +100,18 @@ function isEscapedSpan(el: Element): boolean {
 }
 
 /**
- * Extract escaped spans from paragraph children and return them as separate spans
- * Also removes escaped spans AND everything after them from the original array
+ * Extract escaped spans and all subsequent content from a paragraph's children.
  *
- * Wikidot behavior: once an escaped span appears, everything after it is also
- * outside the paragraph.
+ * When an escaped span is found, it and everything after it is removed from the
+ * original children array (mutated in place via `splice`) and returned as a
+ * separate array of span elements. Non-span content between escaped spans is
+ * collected and wrapped in anonymous span elements.
+ *
+ * This models Wikidot's behavior where once a blank line occurs inside `span_`,
+ * all subsequent content is rendered outside the paragraph.
+ *
+ * @param children - Mutable array of paragraph children; escaped items are spliced out
+ * @returns Array of span elements that should be rendered outside the paragraph
  */
 function extractEscapedSpans(children: Element[]): Element[] {
   const escaped: Element[] = [];
@@ -140,10 +191,15 @@ function extractEscapedSpans(children: Element[]): Element[] {
 }
 
 /**
- * Remove line-breaks that are adjacent to span_ elements and remove empty span_ markers
- * Wikidot behavior: span_ removes paragraph breaks, including line-breaks between merged paragraphs
+ * Remove line-break elements adjacent to `span_` markers and remove empty `span_` markers.
  *
- * Uses single reverse pass to avoid multiple splice operations
+ * Wikidot's `span_` removes paragraph boundaries, including the line-breaks that
+ * would normally appear between merged paragraphs. Empty `span_` markers (created
+ * by `[[span_]][[/span]]` with no content) are also removed as they serve no purpose.
+ *
+ * Uses a single reverse pass to safely splice elements without index invalidation.
+ *
+ * @param children - Mutable array of merged paragraph children; modified in place
  */
 function removeLineBreaksAroundSpanStrip(children: Element[]): void {
   // Single reverse pass: check each element for removal criteria
@@ -172,7 +228,14 @@ function removeLineBreaksAroundSpanStrip(children: Element[]): void {
 }
 
 /**
- * Check if an element is a span split by blank line (needs separate paragraph)
+ * Check if an element is a span that was split by a blank line.
+ *
+ * When a blank line appears inside `[[span]]..[[/span]]`, the parser marks the
+ * span with `_splitByBlankLine`. During post-processing, the containing paragraph
+ * is split at these markers so each part becomes its own paragraph.
+ *
+ * @param el - The element to check
+ * @returns true if the element is a span marked with `_splitByBlankLine`
  */
 function isSplitSpan(el: Element): boolean {
   if (el.element !== "container") return false;
@@ -181,8 +244,14 @@ function isSplitSpan(el: Element): boolean {
 }
 
 /**
- * Split paragraph at spans marked with _splitByBlankLine
- * Returns array of paragraphs (original split into multiple)
+ * Split a paragraph at spans marked with `_splitByBlankLine`.
+ *
+ * Each `_splitByBlankLine` span starts a new paragraph. Content before the first
+ * split span remains in the initial paragraph; each split span begins a new one.
+ *
+ * @param para - A paragraph element that may contain split-marked spans
+ * @returns Array of paragraph elements (one or more); returns the original
+ *          element in a single-element array if no splits are needed
  */
 function splitParagraphAtBlankLineSpans(para: Element): Element[] {
   const data = getContainerData(para);
@@ -228,7 +297,13 @@ function splitParagraphAtBlankLineSpans(para: Element): Element[] {
 }
 
 /**
- * Check if an element is an empty expr (expression is empty string)
+ * Check if an element is an empty `[[#expr ]]` (expression is an empty string).
+ *
+ * In Wikidot markup, `[[# ]]` with an empty expression acts as a paragraph
+ * break without generating visible output.
+ *
+ * @param el - The element to check
+ * @returns true if the element is an expr with an empty expression string
  */
 function isEmptyExpr(el: Element): boolean {
   if (el.element !== "expr") return false;
@@ -237,9 +312,13 @@ function isEmptyExpr(el: Element): boolean {
 }
 
 /**
- * Split paragraph at empty expr elements
- * Empty expr acts as a paragraph break
- * Returns array of paragraphs (original may be split into multiple)
+ * Split a paragraph at empty `[[#expr ]]` elements.
+ *
+ * Each empty expr acts as a paragraph break. Line-break elements immediately
+ * before or after an empty expr are also removed to avoid spurious whitespace.
+ *
+ * @param para - A paragraph element that may contain empty expr elements
+ * @returns Array of paragraph elements; empty if all content was consumed by splits
  */
 function splitParagraphAtEmptyExpr(para: Element): Element[] {
   const data = getContainerData(para);
@@ -302,17 +381,22 @@ function splitParagraphAtEmptyExpr(para: Element): Element[] {
 }
 
 /**
- * Merge consecutive paragraphs that contain span_ (paragraph strip mode)
- * Wikidot behavior: span_ removes paragraph breaks around it
+ * Merge and split paragraphs according to Wikidot's `span_` and expr behaviors.
  *
- * When a paragraph contains span_, it becomes a "merge anchor" that can absorb
- * adjacent paragraphs (even those without span_).
+ * This is the main post-processing entry point for paragraph restructuring.
+ * It performs two passes over the top-level element list:
  *
- * Escaped spans (content after blank line in span_) are extracted and placed
- * outside the paragraph.
+ * **First pass**: Split paragraphs at `_splitByBlankLine` spans and empty `[[#expr ]]`
+ * elements. A single input paragraph may become multiple output paragraphs.
  *
- * Also splits paragraphs containing spans with _splitByBlankLine marker.
- * Also splits paragraphs at empty [[#expr ]] elements.
+ * **Second pass**: Merge consecutive paragraphs around `span_` markers. When a
+ * paragraph contains a `span_` marker, it absorbs adjacent paragraphs (even those
+ * without `span_`). The merged content is unwrapped (no `<p>` tag), matching
+ * Wikidot's rendering behavior. Escaped spans (content after blank lines in `span_`)
+ * are extracted and placed outside the merged paragraph.
+ *
+ * @param children - Top-level element array from the parser
+ * @returns Restructured element array with paragraphs merged/split as needed
  */
 export function mergeSpanStripParagraphs(children: Element[]): Element[] {
   // First pass: split paragraphs at _splitByBlankLine markers and empty expr
@@ -435,9 +519,19 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
 }
 
 /**
- * Remove internal flags from AST elements recursively
- * These flags are used during parsing but should not appear in the output
- * Also removes empty spans and adjacent whitespace (Wikidot behavior: empty [[span]][[/span]] produces no output)
+ * Recursively remove internal flags from AST elements and clean up empty spans.
+ *
+ * During parsing, elements are annotated with internal flags like `_paragraphStrip`,
+ * `_emptyParagraphStrip`, `_escapedFromParagraph`, and `_splitByBlankLine`. These
+ * flags serve as inter-pass communication and must be stripped before the AST is
+ * returned to callers.
+ *
+ * Additionally, empty `[[span]][[/span]]` elements and their adjacent whitespace
+ * text nodes are removed. Wikidot renders empty spans as no output, so they and
+ * their surrounding whitespace should not appear in the final AST.
+ *
+ * @param elements - Array of elements to clean
+ * @returns New array with all internal flags removed and empty spans stripped
  */
 export function cleanInternalFlags(elements: Element[]): Element[] {
   const cleaned = elements.map((el) => cleanElement(el));
@@ -445,7 +539,13 @@ export function cleanInternalFlags(elements: Element[]): Element[] {
 }
 
 /**
- * Check if an element is an empty span (should be removed from output)
+ * Check if an element is a span container with no children.
+ *
+ * Empty `[[span]][[/span]]` produces no visible output in Wikidot and should
+ * be removed from the AST along with surrounding whitespace.
+ *
+ * @param el - The element to check
+ * @returns true if the element is a span container with an empty elements array
  */
 function isEmptySpan(el: Element): boolean {
   if (el.element !== "container") return false;
@@ -454,14 +554,25 @@ function isEmptySpan(el: Element): boolean {
 }
 
 /**
- * Check if an element is a whitespace-only text node
+ * Check if an element is a text node containing only whitespace characters.
+ *
+ * @param el - The element to check
+ * @returns true if the element is a text node whose data is entirely whitespace
  */
 function isWhitespaceText(el: Element): boolean {
   return el.element === "text" && typeof el.data === "string" && /^\s+$/.test(el.data);
 }
 
 /**
- * Remove empty spans and adjacent whitespace text nodes
+ * Remove empty span elements and their adjacent whitespace text nodes.
+ *
+ * When an empty span is found, whitespace immediately before it is removed
+ * (popped from the result), and whitespace immediately after it is skipped
+ * (by advancing the index). This prevents orphaned whitespace from appearing
+ * where the empty span was.
+ *
+ * @param elements - Array of elements to filter
+ * @returns New array with empty spans and their adjacent whitespace removed
  */
 function removeEmptySpansAndAdjacentWhitespace(elements: Element[]): Element[] {
   const result: Element[] = [];
@@ -489,7 +600,14 @@ function removeEmptySpansAndAdjacentWhitespace(elements: Element[]): Element[] {
 }
 
 /**
- * Clean a single element and its children
+ * Clean a single element by removing internal flags and recursively cleaning children.
+ *
+ * For container elements, a new ContainerData is created without internal flag properties.
+ * For line-break elements, all extra properties are stripped. For lists and definition
+ * lists, items are recursively cleaned.
+ *
+ * @param el - The element to clean
+ * @returns A new element with internal flags removed
  */
 function cleanElement(el: Element): Element {
   // Remove internal flags from line-break elements

@@ -1,9 +1,38 @@
+/**
+ * @module code
+ *
+ * Block rule for the Wikidot code block: `[[code]]...[[/code]]`.
+ *
+ * A code block captures its body as raw text (no inline parsing) and
+ * supports two optional attributes:
+ * - `type` -- the programming language for syntax highlighting (e.g.
+ *   `type="python"`).
+ * - `name` -- a label or filename displayed alongside the code.
+ *
+ * The content between the tags is collected verbatim, with a single
+ * trailing newline stripped. The parsed block is also pushed into
+ * `ctx.codeBlocks` so higher-level consumers can enumerate all code
+ * blocks in the document.
+ *
+ * Edge case: when a quoted attribute value swallows the `]]` and even
+ * the `[[/code]]` (e.g. `[[code type="css]][[/code]]`), the parser
+ * detects this by inspecting the QUOTED_STRING token and truncates the
+ * value at the first `]]`. If `[[/code]]` is also inside the quoted
+ * string, the body is treated as empty.
+ */
 import type { Element, CodeBlockData } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName } from "../utils";
 import { parseAttributesRaw } from "./utils";
 
+/**
+ * Block rule for `[[code type="..." name="..."]]...[[/code]]`.
+ *
+ * Body content is stored as-is (not parsed for inline markup). The rule
+ * also registers the code block in `ctx.codeBlocks` for document-level
+ * introspection.
+ */
 export const codeBlockRule: BlockRule = {
   name: "code",
   startTokens: ["BLOCK_OPEN"],

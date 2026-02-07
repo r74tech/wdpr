@@ -1,8 +1,41 @@
+/**
+ * @module heading
+ *
+ * Block rule for Wikidot headings: `+ Heading` through `++++++ Heading`.
+ *
+ * Headings are written with one to six `+` characters at the start of a
+ * line, followed by mandatory whitespace and then inline content:
+ *
+ * ```
+ * + H1 heading
+ * ++ H2 heading
+ * +++ H3 heading
+ * ```
+ *
+ * An optional `*` immediately after the `+` markers hides the heading
+ * from the table of contents:
+ *
+ * ```
+ * +* Hidden H1
+ * ```
+ *
+ * Seven or more `+` characters are NOT valid headings in Wikidot and
+ * the rule will fail, letting them fall through to paragraph parsing.
+ *
+ * Non-hidden headings are registered in `ctx.tocEntries` for later use
+ * by the table-of-contents module.
+ */
 import type { Element, HeadingLevel } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseInlineUntil } from "../inline/utils";
 
+/**
+ * Block rule for Wikidot headings (`+ ` through `++++++ `).
+ *
+ * Produces a container element with `type: { header: { level, "has-toc" } }`.
+ * The heading text is parsed for inline markup (bold, links, etc.).
+ */
 export const headingRule: BlockRule = {
   name: "heading",
   startTokens: ["HEADING_MARKER"],
@@ -81,7 +114,14 @@ export const headingRule: BlockRule = {
 };
 
 /**
- * Extract text content from elements for TOC
+ * Recursively extracts the plain-text content from a tree of elements.
+ *
+ * Used to build the `text` field for table-of-contents entries. Only
+ * `text` elements and containers with nested `elements` are traversed;
+ * other element types (images, etc.) are ignored.
+ *
+ * @param elements - The heading's inline child elements.
+ * @returns Concatenated plain text.
  */
 function extractText(elements: Element[]): string {
   let text = "";

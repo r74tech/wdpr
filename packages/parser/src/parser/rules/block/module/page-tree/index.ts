@@ -1,7 +1,24 @@
+/**
+ * @module page-tree
+ *
+ * Parser rule for the Wikidot `[[module PageTree]]` block.
+ *
+ * Renders a hierarchical tree of pages based on parent-child relationships.
+ * Accepts optional `root`, `show-root`, and `depth` attributes.
+ */
+
 import type { ModuleRule } from "../types";
 import { parseInt32 } from "../utils";
 import type { PageTreeModuleData } from "./types";
 
+/**
+ * Module rule for `[[module PageTree]]`.
+ *
+ * Parses `root`, `show-root`, and `depth` attributes. The `show-root`
+ * attribute intentionally uses strict comparison with `"true"` (not
+ * `parseBool`) because Wikidot only accepts `"true"` for this attribute,
+ * not `"yes"`.
+ */
 export const pageTreeModuleRule: ModuleRule = {
   name: "module-page-tree",
   acceptsNames: ["pagetree"],

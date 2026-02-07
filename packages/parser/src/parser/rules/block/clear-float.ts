@@ -1,17 +1,32 @@
 /**
- * Clear float rule: ~~~~ (4 or more ~ at line start)
+ * @module clear-float
+ *
+ * Block rule for Wikidot's float-clearing syntax: `~~~~`.
+ *
+ * Four or more tilde characters (`~`) at the start of a line produce a
+ * `<div style="clear: both;">` (or left/right) element. This is commonly
+ * used after floated images or divs to prevent subsequent content from
+ * wrapping alongside them.
  *
  * Variants:
- * - ~~~~ or more: clear:both
- * - ~~~~<: clear:left
- * - ~~~~>: clear:right
+ * - `~~~~` (or more tildes) -- `clear: both`
+ * - `~~~~<` -- `clear: left`
+ * - `~~~~>` -- `clear: right`
  *
- * Note: ~~~ (3 tildes) does NOT work in Wikidot - requires 4+
+ * Three tildes (`~~~`) do NOT trigger this rule in Wikidot -- the minimum
+ * is four. The tilde count is validated at parse time even though the
+ * lexer already tokenises valid sequences, as a defensive check.
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 
+/**
+ * Block rule for the clear-float directive (`~~~~`, `~~~~<`, `~~~~>`).
+ *
+ * Produces a `clear-float` element whose data is the direction string:
+ * `"both"`, `"left"`, or `"right"`.
+ */
 export const clearFloatRule: BlockRule = {
   name: "clear-float",
   startTokens: ["CLEAR_FLOAT", "CLEAR_FLOAT_LEFT", "CLEAR_FLOAT_RIGHT"],

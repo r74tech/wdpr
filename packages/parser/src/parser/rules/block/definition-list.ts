@@ -1,20 +1,59 @@
 /**
- * Definition list rule: : term : value
+ * @module definition-list
  *
+ * Block rule for Wikidot definition lists written with the `: key : value` syntax.
+ *
+ * Each item starts at the beginning of a line with a COLON, followed by
+ * mandatory whitespace, the key (term), a second COLON, and then the value
+ * (definition). Multiple consecutive items form a single `<dl>` block.
+ *
+ * ```
+ * : Apple : A fruit that grows on trees.
+ * : Banana : A yellow curved fruit.
+ * ```
+ *
+ * Key parsing details:
+ * - Whitespace after the first colon is required (`": key"` not `":key"`).
+ * - The key portion supports inline markup (bold, links, etc.).
+ * - The value continues until a double newline, a new definition entry, or
+ *   the end of the document.
+ * - A single newline within the value does NOT break the entry -- parsing
+ *   continues on the next line.
  */
 import type { Element, DefinitionListItem } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { parseInlineUntil } from "../inline/utils";
 
+/**
+ * Internal representation of one definition list item before conversion
+ * to the AST's {@link DefinitionListItem} format.
+ */
 interface ParsedDefinitionItem {
+  /** Raw string of the key, used for `key_string` in the AST. */
   keyString: string;
+  /** Parsed inline elements representing the key / term. */
   key: Element[];
+  /** Parsed inline elements representing the value / definition. */
   value: Element[];
 }
 
 /**
- * Parse a single definition list item
- * Format: : term : value
+ * Parses a single definition list entry of the form `: key : value`.
+ *
+ * The function expects `startPos` to point at a line-start COLON token.
+ * It consumes the first colon, mandatory whitespace, key tokens up to
+ * the second colon, then value tokens until one of the following:
+ * - A double newline (paragraph break).
+ * - A new entry (COLON at line start).
+ * - End of input.
+ *
+ * The key is parsed for inline content using {@link parseInlineUntil}
+ * (stopping at COLON), and the value uses the same utility (stopping at
+ * NEWLINE).
+ *
+ * @param ctx      - Parse context.
+ * @param startPos - Token index of the expected line-start COLON.
+ * @returns The parsed item and token count, or `null` on failure.
  */
 function parseDefinitionItem(
   ctx: ParseContext,
@@ -157,6 +196,17 @@ function parseDefinitionItem(
   };
 }
 
+/**
+ * Block rule for Wikidot definition lists (`: key : value`).
+ *
+ * Parsing strategy:
+ * 1. Verify the first token is a line-start COLON.
+ * 2. Repeatedly call {@link parseDefinitionItem} to collect entries.
+ * 3. Stop when the current token is no longer a line-start COLON (i.e.
+ *    the definition list block has ended).
+ * 4. Convert internal items into the AST {@link DefinitionListItem} format.
+ * 5. Emit a single `definition-list` element.
+ */
 export const definitionListRule: BlockRule = {
   name: "definitionList",
   startTokens: ["COLON"],

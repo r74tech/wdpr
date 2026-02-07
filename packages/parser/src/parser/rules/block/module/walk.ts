@@ -1,13 +1,21 @@
 /**
- * AST element traversal utilities
+ * @module module/walk
  *
- * Provides shared logic for traversing child elements of special structures
- * (list, table, definition-list, tab-view) and generic elements with data.elements.
+ * AST element traversal and transformation utilities.
  *
- * Used by:
- * - listpages/extract.ts (walkElements)
- * - resolve.ts (walkAndResolve, countListPagesInElements)
- * - include/resolve.ts (resolveElements)
+ * Provides shared logic for recursively visiting and transforming child elements
+ * across all AST node types that contain nested elements. The AST has several
+ * "special" structures (list, table, definition-list, tab-view) that store
+ * children in type-specific locations, plus a generic pattern where elements
+ * are stored in `data.elements`. These utilities abstract over those differences
+ * so callers can focus on their transformation logic.
+ *
+ * Three main functions are provided:
+ * - `walkElements` - Read-only traversal (visitor pattern)
+ * - `mapElementChildren` - Stateless transformation of child arrays
+ * - `mapElementChildrenWithState` - Stateful transformation with threaded state
+ *
+ * Used by the ListPages extraction, module resolution, and include resolution systems.
  */
 
 import type {
@@ -22,10 +30,18 @@ import type {
 } from "@wdprlib/ast";
 
 /**
- * Walk all elements recursively, calling callback for each element.
+ * Walk all elements recursively in depth-first order, calling a callback for each.
  *
- * Traverses special structures (list, table, definition-list, tab-view)
- * and generic elements with data.elements.
+ * The callback is invoked for every element in the tree, including elements nested
+ * inside lists, tables, definition lists, tab views, and any element with a
+ * `data.elements` array. The callback is called before descending into children
+ * (pre-order traversal).
+ *
+ * This is a read-only traversal; the callback cannot modify the tree structure.
+ * Use `mapElementChildren` or `mapElementChildrenWithState` for transformations.
+ *
+ * @param elements - Array of elements to traverse
+ * @param callback - Function called for each element encountered
  */
 export function walkElements(elements: Element[], callback: (element: Element) => void): void {
   for (const element of elements) {
@@ -85,14 +101,18 @@ export function walkElements(elements: Element[], callback: (element: Element) =
 }
 
 /**
- * Map child elements of a single element using a transform function.
+ * Create a new element with all child element arrays transformed by a function.
  *
- * Returns a new element with all child element arrays transformed.
- * If the element has no children, returns it unchanged.
+ * This is a structural mapper that knows how to find child element arrays in all
+ * AST node types (list items, table cells, definition list keys/values, tab panels,
+ * and generic `data.elements`). The transform function receives each child array
+ * and returns a new array; the original element is not mutated.
  *
- * The transform function receives child element arrays and returns
- * transformed arrays. This allows callers to apply their own resolution
- * logic without duplicating the structural traversal.
+ * If the element has no children, it is returned unchanged (same reference).
+ *
+ * @param element - The element whose children should be transformed
+ * @param transform - Function that receives a child element array and returns a transformed array
+ * @returns A new element with transformed children, or the original element if it has no children
  */
 export function mapElementChildren(
   element: Element,
@@ -203,13 +223,20 @@ export function mapElementChildren(
 }
 
 /**
- * Map child elements with stateful transform.
+ * Create a new element with all child arrays transformed by a stateful function.
  *
- * Like mapElementChildren but the transform function returns both
- * the transformed elements and updated state. State is threaded
- * through each child group sequentially.
+ * Like `mapElementChildren`, but the transform function also receives and returns
+ * a state value. State is threaded sequentially through each child group: the output
+ * state from one group becomes the input state for the next. This is useful when
+ * the transformation needs to track information across sibling groups, such as
+ * maintaining a monotonically increasing ID counter.
  *
- * Used when traversal needs to accumulate state (e.g., ID counter).
+ * @typeParam S - The type of the threaded state
+ * @param element - The element whose children should be transformed
+ * @param state - Initial state value
+ * @param transform - Function that receives a child array and current state,
+ *                    returning transformed elements and updated state
+ * @returns Object with the new element and final state value
  */
 export function mapElementChildrenWithState<S>(
   element: Element,

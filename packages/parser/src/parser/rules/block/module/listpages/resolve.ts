@@ -1,7 +1,20 @@
 /**
- * ListPages module resolution
+ * @module listpages/resolve
  *
- * Handles expanding ListPages modules with fetched data.
+ * ListPages module resolution (phase 3 of the ListPages lifecycle).
+ *
+ * After the application has fetched page data based on the extracted requirements,
+ * this module substitutes that data into the pre-compiled templates and re-parses
+ * the resulting wikitext to produce final AST elements.
+ *
+ * For each page in the fetched data:
+ * 1. Build a `VariableContext` with page data, index, total count, and site info
+ * 2. Execute the compiled template to produce a wikitext string
+ * 3. Re-parse the wikitext string into AST elements
+ * 4. Optionally wrap each item in a `div.list-pages-item` (when `separate=true`)
+ *
+ * The final result may also include prepend/append lines and be wrapped in a
+ * `div.list-pages-box` (when `wrapper=true`).
  */
 
 import type { Element, Module } from "@wdprlib/ast";
@@ -10,12 +23,15 @@ import type { ParseFunction } from "../types";
 export type { ParseFunction };
 
 /**
- * ListPages module data type
+ * Narrowed type for the list-pages variant of the Module discriminated union.
  */
 export type ListPagesModuleData = Extract<Module, { module: "list-pages" }>;
 
 /**
- * Type guard for list-pages module
+ * Type guard to check if a Module is a list-pages module.
+ *
+ * @param module - A Module discriminated union value
+ * @returns true if the module is a list-pages module
  */
 export function isListPagesModule(module: Module): module is ListPagesModuleData {
   return module.module === "list-pages";

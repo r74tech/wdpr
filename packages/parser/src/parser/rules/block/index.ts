@@ -1,3 +1,23 @@
+/**
+ * @module block/index
+ *
+ * Central registry for all block-level parser rules.
+ *
+ * This module imports every block rule, re-exports each one individually
+ * (for selective use), and assembles them into the ordered `blockRules`
+ * array that the main parser iterates through.
+ *
+ * Rule ordering matters: rules earlier in the array are tried first.
+ * Line-start-only rules (comments, headings, lists, etc.) are naturally
+ * filtered by the `requiresLineStart` flag, but among rules that share
+ * a start token (e.g. BLOCK_OPEN), position in this array determines
+ * priority. For example, `codeBlockRule` is tried before `collapsibleRule`
+ * because both start with BLOCK_OPEN but code blocks should be matched
+ * first.
+ *
+ * The paragraph rule is deliberately excluded from the array -- it serves
+ * as a fallback and is exported separately as `blockFallbackRule`.
+ */
 import type { BlockRule } from "../types";
 import { headingRule } from "./heading";
 import { horizontalRuleRule } from "./horizontal-rule";
@@ -60,8 +80,16 @@ export { orphanLiRule } from "./orphan-li";
 export { bibliographyRule } from "./bibliography";
 
 /**
- * All block rules in priority order
- * Rules requiring lineStart are checked first
+ * All block rules in priority order.
+ *
+ * The main parser tries each rule in sequence for the current token.
+ * Rules with `requiresLineStart: true` are only attempted when the token
+ * is at line start, so their position relative to non-line-start rules
+ * is less critical. Among rules that share the same `startTokens` entry,
+ * earlier position wins.
+ *
+ * The paragraph rule is intentionally absent -- it is used as a fallback
+ * when no other rule matches (see `blockFallbackRule`).
  */
 export const blockRules: BlockRule[] = [
   blockCommentRule,

@@ -1,12 +1,27 @@
 /**
- * Block-level comment rule: [!-- multiline comment --]
+ * @module comment
  *
- * Handles comments that span multiple lines. These are completely removed
- * from output (returns empty elements array).
+ * Block rule for Wikidot comments: `[!-- ... --]`.
+ *
+ * Comments may span multiple lines and are completely stripped from the
+ * rendered output. The parser consumes all tokens from COMMENT_OPEN
+ * (`[!--`) through the matching COMMENT_CLOSE (`--]`), inclusive, plus
+ * any trailing newline.
+ *
+ * If the closing `--]` is never found (unterminated comment), the rule
+ * fails and tokens are left for other rules to handle.
+ *
+ * This rule requires line start so that inline comments appearing mid-line
+ * are handled by a separate inline rule instead.
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 
+/**
+ * Block rule for line-start comments (`[!-- ... --]`).
+ *
+ * Returns an empty elements array on success -- comments produce no output.
+ */
 export const blockCommentRule: BlockRule = {
   name: "blockComment",
   startTokens: ["COMMENT_OPEN"],

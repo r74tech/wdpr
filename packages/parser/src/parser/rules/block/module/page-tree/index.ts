@@ -1,10 +1,11 @@
 /**
- * @module page-tree
  *
  * Parser rule for the Wikidot `[[module PageTree]]` block.
  *
  * Renders a hierarchical tree of pages based on parent-child relationships.
  * Accepts optional `root`, `show-root`, and `depth` attributes.
+ *
+ * @module
  */
 
 import type { ModuleRule } from "../types";

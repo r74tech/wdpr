@@ -1,5 +1,4 @@
 /**
- * @module block-list
  *
  * Block rule for the explicit list syntax: `[[ul]]`/`[[ol]]` with `[[li]]` items.
  *
@@ -28,6 +27,8 @@
  *   become `<br />`, including trailing newlines before `[[/li]]`.
  * - Content after `[[/li]]` but before the next `[[li]]` or close tag is
  *   included in the same list item.
+ *
+ * @module
  */
 import type { Element, ListData, ListItem } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

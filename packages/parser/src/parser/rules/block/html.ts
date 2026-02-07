@@ -1,5 +1,4 @@
 /**
- * @module html
  *
  * Block rule for the Wikidot HTML block: `[[html]]...[[/html]]`.
  *
@@ -16,6 +15,8 @@
  *
  * If no `[[/html]]` closing tag is found, the rule fails and the opening
  * tag falls through to text rendering (matching Wikidot behaviour).
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

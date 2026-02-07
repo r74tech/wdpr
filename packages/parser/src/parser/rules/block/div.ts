@@ -1,5 +1,4 @@
 /**
- * @module div
  *
  * Block rule for Wikidot `[[div]]` and `[[div_]]` container blocks.
  *
@@ -20,6 +19,8 @@
  *   elements. Blank lines within that span are silently removed.
  * - `[[div_]]` uses {@link unwrapEdgeParagraphs} to strip paragraph
  *   wrappers from the first and last elements.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

@@ -1,5 +1,4 @@
 /**
- * @module elements/user
  *
  * Renderer for `[[user username]]` elements.
  *
@@ -10,6 +9,8 @@
  *
  * The special username `"anonymous"` is always rendered as the literal
  * text "Anonymous" without any link or avatar.
+ *
+ * @module
  */
 
 import type { UserData } from "@wdprlib/ast";

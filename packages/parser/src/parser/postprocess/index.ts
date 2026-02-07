@@ -1,5 +1,4 @@
 /**
- * @module postprocess
  *
  * Post-processing pipeline for the parsed AST.
  *
@@ -8,6 +7,8 @@
  * paragraphs around `span_` (paragraph-strip) elements, splitting paragraphs at
  * empty `[[#expr ]]` elements, and cleaning internal flags that were used as
  * inter-pass communication markers.
+ *
+ * @module
  */
 
 export { mergeSpanStripParagraphs, cleanInternalFlags } from "./spanStrip";

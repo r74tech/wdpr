@@ -1,5 +1,4 @@
 /**
- * @module elements/tab-view
  *
  * Renderer for `[[tabview]]...[[/tabview]]` tab containers.
  *
@@ -10,6 +9,8 @@
  *
  * A deterministic widget ID is generated from an MD5-length hash of the
  * concatenated tab labels, ensuring stable IDs across renders.
+ *
+ * @module
  */
 
 import type { TabData } from "@wdprlib/ast";

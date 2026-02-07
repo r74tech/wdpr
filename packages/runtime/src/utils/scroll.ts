@@ -1,7 +1,8 @@
 /**
- * @module utils/scroll
  *
  * Scroll utility for navigating to elements by ID with a visual highlight.
+ *
+ * @module
  */
 
 /**

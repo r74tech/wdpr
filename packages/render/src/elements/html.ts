@@ -1,5 +1,4 @@
 /**
- * @module elements/html
  *
  * Renderer for `[[html]]...[[/html]]` blocks in Wikidot markup.
  *
@@ -10,6 +9,8 @@
  * The actual HTML content is not inlined into the page -- it is served
  * separately at the iframe URL. The runtime `html-block` module handles
  * auto-resizing of the iframe via `postMessage`.
+ *
+ * @module
  */
 
 import type { HtmlData } from "@wdprlib/ast";

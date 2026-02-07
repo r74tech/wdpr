@@ -1,10 +1,11 @@
 /**
- * @module rate/types
  *
  * Type definitions for the Rate module.
  *
  * The `[[module Rate]]` block renders a page rating widget (upvote/downvote buttons).
  * It takes no attributes and has no body.
+ *
+ * @module
  */
 
 /**

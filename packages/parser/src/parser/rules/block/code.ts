@@ -1,5 +1,4 @@
 /**
- * @module code
  *
  * Block rule for the Wikidot code block: `[[code]]...[[/code]]`.
  *
@@ -19,6 +18,8 @@
  * detects this by inspecting the QUOTED_STRING token and truncates the
  * value at the first `]]`. If `[[/code]]` is also inside the quoted
  * string, the body is treated as empty.
+ *
+ * @module
  */
 import type { Element, CodeBlockData } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

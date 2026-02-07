@@ -1,11 +1,12 @@
 /**
- * @module elements/module/listusers
  *
  * Renderer for `[[module ListUsers]]`.
  *
  * The ListUsers module displays a filtered list of site members.
  * The renderer outputs an empty container div that can be populated
  * at runtime or via server-side rendering.
+ *
+ * @module
  */
 
 import type { Module } from "@wdprlib/ast";

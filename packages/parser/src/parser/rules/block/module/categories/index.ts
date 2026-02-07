@@ -1,11 +1,12 @@
 /**
- * @module categories
  *
  * Parser rule for the Wikidot `[[module Categories]]` block.
  *
  * Displays a list of page categories on the site. Accepts an optional
  * `include-hidden` boolean attribute to control whether hidden categories
  * (those prefixed with `_`) are shown.
+ *
+ * @module
  */
 
 import type { ModuleRule } from "../types";

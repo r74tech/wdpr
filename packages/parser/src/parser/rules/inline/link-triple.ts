@@ -1,5 +1,4 @@
 /**
- * @module link-triple
  *
  * Parses the Wikidot triple-bracket link syntax: `[[[target | label]]]`.
  *
@@ -26,6 +25,8 @@
  *
  * Produces a `"link"` AST element with an appropriate `type` field
  * (`"page"`, `"anchor"`, `"direct"`, or `"interwiki"`).
+ *
+ * @module
  */
 import type { Element, LinkType, LinkLocation, LinkLabel } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

@@ -1,5 +1,4 @@
 /**
- * @module module/utils
  *
  * Utility functions for parsing Wikidot module attribute values.
  *
@@ -7,6 +6,8 @@
  * convert common attribute types (booleans, integers) from their string
  * representation to proper TypeScript types, following Wikidot's conventions
  * for truthy/falsy values.
+ *
+ * @module
  */
 
 /**

@@ -1,5 +1,4 @@
 /**
- * @module anchor
  *
  * Parses the Wikidot anchor inline block syntax: `[[a]]...[[/a]]`.
  *
@@ -18,6 +17,8 @@
  * The `target` attribute is extracted and mapped to a semantic enum value
  * (`"new-tab"`, `"parent"`, `"top"`, `"same"`), while the remaining
  * attributes (including `href`) are passed through after URL sanitization.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

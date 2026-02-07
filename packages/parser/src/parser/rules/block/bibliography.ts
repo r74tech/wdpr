@@ -1,5 +1,4 @@
 /**
- * @module bibliography
  *
  * Block rule for the Wikidot bibliography block: `[[bibliography]] ... [[/bibliography]]`.
  *
@@ -21,6 +20,8 @@
  *
  * If no closing `[[/bibliography]]` tag is found, the rule fails to avoid
  * accidentally consuming the rest of the document.
+ *
+ * @module
  */
 import type { Element, DefinitionListItem } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

@@ -1,5 +1,4 @@
 /**
- * @module elements/bibliography
  *
  * Renderers for Wikidot bibliography markup.
  *
@@ -12,6 +11,8 @@
  * Citation numbers are assigned globally (across all bibliography blocks)
  * by the {@link RenderContext} during construction. If a label is unknown,
  * the citation is rendered as plain text.
+ *
+ * @module
  */
 
 import type { BibliographyCiteData, BibliographyBlockData, Element } from "@wdprlib/ast";

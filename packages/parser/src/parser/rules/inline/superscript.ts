@@ -1,5 +1,4 @@
 /**
- * @module superscript
  *
  * Parses the Wikidot superscript formatting syntax: `^^text^^`.
  *
@@ -13,6 +12,8 @@
  * Renders as a `<sup>` element in HTML.
  *
  * Produces a `"container"` AST element with `type: "superscript"`.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

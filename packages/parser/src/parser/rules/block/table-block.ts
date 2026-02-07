@@ -1,5 +1,4 @@
 /**
- * @module table-block
  *
  * Block rule for the explicit block-syntax table:
  * `[[table]][[row]][[cell]]...[[/cell]][[/row]][[/table]]`.
@@ -28,6 +27,8 @@
  *   back to text rendering.
  * - The table element carries `_source: "block"` in attributes to
  *   distinguish it from pipe-syntax tables.
+ *
+ * @module
  */
 import type { Element, TableData, TableRow, TableCell, Alignment } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

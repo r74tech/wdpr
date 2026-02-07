@@ -1,5 +1,4 @@
 /**
- * @module center
  *
  * Block rule for Wikidot single-line center alignment: `= text`.
  *
@@ -17,6 +16,8 @@
  * - Must be followed by a WHITESPACE token.
  *
  * The inline content is parsed until the end of line.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

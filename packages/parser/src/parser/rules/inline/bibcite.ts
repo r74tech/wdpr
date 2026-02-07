@@ -1,5 +1,4 @@
 /**
- * @module bibcite
  *
  * Parses the Wikidot bibliography citation syntax: `((bibcite label))`.
  *
@@ -19,6 +18,8 @@
  * Wikidot syntax examples:
  * - `((bibcite author2024))` -- cite with label "author2024"
  * - `((bibcite my-source))` -- cite with label "my-source"
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

@@ -1,5 +1,4 @@
 /**
- * @module parser
  *
  * Main parser for Wikidot markup.
  *
@@ -11,6 +10,8 @@
  * The main entry points are:
  * - `parse()` - convenience function that parses a string in one call
  * - `Parser` class - for more control over parsing options
+ *
+ * @module
  */
 
 export type { ParserOptions } from "./parse";

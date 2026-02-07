@@ -1,5 +1,4 @@
 /**
- * @module footnote
  *
  * Parses the Wikidot footnote syntax: `[[footnote]]content[[/footnote]]`.
  *
@@ -20,6 +19,8 @@
  *
  * Produces a simple `"footnote"` AST element (a marker with no data)
  * at the inline reference point.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

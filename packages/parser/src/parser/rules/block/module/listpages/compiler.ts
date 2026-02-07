@@ -1,5 +1,4 @@
 /**
- * @module listpages/compiler
  *
  * Template compiler for the ListPages module.
  *
@@ -17,6 +16,8 @@
  *
  * The compiled function is a closure over the parsed template parts, providing
  * O(n) rendering time proportional to the number of template segments.
+ *
+ * @module
  */
 
 import type { CompiledTemplate, VariableContext, PageData, UserInfo } from "./types";

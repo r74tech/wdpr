@@ -1,5 +1,4 @@
 /**
- * @module raw
  *
  * Parses the Wikidot raw (verbatim) text syntaxes: `@@...@@` and `@<...>@`.
  *
@@ -26,6 +25,8 @@
  *
  * Produces a `"raw"` AST element whose `data` field contains the
  * verbatim text string, or empty elements when the raw content is discarded.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

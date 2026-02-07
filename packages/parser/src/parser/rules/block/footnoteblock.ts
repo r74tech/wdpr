@@ -1,5 +1,4 @@
 /**
- * @module footnoteblock
  *
  * Block rule for the Wikidot footnote block: `[[footnoteblock]]`.
  *
@@ -14,6 +13,8 @@
  * Wikidot only honours the FIRST `[[footnoteblock]]` in a document;
  * subsequent occurrences are treated as plain text. The parser tracks this
  * via `ctx.footnoteBlockParsed`.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

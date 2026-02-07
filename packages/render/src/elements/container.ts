@@ -1,5 +1,4 @@
 /**
- * @module elements/container
  *
  * Renderer for "container" AST elements -- the most general wrapper node
  * in the Wikidot AST.
@@ -18,6 +17,8 @@
  * - Size containers with inline `font-size` styling
  *
  * All attributes are sanitized before rendering to prevent XSS.
+ *
+ * @module
  */
 
 import type { ContainerData } from "@wdprlib/ast";

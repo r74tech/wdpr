@@ -1,5 +1,4 @@
 /**
- * @module text
  *
  * Provides the two lowest-priority inline rules: `textRule` and `fallbackRule`.
  *
@@ -16,6 +15,8 @@
  * is NOT included in the `inlineRules` array to prevent it from
  * short-circuiting more specific rules. Instead, it is invoked explicitly
  * by the parser when no other rule matches.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

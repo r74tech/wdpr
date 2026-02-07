@@ -1,5 +1,4 @@
 /**
- * @module block/utils
  *
  * Shared utilities used by block-level parser rules.
  *
@@ -19,6 +18,8 @@
  *
  * Re-exports {@link filterUnsafeAttributes} and {@link parseBlockName} from
  * the shared `../utils` module for backward compatibility.
+ *
+ * @module
  */
 import type { Token } from "../../../lexer";
 import type { Element } from "@wdprlib/ast";

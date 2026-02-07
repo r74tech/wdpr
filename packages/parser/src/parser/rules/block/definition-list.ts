@@ -1,5 +1,4 @@
 /**
- * @module definition-list
  *
  * Block rule for Wikidot definition lists written with the `: key : value` syntax.
  *
@@ -19,6 +18,8 @@
  *   the end of the document.
  * - A single newline within the value does NOT break the entry -- parsing
  *   continues on the next line.
+ *
+ * @module
  */
 import type { Element, DefinitionListItem } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

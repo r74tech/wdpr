@@ -1,5 +1,4 @@
 /**
- * @module list
  *
  * Block rule for Wikidot marker-based lists (`* item`, `# item`).
  *
@@ -22,6 +21,8 @@
  * by {@link buildListElement}.
  *
  * Maximum nesting depth is capped at {@link MAX_LIST_DEPTH} (20).
+ *
+ * @module
  */
 import type { Element, ListData, ListItem, ListType } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

@@ -1,5 +1,4 @@
 /**
- * @module monospace
  *
  * Parses the Wikidot monospace (teletype) formatting syntax: `{{text}}`.
  *
@@ -17,6 +16,8 @@
  * Wikidot syntax: `{{monospace text}}`
  *
  * Produces a `"container"` AST element with `type: "monospace"`.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

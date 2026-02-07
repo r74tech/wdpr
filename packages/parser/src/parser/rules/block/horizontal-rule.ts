@@ -1,5 +1,4 @@
 /**
- * @module horizontal-rule
  *
  * Block rule for Wikidot horizontal rules: `----` (four or more hyphens
  * at the start of a line).
@@ -11,6 +10,8 @@
  *
  * Any text after the `----` on the same line is silently discarded,
  * matching Wikidot's behaviour.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

@@ -1,5 +1,4 @@
 /**
- * @module inline/index
  *
  * Central registry and priority-ordered list of all inline parsing rules.
  *
@@ -16,6 +15,8 @@
  * it matches any token type and is used as a last resort when no other rule
  * succeeds. It is NOT included in the `inlineRules` array to prevent it
  * from short-circuiting more specific rules.
+ *
+ * @module
  */
 import type { InlineRule } from "../types";
 import { boldRule } from "./bold";

@@ -1,5 +1,4 @@
 /**
- * @module listpages/extract
  *
  * Data requirement extraction from parsed ASTs.
  *
@@ -17,6 +16,8 @@
  * 1. **Extract** (this module) - Analyze AST, determine data needs, compile templates
  * 2. **Fetch** (external) - Application fetches data based on requirements
  * 3. **Resolve** - Substitute fetched data into compiled templates and re-parse
+ *
+ * @module
  */
 
 import type { SyntaxTree, Module } from "@wdprlib/ast";

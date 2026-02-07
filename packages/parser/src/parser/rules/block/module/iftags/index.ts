@@ -1,5 +1,4 @@
 /**
- * @module iftags
  *
  * IfTags conditional rendering module for Wikidot's `[[iftags]]` block.
  *
@@ -9,6 +8,8 @@
  * all conditions are satisfied.
  *
  * Exports condition parsing, evaluation, and AST resolution functions.
+ *
+ * @module
  */
 
 // Types

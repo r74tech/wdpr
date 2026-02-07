@@ -1,10 +1,11 @@
 /**
- * @module rate
  *
  * Parser rule for the Wikidot `[[module Rate]]` block.
  *
  * Renders a page rating widget. This is a simple module with no attributes
  * and no body content.
+ *
+ * @module
  */
 
 import type { ModuleRule } from "../types";

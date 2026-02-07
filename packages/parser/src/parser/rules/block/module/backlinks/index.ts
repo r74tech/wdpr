@@ -1,10 +1,11 @@
 /**
- * @module backlinks
  *
  * Parser rule for the Wikidot `[[module Backlinks]]` block.
  *
  * Displays pages that link to the current page (or a specified page).
  * Accepts an optional `page` attribute to target a specific page.
+ *
+ * @module
  */
 
 import type { ModuleRule } from "../types";

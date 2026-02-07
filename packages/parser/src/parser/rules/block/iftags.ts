@@ -1,5 +1,4 @@
 /**
- * @module iftags
  *
  * Block rule for Wikidot conditional tag blocks: `[[iftags]]...[[/iftags]]`.
  *
@@ -18,6 +17,8 @@
  *
  * Body content is parsed as normal block-level markup using
  * {@link parseBlocksUntil}.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

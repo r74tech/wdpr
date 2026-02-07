@@ -1,5 +1,4 @@
 /**
- * @module elements/expr
  *
  * Renderers for Wikidot's expression and conditional constructs:
  *
@@ -10,6 +9,8 @@
  *   and branch on the numeric result (0 = false, non-zero = true).
  *
  * All error messages match Wikidot's format (`"run-time error: ..."`).
+ *
+ * @module
  */
 
 import type { Element, ExprData, IfCondData, IfExprData } from "@wdprlib/ast";

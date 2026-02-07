@@ -1,5 +1,4 @@
 /**
- * @module line-break
  *
  * Parses the various Wikidot line-break syntaxes.
  *
@@ -24,6 +23,8 @@
  *
  * The newline rule suppresses line-breaks in several situations to avoid
  * spurious `<br />` elements before block-level constructs.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

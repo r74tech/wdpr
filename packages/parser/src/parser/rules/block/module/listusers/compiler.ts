@@ -1,5 +1,4 @@
 /**
- * @module listusers/compiler
  *
  * Template compiler for the ListUsers module.
  *
@@ -9,6 +8,8 @@
  * string segments and dynamic getter functions.
  *
  * Only three variables are supported: `%%number%%`, `%%title%%`, and `%%name%%`.
+ *
+ * @module
  */
 
 import type { ListUsersCompiledTemplate, ListUsersVariableContext } from "./types";

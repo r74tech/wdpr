@@ -1,5 +1,4 @@
 /**
- * @module strikethrough
  *
  * Parses the Wikidot strikethrough formatting syntax: `--text--`.
  *
@@ -16,6 +15,8 @@
  *
  * Produces a `"container"` AST element with `type: "strikethrough"`,
  * or a `"text"` element containing the em-dash character.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

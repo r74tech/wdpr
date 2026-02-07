@@ -1,5 +1,4 @@
 /**
- * @module math
  *
  * Block rule for the Wikidot math block: `[[math name]]...[[/math]]`.
  *
@@ -18,6 +17,8 @@
  *
  * Empty math blocks (no LaTeX content after trimming) are treated as
  * invalid and the rule fails.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

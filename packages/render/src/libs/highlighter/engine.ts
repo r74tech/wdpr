@@ -1,5 +1,4 @@
 /**
- * @module libs/highlighter/engine
  *
  * Tokenizer and renderer for the Text_Highlighter-compatible syntax
  * highlighting engine. This is a faithful TypeScript port of the
@@ -9,6 +8,8 @@
  * The engine processes source code through a state-machine-based tokenizer
  * that assigns CSS class names to each token, then renders the tokens as
  * `<span class="hl-*">` elements.
+ *
+ * @module
  */
 
 import type { LanguageDefinition } from "./types";

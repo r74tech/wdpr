@@ -1,9 +1,10 @@
 /**
- * @module libs/highlighter/types
  *
  * Type definitions for the Text_Highlighter-compatible syntax highlighting
  * engine. These interfaces mirror the data structures used by the original
  * PEAR Text_Highlighter PHP library, adapted for TypeScript.
+ *
+ * @module
  */
 
 /**

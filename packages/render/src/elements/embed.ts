@@ -1,5 +1,4 @@
 /**
- * @module elements/embed
  *
  * Renderer for inline embed elements (`[[embed]]`) that reference
  * third-party content providers.
@@ -12,6 +11,8 @@
  *
  * Each provider has a strict ID validation function to prevent path
  * traversal, injection, and other attacks via embed parameters.
+ *
+ * @module
  */
 
 import type { Embed } from "@wdprlib/ast";

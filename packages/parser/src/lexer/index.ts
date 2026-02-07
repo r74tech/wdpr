@@ -1,5 +1,4 @@
 /**
- * @module lexer
  *
  * Lexer (tokenizer) for Wikidot markup.
  *
@@ -11,6 +10,8 @@
  * The main entry points are:
  * - `tokenize()` - convenience function that tokenizes a string in one call
  * - `Lexer` class - for more control over tokenization options
+ *
+ * @module
  */
 
 export type { TokenType, Token } from "./tokens";

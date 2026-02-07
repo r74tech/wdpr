@@ -1,5 +1,4 @@
 /**
- * @module listpages/types
  *
  * Type definitions for the ListPages module system.
  *
@@ -14,6 +13,8 @@
  *
  * Security note: Several fields contain untrusted user input from wikitext.
  * See `ListPagesQuery` documentation for safe usage guidelines.
+ *
+ * @module
  */
 
 // =============================================================================

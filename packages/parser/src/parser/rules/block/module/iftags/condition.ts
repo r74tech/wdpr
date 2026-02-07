@@ -1,5 +1,4 @@
 /**
- * @module iftags/condition
  *
  * Parsing and evaluation of `[[iftags]]` condition strings.
  *
@@ -11,6 +10,8 @@
  *
  * All required tags must be present AND all forbidden tags must be absent
  * for the condition to evaluate to true.
+ *
+ * @module
  */
 
 import type { TagCondition } from "./types";

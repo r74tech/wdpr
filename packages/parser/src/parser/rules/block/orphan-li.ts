@@ -1,5 +1,4 @@
 /**
- * @module orphan-li
  *
  * Block rule for `[[li]]...[[/li]]` appearing outside of any `[[ul]]`/`[[ol]]` block.
  *
@@ -25,6 +24,8 @@
  * and potentially produce incorrect results.
  *
  * If no `[[/li]]` closing tag is found, the rule fails.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

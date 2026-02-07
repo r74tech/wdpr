@@ -1,5 +1,4 @@
 /**
- * @module listpages
  *
  * ListPages module for Wikidot's `[[module ListPages ...]]` block.
  *
@@ -19,6 +18,8 @@
  * - `compiler` - Template string compilation into executable functions
  * - `url-resolver` - `@URL|default` parameter resolution for HPC support
  * - `normalize` - Raw query string parsing into structured types
+ *
+ * @module
  */
 
 // Parser

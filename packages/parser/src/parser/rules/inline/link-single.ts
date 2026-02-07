@@ -1,5 +1,4 @@
 /**
- * @module link-single
  *
  * Parses the Wikidot single-bracket link syntax: `[url label]`.
  *
@@ -18,6 +17,8 @@
  * The label text is required.
  *
  * Produces a `"link"` AST element with `type: "direct"`.
+ *
+ * @module
  */
 import type { Element, LinkLabel } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

@@ -1,5 +1,4 @@
 /**
- * @module link-star
  *
  * Parses the Wikidot star-link syntax: `[*url label]`.
  *
@@ -19,6 +18,8 @@
  *
  * Produces a `"link"` AST element with `type: "direct"` and
  * `target: "new-tab"`.
+ *
+ * @module
  */
 import type { Element, LinkLabel } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

@@ -1,5 +1,4 @@
 /**
- * @module css
  *
  * Parser rule for the Wikidot `[[module CSS]]` block.
  *
@@ -12,6 +11,8 @@
  * .custom-class { color: red; }
  * [[/module]]
  * ```
+ *
+ * @module
  */
 
 import type { Element } from "@wdprlib/ast";

@@ -1,5 +1,4 @@
 /**
- * @module html-block
  *
  * Runtime module for auto-resizing `[[html]]` block iframes.
  *
@@ -18,6 +17,8 @@
  * - Sets `iframe.style.height` to the reported content height
  *
  * The `destroy()` cleanup function removes the message listener.
+ *
+ * @module
  */
 
 import type { ModuleCleanup } from "./types";

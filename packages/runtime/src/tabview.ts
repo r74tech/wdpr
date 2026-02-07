@@ -1,5 +1,4 @@
 /**
- * @module tabview
  *
  * Runtime module for Wikidot's `[[tabview]]` / `[[tab]]` tab switching.
  *
@@ -19,6 +18,8 @@
  * - Shows/hides content divs via `style.display`
  *
  * The `destroy()` cleanup function removes the click listener.
+ *
+ * @module
  */
 
 import type { ModuleCleanup } from "./types";

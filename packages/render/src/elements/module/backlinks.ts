@@ -1,5 +1,4 @@
 /**
- * @module elements/module/backlinks
  *
  * Renderer for `[[module Backlinks]]`.
  *
@@ -7,6 +6,8 @@
  * Because backlink data requires server-side queries, the renderer only
  * outputs an empty container div. The actual content is populated at
  * runtime or via server-side rendering.
+ *
+ * @module
  */
 
 import type { Module } from "@wdprlib/ast";

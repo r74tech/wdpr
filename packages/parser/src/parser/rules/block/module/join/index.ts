@@ -1,10 +1,11 @@
 /**
- * @module join
  *
  * Parser rule for the Wikidot `[[module Join]]` block.
  *
  * Renders a "Join this site" button. Accepts an optional `button` attribute
  * to customize the button text.
+ *
+ * @module
  */
 
 import type { ModuleRule } from "../types";

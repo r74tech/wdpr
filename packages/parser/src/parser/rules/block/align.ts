@@ -1,5 +1,4 @@
 /**
- * @module align
  *
  * Block rule for Wikidot alignment containers.
  *
@@ -20,6 +19,8 @@
  *
  * The resulting AST node is a generic container element whose `type` field
  * carries the alignment direction (e.g. `{ align: "right" }`).
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

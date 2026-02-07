@@ -1,11 +1,12 @@
 /**
- * @module elements/clear-float
  *
  * Renderer for the Wikidot `~~~~~` (clear-float) markup.
  *
  * Wikidot uses `~~~~~` (five tildes) to insert a CSS float-clearing
  * `<div>`. The direction (`left`, `right`, or `both`) is determined
  * by the number and placement of tildes in the source markup.
+ *
+ * @module
  */
 
 import type { ClearFloat } from "@wdprlib/ast";

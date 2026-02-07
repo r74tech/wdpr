@@ -1,5 +1,4 @@
 /**
- * @module iframe
  *
  * Block rule for the Wikidot iframe block: `[[iframe URL attributes]]`.
  *
@@ -16,6 +15,8 @@
  *   out `class` and `id`).
  *
  * Allowed attributes: `width`, `height`, `style`, `scrolling`, `frameborder`.
+ *
+ * @module
  */
 import type { AttributeMap, Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

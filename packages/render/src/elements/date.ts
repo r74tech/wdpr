@@ -1,5 +1,4 @@
 /**
- * @module elements/date
  *
  * Renderer for Wikidot's date/time elements.
  *
@@ -8,6 +7,8 @@
  * server-side; when the `hover` flag is set, the output is wrapped in
  * `<span class="odate">` so that the runtime `odate` module can
  * reformat it to the user's local timezone on the client.
+ *
+ * @module
  */
 
 import type { DateData } from "@wdprlib/ast";

@@ -1,11 +1,12 @@
 /**
- * @module elements/module/join
  *
  * Renderer for `[[module Join]]`.
  *
  * The Join module displays a button that allows users to request
  * membership in the wiki site. The button text can be customized
  * via the `button-text` attribute; it defaults to "Join".
+ *
+ * @module
  */
 
 import type { Module } from "@wdprlib/ast";

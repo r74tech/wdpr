@@ -1,5 +1,4 @@
 /**
- * @module elements/table
  *
  * Renderer for Wikidot table elements.
  *
@@ -9,6 +8,8 @@
  *
  * Both syntaxes support cell alignment (via tildes), column/row spans,
  * header cells (marked with `~`), and custom attributes on rows and cells.
+ *
+ * @module
  */
 
 import type { TableData } from "@wdprlib/ast";

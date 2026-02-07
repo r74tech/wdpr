@@ -1,5 +1,4 @@
 /**
- * @module module/walk
  *
  * AST element traversal and transformation utilities.
  *
@@ -16,6 +15,8 @@
  * - `mapElementChildrenWithState` - Stateful transformation with threaded state
  *
  * Used by the ListPages extraction, module resolution, and include resolution systems.
+ *
+ * @module
  */
 
 import type {

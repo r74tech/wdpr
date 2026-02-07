@@ -1,5 +1,4 @@
 /**
- * @module italic
  *
  * Parses the Wikidot italic formatting syntax: `//text//`.
  *
@@ -14,6 +13,8 @@
  * Italic may nest other inline formatting within its body.
  *
  * Produces a `"container"` AST element with `type: "italics"`.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

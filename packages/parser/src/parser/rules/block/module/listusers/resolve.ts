@@ -1,11 +1,12 @@
 /**
- * @module listusers/resolve
  *
  * ListUsers module resolution.
  *
  * After the application has fetched user data based on the extracted requirements,
  * this module substitutes that data into the pre-compiled template and re-parses
  * the resulting wikitext to produce final AST elements.
+ *
+ * @module
  */
 
 import type { Element, Module } from "@wdprlib/ast";

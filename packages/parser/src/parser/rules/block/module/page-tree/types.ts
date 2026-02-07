@@ -1,11 +1,12 @@
 /**
- * @module page-tree/types
  *
  * Type definitions for the PageTree module.
  *
  * The `[[module PageTree]]` block renders a hierarchical tree view of pages
  * based on parent-child relationships. It starts from a specified root page
  * (or the current page) and displays descendants up to a configurable depth.
+ *
+ * @module
  */
 
 /**

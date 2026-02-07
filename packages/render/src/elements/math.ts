@@ -1,5 +1,4 @@
 /**
- * @module elements/math
  *
  * Renderers for Wikidot mathematical notation elements.
  *
@@ -14,6 +13,8 @@
  *
  * Named equations receive an `(N)` equation number and can be
  * cross-referenced via `[[eref]]`.
+ *
+ * @module
  */
 
 import type { MathData, MathInlineData } from "@wdprlib/ast";

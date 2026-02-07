@@ -1,5 +1,4 @@
 /**
- * @module preprocess
  *
  * Preprocessing pipeline that transforms raw wikitext before tokenization.
  *
@@ -11,6 +10,8 @@
  *
  * The preprocessing step is essential because the lexer and parser assume
  * normalized input (Unix newlines, no tabs, consistent whitespace).
+ *
+ * @module
  */
 
 import { substitute as whitespaceSubstitute } from "./whitespace";

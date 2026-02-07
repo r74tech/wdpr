@@ -1,5 +1,4 @@
 /**
- * @module listusers
  *
  * ListUsers module for Wikidot's `[[module ListUsers users="."]]` block.
  *
@@ -8,6 +7,8 @@
  * `users="."` (the logged-in user) is supported.
  *
  * Follows the same three-phase lifecycle as ListPages: parse, extract, resolve.
+ *
+ * @module
  */
 
 // Parser

@@ -1,5 +1,4 @@
 /**
- * @module size
  *
  * Parses the Wikidot font size syntax: `[[size value]]text[[/size]]`.
  *
@@ -20,6 +19,8 @@
  *
  * Produces a `"container"` AST element with `type: "size"` and a
  * `style` attribute containing the `font-size` declaration.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

@@ -1,5 +1,4 @@
 /**
- * @module embed-block
  *
  * Block rule for Wikidot embed blocks: `[[embed]]`, `[[embedvideo]]`,
  * and `[[embedaudio]]` (each with a matching closing tag).
@@ -14,6 +13,8 @@
  *
  * If no closing tag is found, the rule fails to prevent consuming the rest
  * of the document.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

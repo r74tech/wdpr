@@ -1,5 +1,4 @@
 /**
- * @module heading
  *
  * Block rule for Wikidot headings: `+ Heading` through `++++++ Heading`.
  *
@@ -24,6 +23,8 @@
  *
  * Non-hidden headings are registered in `ctx.tocEntries` for later use
  * by the table-of-contents module.
+ *
+ * @module
  */
 import type { Element, HeadingLevel } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

@@ -1,5 +1,4 @@
 /**
- * @module elements/iframe
  *
  * Renderer for `[[iframe URL]]` inline iframe elements.
  *
@@ -7,6 +6,8 @@
  * The URL is checked for dangerous schemes, and standard iframe
  * attributes (align, frameborder, height, etc.) are extracted from the
  * AST's attribute map and rendered with proper escaping.
+ *
+ * @module
  */
 
 import type { IframeData } from "@wdprlib/ast";

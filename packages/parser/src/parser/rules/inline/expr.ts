@@ -1,5 +1,4 @@
 /**
- * @module expr
  *
  * Parses Wikidot's inline expression and conditional block syntax:
  *
@@ -24,6 +23,8 @@
  *
  * The pipe (`|`) delimiter is depth-aware: pipes inside nested `[[]]`
  * or `[[[]]]` blocks are not treated as branch separators.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

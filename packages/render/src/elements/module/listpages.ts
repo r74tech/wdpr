@@ -1,11 +1,12 @@
 /**
- * @module elements/module/listpages
  *
  * Renderer for `[[module ListPages]]`.
  *
  * The ListPages module queries and displays a filtered list of wiki pages.
  * Because the query results require server-side data, the renderer outputs
  * an empty container div that can be populated at runtime.
+ *
+ * @module
  */
 
 import type { Module } from "@wdprlib/ast";

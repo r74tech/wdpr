@@ -1,5 +1,4 @@
 /**
- * @module elements/embed-block
  *
  * Renderer for `[[embed]]...[[/embed]]` block-level embeds.
  *
@@ -15,6 +14,8 @@
  *
  * If any validation step fails, a Wikidot-compatible error block is
  * rendered instead.
+ *
+ * @module
  */
 
 import type { EmbedBlockData } from "@wdprlib/ast";

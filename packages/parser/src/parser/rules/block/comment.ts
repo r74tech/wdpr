@@ -1,5 +1,4 @@
 /**
- * @module comment
  *
  * Block rule for Wikidot comments: `[!-- ... --]`.
  *
@@ -13,6 +12,8 @@
  *
  * This rule requires line start so that inline comments appearing mid-line
  * are handled by a separate inline rule instead.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

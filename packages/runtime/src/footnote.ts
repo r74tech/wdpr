@@ -1,5 +1,4 @@
 /**
- * @module footnote
  *
  * Runtime module for footnote hover tooltips and bidirectional scroll navigation.
  *
@@ -22,6 +21,8 @@
  *
  * The `destroy()` cleanup function removes all event listeners and the
  * tooltip container element.
+ *
+ * @module
  */
 
 import type { ModuleCleanup } from "./types";

@@ -1,5 +1,4 @@
 /**
- * @module math-inline
  *
  * Parses the Wikidot inline math syntax: `[[$ LaTeX $]]`.
  *
@@ -18,6 +17,8 @@
  *
  * Produces a `"math-inline"` AST element with `data["latex-source"]`
  * containing the trimmed LaTeX string.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

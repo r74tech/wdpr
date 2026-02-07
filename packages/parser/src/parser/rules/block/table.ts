@@ -1,5 +1,4 @@
 /**
- * @module table
  *
  * Block rule for Wikidot pipe-syntax tables.
  *
@@ -29,6 +28,8 @@
  *
  * The table element carries `_source: "pipe"` in its attributes to
  * distinguish it from block-syntax tables (`[[table]]`).
+ *
+ * @module
  */
 import type { Element, TableData, TableRow, TableCell, Alignment } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

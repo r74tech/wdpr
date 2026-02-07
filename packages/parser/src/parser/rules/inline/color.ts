@@ -1,5 +1,4 @@
 /**
- * @module color
  *
  * Parses the Wikidot inline color syntax: `##color|text##`.
  *
@@ -20,6 +19,8 @@
  *
  * Produces a `"color"` AST element with the resolved color value and
  * nested inline elements.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

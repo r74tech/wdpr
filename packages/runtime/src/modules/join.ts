@@ -1,5 +1,4 @@
 /**
- * @module modules/join
  *
  * Runtime module for the Wikidot `[[module Join]]` button.
  *
@@ -12,6 +11,8 @@
  * - Calls `options.onJoin()` (which returns a Promise) on click
  *
  * The `destroy()` cleanup function removes the click listener.
+ *
+ * @module
  */
 
 import type { ModuleCleanup, RuntimeOptions } from "../types";

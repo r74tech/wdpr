@@ -1,5 +1,4 @@
 /**
- * @module preprocess/whitespace
  *
  * Whitespace normalization preprocessing for Wikidot markup.
  *
@@ -16,6 +15,8 @@
  * 5. Tab expansion (tab to four spaces)
  * 6. Null character replacement (NUL to space)
  * 7. Leading/trailing newline removal
+ *
+ * @module
  */
 
 /**

@@ -1,5 +1,4 @@
 /**
- * @module include
  *
  * Include directive resolution for Wikidot's `[[include page]]` syntax.
  *
@@ -13,6 +12,8 @@
  * - Cross-site includes: `[[include :site-name:page-name]]`
  * - Variable substitution: `[[include page | key=value]]` replaces `{$key}` in the included content
  * - Recursive includes with configurable depth limit and circular dependency detection
+ *
+ * @module
  */
 
 export { resolveIncludes } from "./resolve";

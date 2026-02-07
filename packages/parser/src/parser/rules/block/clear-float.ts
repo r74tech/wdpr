@@ -1,5 +1,4 @@
 /**
- * @module clear-float
  *
  * Block rule for Wikidot's float-clearing syntax: `~~~~`.
  *
@@ -16,6 +15,8 @@
  * Three tildes (`~~~`) do NOT trigger this rule in Wikidot -- the minimum
  * is four. The tilde count is validated at parse time even though the
  * lexer already tokenises valid sequences, as a defensive check.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

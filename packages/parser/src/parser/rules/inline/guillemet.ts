@@ -1,5 +1,4 @@
 /**
- * @module guillemet
  *
  * Parses Wikidot's guillemet (angle quotation mark) syntax.
  *
@@ -14,6 +13,8 @@
  * directly.
  *
  * Produces a `"text"` AST element containing the Unicode character.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

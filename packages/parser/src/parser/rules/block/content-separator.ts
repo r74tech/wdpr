@@ -1,5 +1,4 @@
 /**
- * @module content-separator
  *
  * Block rule for the Wikidot content separator: `====` (four or more `=`
  * signs at the start of a line).
@@ -16,6 +15,8 @@
  * A single `=` followed by whitespace is the center-alignment rule, and
  * two or three `=` signs are not special -- only four or more trigger this
  * rule.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

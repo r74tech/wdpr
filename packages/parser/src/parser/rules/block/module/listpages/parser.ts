@@ -1,5 +1,4 @@
 /**
- * @module listpages/parser
  *
  * Parser rule for the Wikidot `[[module ListPages ...]]` block.
  *
@@ -7,6 +6,8 @@
  * Handles both hyphenated (`link-to`) and concatenated (`linkto`) attribute name
  * formats, as Wikidot normalizes both to lowercase. The raw attribute values are
  * preserved in the `attributes` field for `@URL` resolution by external applications.
+ *
+ * @module
  */
 
 import type { Module } from "@wdprlib/ast";

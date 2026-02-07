@@ -1,5 +1,4 @@
 /**
- * @module elements/iftags
  *
  * Renderer for `[[iftags]]...[[/iftags]]` conditional blocks.
  *
@@ -13,6 +12,8 @@
  *
  * All three categories must independently be satisfied for the condition
  * to evaluate to true.
+ *
+ * @module
  */
 
 import type { IfTagsData } from "@wdprlib/ast";

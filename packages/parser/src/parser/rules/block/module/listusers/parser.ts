@@ -1,11 +1,12 @@
 /**
- * @module listusers/parser
  *
  * Parser rule for the Wikidot `[[module ListUsers ...]]` block.
  *
  * Parses the module's attributes into a `list-users` Module AST node.
  * Currently only `users="."` (logged-in user) is supported; other values
  * produce an error block element.
+ *
+ * @module
  */
 
 import type { Element, Module } from "@wdprlib/ast";

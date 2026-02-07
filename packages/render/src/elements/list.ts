@@ -1,5 +1,4 @@
 /**
- * @module elements/list
  *
  * Renderers for Wikidot ordered/unordered lists and definition lists.
  *
@@ -14,6 +13,8 @@
  *   paragraph is unwrapped (no `<p>` tags).
  * - Sub-lists without a preceding content item get an inline hidden `<li>`.
  * - Leading/trailing whitespace-only text nodes are trimmed from items.
+ *
+ * @module
  */
 
 import type { ListData, DefinitionListItem, Element, ContainerData } from "@wdprlib/ast";

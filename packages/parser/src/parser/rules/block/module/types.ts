@@ -1,5 +1,4 @@
 /**
- * @module module/types
  *
  * Core type definitions for the Wikidot module system.
  *
@@ -7,6 +6,8 @@
  * syntax. Each module type (ListPages, CSS, Rate, etc.) is implemented as a
  * `ModuleRule` that defines how to parse the module's attributes and body into
  * an AST node.
+ *
+ * @module
  */
 
 import type { Element, Module } from "@wdprlib/ast";

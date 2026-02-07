@@ -1,5 +1,4 @@
 /**
- * @module math
  *
  * Runtime module for mathematical notation interaction and polyfill.
  *
@@ -21,6 +20,8 @@
  *   to apply SVG polyfill
  *
  * The `destroy()` cleanup function removes all three event listeners.
+ *
+ * @module
  */
 
 import type { ModuleCleanup } from "./types";

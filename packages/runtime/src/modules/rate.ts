@@ -1,5 +1,4 @@
 /**
- * @module modules/rate
  *
  * Runtime module for the Wikidot `[[module Rate]]` page rating widget.
  *
@@ -17,6 +16,8 @@
  * - Updates `.rate-points .number` and `.vote-count` text content on success
  *
  * The `destroy()` cleanup function removes the click listener.
+ *
+ * @module
  */
 
 import type { ModuleCleanup, RuntimeOptions } from "../types";

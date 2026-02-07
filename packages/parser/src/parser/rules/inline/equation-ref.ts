@@ -1,5 +1,4 @@
 /**
- * @module equation-ref
  *
  * Parses the Wikidot equation reference syntax: `[[eref name]]`.
  *
@@ -17,6 +16,8 @@
  *
  * Wikidot syntax example:
  * - `[[eref myEquation]]` -- references equation named "myEquation"
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

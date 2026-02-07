@@ -1,5 +1,4 @@
 /**
- * @module elements/image
  *
  * Renderer for Wikidot image elements (`[[image source]]` and `[[f<image source]]`).
  *
@@ -7,6 +6,8 @@
  * files. The renderer resolves the source to a URL, sanitizes all
  * attributes, optionally wraps the image in a link (`link` attribute),
  * and optionally wraps everything in an alignment container div.
+ *
+ * @module
  */
 
 import type { ImageSource, ImageData } from "@wdprlib/ast";

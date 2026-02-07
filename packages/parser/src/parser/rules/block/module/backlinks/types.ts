@@ -1,10 +1,11 @@
 /**
- * @module backlinks/types
  *
  * Type definitions for the Backlinks module.
  *
  * The `[[module Backlinks]]` block displays a list of pages that link to
  * the specified page (or the current page if no `page` attribute is given).
+ *
+ * @module
  */
 
 /**

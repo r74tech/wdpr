@@ -1,5 +1,4 @@
 /**
- * @module elements/link
  *
  * Renderers for Wikidot link elements.
  *
@@ -16,6 +15,8 @@
  * not exist (the standard Wikidot "red link" convention). External
  * links opened in new tabs automatically receive `rel="noopener noreferrer"`
  * to prevent tabnabbing.
+ *
+ * @module
  */
 
 import type { LinkData, AnchorData } from "@wdprlib/ast";

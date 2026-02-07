@@ -1,5 +1,4 @@
 /**
- * @module elements/include
  *
  * Renderer for `[[include page-name]]` transclusion elements.
  *
@@ -7,6 +6,8 @@
  * page exists, its parsed elements are injected into the AST. At render
  * time, the renderer either outputs the pre-resolved elements or shows
  * a Wikidot-compatible error message with a "create it now" link.
+ *
+ * @module
  */
 
 import type { IncludeData } from "@wdprlib/ast";

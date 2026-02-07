@@ -1,5 +1,4 @@
 /**
- * @module collapsible
  *
  * Runtime module for `[[collapsible]]` block toggle behavior.
  *
@@ -17,6 +16,8 @@
  * - Optionally applies a fade-in transition on `.collapsible-block-content`
  *
  * The `destroy()` cleanup function removes the click listener.
+ *
+ * @module
  */
 
 import type { ModuleCleanup, RuntimeOptions } from "./types";

@@ -1,11 +1,12 @@
 /**
- * @module iftags/types
  *
  * Type definitions for the IfTags conditional rendering module.
  *
  * `[[iftags]]` is a Wikidot block that conditionally renders its content
  * based on the current page's tags. The condition syntax supports required
  * tags (`+tag` or bare `tag`) and forbidden tags (`-tag`).
+ *
+ * @module
  */
 
 /**

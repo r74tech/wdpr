@@ -1,5 +1,4 @@
 /**
- * @module bold
  *
  * Parses the Wikidot bold formatting syntax: `**text**`.
  *
@@ -14,6 +13,8 @@
  * within its body.
  *
  * Produces a `"container"` AST element with `type: "bold"`.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

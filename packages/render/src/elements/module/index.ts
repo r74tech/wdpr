@@ -1,5 +1,4 @@
 /**
- * @module elements/module
  *
  * Dispatcher for `[[module ModuleName]]` elements.
  *
@@ -10,6 +9,8 @@
  *
  * Unknown module names produce a Wikidot-compatible error block with a
  * link to the modules documentation page.
+ *
+ * @module
  */
 
 import type { Module } from "@wdprlib/ast";

@@ -1,5 +1,4 @@
 /**
- * @module toc
  *
  * Table of Contents (TOC) generation for Wikidot markup.
  *
@@ -11,6 +10,8 @@
  * Each TOC entry becomes an anchor link (`#toc0`, `#toc1`, ...) pointing to the
  * corresponding heading in the rendered page, matching Wikidot's original
  * anchor naming scheme.
+ *
+ * @module
  */
 
 import type { Element, TocEntry, ListItem } from "@wdprlib/ast";

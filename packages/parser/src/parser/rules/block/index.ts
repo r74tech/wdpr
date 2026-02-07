@@ -1,5 +1,4 @@
 /**
- * @module block/index
  *
  * Central registry for all block-level parser rules.
  *
@@ -17,6 +16,8 @@
  *
  * The paragraph rule is deliberately excluded from the array -- it serves
  * as a fallback and is exported separately as `blockFallbackRule`.
+ *
+ * @module
  */
 import type { BlockRule } from "../types";
 import { headingRule } from "./heading";

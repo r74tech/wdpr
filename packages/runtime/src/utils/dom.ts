@@ -1,7 +1,8 @@
 /**
- * @module utils/dom
  *
  * DOM utility functions shared across runtime modules.
+ *
+ * @module
  */
 
 /**

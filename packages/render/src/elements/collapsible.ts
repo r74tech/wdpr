@@ -1,5 +1,4 @@
 /**
- * @module elements/collapsible
  *
  * Renderer for `[[collapsible]]...[[/collapsible]]` blocks.
  *
@@ -12,6 +11,8 @@
  * visibility controlled via inline `display` styles based on the
  * `start-open` flag. The "hide" link can appear at the top, bottom,
  * or both positions.
+ *
+ * @module
  */
 
 import type { CollapsibleData } from "@wdprlib/ast";

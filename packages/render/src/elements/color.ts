@@ -1,10 +1,11 @@
 /**
- * @module elements/color
  *
  * Renderer for `##color|text##` inline color markup in Wikidot syntax.
  *
  * The color value is sanitized to prevent CSS injection before being
  * injected into an inline `style` attribute.
+ *
+ * @module
  */
 
 import type { ColorData } from "@wdprlib/ast";

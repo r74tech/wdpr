@@ -1,5 +1,4 @@
 /**
- * @module libs/highlighter
  *
  * TypeScript port of PEAR Text_Highlighter 0.5.1 for server-side
  * syntax highlighting of `[[code]]` blocks.
@@ -13,6 +12,8 @@
  * Author: Andrey Demenev <demenev@on-line.jar.ru>
  * Copyright: 2004 Andrey Demenev
  * License: PHP License 3.0 (http://www.php.net/license/3_0.txt)
+ *
+ * @module
  */
 
 import type { LanguageDefinition } from "./types";

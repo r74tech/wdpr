@@ -1,5 +1,4 @@
 /**
- * @module anchor-name
  *
  * Parses the Wikidot named anchor syntax: `[[# name]]`.
  *
@@ -16,6 +15,8 @@
  *
  * Produces an `"anchor-name"` AST element whose `data` field contains
  * the raw anchor name string.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

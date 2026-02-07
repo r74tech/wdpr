@@ -1,5 +1,4 @@
 /**
- * @module module/mapping
  *
  * Module rule registry and name-based lookup.
  *
@@ -7,6 +6,8 @@
  * and provides a case-insensitive lookup by module name. When the parser
  * encounters `[[module XYZ ...]]`, it uses `getModuleRuleByName("xyz")` to
  * find the corresponding rule handler.
+ *
+ * @module
  */
 
 import type { ModuleRule } from "./types";

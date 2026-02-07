@@ -1,5 +1,4 @@
 /**
- * @module iftags/resolve
  *
  * Resolution of `[[iftags]]` conditional blocks.
  *
@@ -7,6 +6,8 @@
  * the current page's tags. If the condition matches, the element's children
  * are included in the output; otherwise, they are omitted. If page tags are
  * not available (null), the element is kept as-is for later resolution.
+ *
+ * @module
  */
 
 import type { Element } from "@wdprlib/ast";

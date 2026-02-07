@@ -1,5 +1,4 @@
 /**
- * @module elements/code
  *
  * Renderer for `[[code]]...[[/code]]` blocks in Wikidot markup.
  *
@@ -7,6 +6,8 @@
  * by the built-in highlighter (a TypeScript port of PEAR Text_Highlighter),
  * the code is syntax-highlighted with `hl-*` CSS class spans. Otherwise,
  * the code is rendered as plain escaped text inside `<pre><code>`.
+ *
+ * @module
  */
 
 import type { CodeBlockData } from "@wdprlib/ast";

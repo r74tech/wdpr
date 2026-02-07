@@ -1,10 +1,11 @@
 /**
- * @module categories/types
  *
  * Type definitions for the Categories module.
  *
  * The `[[module Categories]]` block displays a list of page categories
  * on the current site.
+ *
+ * @module
  */
 
 /**

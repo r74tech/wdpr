@@ -1,5 +1,4 @@
 /**
- * @module comment
  *
  * Parses the Wikidot comment syntax: `[!-- text --]`.
  *
@@ -14,6 +13,8 @@
  *
  * Unlike HTML comments (`<!-- -->`), Wikidot comments use square
  * brackets with exclamation marks.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

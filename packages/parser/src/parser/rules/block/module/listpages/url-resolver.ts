@@ -1,5 +1,4 @@
 /**
- * @module listpages/url-resolver
  *
  * URL parameter resolver for the `@URL|default` format in ListPages modules.
  *
@@ -21,6 +20,8 @@
  * ```
  * URL: `/my-page/p2_offset/20/p2_limit/5`
  * Result: offset=20, limit=5
+ *
+ * @module
  */
 
 import type { ListPagesDataRequirement, ListPagesQuery, NormalizedListPagesQuery } from "./types";

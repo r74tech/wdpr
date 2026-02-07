@@ -1,5 +1,4 @@
 /**
- * @module constants
  *
  * Parser constants that define structural boundaries in Wikidot markup.
  *
@@ -8,6 +7,8 @@
  * When any of these token types appear at the start of a line, the parser
  * stops collecting inline content for the current paragraph and begins
  * processing the new block element.
+ *
+ * @module
  */
 
 import type { TokenType } from "../lexer";

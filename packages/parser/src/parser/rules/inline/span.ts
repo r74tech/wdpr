@@ -1,5 +1,4 @@
 /**
- * @module span
  *
  * Parses the Wikidot span block syntax: `[[span attributes]]content[[/span]]`
  * and its paragraph-strip variant `[[span_]]`.
@@ -29,6 +28,8 @@
  * The `closeSpanRule` handles orphaned `[[/span]]` tags that result
  * from paragraph-break splitting. These wrap preceding inline content
  * into a span, matching Wikidot's behavior.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

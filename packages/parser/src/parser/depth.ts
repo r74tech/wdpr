@@ -1,5 +1,4 @@
 /**
- * @module depth
  *
  * Depth processing module for converting flat lists into nested tree structures.
  *
@@ -10,6 +9,8 @@
  *
  * Used primarily by the list parser and the table-of-contents builder to transform
  * flat sequences of items with depth annotations into hierarchical AST structures.
+ *
+ * @module
  */
 
 /**

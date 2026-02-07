@@ -1,11 +1,12 @@
 /**
- * @module listusers/extract
  *
  * Data requirement extraction for the ListUsers module.
  *
  * Analyzes a ListUsers template string to determine which variables
  * (`%%number%%`, `%%title%%`, `%%name%%`) are referenced. This tells the
  * external application which user data fields need to be provided.
+ *
+ * @module
  */
 
 import type { ListUsersVariable } from "./types";

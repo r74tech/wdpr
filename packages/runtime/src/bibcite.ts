@@ -1,5 +1,4 @@
 /**
- * @module bibcite
  *
  * Runtime module for bibliography citation hover tooltips and click-to-scroll.
  *
@@ -14,6 +13,8 @@
  * - Queries `#bibitem-{N}` elements to build tooltip content
  *
  * The `destroy()` cleanup function removes both event listeners.
+ *
+ * @module
  */
 
 import type { ModuleCleanup } from "./types";

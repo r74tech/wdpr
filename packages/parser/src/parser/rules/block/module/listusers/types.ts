@@ -1,5 +1,4 @@
 /**
- * @module listusers/types
  *
  * Type definitions for the ListUsers module.
  *
@@ -7,6 +6,8 @@
  * members. Currently, only `users="."` (the logged-in user) is supported.
  * The template body can reference three variables: `%%number%%`, `%%title%%`,
  * and `%%name%%`.
+ *
+ * @module
  */
 
 /**

@@ -1,5 +1,4 @@
 /**
- * @module postprocess/spanStrip
  *
  * Post-processing pass for paragraph merging and cleanup in the parsed AST.
  *
@@ -20,6 +19,8 @@
  * `_emptyParagraphStrip`, `_escapedFromParagraph`, `_splitByBlankLine`) from AST
  * elements. These flags are used during parsing as inter-pass communication and
  * must not appear in the final output.
+ *
+ * @module
  */
 import type { Element, ContainerData, ExprData } from "@wdprlib/ast";
 

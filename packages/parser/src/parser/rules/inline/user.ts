@@ -1,5 +1,4 @@
 /**
- * @module user
  *
  * Parses the Wikidot user reference syntax: `[[user name]]` and
  * `[[*user name]]`.
@@ -21,6 +20,8 @@
  *
  * Produces a `"user"` AST element with `data.name` (the username)
  * and `data["show-avatar"]` (boolean).
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

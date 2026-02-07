@@ -1,5 +1,4 @@
 /**
- * @module link-anchor
  *
  * Parses the Wikidot anchor link syntax: `[#anchor-name Label text]`
  * and the "fake link" variant `[# Label text]`.
@@ -18,6 +17,8 @@
  * lexer, distinguishing it from regular bracket links.
  *
  * Produces a `"link"` AST element with `type: "anchor"`.
+ *
+ * @module
  */
 import type { Element, LinkLabel } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

@@ -1,5 +1,4 @@
 /**
- * @module elements/module/rate
  *
  * Renderer for `[[module Rate]]`.
  *
@@ -11,6 +10,8 @@
  * The widget HTML structure matches Wikidot's original output, using
  * Bootstrap-style `btn btn-default` classes alongside Wikidot-specific
  * class names (`rateup`, `ratedown`, `cancel`, `rate-points`).
+ *
+ * @module
  */
 
 import type { RenderContext } from "../../context";

@@ -1,5 +1,4 @@
 /**
- * @module include/resolve
  *
  * Text-level expansion of `[[include]]` directives.
  *
@@ -18,6 +17,8 @@
  *
  * Safety features include circular dependency detection (using a trace of
  * visited pages) and a configurable maximum recursion depth (default: 5).
+ *
+ * @module
  */
 
 import type { PageRef, VariableMap, WikitextSettings } from "@wdprlib/ast";

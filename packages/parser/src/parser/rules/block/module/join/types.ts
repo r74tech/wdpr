@@ -1,10 +1,11 @@
 /**
- * @module join/types
  *
  * Type definitions for the Join module.
  *
  * The `[[module Join]]` block renders a "Join this site" button that allows
  * visitors to apply for site membership.
+ *
+ * @module
  */
 
 /**

@@ -1,5 +1,4 @@
 /**
- * @module image
  *
  * Parses the Wikidot image block syntax: `[[image source attributes]]`.
  *
@@ -27,6 +26,8 @@
  *
  * Produces an `"image"` AST element with source, alignment, link, and
  * attribute data.
+ *
+ * @module
  */
 import type { Element, ImageSource, FloatAlignment, Alignment, AttributeMap } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

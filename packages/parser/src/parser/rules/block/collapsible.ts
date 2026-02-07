@@ -1,6 +1,4 @@
 /**
- * @module collapsible
- *
  * Block rule for Wikidot collapsible blocks: `[[collapsible]]...[[/collapsible]]`.
  *
  * A collapsible renders as a show/hide toggle with body content that can
@@ -22,8 +20,10 @@
  * - An inline form (`[[collapsible]]text[[/collapsible]]` on one line) is
  *   supported but uncommon.
  * - Consecutive paragraph containers in the body are merged back into a single
- *   paragraph via {@link mergeParagraphs}, because Wikidot does not split
+ *   paragraph via `mergeParagraphs`, because Wikidot does not split
  *   paragraphs at unrecognised block tokens inside a collapsible.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

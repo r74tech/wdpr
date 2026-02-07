@@ -1,5 +1,4 @@
 /**
- * @module preprocess/typography
  *
  * Typographic preprocessing for Wikidot markup.
  *
@@ -16,6 +15,8 @@
  * It is performed in the parser instead, because the `--` sequence also appears
  * in HTML comment markers (`[!--` and `--]`), and converting it during
  * preprocessing would break comment detection.
+ *
+ * @module
  */
 
 /** Unicode left single quotation mark (U+2018) */

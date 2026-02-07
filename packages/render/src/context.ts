@@ -1,5 +1,4 @@
 /**
- * @module context
  *
  * Central rendering context that tracks state during a single HTML render pass.
  *
@@ -9,6 +8,8 @@
  * also exposes helpers for resolving image sources, page links, and
  * HTML attribute maps -- operations that depend on the current
  * {@link WikitextSettings} and {@link PageContext}.
+ *
+ * @module
  */
 
 import type {

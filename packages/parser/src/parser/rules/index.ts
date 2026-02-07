@@ -1,5 +1,4 @@
 /**
- * @module rules
  *
  * Aggregated exports for all parser rules (block and inline).
  *
@@ -14,6 +13,8 @@
  *
  * Each category also has a fallback rule that is used when no other rule matches,
  * ensuring that all input is consumed.
+ *
+ * @module
  */
 
 // Types

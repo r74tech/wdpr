@@ -1,5 +1,4 @@
 /**
- * @module blockquote
  *
  * Block rule for Wikidot-style blockquotes using `>` markers.
  *
@@ -22,6 +21,8 @@
  *   converts flat depth-annotated rows into a recursive tree structure.
  * - Maximum depth is capped at {@link MAX_BLOCKQUOTE_DEPTH} (30) to guard
  *   against pathological input.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

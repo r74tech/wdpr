@@ -1,5 +1,4 @@
 /**
- * @module escape
  *
  * HTML, CSS, URL, and attribute sanitization utilities for the render pipeline.
  *
@@ -14,6 +13,8 @@
  * - CSS value sanitization ({@link isDangerousCssValue}, {@link sanitizeStyleValue})
  *   with normalization to defeat CSS escape/comment bypass techniques
  * - Composite attribute sanitization ({@link sanitizeAttributes}) combining all checks
+ *
+ * @module
  */
 
 /**

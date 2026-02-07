@@ -1,5 +1,4 @@
 /**
- * @module listpages/resolve
  *
  * ListPages module resolution (phase 3 of the ListPages lifecycle).
  *
@@ -15,6 +14,8 @@
  *
  * The final result may also include prepend/append lines and be wrapped in a
  * `div.list-pages-box` (when `wrapper=true`).
+ *
+ * @module
  */
 
 import type { Element, Module } from "@wdprlib/ast";

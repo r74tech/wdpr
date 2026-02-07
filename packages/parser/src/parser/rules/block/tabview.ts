@@ -1,5 +1,4 @@
 /**
- * @module tabview
  *
  * Block rule for Wikidot tabbed content: `[[tabview]]` (or `[[tabs]]`).
  *
@@ -25,6 +24,8 @@
  * - An empty tabview (no tabs) fails the rule, falling back to text.
  * - Non-tab content between tabs (other than whitespace/newlines) causes
  *   the rule to fail.
+ *
+ * @module
  */
 import type { Element, TabData } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";

@@ -1,5 +1,4 @@
 /**
- * @module toc
  *
  * Runtime module for the table-of-contents fold/unfold toggle.
  *
@@ -18,6 +17,8 @@
  * - Toggles `style.display` on `#toc-list` and the two action links
  *
  * The `destroy()` cleanup function removes the click listener.
+ *
+ * @module
  */
 
 import type { ModuleCleanup } from "./types";

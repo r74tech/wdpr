@@ -1,5 +1,4 @@
 /**
- * @module elements/toc
  *
  * Renderer for `[[toc]]` (Table of Contents) elements.
  *
@@ -12,6 +11,8 @@
  * The TOC supports fold/unfold toggling via a `#toc-action-bar` with
  * Fold/Unfold links, handled at runtime by the `toc` runtime module.
  * Alignment options (`left`/`right`) produce a floated container.
+ *
+ * @module
  */
 
 import type { Element, ListData, ListItem, TableOfContentsData } from "@wdprlib/ast";

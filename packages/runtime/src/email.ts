@@ -1,5 +1,4 @@
 /**
- * @module email
  *
  * Runtime module for deobfuscating email addresses.
  *
@@ -9,6 +8,8 @@
  * replaces them with proper `<a href="mailto:...">` links.
  *
  * This is a one-shot initialization (no event listeners to clean up).
+ *
+ * @module
  */
 
 /**

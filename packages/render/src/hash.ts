@@ -1,5 +1,4 @@
 /**
- * @module hash
  *
  * Pure-JavaScript hash functions for generating deterministic element IDs.
  *
@@ -11,6 +10,8 @@
  * `node:crypto` is intentionally avoided because `bunup`'s ESM build
  * injects `createRequire` from `node:module`, which is incompatible
  * with browser environments.
+ *
+ * @module
  */
 
 /**

@@ -1,5 +1,4 @@
 /**
- * @module underline
  *
  * Parses the Wikidot underline formatting syntax: `__text__`.
  *
@@ -21,6 +20,8 @@
  * Renders as a `<u>` element in HTML.
  *
  * Produces a `"container"` AST element with `type: "underline"`.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";

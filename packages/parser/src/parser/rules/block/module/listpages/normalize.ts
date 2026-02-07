@@ -1,5 +1,4 @@
 /**
- * @module listpages/normalize
  *
  * Query normalization for the ListPages module.
  *
@@ -11,6 +10,8 @@
  *
  * Based on Wikidot official documentation:
  * https://www.wikidot.com/doc-modules:listpages-module
+ *
+ * @module
  */
 
 import type {

@@ -1,5 +1,4 @@
 /**
- * @module elements/footnote
  *
  * Renderers for Wikidot footnote markup.
  *
@@ -10,6 +9,8 @@
  *
  * The runtime `footnote` module adds hover tooltips and click-to-scroll
  * behavior to these elements.
+ *
+ * @module
  */
 
 import type { FootnoteBlockData } from "@wdprlib/ast";

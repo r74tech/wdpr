@@ -1,11 +1,12 @@
 /**
- * @module elements/module/categories
  *
  * Renderer for `[[module Categories]]`.
  *
  * The categories module displays the site's page categories. The
  * renderer outputs an empty container div; category data is populated
  * at runtime or via server-side rendering.
+ *
+ * @module
  */
 
 import type { Module } from "@wdprlib/ast";

@@ -1,5 +1,4 @@
 /**
- * @module odate
  *
  * Runtime module for converting server-rendered dates to the user's local timezone.
  *
@@ -15,6 +14,8 @@
  * `%S`, `%a`, `%A`, `%b`, `%B`, `%j`, `%O`, `%%`.
  *
  * This is a one-shot initialization (no event listeners to clean up).
+ *
+ * @module
  */
 
 /** Abbreviated English day names, indexed by `Date.getDay()`. */

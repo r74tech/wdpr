@@ -1,5 +1,4 @@
 /**
- * @module utils/tooltip
  *
  * Shared tooltip positioning and lifecycle utilities.
  *
@@ -14,6 +13,8 @@
  *   wrapper from a source element's children (cloned to prevent XSS)
  *
  * {@link hideTooltip} removes the currently active tooltip from the DOM.
+ *
+ * @module
  */
 
 /** The currently visible tooltip element, or `null` if none is active. */

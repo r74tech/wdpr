@@ -1,5 +1,4 @@
 /**
- * @module foldable-list
  *
  * Runtime module for foldable (collapsible) list menus.
  *
@@ -18,6 +17,8 @@
  * - Real links (not `#` or `javascript:;`) are allowed to navigate normally
  *
  * The `destroy()` cleanup function removes all click listeners from containers.
+ *
+ * @module
  */
 
 import type { ModuleCleanup } from "./types";

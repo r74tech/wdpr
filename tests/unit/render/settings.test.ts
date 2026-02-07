@@ -173,7 +173,7 @@ describe("WikitextSettings - Renderer", () => {
       expect(html).toMatch(/id="toc0-[0-9a-f]{6}"/);
     });
 
-    it("TOC コンテナ ID にランダムサフィックスが付く", () => {
+    it("TOC コンテナ ID は固定値のまま (runtime 互換)", () => {
       const tree: SyntaxTree = {
         elements: [
           {
@@ -184,9 +184,9 @@ describe("WikitextSettings - Renderer", () => {
         "table-of-contents": [],
       };
       const html = renderToHtml(tree, { settings: draftSettings });
-      expect(html).toMatch(/id="toc-[0-9a-f]{6}"/);
-      expect(html).toMatch(/id="toc-action-bar-[0-9a-f]{6}"/);
-      expect(html).toMatch(/id="toc-list-[0-9a-f]{6}"/);
+      expect(html).toContain('id="toc"');
+      expect(html).toContain('id="toc-action-bar"');
+      expect(html).toContain('id="toc-list"');
     });
 
     it("footnote ID にランダムサフィックスが付く", () => {

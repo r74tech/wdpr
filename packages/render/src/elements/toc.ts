@@ -30,14 +30,25 @@ function renderTocList(ctx: RenderContext, listData: ListData, depth: number): v
   }
 }
 
+/**
+ * Rewrite a TOC anchor href (e.g., "#toc0") to match the rendered heading ID.
+ * When useTrueIds is false, heading IDs have a random suffix appended.
+ */
+function rewriteTocAnchor(ctx: RenderContext, href: string): string {
+  const match = /^#toc(\d+)$/.exec(href);
+  if (!match) return href;
+  return `#${ctx.generateId("toc", Number(match[1]))}`;
+}
+
 /** Render a single TOC list item */
 function renderTocItem(ctx: RenderContext, item: ListItem, depth: number): void {
   if (item["item-type"] === "elements") {
     for (const el of item.elements) {
       const link = extractLinkText(el);
       if (link) {
+        const href = rewriteTocAnchor(ctx, link.href);
         ctx.push(
-          `<div style="margin-left: ${depth}em;"><a href="${escapeHtml(link.href)}">${escapeHtml(link.text)}</a></div>`,
+          `<div style="margin-left: ${depth}em;"><a href="${escapeHtml(href)}">${escapeHtml(link.text)}</a></div>`,
         );
       }
     }
@@ -55,22 +66,19 @@ export function renderTableOfContents(ctx: RenderContext, data: TableOfContentsD
     ctx.push(`<table style="margin:0; padding:0"><tr><td style="margin:0; padding:0">`);
   }
 
-  const tocId = ctx.generateFixedId("toc");
-  const tocActionBarId = ctx.generateFixedId("toc-action-bar");
-  const tocListId = ctx.generateFixedId("toc-list");
-
+  // TOC container IDs are fixed — the runtime queries them by ID (#toc, #toc-action-bar, #toc-list)
   if (isFloat) {
     const floatClass = data.align === "left" ? "floatleft" : "floatright";
-    ctx.push(`<div id="${tocId}" class="${floatClass}">`);
+    ctx.push(`<div id="toc" class="${floatClass}">`);
   } else {
-    ctx.push(`<div id="${tocId}">`);
+    ctx.push(`<div id="toc">`);
   }
 
   ctx.push(
-    `<div id="${tocActionBarId}"><a href="javascript:;">Fold</a><a style="display: none" href="javascript:;">Unfold</a></div>`,
+    `<div id="toc-action-bar"><a href="javascript:;">Fold</a><a style="display: none" href="javascript:;">Unfold</a></div>`,
   );
   ctx.push(`<div class="title">Table of Contents</div>`);
-  ctx.push(`<div id="${tocListId}">`);
+  ctx.push(`<div id="toc-list">`);
   renderTocEntries(ctx, ctx.tocElements);
   ctx.push("</div>");
   ctx.push("</div>");

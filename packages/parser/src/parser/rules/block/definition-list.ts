@@ -202,7 +202,7 @@ function parseDefinitionItem(
  *
  * Parsing strategy:
  * 1. Verify the first token is a line-start COLON.
- * 2. Repeatedly call {@link parseDefinitionItem} to collect entries.
+ * 2. Repeatedly call `parseDefinitionItem()` to collect entries.
  * 3. Stop when the current token is no longer a line-start COLON (i.e.
  *    the definition list block has ended).
  * 4. Convert internal items into the AST {@link DefinitionListItem} format.

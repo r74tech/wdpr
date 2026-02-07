@@ -82,7 +82,7 @@ export interface RenderResolvers {
 }
 
 /**
- * Full configuration for {@link renderToHtml}.
+ * Full configuration for `renderToHtml()`.
  *
  * Every field is optional; defaults produce safe, standalone HTML output
  * suitable for a full wiki page.

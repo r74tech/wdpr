@@ -76,8 +76,8 @@ interface CellStart {
  * 1. Verify the first token is a table column token at line start.
  * 2. Parse consecutive rows (each row is a line starting with a table
  *    column token).
- * 3. Each row is parsed by {@link parseTableRow}, which iterates cells
- *    via {@link parseCellStart} and {@link parseTableCell}.
+ * 3. Each row is parsed by `parseTableRow()`, which iterates cells
+ *    via `parseCellStart()` and `parseTableCell()`.
  * 4. Emit a `table` element with `_source: "pipe"`.
  */
 export const tableRule: BlockRule = {

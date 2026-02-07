@@ -21,7 +21,7 @@
  * - `colspan` is extracted from cell attributes and mapped to `column-span`.
  * - Alignment can be derived from the `style` attribute's `text-align` value.
  * - Cell content supports both block and inline elements, including nested
- *   tables. The custom {@link parseCellContent} handles paragraph wrapping
+ *   tables. The custom `parseCellContent()` handles paragraph wrapping
  *   and block detection within cells.
  * - Empty tables or tables with only empty rows fail the rule, falling
  *   back to text rendering.
@@ -274,7 +274,7 @@ function parseRow(ctx: ParseContext, startPos: number): { row: TableRow; consume
 /**
  * Parses a `[[cell ...]]...[[/cell]]` or `[[hcell ...]]...[[/hcell]]` block.
  *
- * Cell body content is parsed via {@link parseCellContent}, which supports
+ * Cell body content is parsed via `parseCellContent()`, which supports
  * block elements (including nested tables), inline markup, and paragraph
  * breaks. After parsing, simple single-paragraph content is unwrapped
  * to match Wikidot's behaviour of not wrapping simple cells in `<p>`.

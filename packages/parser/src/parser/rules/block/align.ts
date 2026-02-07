@@ -180,11 +180,11 @@ function isAlignClose(
  *
  * Parsing strategy:
  * 1. Verify the first token is BLOCK_OPEN at line start.
- * 2. Delegate to {@link parseAlignOpen} to identify direction and consume
+ * 2. Delegate to `parseAlignOpen()` to identify direction and consume
  *    the opening tag interior.
  * 3. Require a NEWLINE immediately after the opening tag.
- * 4. Recursively parse body blocks via {@link parseBlocksUntil}, stopping
- *    when {@link isAlignClose} finds the matching closing tag.
+ * 4. Recursively parse body blocks via `parseBlocksUntil()`, stopping
+ *    when `isAlignClose()` finds the matching closing tag.
  * 5. Consume the closing tag and optional trailing newline.
  * 6. Emit a container element with `type: { align: direction }`.
  *

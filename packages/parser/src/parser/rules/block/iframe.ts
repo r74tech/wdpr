@@ -59,7 +59,7 @@ function isDangerousUrl(normalizedUrl: string): boolean {
  * 1. Match BLOCK_OPEN + name "iframe".
  * 2. Consume the URL (all tokens until whitespace, BLOCK_CLOSE, or newline).
  * 3. Validate the URL: normalise, reject dangerous schemes, require http(s).
- * 4. Parse key/value attributes, filtering through {@link ALLOWED_IFRAME_ATTRS}.
+ * 4. Parse key/value attributes, filtering through `ALLOWED_IFRAME_ATTRS`.
  * 5. Consume closing `]]` and optional trailing newline.
  * 6. Emit an `iframe` element with `url` and `attributes`.
  */

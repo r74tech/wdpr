@@ -107,9 +107,9 @@ export function resolveUrlValue(
 }
 
 /**
- * Resolve all @URL parameters and build a ListPagesQuery
+ * Resolve all `@URL` parameters and build a ListPagesQuery
  *
- * Takes a ListPagesDataRequirement and URL parameters, resolves all @URL|default
+ * Takes a ListPagesDataRequirement and URL parameters, resolves all `@URL|default`
  * values, and returns a complete ListPagesQuery ready for database queries.
  *
  * @param requirement - The data requirement from AST extraction
@@ -161,14 +161,14 @@ export function resolveQuery(
 }
 
 /**
- * Resolve all @URL parameters and normalize the query
+ * Resolve all `@URL` parameters and normalize the query
  *
  * Combines URL resolution with query normalization in a single call.
  * This is the recommended way to process ListPages queries for HPC.
  *
  * @param requirement - The data requirement from AST extraction
  * @param urlParams - Parsed URL parameters (from parseUrlParams)
- * @returns Normalized query with all @URL values resolved
+ * @returns Normalized query with all `@URL` values resolved
  *
  * @example
  * ```typescript

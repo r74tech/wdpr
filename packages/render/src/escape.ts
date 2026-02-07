@@ -191,7 +191,7 @@ const SAFE_ATTRIBUTES = new Set([
  * The check applies three rules in order:
  * 1. Block all event handlers (`on*` prefix) unconditionally
  * 2. Allow accessibility (`aria-*`) and custom data (`data-*`) attributes
- * 3. Allow only attributes in the {@link SAFE_ATTRIBUTES} allowlist
+ * 3. Allow only attributes in the `SAFE_ATTRIBUTES` allowlist
  *
  * @param name - The attribute name to validate (case-insensitive).
  * @returns `true` if the attribute is safe to render.
@@ -491,7 +491,7 @@ function normalizeCssValue(value: string): string {
  * Check whether a CSS property value contains dangerous patterns that
  * could enable script execution or external resource loading.
  *
- * The value is first normalized via {@link normalizeCssValue} to resolve
+ * The value is first normalized via `normalizeCssValue()` to resolve
  * CSS escapes and comments, then checked against a blocklist:
  * - `url()` -- blocks all URL-based loading (images, fonts, cursors)
  *   because even image URLs can leak data or trigger requests

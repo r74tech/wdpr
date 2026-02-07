@@ -7,7 +7,7 @@
  * during inline parsing.
  *
  * `textRule` handles `TEXT` and `WHITESPACE` tokens specifically and is
- * included in the main {@link inlineRules} array as the last entry before
+ * included in the main `inlineRules` array as the last entry before
  * the fallback.
  *
  * `fallbackRule` has an empty `startTokens` array, which means it matches

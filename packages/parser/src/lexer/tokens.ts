@@ -95,7 +95,7 @@ export type TokenType =
   | "RIGHT_DOUBLE_ANGLE"; // >> (non-line-start)
 
 /**
- * A single lexical token produced by the {@link Lexer}.
+ * A single lexical token produced by the `Lexer`.
  *
  * Tokens are the input to the parser stage. Each token carries its
  * literal text (`value`), source location (`position`), and a flag

@@ -41,8 +41,8 @@ export type { ParseFunction } from "./listpages/resolve";
  * Configuration for {@link resolveModules}.
  *
  * Callers must supply pre-extracted requirements and pre-compiled
- * templates (obtained from {@link extractDataRequirements} and
- * {@link compileTemplate} / {@link compileListUsersTemplate}).
+ * templates (obtained from `extractDataRequirements()` and
+ * `compileTemplate()` / `compileListUsersTemplate()`).
  *
  * @group Module Resolution
  */
@@ -58,7 +58,7 @@ export interface ResolveOptions {
 
   /**
    * Data requirements grouped by module type.
-   * Obtained from {@link extractDataRequirements}.
+   * Obtained from `extractDataRequirements()`.
    */
   requirements: {
     listPages?: ListPagesDataRequirement[];

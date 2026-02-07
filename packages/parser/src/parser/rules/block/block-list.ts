@@ -625,7 +625,7 @@ function parseListBlock(
  * Block rule for Wikidot explicit list syntax (`[[ul]]`/`[[ol]]`).
  *
  * The entry point verifies that the BLOCK_OPEN is followed by the name
- * `"ul"` or `"ol"`, then delegates to {@link parseListBlock}. On success
+ * `"ul"` or `"ol"`, then delegates to `parseListBlock()`. On success
  * a trailing `<br />` element is appended, matching Wikidot's rendering.
  */
 export const blockListRule: BlockRule = {

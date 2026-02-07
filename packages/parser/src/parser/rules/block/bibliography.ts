@@ -209,7 +209,7 @@ function parseBibliographyEntry(
  * 2. Parse optional attributes (`title`, `hide`).
  * 3. Consume the closing `]]` and optional newline.
  * 4. Loop over the body, parsing each `: label : content` line via
- *    {@link parseBibliographyEntry}. Whitespace, newlines, and unknown
+ *    `parseBibliographyEntry()`. Whitespace, newlines, and unknown
  *    tokens between entries are skipped.
  * 5. Stop when `[[/bibliography]]` is found and consume it.
  * 6. If no closing tag is encountered, fail the rule entirely.

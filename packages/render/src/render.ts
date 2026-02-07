@@ -35,7 +35,7 @@ import { renderExpr, renderIf, renderIfExpr } from "./elements/expr";
  * This is the main entry point of `@wdprlib/render`. It walks the AST
  * produced by `@wdprlib/parser`, serialises each element to HTML, and
  * appends any collected `[[module CSS]]` styles at the end (when
- * {@link WikitextSettings.allowStyleElements} is `true`).
+ * `WikitextSettings.allowStyleElements` is `true`).
  *
  * @param tree - Parsed AST (from `parse()` or `resolveModules()`)
  * @param options - Rendering configuration
@@ -73,7 +73,7 @@ export function renderElements(ctx: RenderContext, elements: Element[]): void {
 /**
  * Dispatch a single AST element to its type-specific renderer.
  *
- * The switch covers every {@link ElementName} value defined by
+ * The switch covers every `ElementName` value defined by
  * `@wdprlib/ast`. Unknown element types are silently ignored.
  */
 export function renderElement(ctx: RenderContext, element: Element): void {

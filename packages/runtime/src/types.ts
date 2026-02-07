@@ -1,5 +1,5 @@
 /**
- * Configuration for {@link initWdprRuntime}.
+ * Configuration for `initWdprRuntime()`.
  *
  * @group Runtime
  */
@@ -47,7 +47,7 @@ export interface RateResult {
 }
 
 /**
- * Handle returned by {@link initWdprRuntime}.
+ * Handle returned by `initWdprRuntime()`.
  *
  * Call `destroy()` to remove every event listener and timer that the
  * runtime attached, preventing memory leaks on SPA navigation.

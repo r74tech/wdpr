@@ -8,7 +8,7 @@
  * with the page ID and point value (+1, -1, or 0 for cancel).
  *
  * When the callback resolves, the widget's displayed score and vote
- * count are updated in place via {@link updateRateDisplay}.
+ * count are updated in place via `updateRateDisplay()`.
  *
  * DOM interactions:
  * - Listens for `click` (bubble) on root, delegated to `.btn`, `.rateup`,

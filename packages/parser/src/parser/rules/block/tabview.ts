@@ -163,7 +163,7 @@ function parseTab(ctx: ParseContext): { tab: TabData; consumed: number } | null 
  * 1. Match BLOCK_OPEN + name "tabview" or "tabs" (case-insensitive).
  * 2. Skip any trailing text/attributes on the opening tag (ignored).
  * 3. Consume `]]` and optional newline.
- * 4. Repeatedly parse `[[tab Label]]...[[/tab]]` blocks via {@link parseTab}.
+ * 4. Repeatedly parse `[[tab Label]]...[[/tab]]` blocks via `parseTab()`.
  * 5. Whitespace and newlines between tabs are skipped; other content fails.
  * 6. Consume `[[/tabview]]` or `[[/tabs]]`.
  * 7. If no tabs were found, fail the rule.

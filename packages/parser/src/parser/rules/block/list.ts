@@ -17,10 +17,10 @@
  * list type changes at the same depth, a new sub-list is created.
  *
  * The flat depth-annotated items are converted into a recursive tree by
- * {@link processDepths}, then transformed into nested `list` AST elements
- * by {@link buildListElement}.
+ * `processDepths()`, then transformed into nested `list` AST elements
+ * by `buildListElement()`.
  *
- * Maximum nesting depth is capped at {@link MAX_LIST_DEPTH} (20).
+ * Maximum nesting depth is capped at `MAX_LIST_DEPTH` (20).
  *
  * @module
  */
@@ -42,7 +42,7 @@ type InternalListType = "bullet" | "numbered";
 
 /**
  * Default list type used as the top-level placeholder in
- * {@link processDepths}. The actual type of each sub-list is determined
+ * `processDepths()`. The actual type of each sub-list is determined
  * by its first item's marker.
  */
 const GENERIC_LIST_TYPE: InternalListType = "bullet";
@@ -54,9 +54,9 @@ const GENERIC_LIST_TYPE: InternalListType = "bullet";
  * 1. Verify the first token is LIST_BULLET or LIST_NUMBER at line start.
  * 2. Collect consecutive list lines, recording each item's depth (number
  *    of leading spaces), type (bullet/numbered), and inline content.
- * 3. Feed the flat depth array into {@link processDepths} with type
+ * 3. Feed the flat depth array into `processDepths()` with type
  *    comparison, producing a nested tree.
- * 4. Convert the tree into `list` AST elements via {@link buildListElement}.
+ * 4. Convert the tree into `list` AST elements via `buildListElement()`.
  */
 export const listRule: BlockRule = {
   name: "list",
@@ -188,7 +188,7 @@ function toListType(ltype: InternalListType): ListType {
 
 /**
  * Builds a `list` AST element from a depth tree produced by
- * {@link processDepths}.
+ * `processDepths()`.
  *
  * @param topLtype - The list type for the top-level list.
  * @param list     - The depth tree of items and sub-lists.

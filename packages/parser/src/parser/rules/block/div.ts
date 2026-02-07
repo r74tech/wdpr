@@ -13,11 +13,11 @@
  * Wikidot-specific edge cases:
  * - The opening `]]` MUST be followed by a NEWLINE for the block to be
  *   recognised. `[[div]]inline[[/div]]` is NOT a valid div -- it becomes
- *   a failed div (see {@link consumeFailedDiv}).
+ *   a failed div (see `consumeFailedDiv()`).
  * - When a div fails, everything from the opening `[[div]]` through the
  *   last `[[/div]]` is collected as a single paragraph of text/line-break
  *   elements. Blank lines within that span are silently removed.
- * - `[[div_]]` uses {@link unwrapEdgeParagraphs} to strip paragraph
+ * - `[[div_]]` uses `unwrapEdgeParagraphs()` to strip paragraph
  *   wrappers from the first and last elements.
  *
  * @module

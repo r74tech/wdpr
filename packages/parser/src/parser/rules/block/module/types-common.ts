@@ -1,12 +1,12 @@
 /**
  * Shared callback interface for module resolution.
  *
- * {@link DataProvider} is the single object that callers pass to
- * {@link resolveModules} to supply external data. Each property is an
+ * `DataProvider` is the single object that callers pass to
+ * `resolveModules()` to supply external data. Each property is an
  * optional async callback; if omitted the corresponding module type is
  * left unresolved in the AST.
  *
- * Include resolution uses a separate API ({@link resolveIncludes})
+ * Include resolution uses a separate API (`resolveIncludes()`)
  * because it operates on raw wikitext before parsing, not on AST nodes.
  *
  * @module
@@ -19,7 +19,7 @@ import type { IfTagsResolver } from "./iftags/types";
 /**
  * Callback bag for supplying external data during module resolution.
  *
- * Pass an instance to {@link resolveModules}. Every callback is optional:
+ * Pass an instance to `resolveModules()`. Every callback is optional:
  * when a callback is missing the corresponding module node is kept as-is
  * in the output AST — useful when you only need to resolve a subset of
  * modules (e.g. only `[[iftags]]` on the client side).

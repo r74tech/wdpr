@@ -216,7 +216,7 @@ function mergeParagraphs(elements: Element[]): Element[] {
  *    with the collapsible rule itself removed (to prevent nesting).
  *    Otherwise, parse inline content until close tag or end of line
  *    (inline form).
- * 4. Merge consecutive paragraphs in the body via {@link mergeParagraphs}.
+ * 4. Merge consecutive paragraphs in the body via `mergeParagraphs()`.
  * 5. Consume the `[[/collapsible]]` closing tag.
  * 6. Consume any orphaned `[[/collapsible]]` tags that follow, converting
  *    them to `<br />` + literal text.

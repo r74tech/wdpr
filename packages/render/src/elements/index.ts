@@ -2,7 +2,7 @@
  *
  * Barrel export for all Wikidot element renderers.
  *
- * Each renderer function accepts a {@link RenderContext} and the
+ * Each renderer function accepts a `RenderContext` and the
  * element-specific AST data, then pushes the resulting HTML fragments
  * into the context's output buffer.
  *

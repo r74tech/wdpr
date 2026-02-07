@@ -19,7 +19,7 @@
  *   separator inside the blockquote.
  * - Nesting is handled by the generic {@link processDepths} utility, which
  *   converts flat depth-annotated rows into a recursive tree structure.
- * - Maximum depth is capped at {@link MAX_BLOCKQUOTE_DEPTH} (30) to guard
+ * - Maximum depth is capped at `MAX_BLOCKQUOTE_DEPTH` (30) to guard
  *   against pathological input.
  *
  * @module
@@ -47,7 +47,7 @@ const MAX_BLOCKQUOTE_DEPTH = 30;
  * 3. Lines missing the required space are consumed but produce no output.
  * 4. Feed the flat depth list into {@link processDepths} to build a nested tree.
  * 5. Recursively convert the tree into nested blockquote container elements
- *    via {@link buildBlockquoteElement}.
+ *    via `buildBlockquoteElement()`.
  */
 export const blockquoteRule: BlockRule = {
   name: "blockquote",
@@ -165,7 +165,7 @@ export const blockquoteRule: BlockRule = {
 };
 
 /**
- * Recursively converts a depth-tree (produced by {@link processDepths}) into
+ * Recursively converts a depth-tree (produced by `processDepths()`) into
  * a blockquote container element.
  *
  * Leaf items are accumulated into paragraph containers. An empty-content

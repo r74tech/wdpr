@@ -34,7 +34,7 @@ export interface ParserOptions {
 /**
  * Converts a token stream into a Wikidot {@link SyntaxTree}.
  *
- * The parser consumes tokens produced by the {@link Lexer} and emits a
+ * The parser consumes tokens produced by the `Lexer` and emits a
  * tree of {@link Element} nodes. Block-level rules are tried in priority
  * order; when none match, the fallback paragraph rule collects inline
  * tokens until the next blank line.

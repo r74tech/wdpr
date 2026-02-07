@@ -1,4 +1,21 @@
-/** Language definition for Text_Highlighter-compatible highlighting */
+/**
+ *
+ * Type definitions for the Text_Highlighter-compatible syntax highlighting
+ * engine. These interfaces mirror the data structures used by the original
+ * PEAR Text_Highlighter PHP library, adapted for TypeScript.
+ *
+ * @module
+ */
+
+/**
+ * Complete language definition for the Text_Highlighter-compatible engine.
+ *
+ * Each language definition describes a state machine where:
+ * - States are identified by numeric IDs (-1 for the root state).
+ * - Each state has a combined regex pattern that matches tokens.
+ * - Matched tokens may trigger state transitions (e.g., entering a string literal).
+ * - Keywords within certain states are highlighted with special CSS classes.
+ */
 export interface LanguageDefinition {
   /** Language name */
   language: string;

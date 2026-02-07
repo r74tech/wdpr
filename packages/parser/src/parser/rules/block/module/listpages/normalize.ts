@@ -1,9 +1,17 @@
 /**
- * Normalize ListPagesQuery to structured types
  *
- * Parses string-based query parameters into type-safe structured objects.
+ * Query normalization for the ListPages module.
+ *
+ * Converts the raw string-based `ListPagesQuery` (where fields like `tags`,
+ * `category`, and `order` are plain strings) into a `NormalizedListPagesQuery`
+ * with type-safe structured objects. This makes it straightforward for external
+ * applications to build database queries from the normalized representation
+ * without having to re-parse Wikidot's query syntax.
+ *
  * Based on Wikidot official documentation:
  * https://www.wikidot.com/doc-modules:listpages-module
+ *
+ * @module
  */
 
 import type {
@@ -21,7 +29,10 @@ import type {
   NumericComparisonOp,
 } from "./types";
 
-// Token separator pattern (comma, semicolon, whitespace)
+/**
+ * Pattern for splitting multi-value attribute strings.
+ * Wikidot allows commas, semicolons, and whitespace as separators between values.
+ */
 const TOKEN_SEPARATOR = /[,;\s]+/;
 
 /**
@@ -119,7 +130,10 @@ export function parseCategory(value: string): NormalizedCategory {
   return result;
 }
 
-// Order field mapping from camelCase to normalized format
+/**
+ * Mapping from Wikidot's order field names (both camelCase PHP-style and
+ * snake_case documentation-style) to normalized `OrderField` values.
+ */
 const ORDER_FIELD_MAP: Record<string, OrderField> = {
   // camelCase format (Wikidot PHP style)
   datecreated: "created_at",
@@ -218,10 +232,16 @@ export function parseParent(value: string): NormalizedParent | undefined {
   }
 }
 
-// Date comparison operators
+/**
+ * Date comparison operators, ordered longest-first so longer operators
+ * (like `<=`) are matched before shorter ones (like `<`).
+ */
 const DATE_COMPARISON_OPS: DateComparisonOp[] = ["<=", ">=", "<>", "<", ">", "="];
 
-// Relative date pattern: "last N day(s)/week(s)/month(s)"
+/**
+ * Pattern for relative date expressions like "last 7 days", "last 2 weeks", "last month".
+ * The count is optional and defaults to 1 (e.g., "last month" = "last 1 month").
+ */
 const RELATIVE_DATE_PATTERN = /^last\s+(?:(\d+)\s+)?(day|week|month)s?$/i;
 
 /**
@@ -278,7 +298,9 @@ export function parseDateSelector(value: string): NormalizedDateSelector | undef
   return undefined;
 }
 
-// Numeric comparison operators
+/**
+ * Numeric comparison operators, ordered longest-first for correct prefix matching.
+ */
 const NUMERIC_COMPARISON_OPS: NumericComparisonOp[] = ["<=", ">=", "<", ">", "="];
 
 /**

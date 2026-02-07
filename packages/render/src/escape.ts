@@ -1,12 +1,44 @@
 /**
- * Escape HTML special characters in text content
+ *
+ * HTML, CSS, URL, and attribute sanitization utilities for the render pipeline.
+ *
+ * Every piece of user-supplied content that flows into the HTML output must
+ * pass through one of these functions to prevent Cross-Site Scripting (XSS)
+ * and CSS injection attacks.
+ *
+ * The module provides several layers of defense:
+ * - Text escaping ({@link escapeHtml}, {@link escapeAttr}, {@link escapeJsString})
+ * - URL scheme blocking ({@link isDangerousUrl}) against `javascript:`, `data:`, `vbscript:`
+ * - Attribute allowlisting ({@link isSafeAttribute}) to block event handlers (`on*`)
+ * - CSS value sanitization ({@link isDangerousCssValue}, {@link sanitizeStyleValue})
+ *   with normalization to defeat CSS escape/comment bypass techniques
+ * - Composite attribute sanitization ({@link sanitizeAttributes}) combining all checks
+ *
+ * @module
+ */
+
+/**
+ * Escape the three HTML-special characters (`&`, `<`, `>`) in text content.
+ *
+ * Suitable for text nodes. For attribute values, use {@link escapeAttr}
+ * which additionally escapes quotation marks.
+ *
+ * @param text - The raw text to escape.
+ * @returns The escaped string safe for embedding in HTML text content.
  */
 export function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
 /**
- * Escape HTML attribute value (stricter: escapes both quotes)
+ * Escape a string for safe use inside an HTML attribute value.
+ *
+ * Stricter than {@link escapeHtml}: in addition to `&`, `<`, and `>`,
+ * this also escapes both double and single quotes to prevent attribute
+ * breakout regardless of which quote character delimits the attribute.
+ *
+ * @param value - The raw attribute value to escape.
+ * @returns The escaped string safe for embedding in an HTML attribute.
  */
 export function escapeAttr(value: string): string {
   return value
@@ -18,16 +50,32 @@ export function escapeAttr(value: string): string {
 }
 
 /**
- * Escape content inside a <style> tag to prevent tag breakout.
- * Replaces `</style` (case-insensitive) with `<\/style`.
+ * Escape content destined for a `<style>` tag to prevent tag breakout.
+ *
+ * An attacker could include `</style><script>...` inside CSS to close
+ * the style element and inject a script. This function replaces every
+ * occurrence of `</style` (case-insensitive) with `<\/style`, which
+ * is harmless in CSS but prevents the HTML parser from seeing a
+ * closing `</style>` tag.
+ *
+ * @param css - The raw CSS text to sanitize.
+ * @returns The sanitized CSS string safe for embedding inside `<style>`.
  */
 export function escapeStyleContent(css: string): string {
   return css.replace(/<\/style/gi, "<\\/style");
 }
 
 /**
- * Escape a value for use inside a JavaScript string literal (within an HTML attribute).
- * Uses hex escapes for characters that could break either the JS string or the HTML attribute.
+ * Escape a value for safe embedding inside a JavaScript string literal
+ * that itself appears within an HTML attribute (e.g. `onclick="fn('...')"` ).
+ *
+ * Uses hex escapes (`\xNN`) and unicode escapes (`\uNNNN`) for characters
+ * that could break either the JavaScript string or the enclosing HTML
+ * attribute context: backslash, quotes, angle brackets, ampersand,
+ * newlines, and the Unicode line/paragraph separators (U+2028/U+2029).
+ *
+ * @param value - The raw string to escape.
+ * @returns The escaped string safe for use inside a JS string literal in HTML.
  */
 export function escapeJsString(value: string): string {
   return value
@@ -43,7 +91,14 @@ export function escapeJsString(value: string): string {
     .replace(/\u2029/g, "\\u2029");
 }
 
-// Allowed attribute names (based on Wikidot usage)
+/**
+ * Allowlist of HTML attribute names considered safe for rendering.
+ *
+ * Based on the attributes that Wikidot permits users to set via markup.
+ * Event handler attributes (`on*`) are explicitly blocked in
+ * {@link isSafeAttribute}. The `aria-*` and `data-*` prefixes are
+ * allowed dynamically rather than being listed here.
+ */
 const SAFE_ATTRIBUTES = new Set([
   "accept",
   "align",
@@ -131,9 +186,15 @@ const SAFE_ATTRIBUTES = new Set([
 ]);
 
 /**
- * Check if an attribute name is safe to render.
- * Blocks event handlers (on*) and unknown attributes.
- * Allows aria-* and data-* prefixes.
+ * Check whether an HTML attribute name is safe to include in rendered output.
+ *
+ * The check applies three rules in order:
+ * 1. Block all event handlers (`on*` prefix) unconditionally
+ * 2. Allow accessibility (`aria-*`) and custom data (`data-*`) attributes
+ * 3. Allow only attributes in the `SAFE_ATTRIBUTES` allowlist
+ *
+ * @param name - The attribute name to validate (case-insensitive).
+ * @returns `true` if the attribute is safe to render.
  */
 export function isSafeAttribute(name: string): boolean {
   const lower = name.toLowerCase();
@@ -145,16 +206,28 @@ export function isSafeAttribute(name: string): boolean {
 }
 
 /**
- * Check if a URL value contains a dangerous scheme.
- * Strips whitespace and control characters before checking to prevent evasion
- * (e.g. "java\nscript:" or "java\x00script:").
+ * Check whether a URL contains a dangerous scheme (`javascript:`, `data:`, `vbscript:`).
+ *
+ * Before testing, the value is stripped of all whitespace and control
+ * characters (U+0000-U+001F, U+007F-U+009F) to defeat evasion techniques
+ * such as `"java\nscript:"` or `"java\x00script:"` that exploit browser
+ * whitespace tolerance in URL parsing.
+ *
+ * @param value - The URL string to check.
+ * @returns `true` if the URL uses a dangerous scheme and should be blocked.
  */
 export function isDangerousUrl(value: string): boolean {
   const normalized = value.replace(/[\s\u0000-\u001f\u007f-\u009f]/g, "");
   return /^(javascript|data|vbscript):/i.test(normalized);
 }
 
-// CSS named colors (CSS Level 4)
+/**
+ * Complete set of CSS Level 4 named colors plus CSS-wide keywords
+ * (`transparent`, `currentcolor`, `inherit`, `initial`, `unset`).
+ *
+ * Used by {@link isValidCssColor} to validate color values without
+ * allowing arbitrary CSS expressions.
+ */
 const CSS_NAMED_COLORS = new Set([
   "aliceblue",
   "antiquewhite",
@@ -313,9 +386,17 @@ const CSS_NAMED_COLORS = new Set([
 ]);
 
 /**
- * Validate a CSS color value.
- * Returns true if the value is a safe CSS color (named color, hex, rgb/rgba/hsl/hsla).
- * Rejects values containing semicolons, url(), expression(), or other dangerous patterns.
+ * Validate that a string is a safe CSS color value.
+ *
+ * Accepts named colors, hex notation (`#RGB`, `#RGBA`, `#RRGGBB`,
+ * `#RRGGBBAA`), and functional notation (`rgb()`, `rgba()`, `hsl()`,
+ * `hsla()`) with strictly numeric arguments.
+ *
+ * Rejects anything else -- including semicolons, `url()`, `expression()`,
+ * and any other pattern that could be used for CSS injection.
+ *
+ * @param color - The CSS color value to validate.
+ * @returns `true` if the value is a recognized safe color format.
  */
 export function isValidCssColor(color: string): boolean {
   const trimmed = color.trim().toLowerCase();
@@ -353,16 +434,32 @@ export function isValidCssColor(color: string): boolean {
 }
 
 /**
- * Sanitize a CSS color value.
- * Returns the color if valid, otherwise returns the fallback color.
+ * Sanitize a CSS color value, returning a fallback if validation fails.
+ *
+ * Delegates to {@link isValidCssColor} for validation. If the color
+ * is not a recognized safe format, the fallback value is returned
+ * instead (defaulting to `"inherit"`).
+ *
+ * @param color - The CSS color value to sanitize.
+ * @param fallback - The value to return if validation fails (default `"inherit"`).
+ * @returns The original color if valid, otherwise the fallback.
  */
 export function sanitizeCssColor(color: string, fallback = "inherit"): string {
   return isValidCssColor(color) ? color : fallback;
 }
 
 /**
- * Normalize CSS value by removing escapes, comments, and control characters.
- * This prevents bypass attempts using CSS escape sequences or comments.
+ * Normalize a CSS value by resolving escape sequences, removing comments,
+ * stripping whitespace and control characters, and lowercasing.
+ *
+ * This normalization is critical for security: attackers can use CSS
+ * comments (`/* ... *​/`), escape sequences (`\75rl` for `url`), and
+ * line continuations to disguise dangerous patterns. By normalizing
+ * first, the downstream checks in {@link isDangerousCssValue} operate
+ * on a canonical representation.
+ *
+ * @param value - The raw CSS property value.
+ * @returns The normalized, lowercase, whitespace-free representation.
  */
 function normalizeCssValue(value: string): string {
   let result = value;
@@ -391,11 +488,20 @@ function normalizeCssValue(value: string): string {
 }
 
 /**
- * Check if a CSS property value contains dangerous patterns.
- * Used for sanitizing style attribute values.
+ * Check whether a CSS property value contains dangerous patterns that
+ * could enable script execution or external resource loading.
  *
- * Security note: We normalize the value first to handle CSS escapes and comments,
- * then block ALL url() usage to prevent any bypass attempts.
+ * The value is first normalized via `normalizeCssValue()` to resolve
+ * CSS escapes and comments, then checked against a blocklist:
+ * - `url()` -- blocks all URL-based loading (images, fonts, cursors)
+ *   because even image URLs can leak data or trigger requests
+ * - `expression()` -- blocks IE's CSS expression evaluation
+ * - `-moz-binding` -- blocks Firefox XBL binding injection
+ * - `behavior:` -- blocks IE behavior attachment
+ * - `@import` -- blocks external stylesheet loading
+ *
+ * @param value - The CSS property value to check.
+ * @returns `true` if the value contains a dangerous pattern and should be removed.
  */
 export function isDangerousCssValue(value: string): boolean {
   const normalized = normalizeCssValue(value);
@@ -419,9 +525,21 @@ export function isDangerousCssValue(value: string): boolean {
 }
 
 /**
- * Sanitize a style attribute value.
- * Removes dangerous CSS patterns while preserving safe styles.
- * Preserves original format (trailing semicolon presence).
+ * Sanitize a `style` attribute value by removing dangerous declarations
+ * while preserving safe ones.
+ *
+ * Splits the value on semicolons into individual declarations, checks
+ * each declaration's value via {@link isDangerousCssValue}, and drops
+ * any that fail. Also blocks the `-moz-binding` and `behavior`
+ * property names directly.
+ *
+ * The original formatting is preserved: if the input ended with a
+ * semicolon, the output will too (matching Wikidot's pass-through
+ * behavior for user-authored styles).
+ *
+ * @param style - The raw `style` attribute value.
+ * @returns The sanitized style string with dangerous declarations removed,
+ *   or an empty string if nothing is safe.
  */
 export function sanitizeStyleValue(style: string): string {
   // Remember if original ends with semicolon (Wikidot preserves this)
@@ -459,11 +577,19 @@ export function sanitizeStyleValue(style: string): string {
 }
 
 /**
- * Validate email format to prevent injection attacks.
- * Uses a simple pattern that allows most valid emails while blocking dangerous inputs.
+ * Validate that a string looks like a safe email address.
  *
- * Security note: % is NOT allowed to prevent mailto: percent-decode attacks
- * (e.g., a%0d%0abcc%3aevil@example.com could inject headers).
+ * Uses a deliberately simple pattern that accepts the vast majority of
+ * real-world addresses while blocking characters that could enable
+ * injection attacks when the address is used in a `mailto:` link.
+ *
+ * The percent character (`%`) is intentionally disallowed because
+ * `mailto:` URLs undergo percent-decoding, allowing an attacker to
+ * inject headers (e.g. `a%0d%0abcc%3aevil@example.com` decodes to
+ * a BCC header injection).
+ *
+ * @param email - The email string to validate.
+ * @returns `true` if the email matches the safe pattern.
  */
 export function isValidEmail(email: string): boolean {
   // Simple email pattern: local@domain
@@ -473,6 +599,11 @@ export function isValidEmail(email: string): boolean {
   return /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
 }
 
+/**
+ * Set of HTML attribute names whose values are interpreted as URLs
+ * by the browser. Values of these attributes must be checked via
+ * {@link isDangerousUrl} before rendering.
+ */
 const URL_ATTRIBUTES = new Set([
   "href",
   "src",
@@ -484,8 +615,18 @@ const URL_ATTRIBUTES = new Set([
 ]);
 
 /**
- * Sanitize an attribute map, removing dangerous attributes and values.
- * Returns a new map with only safe entries.
+ * Sanitize a map of HTML attributes, returning a new map containing
+ * only entries that pass all safety checks.
+ *
+ * For each attribute, this function:
+ * 1. Drops attributes that fail {@link isSafeAttribute} (event handlers, unknown names)
+ * 2. Drops URL-bearing attributes whose values fail {@link isDangerousUrl}
+ * 3. Sanitizes `style` values via {@link sanitizeStyleValue}, dropping them entirely
+ *    if the result is empty
+ * 4. Passes all other safe attributes through unchanged
+ *
+ * @param attributes - The raw attribute name-value map to sanitize.
+ * @returns A new map containing only the safe attributes and their (possibly sanitized) values.
  */
 export function sanitizeAttributes(attributes: Record<string, string>): Record<string, string> {
   const result: Record<string, string> = {};

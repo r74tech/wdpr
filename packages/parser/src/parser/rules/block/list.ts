@@ -1,17 +1,63 @@
+/**
+ *
+ * Block rule for Wikidot marker-based lists (`* item`, `# item`).
+ *
+ * Wikidot lists use leading `*` (bullet) or `#` (numbered) markers at the
+ * start of a line. Nesting is achieved by prepending spaces:
+ *
+ * ```
+ * * Item 1
+ *  * Nested bullet
+ *  # Nested numbered
+ * * Item 2
+ * ```
+ *
+ * The depth of each item is determined by the number of leading spaces
+ * before the marker. Mixed bullet/numbered lists are supported: when the
+ * list type changes at the same depth, a new sub-list is created.
+ *
+ * The flat depth-annotated items are converted into a recursive tree by
+ * `processDepths()`, then transformed into nested `list` AST elements
+ * by `buildListElement()`.
+ *
+ * Maximum nesting depth is capped at `MAX_LIST_DEPTH` (20).
+ *
+ * @module
+ */
 import type { Element, ListData, ListItem, ListType } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseInlineUntil } from "../inline/utils";
 import { processDepths, type DepthList } from "../../depth";
 
+/**
+ * Safety limit for list nesting depth.
+ * Items deeper than this are not parsed, preventing stack overflow on
+ * deeply nested or adversarial input.
+ */
 const MAX_LIST_DEPTH = 20;
 
-// Internal list type for parsing
+/** Internal discriminated type for bullet vs numbered items during parsing. */
 type InternalListType = "bullet" | "numbered";
 
-// Dummy type to represent "generic" list type at top level
+/**
+ * Default list type used as the top-level placeholder in
+ * `processDepths()`. The actual type of each sub-list is determined
+ * by its first item's marker.
+ */
 const GENERIC_LIST_TYPE: InternalListType = "bullet";
 
+/**
+ * Block rule for marker-based lists (`* ` bullet, `# ` numbered).
+ *
+ * Parsing strategy:
+ * 1. Verify the first token is LIST_BULLET or LIST_NUMBER at line start.
+ * 2. Collect consecutive list lines, recording each item's depth (number
+ *    of leading spaces), type (bullet/numbered), and inline content.
+ * 3. Feed the flat depth array into `processDepths()` with type
+ *    comparison, producing a nested tree.
+ * 4. Convert the tree into `list` AST elements via `buildListElement()`.
+ */
 export const listRule: BlockRule = {
   name: "list",
   startTokens: ["LIST_BULLET", "LIST_NUMBER"],
@@ -131,14 +177,22 @@ export const listRule: BlockRule = {
 };
 
 /**
- * Convert internal list type to Wikidot ListType
+ * Converts the internal list type enum to the AST's {@link ListType}.
+ *
+ * @param ltype - Internal "bullet" or "numbered".
+ * @returns The corresponding AST list type.
  */
 function toListType(ltype: InternalListType): ListType {
   return ltype === "numbered" ? "numbered" : "bullet";
 }
 
 /**
- * Build a List element from a depth list
+ * Builds a `list` AST element from a depth tree produced by
+ * `processDepths()`.
+ *
+ * @param topLtype - The list type for the top-level list.
+ * @param list     - The depth tree of items and sub-lists.
+ * @returns A `list` element.
  */
 function buildListElement(
   topLtype: InternalListType,
@@ -151,7 +205,14 @@ function buildListElement(
 }
 
 /**
- * Build ListData from a depth list (for nested lists)
+ * Recursively builds the {@link ListData} payload from a depth tree.
+ *
+ * Leaf items become `"elements"` list items; nested sub-trees become
+ * `"sub-list"` items with their own recursive {@link ListData}.
+ *
+ * @param topLtype - List type for this level.
+ * @param list     - The depth tree nodes at this level.
+ * @returns Fully constructed {@link ListData}.
  */
 function buildListData(
   topLtype: InternalListType,

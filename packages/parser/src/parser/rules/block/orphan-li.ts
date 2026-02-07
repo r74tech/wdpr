@@ -1,25 +1,44 @@
+/**
+ *
+ * Block rule for `[[li]]...[[/li]]` appearing outside of any `[[ul]]`/`[[ol]]` block.
+ *
+ * When `[[li]]` is used without an enclosing list block, Wikidot does NOT
+ * create a list item. Instead, it treats the tags as literal text and
+ * renders the body content without `<p>` wrapping, using `<br />` for
+ * newlines.
+ *
+ * Example input:
+ * ```
+ * [[li]]
+ * Baz
+ * [[/li]]
+ * ```
+ *
+ * Rendered output:
+ * ```
+ * [[li]]<br />Baz<br />[[/li]]
+ * ```
+ *
+ * This rule exists to correctly consume and reproduce that output. Without
+ * it, the parser would try to match `[[li]]` against other block rules
+ * and potentially produce incorrect results.
+ *
+ * If no `[[/li]]` closing tag is found, the rule fails.
+ *
+ * @module
+ */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName } from "./utils";
 
 /**
- * Orphan li rule for [[li]]...[[/li]] outside of [[ul]]/[[ol]]
+ * Tests whether the tokens at `pos` form a `[[li]]` opening tag.
+ * Only the exact name `"li"` matches; `[[li_]]` is not recognised.
  *
- * Wikidot behavior: When [[li]] appears outside of a list block,
- * it's treated as plain text (not parsed as a list item).
- * The content is rendered without <p> tags, with <br /> for newlines.
- *
- * Example:
- *   [[li]]
- *   Baz
- *   [[/li]]
- *
- * Outputs: [[li]]<br />Baz<br />[[/li]]
- */
-
-/**
- * Check if the next tokens form [[li]] open tag (not [[li_]])
+ * @param ctx - Parse context.
+ * @param pos - Token index to inspect.
+ * @returns The number of tokens consumed, or `null` if not matched.
  */
 function isLiOpen(ctx: ParseContext, pos: number): { consumed: number } | null {
   if (ctx.tokens[pos]?.type !== "BLOCK_OPEN") return null;
@@ -32,7 +51,11 @@ function isLiOpen(ctx: ParseContext, pos: number): { consumed: number } | null {
 }
 
 /**
- * Check if the next tokens form [[/li]] close tag
+ * Tests whether the tokens at `pos` form a `[[/li]]` closing tag.
+ *
+ * @param ctx - Parse context.
+ * @param pos - Token index to inspect.
+ * @returns The number of tokens consumed (including BLOCK_CLOSE), or `null`.
  */
 function isLiClose(ctx: ParseContext, pos: number): { consumed: number } | null {
   if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") return null;
@@ -43,6 +66,13 @@ function isLiClose(ctx: ParseContext, pos: number): { consumed: number } | null 
   return { consumed };
 }
 
+/**
+ * Block rule for orphaned `[[li]]...[[/li]]` (outside any list block).
+ *
+ * The opening and closing tags are emitted as literal text elements, and
+ * newlines within the body become `<br />` elements. Leading whitespace
+ * on each line is discarded.
+ */
 export const orphanLiRule: BlockRule = {
   name: "orphan-li",
   startTokens: ["BLOCK_OPEN"],

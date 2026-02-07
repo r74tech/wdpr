@@ -1,5 +1,17 @@
 /**
- * IfTags condition parsing and evaluation
+ *
+ * Parsing and evaluation of `[[iftags]]` condition strings.
+ *
+ * The condition string uses a simple syntax where each whitespace-separated
+ * token is a tag name with an optional prefix:
+ * - `+tag` - Tag must be present (AND condition)
+ * - `-tag` - Tag must be absent (NOT condition)
+ * - `tag` - Tag must be present (same as `+tag`)
+ *
+ * All required tags must be present AND all forbidden tags must be absent
+ * for the condition to evaluate to true.
+ *
+ * @module
  */
 
 import type { TagCondition } from "./types";

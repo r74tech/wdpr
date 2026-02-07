@@ -1,14 +1,34 @@
 /**
- * Center align rule: = text
  *
- * Creates a centered paragraph.
- * Requires: line start + = + space + text
+ * Block rule for Wikidot single-line center alignment: `= text`.
+ *
+ * When a line begins with a single `=` followed by whitespace, the rest
+ * of the line is rendered as a centered paragraph (`<p style="text-align: center;">`).
+ *
+ * This is distinct from the `[[=]]...[[/=]]` alignment container (handled
+ * by `align.ts`), which wraps multiple block-level elements. The center
+ * rule here only affects a single line.
+ *
+ * Conditions for the rule to match:
+ * - Token must be EQUALS at the start of a line.
+ * - Must be exactly one `=` (4+ consecutive equals are a content separator,
+ *   handled by `content-separator.ts`).
+ * - Must be followed by a WHITESPACE token.
+ *
+ * The inline content is parsed until the end of line.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseInlineUntil } from "../inline/utils";
 
+/**
+ * Block rule for single-line center alignment (`= text`).
+ *
+ * Produces a paragraph container with `style: "text-align: center;"`.
+ */
 export const centerRule: BlockRule = {
   name: "center",
   startTokens: ["EQUALS"],

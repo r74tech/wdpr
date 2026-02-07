@@ -24,7 +24,9 @@
     "format:fix": "oxfmt packages/ tests/ examples/",
     "typecheck": "tsc --noEmit && tsc --noEmit -p packages/runtime/tsconfig.json",
     "release": "nx release",
-    "release:dry-run": "nx release --dry-run"
+    "release:dry-run": "nx release --dry-run",
+    "docs": "typedoc",
+    "docs:watch": "typedoc --watch"
   },
   "devDependencies": {
     "@nx/js": "^22.4.5",
@@ -36,6 +38,7 @@
     "nx": "^22.4.5",
     "oxfmt": "^0.27.0",
     "oxlint": "^1.42.0",
+    "typedoc": "^0.28.16",
     "typescript": "^5.9.3"
   },
   "trustedDependencies": [

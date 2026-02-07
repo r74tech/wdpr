@@ -1,3 +1,14 @@
+/**
+ *
+ * Barrel export for all Wikidot element renderers.
+ *
+ * Each renderer function accepts a `RenderContext` and the
+ * element-specific AST data, then pushes the resulting HTML fragments
+ * into the context's output buffer.
+ *
+ * @module
+ */
+
 export { renderContainer } from "./container";
 export { renderText, renderRaw, renderEmail } from "./text";
 export { renderLink, renderAnchor, renderAnchorName } from "./link";

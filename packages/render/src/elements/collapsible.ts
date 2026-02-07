@@ -1,9 +1,35 @@
+/**
+ *
+ * Renderer for `[[collapsible]]...[[/collapsible]]` blocks.
+ *
+ * Wikidot's collapsible markup produces a two-state widget: a "folded"
+ * state showing a "show" link and an "unfolded" state showing the
+ * content plus a "hide" link. Toggle behavior is handled at runtime
+ * by the `collapsible` runtime module.
+ *
+ * This renderer outputs the full DOM structure for both states, with
+ * visibility controlled via inline `display` styles based on the
+ * `start-open` flag. The "hide" link can appear at the top, bottom,
+ * or both positions.
+ *
+ * @module
+ */
+
 import type { CollapsibleData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeHtml } from "../escape";
 import { renderElements } from "../render";
 
-/** Render a collapsible block (Wikidot-compatible structure) */
+/**
+ * Render a `[[collapsible]]` block with Wikidot-compatible HTML structure.
+ *
+ * The output contains both folded and unfolded states. Spaces in
+ * show/hide labels are encoded as `&nbsp;` to match Wikidot's behavior.
+ *
+ * @param ctx - The current render context.
+ * @param data - Collapsible block data with show/hide text, start-open
+ *   flag, and top/bottom link placement options.
+ */
 export function renderCollapsible(ctx: RenderContext, data: CollapsibleData): void {
   const startOpen = data["start-open"];
   const showTop = data["show-top"];
@@ -54,11 +80,26 @@ export function renderCollapsible(ctx: RenderContext, data: CollapsibleData): vo
   ctx.push("</div>"); // close collapsible-block
 }
 
+/**
+ * Format a default collapsible link label by prepending a prefix symbol
+ * (e.g. "+" or en-dash) with `&nbsp;` encoding for spaces.
+ *
+ * @param prefix - Symbol character prepended before the label text.
+ * @param text - Default label text (e.g. "show block").
+ * @returns HTML-safe label string with non-breaking spaces.
+ */
 function formatCollapsibleText(prefix: string, text: string): string {
   const encoded = escapeHtml(text).replace(/ /g, "&nbsp;");
   return `${prefix}&nbsp;${encoded}`;
 }
 
+/**
+ * Format a custom collapsible link label by escaping HTML and
+ * replacing spaces with `&nbsp;` (matching Wikidot behavior).
+ *
+ * @param text - Custom label text provided by the user.
+ * @returns HTML-safe label string with non-breaking spaces.
+ */
 function formatLabelText(text: string): string {
   return escapeHtml(text).replace(/ /g, "&nbsp;");
 }

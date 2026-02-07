@@ -1,6 +1,38 @@
+/**
+ *
+ * Shared tooltip positioning and lifecycle utilities.
+ *
+ * Provides a single-active-tooltip model: only one tooltip can be
+ * visible at a time. Showing a new tooltip automatically hides the
+ * previous one. Tooltips are appended to `document.body` and
+ * positioned absolutely relative to an anchor element.
+ *
+ * Two creation modes are available:
+ * - {@link showTooltipEl} -- positions and shows a pre-built tooltip element
+ * - {@link showTooltip} -- builds a Wikidot-compatible `.hovertip > .content`
+ *   wrapper from a source element's children (cloned to prevent XSS)
+ *
+ * {@link hideTooltip} removes the currently active tooltip from the DOM.
+ *
+ * @module
+ */
+
+/** The currently visible tooltip element, or `null` if none is active. */
 let activeTooltip: HTMLElement | null = null;
 
-/** Show a pre-built tooltip element near the given anchor */
+/**
+ * Position and show a pre-built tooltip element near the given anchor.
+ *
+ * The tooltip is appended to `document.body` with absolute positioning.
+ * It is placed below the anchor by default, but flips above if there
+ * is not enough viewport space below. Horizontal position is clamped
+ * to keep the tooltip within the viewport.
+ *
+ * Any previously active tooltip is hidden first.
+ *
+ * @param anchor - The element the tooltip is anchored to.
+ * @param tip - The tooltip element to show (will be mutated in place).
+ */
 export function showTooltipEl(anchor: HTMLElement, tip: HTMLElement): void {
   hideTooltip();
 
@@ -30,7 +62,17 @@ export function showTooltipEl(anchor: HTMLElement, tip: HTMLElement): void {
   activeTooltip = tip;
 }
 
-/** Show a tooltip near the given anchor element, cloning content from source into .hovertip > .content */
+/**
+ * Build and show a Wikidot-compatible tooltip near the given anchor.
+ *
+ * Creates a `.hovertip > .content` wrapper element, clones the children
+ * of the source element into it (using `cloneNode` rather than
+ * `innerHTML` to prevent XSS), and delegates to {@link showTooltipEl}
+ * for positioning and display.
+ *
+ * @param anchor - The element the tooltip is anchored to.
+ * @param source - The element whose children are cloned into the tooltip.
+ */
 export function showTooltip(anchor: HTMLElement, source: HTMLElement): void {
   const doc = anchor.ownerDocument;
   const tip = doc.createElement("div");
@@ -51,7 +93,12 @@ export function showTooltip(anchor: HTMLElement, source: HTMLElement): void {
   showTooltipEl(anchor, tip);
 }
 
-/** Hide the currently active tooltip */
+/**
+ * Hide and remove the currently active tooltip from the DOM.
+ *
+ * If no tooltip is active, this is a no-op. After removal, the
+ * internal reference is cleared so that subsequent calls are safe.
+ */
 export function hideTooltip(): void {
   if (activeTooltip) {
     activeTooltip.remove();

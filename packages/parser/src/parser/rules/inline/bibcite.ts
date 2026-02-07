@@ -1,17 +1,54 @@
 /**
- * Bibcite rule: ((bibcite label))
  *
- * Creates a citation reference that links to a bibliography entry.
- * The label is used to match with [[bibliography]] entries.
+ * Parses the Wikidot bibliography citation syntax: `((bibcite label))`.
+ *
+ * A bibcite creates a numbered inline reference (similar to footnotes)
+ * that links to a corresponding entry in a `[[bibliography]]` block
+ * elsewhere on the page. The `label` string is used to match the
+ * citation with its bibliography entry.
+ *
+ * Unlike most inline blocks that start with `[[`, bibcite uses double
+ * parentheses `((...))` as delimiters. The keyword `bibcite` must
+ * appear (case-insensitive) between the opening `((` and the label.
+ *
+ * Produces a `"bibliography-cite"` AST element. The label is also
+ * pushed into `ctx.bibcites` so the renderer can later resolve
+ * citation numbers.
+ *
+ * Wikidot syntax examples:
+ * - `((bibcite author2024))` -- cite with label "author2024"
+ * - `((bibcite my-source))` -- cite with label "my-source"
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 
+/**
+ * Inline rule for parsing `((bibcite label))` bibliography citations.
+ *
+ * Triggered by a `TEXT` token (specifically the `(` character). The parser
+ * looks for two consecutive `(` tokens, the keyword `bibcite`, the label
+ * text, and then two consecutive `)` tokens.
+ *
+ * The label may span multiple tokens and is trimmed of surrounding whitespace.
+ * Parsing fails if the label is empty or if a newline/EOF is encountered
+ * before the closing `))`.
+ *
+ * Side effect: pushes the label into `ctx.bibcites` for later resolution
+ * during rendering.
+ */
 export const bibciteRule: InlineRule = {
   name: "bibcite",
   startTokens: ["TEXT"],
 
+  /**
+   * Attempts to parse a `((bibcite label))` citation at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with a `"bibliography-cite"` element, or `{ success: false }`
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const token = currentToken(ctx);
 

@@ -1,8 +1,38 @@
+/**
+ *
+ * Block rule for Wikidot `[[div]]` and `[[div_]]` container blocks.
+ *
+ * `[[div]]` wraps its body content in a `<div>` element, with full
+ * paragraph processing for the body. `[[div_]]` (paragraph strip mode)
+ * unwraps the first and last paragraphs so their content appears directly
+ * inside the `<div>`, while middle paragraphs keep their `<p>` wrappers.
+ *
+ * Both variants accept HTML attributes (class, style, id, etc.) on the
+ * opening tag.
+ *
+ * Wikidot-specific edge cases:
+ * - The opening `]]` MUST be followed by a NEWLINE for the block to be
+ *   recognised. `[[div]]inline[[/div]]` is NOT a valid div -- it becomes
+ *   a failed div (see `consumeFailedDiv()`).
+ * - When a div fails, everything from the opening `[[div]]` through the
+ *   last `[[/div]]` is collected as a single paragraph of text/line-break
+ *   elements. Blank lines within that span are silently removed.
+ * - `[[div_]]` uses `unwrapEdgeParagraphs()` to strip paragraph
+ *   wrappers from the first and last elements.
+ *
+ * @module
+ */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName, parseAttributes, parseBlocksUntil } from "./utils";
 
+/**
+ * Block rule for `[[div]]`/`[[div_]]` container blocks.
+ *
+ * `requiresLineStart` is `false` because nested `[[div_]]` inside another
+ * `[[div_]]` may appear after inline content.
+ */
 export const divRule: BlockRule = {
   name: "div",
   startTokens: ["BLOCK_OPEN"],
@@ -124,10 +154,19 @@ export const divRule: BlockRule = {
 };
 
 /**
- * When [[div]] fails as a block (no newline after ]]),
- * consume everything up to the last [[/div]] as text elements.
- * Wikidot merges failed div blocks into a single paragraph,
- * ignoring blank lines between them.
+ * Handles the case where `[[div]]` fails as a block element because
+ * the closing `]]` is not followed by a NEWLINE.
+ *
+ * In Wikidot, this scenario causes the parser to scan forward for the
+ * LAST `[[/div]]` in the contiguous token stream and collect everything
+ * from the current position through that close tag as a single paragraph.
+ * Blank lines (double newlines) within the range are silently collapsed,
+ * and single newlines become `<br />`.
+ *
+ * If no `[[/div]]` is found at all, the rule fails entirely.
+ *
+ * @param ctx - Parse context, positioned at the opening `[[div...]]` tag.
+ * @returns A paragraph container with text/line-break elements, or failure.
  */
 function consumeFailedDiv(ctx: ParseContext): RuleResult<Element> {
   const elements: Element[] = [];
@@ -214,9 +253,15 @@ function consumeFailedDiv(ctx: ParseContext): RuleResult<Element> {
 }
 
 /**
- * Wikidot div_ (paragraph strip):
- * First and last paragraph containers are unwrapped to bare elements.
- * Middle paragraphs keep their <p> wrapping.
+ * Implements the `[[div_]]` paragraph-strip behaviour.
+ *
+ * In Wikidot's `div_` mode, the first and last paragraph containers have
+ * their `<p>` wrappers removed, leaving the inner elements bare. Any
+ * middle paragraphs retain their wrapping. This produces output where the
+ * opening and closing text sit directly inside the `<div>`.
+ *
+ * @param elements - Block elements produced by body parsing.
+ * @returns A new array with edge paragraphs unwrapped.
  */
 function unwrapEdgeParagraphs(elements: Element[]): Element[] {
   if (elements.length === 0) return elements;
@@ -239,6 +284,13 @@ function unwrapEdgeParagraphs(elements: Element[]): Element[] {
   return result;
 }
 
+/**
+ * Checks whether an element is a paragraph container
+ * (i.e. `{ element: "container", data: { type: "paragraph" } }`).
+ *
+ * @param el - Element to test, or `undefined`.
+ * @returns `true` if the element is a paragraph container.
+ */
 function isParagraphContainer(el: Element | undefined): boolean {
   return (
     el !== undefined &&

@@ -1,26 +1,68 @@
+/**
+ *
+ * Block rule for the Wikidot iframe block: `[[iframe URL attributes]]`.
+ *
+ * The `[[iframe]]` tag is a self-closing block that embeds an external
+ * page in an `<iframe>`. The first argument after the block name is the
+ * URL, followed by optional attributes.
+ *
+ * Security measures:
+ * - Only `http://` and `https://` URLs are accepted.
+ * - `javascript:`, `data:`, and `vbscript:` schemes are rejected.
+ * - URL normalisation strips whitespace and control characters to prevent
+ *   evasion via character insertion.
+ * - Only a specific set of HTML attributes is allowed (Wikidot filters
+ *   out `class` and `id`).
+ *
+ * Allowed attributes: `width`, `height`, `style`, `scrolling`, `frameborder`.
+ *
+ * @module
+ */
 import type { AttributeMap, Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName } from "./utils";
 
-// Allowed attributes for iframe (Wikidot filters out class/id)
+/**
+ * Whitelist of attributes permitted on `[[iframe]]`. Wikidot strips
+ * `class` and `id` for security reasons.
+ */
 const ALLOWED_IFRAME_ATTRS = new Set(["width", "height", "style", "scrolling", "frameborder"]);
 
 /**
- * Normalize URL for security checks
- * Removes whitespace and control characters that could be used for evasion
+ * Normalises a URL string for security checks by removing whitespace and
+ * control characters (U+0000--U+001F, U+007F--U+009F) that could be used
+ * to evade scheme detection, then lowercasing the result.
+ *
+ * @param url - The raw URL string.
+ * @returns The normalised, lowercased URL.
  */
 function normalizeUrl(url: string): string {
   return url.replace(/[\s\u0000-\u001f\u007f-\u009f]/g, "").toLowerCase();
 }
 
 /**
- * Check if URL has a dangerous scheme (javascript:, data:, vbscript:)
+ * Tests whether a normalised URL begins with a dangerous scheme
+ * (`javascript:`, `data:`, `vbscript:`) that must be rejected.
+ *
+ * @param normalizedUrl - The URL after {@link normalizeUrl} processing.
+ * @returns `true` if the URL has a dangerous scheme.
  */
 function isDangerousUrl(normalizedUrl: string): boolean {
   return /^(javascript|data|vbscript):/i.test(normalizedUrl);
 }
 
+/**
+ * Block rule for `[[iframe URL ...attributes]]`.
+ *
+ * Parsing strategy:
+ * 1. Match BLOCK_OPEN + name "iframe".
+ * 2. Consume the URL (all tokens until whitespace, BLOCK_CLOSE, or newline).
+ * 3. Validate the URL: normalise, reject dangerous schemes, require http(s).
+ * 4. Parse key/value attributes, filtering through `ALLOWED_IFRAME_ATTRS`.
+ * 5. Consume closing `]]` and optional trailing newline.
+ * 6. Emit an `iframe` element with `url` and `attributes`.
+ */
 export const iframeRule: BlockRule = {
   name: "iframe",
   startTokens: ["BLOCK_OPEN"],

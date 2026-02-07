@@ -1,7 +1,37 @@
+/**
+ *
+ * Runtime module for bibliography citation hover tooltips and click-to-scroll.
+ *
+ * Sets up delegated `mouseenter`/`mouseleave` event listeners on the root
+ * element to detect hover over `a.bibcite` links. On hover, a Wikidot-style
+ * tooltip is built from the corresponding bibliography entry and displayed
+ * near the citation link.
+ *
+ * DOM interactions:
+ * - Listens for `mouseenter` (capture) on `a.bibcite` links to show tooltip
+ * - Listens for `mouseleave` (capture) on `a.bibcite` links to hide tooltip
+ * - Queries `#bibitem-{N}` elements to build tooltip content
+ *
+ * The `destroy()` cleanup function removes both event listeners.
+ *
+ * @module
+ */
+
 import type { ModuleCleanup } from "./types";
 import { isElement } from "./utils/dom";
 import { hideTooltip, showTooltipEl } from "./utils/tooltip";
 
+/**
+ * Initialize bibliography citation tooltips within the given root element.
+ *
+ * Attaches delegated `mouseenter` and `mouseleave` listeners (using capture
+ * phase) to display Wikidot-compatible hover tooltips when the user hovers
+ * over `a.bibcite` links. The tooltip shows the bibliography entry content
+ * with a heading and a footer instruction.
+ *
+ * @param root - The root DOM element containing rendered Wikidot markup.
+ * @returns A cleanup handle whose `destroy()` method removes all listeners.
+ */
 export function initBibcite(root: HTMLElement): ModuleCleanup {
   function handleMouseEnter(e: Event): void {
     const target = e.target;
@@ -39,7 +69,19 @@ export function initBibcite(root: HTMLElement): ModuleCleanup {
   };
 }
 
-/** Build Wikidot-compatible hovertip: .hovertip > .content > .reference > .r-heading + .r-content + .r-footer */
+/**
+ * Build a Wikidot-compatible bibliography tooltip element.
+ *
+ * Structure: `.hovertip > .content > .reference > .r-heading + .r-content + .r-footer`
+ *
+ * The tooltip clones the bibliography entry content and strips the leading
+ * `"N. "` numbering prefix so the tooltip shows only the entry text.
+ *
+ * @param doc - The owner document for DOM element creation.
+ * @param bibitemEl - The `.bibitem` element to extract content from.
+ * @param id - The numeric ID of the bibliography entry (for the heading).
+ * @returns A detached tooltip DOM element ready for positioning and display.
+ */
 function buildBibciteTooltip(doc: Document, bibitemEl: HTMLElement, id: string): HTMLElement {
   const tip = doc.createElement("div");
   tip.className = "hovertip";

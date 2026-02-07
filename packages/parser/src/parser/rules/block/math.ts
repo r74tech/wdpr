@@ -1,8 +1,36 @@
+/**
+ *
+ * Block rule for the Wikidot math block: `[[math name]]...[[/math]]`.
+ *
+ * A math block captures LaTeX source code between the tags and stores it
+ * as a `math` element in the AST. The content is not parsed for inline
+ * markup -- it is collected as raw text.
+ *
+ * An optional name parameter after "math" can be used to label the
+ * equation (e.g. `[[math euler]]`). This name can then be referenced
+ * elsewhere in the document.
+ *
+ * Special handling for BACKSLASH_BREAK tokens: the preprocessor converts
+ * `\\\n` (LaTeX line break followed by newline) into a special token.
+ * Inside math blocks, this must be restored to `\\\n` since it is valid
+ * LaTeX, not a Wikidot line continuation.
+ *
+ * Empty math blocks (no LaTeX content after trimming) are treated as
+ * invalid and the rule fails.
+ *
+ * @module
+ */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName } from "./utils";
 
+/**
+ * Block rule for `[[math name]]...[[/math]]`.
+ *
+ * Content is captured as raw LaTeX source. BACKSLASH_BREAK tokens are
+ * restored to their original `\\\n` form for correct LaTeX rendering.
+ */
 export const mathBlockRule: BlockRule = {
   name: "math",
   startTokens: ["BLOCK_OPEN"],

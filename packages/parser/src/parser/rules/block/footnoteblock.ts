@@ -1,15 +1,35 @@
 /**
- * Footnote block rule: [[footnoteblock]] or [[footnoteblock title="Custom"]]
  *
- * This block marks where the collected footnotes should be rendered.
- * Supports optional title attribute.
+ * Block rule for the Wikidot footnote block: `[[footnoteblock]]`.
+ *
+ * This self-closing block tag marks the location in the page where all
+ * collected footnotes (from `[[footnote]]...[[/footnote]]` inline markers)
+ * should be rendered. It is analogous to a "footnotes section" placeholder.
+ *
+ * Optional attributes:
+ * - `title` -- custom heading text for the footnotes section.
+ * - `hide`  -- when `"true"` or `"yes"`, suppresses footnote rendering.
+ *
+ * Wikidot only honours the FIRST `[[footnoteblock]]` in a document;
+ * subsequent occurrences are treated as plain text. The parser tracks this
+ * via `ctx.footnoteBlockParsed`.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 
 /**
- * Parse attributes from tokens like: title="Custom title"
+ * Parses key/value attributes from tokens (e.g. `title="Custom title"`).
+ *
+ * This is a local attribute parser specific to the footnoteblock rule.
+ * It handles TEXT or IDENTIFIER names, optional `=` with quoted or
+ * unquoted values, and boolean attributes (name without value).
+ *
+ * @param ctx      - Parse context.
+ * @param startPos - Token index to start scanning.
+ * @returns Parsed attribute map and the number of tokens consumed.
  */
 function parseAttributes(
   ctx: ParseContext,
@@ -79,6 +99,18 @@ function parseAttributes(
   return { attrs, consumed };
 }
 
+/**
+ * Block rule for `[[footnoteblock]]`.
+ *
+ * Parsing strategy:
+ * 1. Match BLOCK_OPEN + name "footnoteblock" (case-insensitive).
+ * 2. Parse optional attributes (`title`, `hide`).
+ * 3. Consume closing `]]`.
+ * 4. If `ctx.footnoteBlockParsed` is already `true`, fail -- only the
+ *    first footnoteblock in a document is valid.
+ * 5. Set `ctx.footnoteBlockParsed = true` and emit a `footnote-block`
+ *    element.
+ */
 export const footnoteBlockRule: BlockRule = {
   name: "footnoteBlock",
   startTokens: ["BLOCK_OPEN"],

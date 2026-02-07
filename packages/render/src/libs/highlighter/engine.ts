@@ -1,17 +1,41 @@
+/**
+ *
+ * Tokenizer and renderer for the Text_Highlighter-compatible syntax
+ * highlighting engine. This is a faithful TypeScript port of the
+ * PEAR Text_Highlighter 0.5.1 PHP library's `_getToken` algorithm and
+ * HTML renderer.
+ *
+ * The engine processes source code through a state-machine-based tokenizer
+ * that assigns CSS class names to each token, then renders the tokens as
+ * `<span class="hl-*">` elements.
+ *
+ * @module
+ */
+
 import type { LanguageDefinition } from "./types";
 
+/** A single highlighted token with its CSS class and text content. */
 interface Token {
+  /** CSS class name suffix (used as `hl-{class}`). */
   class: string;
+  /** The literal text content of this token. */
   content: string;
 }
 
 /**
- * Text_Highlighter-compatible tokenizer engine.
- * Faithful port of PEAR Text_Highlighter (PHP) _getToken algorithm.
+ * Tokenize source code using a language definition's state machine.
  *
- * Key difference from PHP: PHP uses PREG_OFFSET_CAPTURE to get match positions.
- * In JS, we use the RegExp `d` flag (hasIndices) to get group indices,
- * or fall back to computing positions from match groups.
+ * This is a faithful port of PEAR Text_Highlighter's `_getToken` algorithm.
+ * The key difference from PHP is that JavaScript lacks `PREG_OFFSET_CAPTURE`,
+ * so capture group positions are computed from the match result.
+ *
+ * The input is preprocessed to normalize line endings, replace tabs with
+ * spaces, and ensure empty lines have at least one space character
+ * (matching PHP's behavior).
+ *
+ * @param def - The language definition describing the state machine.
+ * @param input - Raw source code string to tokenize.
+ * @returns Array of tokens, each with a CSS class and content string.
  */
 export function tokenize(def: LanguageDefinition, input: string): Token[] {
   // Preprocess: same as PHP Html renderer's preprocess()
@@ -220,9 +244,17 @@ export function tokenize(def: LanguageDefinition, input: string): Token[] {
 }
 
 /**
- * Find the actual position of capture group n within the string.
- * For alternation patterns (a|b|c), the matched alternative starts
- * at the overall match position (m.index).
+ * Find the actual position of capture group `n` within the source string.
+ *
+ * For alternation patterns (`a|b|c`), the matched alternative starts at
+ * the overall match position (`m.index`). This function locates the
+ * capture group's substring within the source, searching from `matchStart`.
+ *
+ * @param str - The full source string.
+ * @param m - The regex match result.
+ * @param n - The capture group index.
+ * @param matchStart - The starting position of the overall match.
+ * @returns The position of the capture group within the source string.
  */
 function findGroupPosition(str: string, m: RegExpExecArray, n: number, matchStart: number): number {
   // The overall match m[0] starts at m.index
@@ -234,11 +266,15 @@ function findGroupPosition(str: string, m: RegExpExecArray, n: number, matchStar
 }
 
 /**
- * Render tokens to HTML with hl-* class spans.
- * Faithful port of Text_Highlighter Html renderer:
- * - Adjacent tokens with same class are merged into one span
- * - ALL text is wrapped in spans
- * - Output is wrapped in <div class="hl-main"><pre>...</pre></div>
+ * Render an array of tokens to HTML with `hl-*` class spans.
+ *
+ * This is a faithful port of Text_Highlighter's HTML renderer:
+ * - Adjacent tokens with the same class are merged into a single `<span>`.
+ * - All text is wrapped in spans (no unwrapped text nodes).
+ * - The output is wrapped in `<div class="hl-main"><pre>...</pre></div>`.
+ *
+ * @param tokens - Array of tokens produced by {@link tokenize}.
+ * @returns Complete HTML string for the highlighted code block.
  */
 export function renderTokens(tokens: Token[]): string {
   if (tokens.length === 0) return "";
@@ -266,6 +302,12 @@ export function renderTokens(tokens: Token[]): string {
   return `<div class="hl-main"><pre>${html}</pre></div>`;
 }
 
+/**
+ * Escape HTML special characters for use inside highlighted code spans.
+ *
+ * @param str - Raw text to escape.
+ * @returns HTML-safe string.
+ */
 function escapeHtml(str: string): string {
   return str
     .replace(/&/g, "&amp;")
@@ -274,10 +316,25 @@ function escapeHtml(str: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/**
+ * Escape regex special characters in a string for safe use in `new RegExp()`.
+ *
+ * @param str - Raw string to escape.
+ * @returns Regex-safe string.
+ */
 function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/**
+ * Swap bracket characters to their matching counterparts.
+ *
+ * Used for end-pattern substitution where the closing delimiter is the
+ * mirror of the opening delimiter (e.g., `<` becomes `>`).
+ *
+ * @param str - String containing bracket characters.
+ * @returns String with each bracket replaced by its counterpart.
+ */
 function matchingBrackets(str: string): string {
   return str.replace(/[()<>[\]{}]/g, (c) => {
     const map: Record<string, string> = {

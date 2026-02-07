@@ -1,11 +1,27 @@
 /**
- * Bibliography block rule: [[bibliography]] ... [[/bibliography]]
  *
- * Contains definition list items that define bibliography entries.
- * Format inside:
- *   : label : Citation text
+ * Block rule for the Wikidot bibliography block: `[[bibliography]] ... [[/bibliography]]`.
  *
- * Works with ((bibcite label)) inline elements.
+ * A bibliography block holds labelled citation entries in a definition-list
+ * format. Each entry follows the pattern:
+ *
+ * ```
+ * : label : Citation description text
+ * ```
+ *
+ * At render time the entries are cross-referenced with inline `((bibcite label))`
+ * markers that appear elsewhere in the document. The parser stores the entries
+ * in the AST as a `bibliography-block` element whose `entries` field is an
+ * array of {@link DefinitionListItem} objects.
+ *
+ * Optional attributes on the opening tag:
+ * - `title` -- custom heading for the bibliography section.
+ * - `hide`  -- when `"true"` or empty string, hides the block from output.
+ *
+ * If no closing `[[/bibliography]]` tag is found, the rule fails to avoid
+ * accidentally consuming the rest of the document.
+ *
+ * @module
  */
 import type { Element, DefinitionListItem } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
@@ -13,15 +29,35 @@ import { currentToken } from "../types";
 import { parseBlockName, parseAttributes } from "./utils";
 import { parseInlineUntil } from "../inline/utils";
 
+/**
+ * Internal representation of a single bibliography entry parsed from
+ * the `: label : content` line(s) inside the bibliography block.
+ */
 interface BibliographyEntry {
+  /** The identifier used in `((bibcite label))` references. */
   label: string;
+  /** Parsed inline elements for the label portion (the key). */
   key: Element[];
+  /** Parsed inline elements for the citation text. */
   content: Element[];
 }
 
 /**
- * Parse a single bibliography entry
- * Format: : label : content
+ * Parses one bibliography entry from the token stream.
+ *
+ * Expected format (one logical line):
+ * ```
+ * : label : Citation text possibly spanning lines
+ * ```
+ *
+ * The entry starts with a COLON token at line start, followed by mandatory
+ * whitespace, then the label text, a second COLON, and the citation content.
+ * Content parsing continues until a double newline, a new entry (`: ...`),
+ * or the closing `[[/bibliography]]` tag is reached.
+ *
+ * @param ctx      - Current parse context.
+ * @param startPos - Token index where the entry begins (expected COLON).
+ * @returns The parsed entry and number of tokens consumed, or `null` on failure.
  */
 function parseBibliographyEntry(
   ctx: ParseContext,
@@ -165,6 +201,21 @@ function parseBibliographyEntry(
   };
 }
 
+/**
+ * Block rule for Wikidot `[[bibliography]]...[[/bibliography]]`.
+ *
+ * Parsing strategy:
+ * 1. Match BLOCK_OPEN + block name "bibliography".
+ * 2. Parse optional attributes (`title`, `hide`).
+ * 3. Consume the closing `]]` and optional newline.
+ * 4. Loop over the body, parsing each `: label : content` line via
+ *    `parseBibliographyEntry()`. Whitespace, newlines, and unknown
+ *    tokens between entries are skipped.
+ * 5. Stop when `[[/bibliography]]` is found and consume it.
+ * 6. If no closing tag is encountered, fail the rule entirely.
+ * 7. Convert entries into {@link DefinitionListItem} format and emit
+ *    a `bibliography-block` element.
+ */
 export const bibliographyRule: BlockRule = {
   name: "bibliography",
   startTokens: ["BLOCK_OPEN"],

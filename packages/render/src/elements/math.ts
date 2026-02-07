@@ -1,11 +1,38 @@
+/**
+ *
+ * Renderers for Wikidot mathematical notation elements.
+ *
+ * - `[[math]]...[[/math]]` -- display-mode (block) math
+ * - `[[$ ... $]]` -- inline math
+ * - `[[eref name]]` -- equation reference (link to named equation)
+ *
+ * LaTeX source is converted to MathML using the `temml` library at
+ * render time. A hidden `<code class="math-source">` element preserves
+ * the original LaTeX for use by the runtime `math` module's SVG polyfill
+ * (for browsers without MathML support).
+ *
+ * Named equations receive an `(N)` equation number and can be
+ * cross-referenced via `[[eref]]`.
+ *
+ * @module
+ */
+
 import type { MathData, MathInlineData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, escapeHtml } from "../escape";
 import temml from "temml";
 
 /**
- * Check if LaTeX needs to be wrapped in aligned environment.
- * Wikidot-style math blocks with & alignment markers need this.
+ * Determine whether a LaTeX string needs to be wrapped in an `aligned`
+ * environment.
+ *
+ * Wikidot-style multi-line equations use `&` as alignment markers without
+ * explicitly declaring an `aligned` environment. If the LaTeX contains
+ * unescaped `&` characters but no `\begin{...}` environment declaration,
+ * an `aligned` wrapper is added to make the alignment work correctly.
+ *
+ * @param latex - Raw LaTeX source string.
+ * @returns `true` if the LaTeX needs an `aligned` environment wrapper.
  */
 function needsAlignedWrapper(latex: string): boolean {
   // Already has an environment
@@ -19,8 +46,14 @@ function needsAlignedWrapper(latex: string): boolean {
 }
 
 /**
- * Render LaTeX to MathML using temml.
- * Returns empty string on error.
+ * Render a LaTeX string to MathML using the `temml` library.
+ *
+ * For display-mode equations with alignment markers, the LaTeX is
+ * automatically wrapped in an `aligned` environment.
+ *
+ * @param latex - LaTeX source string.
+ * @param displayMode - Whether to render in display mode (block) or inline.
+ * @returns MathML string, or `""` if rendering fails.
  */
 function renderLatexToMathML(latex: string, displayMode: boolean): string {
   try {
@@ -39,7 +72,17 @@ function renderLatexToMathML(latex: string, displayMode: boolean): string {
   }
 }
 
-/** Render a block math element */
+/**
+ * Render a `[[math]]` display-mode block equation.
+ *
+ * Produces a `<div class="math-block">` containing:
+ * - An optional equation number `<span class="equation-number">` for named equations
+ * - A hidden `<code class="math-source">` with the raw LaTeX (for polyfill use)
+ * - A `<span class="math-render">` with the MathML output (or error fallback)
+ *
+ * @param ctx - The current render context.
+ * @param data - Math block data with LaTeX source and optional equation name.
+ */
 export function renderMath(ctx: RenderContext, data: MathData): void {
   const index = ctx.nextEquationIndex() + 1;
   const latex = data["latex-source"];
@@ -77,7 +120,16 @@ export function renderMath(ctx: RenderContext, data: MathData): void {
   ctx.push("</div>");
 }
 
-/** Render an inline math element */
+/**
+ * Render an inline math element (`[[$...$]]`).
+ *
+ * Produces a `<span class="math-inline">` containing:
+ * - A hidden `<code class="math-source">` with the raw LaTeX
+ * - A `<span class="math-render">` with the MathML output (or `$...$` error fallback)
+ *
+ * @param ctx - The current render context.
+ * @param data - Inline math data with LaTeX source.
+ */
 export function renderMathInline(ctx: RenderContext, data: MathInlineData): void {
   const latex = data["latex-source"];
   const mathml = renderLatexToMathML(latex, false);
@@ -104,7 +156,16 @@ export function renderMathInline(ctx: RenderContext, data: MathInlineData): void
   ctx.push("</span>");
 }
 
-/** Render an equation reference (link to named equation) */
+/**
+ * Render an equation reference (`[[eref name]]`) that links to a named equation.
+ *
+ * Produces a `<span class="eref">` containing a link to the equation's
+ * `#equation-{name}` ID and an empty tooltip span that the runtime
+ * `math` module populates on hover with a preview of the equation.
+ *
+ * @param ctx - The current render context.
+ * @param name - The equation name to reference.
+ */
 export function renderEquationRef(ctx: RenderContext, name: string): void {
   const id = ctx.generateId("equation-", name);
   ctx.push(`<span class="eref" data-target="${escapeAttr(id)}">`);

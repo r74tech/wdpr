@@ -1,9 +1,24 @@
 /**
- * Anchor rule: [[a]]...[[/a]] or [[anchor]]...[[/anchor]]
  *
- * Creates an anchor element (inline link wrapper).
- * Supports:
- * - [[a_]] - strips line breaks (paragraph strip mode)
+ * Parses the Wikidot anchor inline block syntax: `[[a]]...[[/a]]`.
+ *
+ * An anchor wraps inline content in an HTML `<a>` element, allowing
+ * href, target, and other HTML attributes to be specified.
+ *
+ * Wikidot syntax variants:
+ * - `[[a href="url"]]text[[/a]]` -- basic anchor with href
+ * - `[[a_ href="url"]]text[[/a]]` -- paragraph strip mode (trailing underscore)
+ *
+ * Paragraph strip mode (`[[a_]]`) suppresses newlines within the anchor
+ * body and strips trailing newlines after the closing tag. This prevents
+ * unwanted `<br>` elements when consecutive anchor blocks are placed on
+ * separate lines.
+ *
+ * The `target` attribute is extracted and mapped to a semantic enum value
+ * (`"new-tab"`, `"parent"`, `"top"`, `"same"`), while the remaining
+ * attributes (including `href`) are passed through after URL sanitization.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
@@ -14,8 +29,19 @@ import { parseAttributes } from "../block/utils";
 import { canApplyInlineRule } from "./utils";
 
 /**
- * Sanitize URL to prevent XSS attacks using @braintree/sanitize-url
- * Returns #invalid-url for dangerous URLs (about:blank is the library's default)
+ * Sanitizes a URL to prevent XSS attacks via dangerous URI schemes.
+ *
+ * Applies two layers of protection:
+ * 1. Pre-checks the whitespace-normalized URL against known dangerous schemes
+ *    (`javascript:`, `data:`, `vbscript:`), catching evasion attempts like
+ *    `"java script:"` with embedded whitespace.
+ * 2. Delegates to `@braintree/sanitize-url` for additional validation.
+ *
+ * Returns the original URL (not the normalized form) to avoid unintended
+ * modifications such as trailing-slash addition.
+ *
+ * @param url - The raw URL string to sanitize
+ * @returns The original URL if safe, or `"#invalid-url"` if the URL is deemed dangerous
  */
 function sanitizeUrl(url: string): string {
   // Pre-process: normalize whitespace to catch evasion attempts like "java script:"
@@ -40,8 +66,18 @@ function sanitizeUrl(url: string): string {
 }
 
 /**
- * Parse anchor block name with underscore (paragraph strip) flag
- * Returns score: true if underscore suffix is present
+ * Parses the block name portion of an anchor open/close tag, handling the
+ * optional underscore suffix that activates paragraph strip mode.
+ *
+ * Recognizes `a`, `anchor`, `a_`, and `anchor_` (case-insensitive).
+ * The underscore suffix is reported via the `score` field so the caller
+ * can decide how to handle newlines inside the anchor body.
+ *
+ * @param ctx - The current parse context containing the token stream
+ * @param startPos - Token index at which to begin scanning
+ * @returns An object with the lowercased name (including trailing `_` if present),
+ *          a `score` boolean indicating paragraph strip mode, and the number of
+ *          tokens consumed -- or `null` if no valid anchor block name was found
  */
 function parseAnchorBlockName(
   ctx: ParseContext,
@@ -77,10 +113,34 @@ function parseAnchorBlockName(
   return { name, score, consumed };
 }
 
+/**
+ * Inline rule for parsing `[[a]]...[[/a]]` blocks.
+ *
+ * Triggered by a `BLOCK_OPEN` (`[[`) token. The rule verifies the block name
+ * is `a` or `anchor` (optionally with `_` suffix), parses HTML attributes,
+ * then recursively parses inline content until the matching closing tag.
+ *
+ * Produces an `"anchor"` AST element containing the parsed children, a
+ * semantic `target` value, and the sanitized attribute map.
+ *
+ * Edge cases:
+ * - If no matching closing tag is found, the rule fails (returns `{ success: false }`),
+ *   allowing the tokens to fall through to other rules or the text fallback.
+ * - In paragraph strip mode, newlines within the body and after the closing tag
+ *   are consumed silently rather than converted to line-break elements.
+ * - The `href` attribute is sanitized to block `javascript:`, `data:`, and
+ *   `vbscript:` schemes.
+ */
 export const anchorRule: InlineRule = {
   name: "anchor",
   startTokens: ["BLOCK_OPEN"],
 
+  /**
+   * Attempts to parse an anchor block starting at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with an `"anchor"` element, or `{ success: false }`
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const openToken = currentToken(ctx);
     if (openToken.type !== "BLOCK_OPEN") {

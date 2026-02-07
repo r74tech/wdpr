@@ -1,11 +1,45 @@
+/**
+ * Block rule for Wikidot collapsible blocks: `[[collapsible]]...[[/collapsible]]`.
+ *
+ * A collapsible renders as a show/hide toggle with body content that can
+ * be expanded or collapsed. The opening tag accepts several attributes
+ * (which may span multiple lines):
+ *
+ * - `show`           -- label text for the "show" link (default: "+ show block").
+ * - `hide`           -- label text for the "hide" link (default: "- hide block").
+ * - `folded`         -- when `"no"`, the block starts in the expanded state.
+ * - `hideLocation`   -- where the toggle link appears: `"top"` (default),
+ *                       `"bottom"`, `"both"`, or `"neither"`/`"none"`.
+ *
+ * Key Wikidot-specific behaviours:
+ * - Collapsibles cannot nest. When the body parser encounters a second
+ *   `[[collapsible]]`, it is treated as plain text. This is achieved by
+ *   filtering the collapsible rule out of the block rule list for body parsing.
+ * - Orphaned `[[/collapsible]]` tags after the matched close are consumed and
+ *   emitted as `<br />` + literal text, matching Wikidot rendering.
+ * - An inline form (`[[collapsible]]text[[/collapsible]]` on one line) is
+ *   supported but uncommon.
+ * - Consecutive paragraph containers in the body are merged back into a single
+ *   paragraph via `mergeParagraphs`, because Wikidot does not split
+ *   paragraphs at unrecognised block tokens inside a collapsible.
+ *
+ * @module
+ */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName, parseBlocksUntil } from "./utils";
 
 /**
- * Parse attributes allowing NEWLINEs between them (for multiline block syntax).
- * Stops at BLOCK_CLOSE or EOF.
+ * Parses block attributes that may be spread across multiple lines.
+ *
+ * Unlike the standard {@link parseAttributes}, this variant allows NEWLINE
+ * tokens between attribute pairs, which Wikidot permits for `[[collapsible]]`
+ * tags with many attributes.
+ *
+ * @param ctx      - Parse context.
+ * @param startPos - Token index to start scanning.
+ * @returns Parsed key/value pairs and the number of tokens consumed.
  */
 function parseMultilineAttributes(
   ctx: ParseContext,
@@ -77,7 +111,11 @@ function parseMultilineAttributes(
 }
 
 /**
- * Check if tokens at the given position form [[/collapsible]]
+ * Tests whether the tokens at `pos` form a `[[/collapsible]]` closing tag.
+ *
+ * @param ctx - Parse context.
+ * @param pos - Token index to inspect.
+ * @returns `true` if the closing tag is found.
  */
 function isCollapsibleClose(ctx: ParseContext, pos: number): boolean {
   if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") return false;
@@ -86,7 +124,12 @@ function isCollapsibleClose(ctx: ParseContext, pos: number): boolean {
 }
 
 /**
- * Count tokens consumed by [[/collapsible]] (including optional trailing NEWLINE)
+ * Counts the number of tokens occupied by the `[[/collapsible]]` closing
+ * tag, including the optional trailing NEWLINE.
+ *
+ * @param ctx - Parse context.
+ * @param pos - Token index at the BLOCK_END_OPEN.
+ * @returns Total token count of the closing tag.
  */
 function consumeCloseTag(ctx: ParseContext, pos: number): number {
   let closeConsumed = 1; // BLOCK_END_OPEN
@@ -98,10 +141,19 @@ function consumeCloseTag(ctx: ParseContext, pos: number): number {
 }
 
 /**
- * Merge consecutive paragraph containers into a single paragraph.
- * When [[collapsible]] is disabled inside a collapsible body, the parser splits
- * content into multiple paragraphs at [[collapsible...]] tokens. Wikidot keeps
- * all content as one paragraph, so we merge them back together with line-breaks.
+ * Merges consecutive paragraph container elements into a single paragraph.
+ *
+ * When the collapsible rule is disabled during body parsing (to prevent
+ * nesting), unrecognised `[[collapsible...]]` tokens cause the paragraph
+ * parser to split content into multiple paragraphs. Wikidot itself keeps
+ * this content as one paragraph, so this function re-joins them, inserting
+ * line-break elements between the merged runs.
+ *
+ * Non-paragraph elements (divs, tables, etc.) act as merge boundaries and
+ * are emitted as-is.
+ *
+ * @param elements - The body elements produced by block parsing.
+ * @returns A new array with adjacent paragraphs merged.
  */
 function mergeParagraphs(elements: Element[]): Element[] {
   const result: Element[] = [];
@@ -154,6 +206,23 @@ function mergeParagraphs(elements: Element[]): Element[] {
   return result;
 }
 
+/**
+ * Block rule for `[[collapsible ...]]...[[/collapsible]]`.
+ *
+ * Parsing strategy:
+ * 1. Match BLOCK_OPEN + name "collapsible".
+ * 2. Parse multiline attributes (show, hide, folded, hideLocation, etc.).
+ * 3. If a NEWLINE follows the opening tag, parse body as block content
+ *    with the collapsible rule itself removed (to prevent nesting).
+ *    Otherwise, parse inline content until close tag or end of line
+ *    (inline form).
+ * 4. Merge consecutive paragraphs in the body via `mergeParagraphs()`.
+ * 5. Consume the `[[/collapsible]]` closing tag.
+ * 6. Consume any orphaned `[[/collapsible]]` tags that follow, converting
+ *    them to `<br />` + literal text.
+ * 7. Derive `show-top` / `show-bottom` booleans from the `hideLocation`
+ *    attribute.
+ */
 export const collapsibleRule: BlockRule = {
   name: "collapsible",
   startTokens: ["BLOCK_OPEN"],

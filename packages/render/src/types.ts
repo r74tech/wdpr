@@ -2,74 +2,121 @@ import type { Element, WikitextSettings } from "@wdprlib/ast";
 import type { EmbedAllowlistEntry } from "./elements/embed-block";
 
 /**
- * Page context for resolving links, images, etc.
+ * Contextual information about the wiki page being rendered.
+ *
+ * The renderer uses this to resolve relative links, local file paths,
+ * page-existence checks (adding a `"newpage"` CSS class to links
+ * targeting non-existent pages), and `[[iftags]]` evaluation.
+ *
+ * @group Render Options
  */
 export interface PageContext {
-  /** Current page's full name (e.g., "secret:test2") */
+  /** Full page name including category prefix (e.g. `"secret:test2"`) */
   pageName: string;
-  /** Site slug (e.g., "scp-wiki") */
+  /** Site slug used to build inter-site URLs (e.g. `"scp-wiki"`) */
   site?: string;
-  /** Site domain (e.g., "scp-wiki.wikidot.com") */
+  /** Site domain used for absolute URL generation (e.g. `"scp-wiki.wikidot.com"`) */
   domain?: string;
-  /** Check if a page exists (for "newpage" class on links) */
+  /**
+   * Returns whether a page exists on the site.
+   * When a target page does not exist, the renderer adds `class="newpage"`
+   * to the link element — the standard Wikidot convention for red-links.
+   */
   pageExists?: (page: string) => boolean;
-  /** Page tags for [[iftags]] conditional rendering */
+  /** Page tags used for client-side `[[iftags]]` evaluation during rendering */
   tags?: string[];
 }
 
 /**
- * Resolved user information for rendering
+ * User profile data returned by a user-resolver callback.
+ *
+ * Passed to the renderer to produce the Wikidot user-info markup
+ * (`[[user username]]`). When a field is omitted the corresponding
+ * UI element is simply not emitted.
+ *
+ * @group Render Options
  */
 export interface ResolvedUser {
-  /** User's display name (defaults to username if not provided) */
+  /** Display name shown in the rendered output (falls back to the raw username) */
   name?: string;
-  /** User profile URL. If not provided, link becomes non-navigable */
+  /** Profile URL. When omitted the username is rendered as a non-navigable `<span>` */
   url?: string;
-  /** Avatar image URL. If not provided, no avatar is rendered */
+  /** Avatar image URL. When omitted no avatar `<img>` is rendered */
   avatarUrl?: string;
-  /** Karma image URL for avatar background (Wikidot-specific feature) */
+  /** Karma-badge image URL shown behind the avatar (Wikidot-specific feature) */
   karmaUrl?: string;
 }
 
 /**
- * Resolver functions for dynamic content
+ * Async/sync resolver callbacks for content that depends on external data.
+ *
+ * Unlike the parser's `DataProvider` (which fetches bulk data for
+ * module expansion), these resolvers are called per-element during the
+ * rendering pass.
+ *
+ * @group Render Options
  */
 export interface RenderResolvers {
   /**
-   * Resolve user information from username.
-   * Returns user data for rendering, or null if user not found.
-   * If not provided, user elements are rendered as plain text.
+   * Look up a user profile by username.
+   *
+   * @param username - The raw username from `[[user username]]`
+   * @returns Profile data for rendering, or `null` if the user is unknown.
+   *          When `null` or when the resolver is omitted, the username is
+   *          rendered as plain text.
    */
   user?: (username: string) => ResolvedUser | null;
+
   /**
-   * Returns URL for htmlBlock iframe src.
-   * Called with the index of the htmlBlock (0-based, matching tree["html-blocks"] order).
-   * If not provided or returns empty string, uses default pattern: /{pageName}/html/{hash}-{nonce}
+   * Build an iframe `src` URL for an `[[html]]` block.
    *
-   * SECURITY NOTE: The returned URL is used directly in iframe src attribute.
-   * The application is responsible for validating the URL scheme (e.g., rejecting javascript:, data:).
+   * @param index - Zero-based index matching `SyntaxTree["html-blocks"]`
+   * @returns The URL string. When empty or when the resolver is omitted,
+   *          the default pattern `/{pageName}/html/{hash}-{nonce}` is used.
+   *
+   * @security The returned URL is injected directly into the iframe `src`
+   * attribute. The caller must validate the scheme to reject `javascript:`,
+   * `data:`, and other dangerous protocols.
    */
   htmlBlockUrl?: (index: number) => string;
 }
 
 /**
- * Options for HTML rendering
+ * Full configuration for `renderToHtml()`.
+ *
+ * Every field is optional; defaults produce safe, standalone HTML output
+ * suitable for a full wiki page.
+ *
+ * @group Render Options
  */
 export interface RenderOptions {
   /**
-   * Base URL used to resolve protocol-relative URLs (e.g., "//example.com/path").
-   * The protocol of this URL is inherited by protocol-relative references.
-   * Example: "https://scp-wiki.wikidot.com" or "http://scp-jp.wikidot.com"
-   * If not provided, protocol-relative URLs default to HTTPS.
+   * Base URL for resolving protocol-relative URLs (e.g. `"//example.com/path"`).
+   *
+   * The scheme of this URL (`http:` or `https:`) is prepended to
+   * protocol-relative references. When omitted, HTTPS is assumed.
+   *
+   * @example "https://scp-wiki.wikidot.com"
    */
   baseUrl?: string;
-  /** Wikitext settings controlling rendering behavior */
+
+  /**
+   * Context-dependent feature flags.
+   * Defaults to page-mode settings when omitted.
+   */
   settings?: WikitextSettings;
-  /** Page context for resolving file paths, links, etc. */
+
+  /** Page context for resolving relative links, local file paths, etc. */
   page?: PageContext;
-  /** Pre-collected footnote elements from SyntaxTree.footnotes */
+
+  /**
+   * Pre-collected footnote element arrays from `SyntaxTree.footnotes`.
+   * Passed through so the renderer can emit footnote bodies in the
+   * `[[footnoteblock]]` section.
+   */
   footnotes?: Element[][];
-  /** Resolver functions for dynamic content */
+
+  /** Callbacks for resolving users, HTML-block URLs, etc. */
   resolvers?: RenderResolvers;
   /**
    * Sandbox attribute value for htmlBlock iframes.

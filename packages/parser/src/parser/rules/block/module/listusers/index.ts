@@ -1,5 +1,14 @@
 /**
- * ListUsers module
+ *
+ * ListUsers module for Wikidot's `[[module ListUsers users="."]]` block.
+ *
+ * Displays information about site members using a template with
+ * `%%number%%`, `%%title%%`, and `%%name%%` variables. Currently only
+ * `users="."` (the logged-in user) is supported.
+ *
+ * Follows the same three-phase lifecycle as ListPages: parse, extract, resolve.
+ *
+ * @module
  */
 
 // Parser

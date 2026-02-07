@@ -1,7 +1,15 @@
 /**
- * IfTags module
  *
- * Exports types and resolution functionality.
+ * IfTags conditional rendering module for Wikidot's `[[iftags]]` block.
+ *
+ * Enables conditional content display based on the current page's tags.
+ * The condition syntax supports required tags (`+tag` or bare `tag`) and
+ * forbidden tags (`-tag`). Content inside the block is only rendered when
+ * all conditions are satisfied.
+ *
+ * Exports condition parsing, evaluation, and AST resolution functions.
+ *
+ * @module
  */
 
 // Types

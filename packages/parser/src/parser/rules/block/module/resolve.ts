@@ -1,9 +1,19 @@
 /**
- * Common resolver for modules that require external data
+ * Unified resolver that walks a parsed AST and expands dynamic modules.
  *
- * Handles:
- * - ListPages module resolution (with automatic @URL parameter resolution)
- * - IfTags condition evaluation
+ * Handles three module families in a single traversal:
+ *
+ * - **ListPages** — fetches page data via {@link DataProvider.fetchListPages},
+ *   resolves `@URL` parameters from the page path (HPC support), and
+ *   expands `%%variable%%` templates.
+ * - **ListUsers** — fetches user data via {@link DataProvider.fetchListUsers}
+ *   and expands `%%variable%%` templates.
+ * - **IfTags** — evaluates tag conditions against the current page's tags
+ *   (from {@link DataProvider.getPageTags}) and keeps or discards content.
+ *
+ * The main entry point is {@link resolveModules}.
+ *
+ * @module
  */
 
 import type { Element, SyntaxTree } from "@wdprlib/ast";
@@ -28,24 +38,40 @@ import { parseUrlParams, resolveAndNormalizeQuery } from "./listpages/url-resolv
 export type { ParseFunction } from "./listpages/resolve";
 
 /**
- * Options for resolving modules
+ * Configuration for {@link resolveModules}.
+ *
+ * Callers must supply pre-extracted requirements and pre-compiled
+ * templates (obtained from `extractDataRequirements()` and
+ * `compileTemplate()` / `compileListUsersTemplate()`).
+ *
+ * @group Module Resolution
  */
 export interface ResolveOptions {
-  /** Parser function for re-parsing templates */
+  /** Parser function used to re-parse expanded template markup into AST nodes */
   parse: ParseFunction;
-  /** Pre-compiled templates for ListPages */
+
+  /** Pre-compiled ListPages body templates, keyed by requirement ID */
   compiledListPagesTemplates: Map<number, CompiledTemplate>;
-  /** Pre-compiled templates for ListUsers */
+
+  /** Pre-compiled ListUsers body templates, keyed by requirement ID */
   compiledListUsersTemplates?: Map<number, ListUsersCompiledTemplate>;
-  /** Data requirements grouped by module type */
+
+  /**
+   * Data requirements grouped by module type.
+   * Obtained from `extractDataRequirements()`.
+   */
   requirements: {
     listPages?: ListPagesDataRequirement[];
     listUsers?: ListUsersDataRequirement[];
   };
+
   /**
-   * URL path for @URL parameter resolution (HPC support)
-   * Format: "/page-name/param/value/param/value"
-   * Example: "/scp-001/offset/10/page2_limit/5"
+   * URL path for `@URL` parameter resolution (HPC / pagination support).
+   *
+   * Wikidot encodes pagination state in the URL path as key/value pairs
+   * after the page name, e.g. `"/scp-001/offset/10/page2_limit/5"`.
+   * When provided, `@URL` references in ListPages queries are replaced
+   * with the corresponding values from this path.
    */
   urlPath?: string;
 }

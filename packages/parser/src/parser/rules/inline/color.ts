@@ -1,17 +1,54 @@
+/**
+ *
+ * Parses the Wikidot inline color syntax: `##color|text##`.
+ *
+ * This syntax applies a CSS color to inline text. The color specifier
+ * and the text content are separated by a pipe (`|`). Both parts are
+ * required; an empty color or empty content causes the parse to fail.
+ *
+ * Supported color formats:
+ * - 3-digit hex (e.g. `c00`) -- automatically prefixed with `#`
+ * - 6-digit hex (e.g. `cc0000`) -- automatically prefixed with `#`
+ * - Named CSS colors (e.g. `blue`, `red`)
+ * - CSS color functions (e.g. `rgb(255,0,0)`)
+ *
+ * Wikidot syntax examples:
+ * - `##c00|Apple##` -- red text reading "Apple"
+ * - `##blue|Ocean##` -- blue text reading "Ocean"
+ * - `##rgb(0,128,0)|Green text##` -- CSS function color
+ *
+ * Produces a `"color"` AST element with the resolved color value and
+ * nested inline elements.
+ *
+ * @module
+ */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { hasClosingMarkerBeforeNewline } from "../types";
 import { parseInlineUntil } from "./utils";
 
 /**
- * Color: ##color|text##
- * Syntax: ##c00|Apple## or ##blue|Text##
- * Color can be hex (3 or 6 digits), named color, or CSS color function
+ * Inline rule for parsing `##color|text##` color formatting.
+ *
+ * Triggered by a `COLOR_MARKER` token (`##`). The rule collects the
+ * color specifier until a `PIPE` token, then recursively parses inline
+ * content until the closing `##`.
+ *
+ * Fails if:
+ * - No closing `##` is found on the same line
+ * - No pipe separator is present
+ * - The color specifier or content is empty
  */
 export const colorRule: InlineRule = {
   name: "color",
   startTokens: ["COLOR_MARKER"],
 
+  /**
+   * Attempts to parse color formatting at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with a `"color"` element, or `{ success: false }`
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     // Check if closing marker exists
     if (!hasClosingMarkerBeforeNewline({ ...ctx, pos: ctx.pos + 1 }, "COLOR_MARKER")) {
@@ -85,7 +122,15 @@ export const colorRule: InlineRule = {
 };
 
 /**
- * If the color is a 3 or 6 digit hex color, prepend #
+ * Normalizes shorthand hex color values by prepending a `#` sign.
+ *
+ * Wikidot allows users to write hex colors without the `#` prefix
+ * (e.g. `c00` or `ff0000`). This function detects 3- or 6-character
+ * hex strings and adds the prefix. Non-hex color values (named colors,
+ * CSS functions) are returned unchanged.
+ *
+ * @param color - The trimmed color string from the markup
+ * @returns The color string, with `#` prepended if it was a bare hex value
  */
 function hexifyColor(color: string): string {
   if (/^[a-fA-F0-9]{3}$/.test(color) || /^[a-fA-F0-9]{6}$/.test(color)) {

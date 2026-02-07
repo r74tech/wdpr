@@ -1,8 +1,34 @@
+/**
+ *
+ * Block rule for the Wikidot HTML block: `[[html]]...[[/html]]`.
+ *
+ * An HTML block embeds raw HTML that Wikidot renders inside a sandboxed
+ * `<iframe>`. The content between the tags is captured verbatim (no inline
+ * parsing) and stored as an `html` element in the AST.
+ *
+ * Supported attributes on the opening tag:
+ * - `style` -- applied to the containing iframe. Other attributes are
+ *   parsed but only `style` is used by Wikidot's renderer.
+ *
+ * The raw content is also pushed into `ctx.htmlBlocks` for document-level
+ * enumeration.
+ *
+ * If no `[[/html]]` closing tag is found, the rule fails and the opening
+ * tag falls through to text rendering (matching Wikidot behaviour).
+ *
+ * @module
+ */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName, parseAttributesRaw } from "./utils";
 
+/**
+ * Block rule for `[[html]]...[[/html]]`.
+ *
+ * Body content is stored as raw text. The optional `style` attribute is
+ * passed through to the AST element for iframe styling.
+ */
 export const htmlBlockRule: BlockRule = {
   name: "html",
   startTokens: ["BLOCK_OPEN"],

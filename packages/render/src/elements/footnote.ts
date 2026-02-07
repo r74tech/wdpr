@@ -1,9 +1,33 @@
+/**
+ *
+ * Renderers for Wikidot footnote markup.
+ *
+ * - `[[footnote]]...[[/footnote]]` -- inline footnote reference that renders
+ *   as a superscript number linking to the footnote body.
+ * - `[[footnoteblock]]` -- block element that lists all footnote bodies
+ *   collected during the render pass.
+ *
+ * The runtime `footnote` module adds hover tooltips and click-to-scroll
+ * behavior to these elements.
+ *
+ * @module
+ */
+
 import type { FootnoteBlockData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeHtml } from "../escape";
 import { renderElements } from "../render";
 
-/** Render a footnote reference (superscript link) */
+/**
+ * Render an inline footnote reference as a superscript link.
+ *
+ * Produces `<sup class="footnoteref"><a id="footnoteref-N" ...>N</a></sup>`.
+ * The ID is used by the runtime module for bidirectional scroll navigation
+ * between the reference and its footnote body.
+ *
+ * @param ctx - The current render context.
+ * @param index - The 1-based footnote number.
+ */
 export function renderFootnoteRef(ctx: RenderContext, index: number): void {
   const id = ctx.generateId("footnoteref-", index);
   ctx.push(`<sup class="footnoteref">`);
@@ -11,7 +35,24 @@ export function renderFootnoteRef(ctx: RenderContext, index: number): void {
   ctx.push("</sup>");
 }
 
-/** Render a footnote block */
+/**
+ * Render a `[[footnoteblock]]` element that lists all footnote bodies.
+ *
+ * Produces a Wikidot-compatible structure:
+ * ```html
+ * <div class="footnotes-footer">
+ *   <div class="title">Footnotes</div>
+ *   <div class="footnote-footer" id="footnote-1">
+ *     <a href="javascript:;">1</a>. ...content...
+ *   </div>
+ * </div>
+ * ```
+ *
+ * If there are no footnotes, the block is not rendered at all.
+ *
+ * @param ctx - The current render context.
+ * @param data - Footnote block data with optional custom title.
+ */
 export function renderFootnoteBlock(ctx: RenderContext, data: FootnoteBlockData): void {
   if (ctx.footnotes.length === 0) return;
   const title = data.title ?? "Footnotes";

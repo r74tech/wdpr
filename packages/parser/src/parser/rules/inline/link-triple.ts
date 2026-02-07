@@ -1,11 +1,50 @@
+/**
+ *
+ * Parses the Wikidot triple-bracket link syntax: `[[[target | label]]]`.
+ *
+ * Triple-bracket links are Wikidot's primary page-linking mechanism.
+ * They support several target formats:
+ *
+ * - Page links: `[[[page-name]]]` or `[[[page-name | Label]]]`
+ * - Category pages: `[[[category:page-name]]]` (display shows text after colon)
+ * - Anchor links: `[[[#anchor-name]]]`
+ * - External URLs: `[[[https://example.com | Label]]]`
+ * - Interwiki links: `[[[wikipedia:Article]]]` (for known prefixes)
+ *
+ * Special syntax:
+ * - `[[[*page]]]` -- `*` prefix is treated as a label prefix (ignored in target)
+ * - `[[[*|label]]]` -- links to root `/` with the given label
+ * - `[[[page|]]]` -- empty label after pipe defaults to the page name
+ *
+ * Multi-line support: a single newline is allowed within the link
+ * (typically after the pipe), but a double newline (paragraph break) or
+ * a newline directly before `]]]` invalidates the link.
+ *
+ * When the opening `[[[` has no valid closing `]]]`, it falls through
+ * as literal text rather than failing.
+ *
+ * Produces a `"link"` AST element with an appropriate `type` field
+ * (`"page"`, `"anchor"`, `"direct"`, or `"interwiki"`).
+ *
+ * @module
+ */
 import type { Element, LinkType, LinkLocation, LinkLabel } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 
 /**
- * Check if there's a LINK_CLOSE (]]]) ahead, allowing newlines in specific cases
- * Wikidot allows multi-line links like [[[page |\nLabel]]]
- * But rejects [[[page\n]]] (newline directly before close)
+ * Scans ahead to check whether a valid `LINK_CLOSE` (`]]]`) token
+ * exists, respecting Wikidot's multiline link rules.
+ *
+ * Allows at most one newline within the link content (typically after
+ * the pipe separator). Rejects the link if:
+ * - A double newline (paragraph break) is found
+ * - A newline appears directly before the closing `]]]`
+ * - EOF is reached without finding `]]]`
+ *
+ * @param ctx - The current parse context
+ * @param startPos - Token index at which to begin scanning (after `[[[`)
+ * @returns `true` if a valid closing `]]]` is found
  */
 function hasClosingLinkMarker(ctx: ParseContext, startPos: number): boolean {
   let pos = startPos;
@@ -33,10 +72,34 @@ function hasClosingLinkMarker(ctx: ParseContext, startPos: number): boolean {
   return false;
 }
 
+/**
+ * Inline rule for parsing `[[[target | label]]]` triple-bracket links.
+ *
+ * Triggered by a `LINK_OPEN` (`[[[`) token. Collects the target string
+ * and optional pipe-separated label, then determines the link type
+ * (page, anchor, direct URL, or interwiki) based on the target format.
+ *
+ * When no valid closing `]]]` is found, the opening `[[[` is emitted
+ * as literal text.
+ *
+ * Edge cases handled:
+ * - Empty target with pipe (`[[[|text]]]`) is invalid
+ * - Multiple consecutive `#` in the target (`[[[page##anchor]]]`) is invalid
+ * - `[[[*|label]]]` links to root `/`
+ * - `[[[*page]]]` strips the `*` prefix from the target
+ * - Category pages show only the text after the colon when no label is given
+ */
 export const linkTripleRule: InlineRule = {
   name: "linkTriple",
   startTokens: ["LINK_OPEN"],
 
+  /**
+   * Attempts to parse a triple-bracket link at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with a `"link"` element, or a text
+   *          fallback when the syntax is invalid
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const startToken = currentToken(ctx);
 
@@ -155,9 +218,30 @@ export const linkTripleRule: InlineRule = {
   },
 };
 
-// Known interwiki prefixes
+/**
+ * Known interwiki prefixes recognized by Wikidot.
+ *
+ * Links whose target starts with one of these prefixes followed by a colon
+ * (e.g. `wikipedia:Article`) are classified as interwiki links rather than
+ * category page links.
+ */
 const INTERWIKI_PREFIXES = new Set(["wikipedia", "google", "dictionary", "wikidot"]);
 
+/**
+ * Determines the link type and structured location data from a raw
+ * triple-bracket link target string.
+ *
+ * Classification order:
+ * 1. Targets starting with `#` are anchor links
+ * 2. Targets starting with `http://` or `https://` are direct (external) links
+ * 3. Targets with a colon and a known interwiki prefix (without slashes)
+ *    are interwiki links
+ * 4. Everything else is a page link (including category pages like
+ *    `system:Recent Changes`)
+ *
+ * @param target - The trimmed, processed link target string
+ * @returns An object with `linkType` and `link` (the structured location data)
+ */
 function determineLinkTypeAndLocation(target: string): { linkType: LinkType; link: LinkLocation } {
   if (target.startsWith("#")) {
     return { linkType: "anchor", link: target };

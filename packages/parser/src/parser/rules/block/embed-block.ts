@@ -1,14 +1,33 @@
+/**
+ *
+ * Block rule for Wikidot embed blocks: `[[embed]]`, `[[embedvideo]]`,
+ * and `[[embedaudio]]` (each with a matching closing tag).
+ *
+ * In original Wikidot, only HTML that matches a server-side allow-list is
+ * rendered. This parser does not perform that filtering -- the raw content
+ * between the tags is stored verbatim as an `embed-block` element. Validation
+ * and sanitisation are expected to happen at rendering time or on the server.
+ *
+ * The embed block is wrapped in a paragraph container in the AST, matching
+ * Wikidot's rendering behaviour where embeds sit inside `<p>` tags.
+ *
+ * If no closing tag is found, the rule fails to prevent consuming the rest
+ * of the document.
+ *
+ * @module
+ */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName } from "./utils";
 
 /**
- * Embed block rule: [[embed]]..[[/embed]], [[embedvideo]]..[[/embedvideo]], [[embedaudio]]..[[/embedaudio]]
+ * Block rule for `[[embed]]`, `[[embedvideo]]`, and `[[embedaudio]]`.
  *
- * Wikidotでは許可リストにマッチしたHTMLのみ出力されるが、
- * このパーサーでは内容をそのままhtml要素として保持する。
- * バリデーションはレンダリング時またはサーバー側で行う想定。
+ * Content between the opening and closing tags is captured as raw text.
+ * The block name matching is case-insensitive; the closing tag may use
+ * any of the three names (`embed`, `embedvideo`, `embedaudio`) regardless
+ * of which was used to open.
  */
 export const embedBlockRule: BlockRule = {
   name: "embed-block",

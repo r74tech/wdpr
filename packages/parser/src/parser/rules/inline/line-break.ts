@@ -1,22 +1,41 @@
 /**
- * Line break rules
  *
- * Handles:
- * - NEWLINE token → line-break (unless before block-start token)
- * - " _\n" pattern → line-break
- * - "^_\n" pattern → line-break (underscore at start of line)
+ * Parses the various Wikidot line-break syntaxes.
  *
- * Note: Backslash line break (\ at end of line) is preprocessed to U+E000
- * by preproc, then handled by backslashLineBreakRule.
+ * Wikidot supports three distinct mechanisms for producing `<br />` elements:
+ *
+ * 1. Implicit newline: a single `NEWLINE` token within a paragraph
+ *    becomes a `<br />`, unless it precedes a block-level element
+ *    (heading, list, blockquote, etc.) or another newline (paragraph break).
+ *
+ * 2. Backslash at end of line: `\` followed by newline. The preprocessor
+ *    converts `\\\n` to a `BACKSLASH_BREAK` token (U+E000), which this
+ *    rule then handles. Wikidot preserves a space after the line break
+ *    in this case.
+ *
+ * 3. Underscore at end of line: ` _` followed by newline, or `_` at the
+ *    start of a line followed by newline. This is a more explicit
+ *    line-break syntax.
+ *
+ * All three rules mark their line-break elements with `_preservedTrailingBreak`
+ * when the break was explicitly requested (backslash or underscore syntax),
+ * so the paragraph postprocessor knows not to strip trailing breaks.
+ *
+ * The newline rule suppresses line-breaks in several situations to avoid
+ * spurious `<br />` elements before block-level constructs.
+ *
+ * @module
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import type { TokenType } from "../../../lexer";
 
 /**
- * Tokens that start a new block - when NEWLINE is followed by these,
- * skip the line-break to avoid extra <br> before block elements.
+ * Token types that indicate the start of a block-level element.
  *
+ * When a NEWLINE is followed (after optional whitespace) by one of
+ * these token types, the newline line-break rule suppresses the
+ * `<br />` to prevent extra whitespace before block elements.
  */
 const BLOCK_START_TOKENS: TokenType[] = [
   "BLOCKQUOTE_MARKER", // >
@@ -28,24 +47,42 @@ const BLOCK_START_TOKENS: TokenType[] = [
 ];
 
 /**
- * Check if token is a block start token
+ * Checks whether a token type represents the start of a block-level element.
+ *
+ * @param type - The token type to check
+ * @returns `true` if the token type is in the {@link BLOCK_START_TOKENS} list
  */
 function isBlockStartToken(type: TokenType): boolean {
   return BLOCK_START_TOKENS.includes(type);
 }
 
 /**
- * Newline line break: single NEWLINE → line-break
+ * Inline rule for implicit newline-to-line-break conversion.
  *
- * Skips if:
- * - Next line starts a block element (list, heading, etc.)
- * - Next token is another NEWLINE (paragraph break)
- * - End of input
+ * A single `NEWLINE` token within inline content typically becomes a
+ * `<br />` element. However, the line break is suppressed in several
+ * situations to match Wikidot's behavior:
+ *
+ * - End of input (no meaningful token follows)
+ * - Another NEWLINE follows (this is a paragraph break, not a line break)
+ * - A valid block-start token follows at line start (heading, list, etc.)
+ * - A `BACKSLASH_BREAK` token follows (the backslash rule handles the break)
+ *
+ * Additional validation is performed for heading and list markers to ensure
+ * they actually form valid block structures (e.g. a heading marker of 7+
+ * characters is not a valid heading).
  */
 export const newlineLineBreakRule: InlineRule = {
   name: "newlineLineBreak",
   startTokens: ["NEWLINE"],
 
+  /**
+   * Attempts to convert a NEWLINE token into a line-break element.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with either a `"line-break"` element or
+   *          an empty array (when the break is suppressed)
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const currentTok = ctx.tokens[ctx.pos];
     if (!currentTok || currentTok.type !== "NEWLINE") {
@@ -130,23 +167,36 @@ export const newlineLineBreakRule: InlineRule = {
 };
 
 /**
- * Backslash line break: \ at end of line (preprocessed to U+E000)
+ * Inline rule for backslash-at-end-of-line line breaks.
  *
- * In Wikidot, " \" at end of line creates a line break.
- * The space before the backslash is preserved after the line break.
+ * In Wikidot, a backslash at the end of a line (`\` followed by newline)
+ * creates a line break. The preprocessor converts this `\\\n` sequence
+ * into a special `BACKSLASH_BREAK` token (U+E000).
  *
- * Since preprocessing converts "\\\n" → U+E000, the actual token sequence is:
- * - NEWLINE + WHITESPACE + BACKSLASH_BREAK + content
+ * This rule handles two token patterns:
+ * - `WHITESPACE + BACKSLASH_BREAK`: produces a line-break followed by a
+ *   space text element (Wikidot preserves the space after the break)
+ * - Standalone `BACKSLASH_BREAK`: produces only a line-break
  *
- * This rule is triggered by WHITESPACE when followed by BACKSLASH_BREAK,
- * producing: line-break + space (in that order).
+ * A special case exists when the backslash break is followed by an
+ * underscore line-break pattern (` _\n`): in that case, the trailing
+ * space is omitted to avoid doubled spacing.
  *
- * Also handles standalone BACKSLASH_BREAK (without preceding whitespace).
+ * All line-break elements produced by this rule are marked with
+ * `_preservedTrailingBreak = true` so the paragraph postprocessor
+ * does not strip them.
  */
 export const backslashLineBreakRule: InlineRule = {
   name: "backslashLineBreak",
   startTokens: ["WHITESPACE", "BACKSLASH_BREAK"],
 
+  /**
+   * Attempts to parse a backslash line break at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with line-break elements (and possibly a
+   *          trailing space), or `{ success: false }` if the pattern does not match
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const currentTok = ctx.tokens[ctx.pos];
     if (!currentTok) {
@@ -209,14 +259,32 @@ export const backslashLineBreakRule: InlineRule = {
 };
 
 /**
- * Underscore line break: _ at end of line
- * Syntax: " _\n" (space + underscore + newline)
- * or: "^_\n" (underscore at start of line + newline)
+ * Inline rule for underscore-at-end-of-line line breaks.
+ *
+ * Wikidot syntax: ` _` followed by newline (space + underscore + newline),
+ * or `_` at the start of a line followed by newline.
+ *
+ * This rule handles two token patterns:
+ * - Pattern 1: `WHITESPACE + UNDERSCORE + NEWLINE/EOF`
+ * - Pattern 2: `UNDERSCORE (at lineStart) + NEWLINE/EOF`
+ *
+ * Both patterns consume the newline as part of the line-break to prevent
+ * the newline rule from producing a duplicate break.
+ *
+ * All line-break elements are marked with `_preservedTrailingBreak = true`
+ * so the paragraph postprocessor does not strip them.
  */
 export const underscoreLineBreakRule: InlineRule = {
   name: "underscoreLineBreak",
   startTokens: ["WHITESPACE", "UNDERSCORE"],
 
+  /**
+   * Attempts to parse an underscore line break at the current position.
+   *
+   * @param ctx - Parse context with token stream and current position
+   * @returns A successful result with a `"line-break"` element,
+   *          or `{ success: false }` if the pattern does not match
+   */
   parse(ctx: ParseContext): RuleResult<Element> {
     const currentTok = ctx.tokens[ctx.pos];
     if (!currentTok) {

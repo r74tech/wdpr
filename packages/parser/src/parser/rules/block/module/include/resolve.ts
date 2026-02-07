@@ -1,8 +1,24 @@
 /**
- * Include resolution (text-level expansion)
  *
- * Expands [[include]] directives at the text level before parsing,
- * allowing block structures (like div) to span across include boundaries.
+ * Text-level expansion of `[[include]]` directives.
+ *
+ * Unlike most Wikidot constructs that are handled during AST parsing, include
+ * directives are resolved as a text-level macro expansion BEFORE the main parse.
+ * This is necessary because included content may contain partial block structures
+ * (e.g., an opening `[[div]]` tag in one include and its closing `[[/div]]` in
+ * another) that must be visible to the parser as a single continuous text.
+ *
+ * The resolution process:
+ * 1. Scan the source text for `[[include page | var=val]]` patterns
+ * 2. Fetch the included page's content via the provided fetcher callback
+ * 3. Apply variable substitutions (`{$key}` -> `value`)
+ * 4. Recursively resolve includes in the fetched content (up to max depth)
+ * 5. Replace the original `[[include ...]]` directive with the expanded text
+ *
+ * Safety features include circular dependency detection (using a trace of
+ * visited pages) and a configurable maximum recursion depth (default: 5).
+ *
+ * @module
  */
 
 import type { PageRef, VariableMap, WikitextSettings } from "@wdprlib/ast";
@@ -79,7 +95,14 @@ export function resolveIncludes(
 const INCLUDE_PATTERN = /\[\[include\s([^\]]*(?:\](?!\])[^\]]*)*)\]\]/gi;
 
 /**
- * Parse an include directive's inner content into page reference and variables.
+ * Parse the inner content of an `[[include ...]]` directive into a page reference
+ * and variable assignments.
+ *
+ * The inner content has the format: `page-name | key1=value1 | key2=value2`
+ * where the page name may include a cross-site prefix (`:site-name:page-name`).
+ *
+ * @param inner - The text between `[[include` and `]]`
+ * @returns Object containing the parsed page location and variable map
  */
 function parseIncludeDirective(inner: string): { location: PageRef; variables: VariableMap } {
   // Remove newlines and normalize whitespace within segments
@@ -121,7 +144,21 @@ function parseIncludeDirective(inner: string): { location: PageRef; variables: V
 }
 
 /**
- * Recursively expand include directives in source text.
+ * Recursively expand `[[include ...]]` directives in source text.
+ *
+ * Each include directive is replaced with the fetched and variable-substituted
+ * page content. The expansion recurses into the fetched content to handle
+ * nested includes, up to `maxDepth` levels.
+ *
+ * Circular includes are detected by maintaining a trace of visited page keys.
+ * When a circular include is found, an error div is emitted instead.
+ *
+ * @param source - The text to scan for include directives
+ * @param fetcher - Callback to fetch page content (with caching)
+ * @param depth - Current recursion depth
+ * @param maxDepth - Maximum allowed recursion depth
+ * @param trace - Stack of visited page keys for circular dependency detection
+ * @returns Text with all include directives expanded
  */
 function expandText(
   source: string,
@@ -156,7 +193,14 @@ function expandText(
 }
 
 /**
- * Normalize a PageRef into a string key for cache and circular detection.
+ * Normalize a PageRef into a consistent string key for cache lookups
+ * and circular dependency detection.
+ *
+ * Page names are lowercased for case-insensitive matching. Cross-site
+ * references include the site name as a prefix.
+ *
+ * @param location - The page reference to normalize
+ * @returns A normalized string key (e.g., "page-name" or "site:page-name")
  */
 function normalizePageKey(location: PageRef): string {
   const site = location.site ?? "";
@@ -165,8 +209,14 @@ function normalizePageKey(location: PageRef): string {
 }
 
 /**
- * Substitute variables in content.
- * Replaces {$key} with the corresponding value from the variables map.
+ * Substitute variables in included page content.
+ *
+ * Replaces `{$key}` patterns with the corresponding value from the variables
+ * map provided in the include directive (e.g., `[[include page | key=value]]`).
+ *
+ * @param content - The fetched page content containing `{$key}` placeholders
+ * @param variables - Key-value pairs from the include directive
+ * @returns Content with all matching variables substituted
  */
 function substituteVariables(content: string, variables: VariableMap): string {
   if (Object.keys(variables).length === 0) return content;
@@ -180,7 +230,11 @@ function substituteVariables(content: string, variables: VariableMap): string {
 }
 
 /**
- * Escape special RegExp characters in a string.
+ * Escape special RegExp characters in a string so it can be safely used
+ * in a `new RegExp()` constructor.
+ *
+ * @param str - The string to escape
+ * @returns The escaped string with all regex special characters prefixed with backslash
  */
 function escapeRegExp(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

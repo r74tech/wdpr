@@ -1,10 +1,33 @@
+/**
+ *
+ * Renderer for `[[tabview]]...[[/tabview]]` tab containers.
+ *
+ * Wikidot uses a YUI-compatible tabview widget. The rendered HTML follows
+ * the YUI class naming convention (`yui-navset`, `yui-nav`, `yui-content`)
+ * and uses inline `display` styles for tab visibility. Tab switching is
+ * handled at runtime by the `tabview` runtime module.
+ *
+ * A deterministic widget ID is generated from an MD5-length hash of the
+ * concatenated tab labels, ensuring stable IDs across renders.
+ *
+ * @module
+ */
+
 import type { TabData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeHtml } from "../escape";
 import { syncHashMd5 } from "../hash";
 import { renderElements } from "../render";
 
-/** Render a tab-view element (Wikidot YUI-compatible) */
+/**
+ * Render a `[[tabview]]` element with YUI-compatible HTML structure.
+ *
+ * The first tab is selected by default (visible, with the `selected` class
+ * on its nav item). All other tabs have `display:none` on their content divs.
+ *
+ * @param ctx - The current render context.
+ * @param tabs - Array of tab data, each with a label and child elements.
+ */
 export function renderTabView(ctx: RenderContext, tabs: TabData[]): void {
   // Generate MD5 hash from tab labels
   const labelString = tabs.map((t) => t.label).join("");
@@ -41,6 +64,12 @@ export function renderTabView(ctx: RenderContext, tabs: TabData[]): void {
   ctx.push("</div>"); // close yui-navset
 }
 
+/**
+ * Compute an MD5-length hash of the input string for widget ID generation.
+ *
+ * @param input - String to hash (typically concatenated tab labels).
+ * @returns A 32-character hex hash string.
+ */
 function md5Hash(input: string): string {
   return syncHashMd5(input);
 }

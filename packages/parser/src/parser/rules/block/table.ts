@@ -1,12 +1,43 @@
+/**
+ *
+ * Block rule for Wikidot pipe-syntax tables.
+ *
+ * Wikidot tables are written using `||` delimiters at the start of a line:
+ *
+ * ```
+ * || Cell 1 || Cell 2 ||
+ * || Cell 3 || Cell 4 ||
+ * ```
+ *
+ * Cell variants:
+ * - `||` -- normal cell (`<td>`)
+ * - `||~` -- header cell (`<th>`)
+ * - `||<` -- left-aligned cell
+ * - `||>` -- right-aligned cell (TABLE_RIGHT)
+ * - `||=` -- center-aligned cell
+ *
+ * Colspan is achieved by using multiple consecutive `||` before content:
+ * `||||` = colspan 2, `||||||` = colspan 3, etc.
+ *
+ * Key Wikidot behaviour:
+ * - Cells MUST be terminated by another `||` (or variant). Unterminated
+ *   cells (reaching end of line without a closing `||`) are discarded.
+ * - If all cells in a row are unterminated, one empty cell is kept.
+ * - Content within cells supports inline markup (bold, links, etc.).
+ * - Leading and trailing whitespace in cell content is trimmed.
+ *
+ * The table element carries `_source: "pipe"` in its attributes to
+ * distinguish it from block-syntax tables (`[[table]]`).
+ *
+ * @module
+ */
 import type { Element, TableData, TableRow, TableCell, Alignment } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import type { TokenType } from "../../../lexer/tokens";
 import { canApplyInlineRule } from "../inline/utils";
 
-/**
- * Table column token types
- */
+/** Token types that begin a table cell or act as cell delimiters. */
 const TABLE_COL_TOKENS: TokenType[] = [
   "TABLE_MARKER",
   "TABLE_HEADER",
@@ -15,16 +46,40 @@ const TABLE_COL_TOKENS: TokenType[] = [
   "TABLE_RIGHT",
 ];
 
+/**
+ * Tests whether a token type is one of the table column delimiters.
+ *
+ * @param type - The token type to check.
+ * @returns `true` if the type starts or delimits a table cell.
+ */
 function isTableColToken(type: TokenType): boolean {
   return TABLE_COL_TOKENS.includes(type);
 }
 
+/**
+ * Describes the opening properties of a table cell, determined by
+ * the sequence of column delimiter tokens at the start of the cell.
+ */
 interface CellStart {
+  /** Explicit alignment if a styled token (`||<`, `||=`, `||>`) was used. */
   align?: Alignment;
+  /** Whether this is a header cell (`||~`). */
   header: boolean;
+  /** Colspan count: consecutive `||` tokens increment this. */
   colspan: number;
 }
 
+/**
+ * Block rule for pipe-syntax tables.
+ *
+ * Parsing strategy:
+ * 1. Verify the first token is a table column token at line start.
+ * 2. Parse consecutive rows (each row is a line starting with a table
+ *    column token).
+ * 3. Each row is parsed by `parseTableRow()`, which iterates cells
+ *    via `parseCellStart()` and `parseTableCell()`.
+ * 4. Emit a `table` element with `_source: "pipe"`.
+ */
 export const tableRule: BlockRule = {
   name: "table",
   startTokens: ["TABLE_MARKER", "TABLE_HEADER", "TABLE_LEFT", "TABLE_CENTER", "TABLE_RIGHT"],
@@ -74,7 +129,16 @@ export const tableRule: BlockRule = {
 };
 
 /**
- * Parse cell start tokens to determine alignment, header status, and colspan
+ * Parses the cell-start delimiter tokens to determine alignment, header
+ * status, and colspan.
+ *
+ * Multiple consecutive TABLE_MARKER tokens (`||`) increase the colspan
+ * count. A styled token (`||~`, `||<`, `||=`, `||>`) ends the sequence
+ * and sets the corresponding property.
+ *
+ * @param ctx      - Parse context.
+ * @param startPos - Token index of the first delimiter token.
+ * @returns The cell properties and consumed count, or `null` if no cell.
  */
 function parseCellStart(
   ctx: ParseContext,
@@ -140,6 +204,17 @@ function parseCellStart(
   return null;
 }
 
+/**
+ * Parses a single table row (one line of `||`-delimited cells).
+ *
+ * Cells are collected until end of line. Only properly terminated cells
+ * (followed by another `||` token) are added to the row. If all cells
+ * are unterminated, one empty cell is kept as a placeholder.
+ *
+ * @param ctx      - Parse context.
+ * @param startPos - Token index at the first cell delimiter of the row.
+ * @returns The parsed row and consumed token count.
+ */
 function parseTableRow(ctx: ParseContext, startPos: number): { row: TableRow; consumed: number } {
   const cells: TableCell[] = [];
   let pos = startPos;
@@ -206,6 +281,18 @@ function parseTableRow(ctx: ParseContext, startPos: number): { row: TableRow; co
   };
 }
 
+/**
+ * Parses the content of a single table cell.
+ *
+ * Inline content is collected until the next table column token or end
+ * of line. If the cell is not terminated by a column token, its content
+ * is discarded (`terminatedProperly: false`), matching Wikidot behaviour.
+ *
+ * @param ctx       - Parse context.
+ * @param startPos  - Token index after the cell-start delimiter.
+ * @param cellStart - Properties from the cell-start delimiter sequence.
+ * @returns The parsed cell, consumed count, and termination status.
+ */
 function parseTableCell(
   ctx: ParseContext,
   startPos: number,
@@ -289,7 +376,13 @@ function parseTableCell(
 }
 
 /**
- * Trim leading and trailing whitespace text elements
+ * Trims leading and trailing whitespace-only text elements from an array.
+ *
+ * Partial whitespace at the edges is trimmed in-place (e.g. `"  foo"` becomes
+ * `"foo"` if it is the first element). Non-text elements are left untouched.
+ *
+ * @param elements - The element array to trim.
+ * @returns A new array with edge whitespace removed.
  */
 function trimElements(elements: Element[]): Element[] {
   const result = [...elements];

@@ -1,9 +1,43 @@
+/**
+ *
+ * Renderers for Wikidot link elements.
+ *
+ * Wikidot supports several link syntaxes:
+ * - `[[[page-name]]]` -- page link with automatic label
+ * - `[[[page-name | label]]]` -- page link with custom label
+ * - `[# label]` -- anchor-type link (JavaScript void)
+ * - `[http://url label]` -- external URL link
+ * - `[[a]]...[[/a]]` -- HTML anchor element with attributes
+ * - `[[#anchor-name]]` -- named anchor (bookmark target)
+ *
+ * All link types are checked for dangerous URL schemes. Page links
+ * may receive a `class="newpage"` attribute when the target page does
+ * not exist (the standard Wikidot "red link" convention). External
+ * links opened in new tabs automatically receive `rel="noopener noreferrer"`
+ * to prevent tabnabbing.
+ *
+ * @module
+ */
+
 import type { LinkData, AnchorData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, isDangerousUrl, sanitizeAttributes } from "../escape";
 import { renderElements } from "../render";
 
-/** Render a link element */
+/**
+ * Render a link element (`[[[page]]]`, `[url label]`, `[# label]`).
+ *
+ * The link's `href` is resolved via `ctx.resolvePageLink()`, with an
+ * optional `extra` suffix (anchor fragment) appended. Anchor-type links
+ * with `javascript:;` are allowed as a special case for Wikidot
+ * compatibility; all other dangerous URL schemes are blocked.
+ *
+ * For page-type links, a `class="newpage"` is added when the
+ * `pageExists` resolver indicates the target page does not exist.
+ *
+ * @param ctx - The current render context.
+ * @param data - Link data with link target, label, type, target window, and extra suffix.
+ */
 export function renderLink(ctx: RenderContext, data: LinkData): void {
   let href = ctx.resolvePageLink(data.link);
 
@@ -68,6 +102,17 @@ export function renderLink(ctx: RenderContext, data: LinkData): void {
   ctx.push("</a>");
 }
 
+/**
+ * Render the label content of a link element.
+ *
+ * Label types:
+ * - `"page"` -- use the page name as the label text
+ * - `{ text: string }` -- use a custom text label
+ * - `{ url: string }` -- use the URL itself as the label
+ *
+ * @param ctx - The current render context.
+ * @param data - Link data containing the label descriptor.
+ */
 function renderLinkLabel(ctx: RenderContext, data: LinkData): void {
   if (data.label === "page") {
     // Use page name as label
@@ -91,7 +136,17 @@ function renderLinkLabel(ctx: RenderContext, data: LinkData): void {
   }
 }
 
-/** Render an anchor element */
+/**
+ * Render a `[[a]]...[[/a]]` anchor element with full attribute support.
+ *
+ * Unlike `renderLink`, this handles the block-level anchor syntax where
+ * arbitrary attributes can be specified. Dangerous `href` values are
+ * replaced with `#invalid-url`. The `target` attribute is mapped from
+ * Wikidot's abstract values to HTML values, with tabnabbing protection.
+ *
+ * @param ctx - The current render context.
+ * @param data - Anchor data with attributes, target, and child elements.
+ */
 export function renderAnchor(ctx: RenderContext, data: AnchorData): void {
   const safe = sanitizeAttributes(data.attributes);
   const attrs: string[] = [];
@@ -131,7 +186,15 @@ export function renderAnchor(ctx: RenderContext, data: AnchorData): void {
   ctx.push("</a>");
 }
 
-/** Render an anchor-name element */
+/**
+ * Render a named anchor (bookmark target) element: `[[#anchor-name]]`.
+ *
+ * Produces `<a name="anchor-name"></a>` which serves as a link target
+ * for `#anchor-name` URL fragments.
+ *
+ * @param ctx - The current render context.
+ * @param name - The anchor name (fragment identifier).
+ */
 export function renderAnchorName(ctx: RenderContext, name: string): void {
   ctx.push(`<a name="${escapeAttr(name)}"></a>`);
 }

@@ -1,8 +1,36 @@
+/**
+ *
+ * Runtime module for mathematical notation interaction and polyfill.
+ *
+ * Provides two features:
+ *
+ * 1. MathML polyfill -- detects whether the browser supports MathML natively.
+ *    If not, dynamically imports the `hfmath` library to render LaTeX as SVG,
+ *    using the hidden `.math-source` elements as the LaTeX source.
+ *
+ * 2. Equation reference interaction -- handles hover tooltips and click-to-scroll
+ *    for `[[eref]]` elements, showing a preview of the referenced equation
+ *    on hover and smooth-scrolling to the equation on click.
+ *
+ * DOM interactions:
+ * - Listens for `mouseenter` (capture) on `.eref` to show equation tooltip
+ * - Listens for `mouseleave` (capture) on `.eref` to hide tooltip
+ * - Listens for `click` (capture) on `.eref-link` to scroll to the equation
+ * - On browsers without MathML: queries `.math-render` and `.math-source`
+ *   to apply SVG polyfill
+ *
+ * The `destroy()` cleanup function removes all three event listeners.
+ *
+ * @module
+ */
+
 import type { ModuleCleanup } from "./types";
 import { isElement } from "./utils/dom";
 import { hideTooltip, showTooltip } from "./utils/tooltip";
 
+/** Whether the hfmath SVG polyfill has already been applied. */
 let polyfillApplied = false;
+/** Cached result of the MathML support detection. */
 let mathMLSupportCached: boolean | null = null;
 
 /**
@@ -29,8 +57,14 @@ function hasMathMLSupport(): boolean {
 }
 
 /**
- * Apply hfmath polyfill for browsers without MathML support.
- * Dynamically imports hfmath to avoid bundling for MathML-capable browsers.
+ * Apply the hfmath SVG polyfill for browsers without native MathML support.
+ *
+ * Dynamically imports `hfmath` to avoid bundling the library for browsers
+ * that support MathML natively. For each `.math-render` element, the
+ * corresponding `.math-source` LaTeX is rendered to SVG and inserted
+ * before the existing MathML (which is hidden but kept for accessibility).
+ *
+ * @param root - The root DOM element containing math elements.
  */
 async function applyPolyfill(root: HTMLElement): Promise<void> {
   if (polyfillApplied) return;
@@ -88,9 +122,13 @@ async function applyPolyfill(root: HTMLElement): Promise<void> {
 }
 
 /**
- * Initialize math functionality:
- * - Apply polyfill for browsers without MathML support
- * - Setup equation reference tooltips and scrolling
+ * Initialize math functionality within the given root element.
+ *
+ * Applies the MathML polyfill if needed and sets up equation reference
+ * tooltip and scroll behavior.
+ *
+ * @param root - The root DOM element containing rendered Wikidot markup.
+ * @returns A cleanup handle whose `destroy()` method removes all event listeners.
  */
 export function initMath(root: HTMLElement): ModuleCleanup {
   const hasMath = root.querySelector(".math-block, .math-inline") !== null;

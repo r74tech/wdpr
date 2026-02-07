@@ -1,7 +1,34 @@
 /**
- * Block-style table rule
  *
- * Handles [[table]][[row]][[cell]]...[[/cell]][[/row]][[/table]] syntax
+ * Block rule for the explicit block-syntax table:
+ * `[[table]][[row]][[cell]]...[[/cell]][[/row]][[/table]]`.
+ *
+ * This is the structured alternative to the pipe-syntax table (`||`).
+ * Each element carries optional HTML attributes:
+ *
+ * ```
+ * [[table class="wiki-table"]]
+ *   [[row]]
+ *     [[hcell style="width: 50%"]]Header[[/hcell]]
+ *     [[cell colspan="2"]]Data[[/cell]]
+ *   [[/row]]
+ * [[/table]]
+ * ```
+ *
+ * Key details:
+ * - `[[hcell]]` produces header cells (`<th>`), `[[cell]]` produces data
+ *   cells (`<td>`).
+ * - `colspan` is extracted from cell attributes and mapped to `column-span`.
+ * - Alignment can be derived from the `style` attribute's `text-align` value.
+ * - Cell content supports both block and inline elements, including nested
+ *   tables. The custom `parseCellContent()` handles paragraph wrapping
+ *   and block detection within cells.
+ * - Empty tables or tables with only empty rows fail the rule, falling
+ *   back to text rendering.
+ * - The table element carries `_source: "block"` in attributes to
+ *   distinguish it from pipe-syntax tables.
+ *
+ * @module
  */
 import type { Element, TableData, TableRow, TableCell, Alignment } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
@@ -9,6 +36,10 @@ import { currentToken } from "../types";
 import { parseBlockName, parseAttributes, canApplyBlockRule } from "./utils";
 import { canApplyInlineRule } from "../inline/utils";
 
+/**
+ * Block rule for `[[table]]...[[/table]]` with `[[row]]` and
+ * `[[cell]]`/`[[hcell]]` children.
+ */
 export const tableBlockRule: BlockRule = {
   name: "table-block",
   startTokens: ["BLOCK_OPEN"],
@@ -131,7 +162,15 @@ export const tableBlockRule: BlockRule = {
 };
 
 /**
- * Parse [[row]]...[[/row]]
+ * Parses a `[[row ...]]...[[/row]]` block, collecting its child cells.
+ *
+ * Row attributes (e.g. `class`, `style`) are passed through to the AST.
+ * The function skips whitespace/newlines between cells and stops when
+ * `[[/row]]` is found or the token stream ends.
+ *
+ * @param ctx      - Parse context.
+ * @param startPos - Token index at the `[[row]]` BLOCK_OPEN.
+ * @returns The parsed row and consumed count, or `null` on failure.
  */
 function parseRow(ctx: ParseContext, startPos: number): { row: TableRow; consumed: number } | null {
   let pos = startPos;
@@ -233,8 +272,20 @@ function parseRow(ctx: ParseContext, startPos: number): { row: TableRow; consume
 }
 
 /**
- * Parse [[cell]]...[[/cell]] or [[hcell]]...[[/hcell]]
- * Supports nested tables within cells
+ * Parses a `[[cell ...]]...[[/cell]]` or `[[hcell ...]]...[[/hcell]]` block.
+ *
+ * Cell body content is parsed via `parseCellContent()`, which supports
+ * block elements (including nested tables), inline markup, and paragraph
+ * breaks. After parsing, simple single-paragraph content is unwrapped
+ * to match Wikidot's behaviour of not wrapping simple cells in `<p>`.
+ *
+ * The `colspan` attribute is extracted separately and mapped to
+ * `column-span` in the AST. Other attributes (rowspan, style, etc.) are
+ * kept in the attributes map for the renderer.
+ *
+ * @param ctx      - Parse context.
+ * @param startPos - Token index at the `[[cell]]`/`[[hcell]]` BLOCK_OPEN.
+ * @returns The parsed cell and consumed count, or `null` on failure.
  */
 function parseCell(
   ctx: ParseContext,
@@ -354,9 +405,18 @@ function parseCell(
 }
 
 /**
- * Unwrap a single paragraph that contains only inline elements.
- * If the cell content is a single paragraph with no block elements, extract its contents.
- * This matches Wikidot's behavior where simple cell content is not wrapped in a paragraph.
+ * Unwraps a single-paragraph cell body to match Wikidot's rendering.
+ *
+ * When a cell contains exactly one paragraph with no block-level children,
+ * the paragraph wrapper is removed and its inner elements are returned
+ * directly. This produces output like `<td>text</td>` instead of
+ * `<td><p>text</p></td>`.
+ *
+ * If there are multiple elements, block children, or non-paragraph content,
+ * the array is returned as-is.
+ *
+ * @param elements - The parsed cell body elements.
+ * @returns Elements with the single paragraph unwrapped, if applicable.
  */
 function unwrapSingleInlineParagraph(elements: Element[]): Element[] {
   // Only unwrap if there's exactly one element and it's a paragraph container
@@ -390,7 +450,13 @@ function unwrapSingleInlineParagraph(elements: Element[]): Element[] {
 }
 
 /**
- * Check if an element is a block-level element
+ * Determines whether an element is block-level.
+ *
+ * Block elements (tables, divs, blockquotes, code, etc.) prevent the
+ * single-paragraph unwrapping optimisation in {@link unwrapSingleInlineParagraph}.
+ *
+ * @param el - The element to test.
+ * @returns `true` if the element is block-level.
  */
 function isBlockElement(el: Element): boolean {
   // Block elements that should prevent unwrapping
@@ -412,13 +478,27 @@ function isBlockElement(el: Element): boolean {
 }
 
 /**
- * Parse cell content with support for inline blocks (nested tables, etc.)
- * Unlike parseBlocksUntil, this function recognizes block elements even when not at line start.
+ * Parses cell body content with support for both inline and block elements.
  *
- * Behavior:
- * - Simple inline content on a single line → no paragraph wrapper
- * - Content with newlines or block elements → wrapped in paragraphs
- * - Blank lines create separate paragraphs
+ * Unlike the general {@link parseBlocksUntil}, this function recognises
+ * block elements (nested tables, divs, etc.) even when they do not appear
+ * at line start, because cell content inside `[[cell]]` is treated more
+ * permissively by Wikidot.
+ *
+ * Paragraph handling:
+ * - Simple inline content on a single line is NOT wrapped in a paragraph.
+ * - A blank line (double newline) creates a paragraph break.
+ * - Block elements flush the current inline segment into a paragraph
+ *   and are emitted as standalone elements.
+ *
+ * The `hadParagraphBreaks` flag in the return value tells the caller
+ * whether any blank-line paragraph breaks occurred, which influences
+ * whether the final result keeps paragraph wrappers.
+ *
+ * @param ctx            - Parse context.
+ * @param closeCondition - Predicate that returns `true` at the cell's
+ *                         closing tag (`[[/cell]]` or `[[/hcell]]`).
+ * @returns Parsed elements, consumed count, and paragraph-break flag.
  */
 function parseCellContent(
   ctx: ParseContext,

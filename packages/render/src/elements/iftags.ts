@@ -1,13 +1,38 @@
+/**
+ *
+ * Renderer for `[[iftags]]...[[/iftags]]` conditional blocks.
+ *
+ * Wikidot's `iftags` construct conditionally renders content based on
+ * whether the current page's tags match a condition string. The condition
+ * supports three kinds of tag tokens:
+ *
+ * - `+tag` -- required: the tag must be present
+ * - `-tag` -- excluded: the tag must NOT be present
+ * - `tag` (no prefix) -- optional group: at least one unprefixed tag must be present
+ *
+ * All three categories must independently be satisfied for the condition
+ * to evaluate to true.
+ *
+ * @module
+ */
+
 import type { IfTagsData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { renderElements } from "../render";
 
 /**
- * Evaluate iftags condition against page tags
- * Condition format: "+tag1 -tag2 tag3" where:
- * - +tag: tag must be present (required)
- * - -tag: tag must NOT be present (excluded)
- * - tag (no prefix): at least one such tag must be present (optional group)
+ * Evaluate an iftags condition string against a list of page tags.
+ *
+ * The condition is a space-separated list of tokens. All required tags
+ * (`+tag`) must be present, all excluded tags (`-tag`) must be absent,
+ * and at least one optional tag (bare `tag`) must be present (if any
+ * optional tags are specified).
+ *
+ * An empty condition always evaluates to `false`.
+ *
+ * @param condition - The condition string (e.g. `"+scp -joke tale"`).
+ * @param pageTags - Array of tags currently assigned to the page.
+ * @returns `true` if the condition is satisfied.
  */
 function evaluateIfTagsCondition(condition: string, pageTags: string[]): boolean {
   const pageTagSet = new Set(pageTags.map((t) => t.toLowerCase()));
@@ -51,7 +76,16 @@ function evaluateIfTagsCondition(condition: string, pageTags: string[]): boolean
   return true;
 }
 
-/** Render if-tags - renders the elements only if condition matches page tags */
+/**
+ * Render an `[[iftags]]` block.
+ *
+ * Evaluates the condition against the page's tags (from `ctx.page.tags`).
+ * If no page tags are available, an empty array is used (all conditions
+ * requiring present tags will fail).
+ *
+ * @param ctx - The current render context.
+ * @param data - IfTags data with condition string and child elements.
+ */
 export function renderIfTags(ctx: RenderContext, data: IfTagsData): void {
   const pageTags = ctx.page?.tags ?? [];
 

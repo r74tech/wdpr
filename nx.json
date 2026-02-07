@@ -12,7 +12,7 @@
       "automaticFromRef": true,
       "projectChangelogs": {
         "createRelease": "github",
-        "file": false
+        "file": "{projectRoot}/CHANGELOG.md"
       }
     },
     "git": {

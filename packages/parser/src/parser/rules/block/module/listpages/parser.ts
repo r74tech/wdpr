@@ -1,7 +1,30 @@
+/**
+ *
+ * Parser rule for the Wikidot `[[module ListPages ...]]` block.
+ *
+ * Parses the module's attributes into a structured `list-pages` Module AST node.
+ * Handles both hyphenated (`link-to`) and concatenated (`linkto`) attribute name
+ * formats, as Wikidot normalizes both to lowercase. The raw attribute values are
+ * preserved in the `attributes` field for `@URL` resolution by external applications.
+ *
+ * @module
+ */
+
 import type { Module } from "@wdprlib/ast";
 import type { ModuleRule } from "../types";
 import { parseBool, parseInt32 } from "../utils";
 
+/**
+ * Module rule for `[[module ListPages ...]]`.
+ *
+ * ListPages is the most complex Wikidot module. It queries pages by various
+ * criteria (tags, category, parent, date, rating, etc.) and renders each matching
+ * page using a template specified in the module body. The template uses
+ * `%%variable%%` syntax to reference page data.
+ *
+ * This rule only handles parsing; data fetching and template rendering are handled
+ * by the extract/resolve pipeline.
+ */
 export const listPagesModuleRule: ModuleRule = {
   name: "module-listpages",
   acceptsNames: ["listpages"],

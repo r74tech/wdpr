@@ -1,7 +1,22 @@
 /**
- * Module system
+ * Module system for Wikidot dynamic constructs.
  *
- * Exports parsers, types, extraction, and resolution functionality for all modules.
+ * Wikidot supports several "module" blocks (`[[module ListPages]]`,
+ * `[[module ListUsers]]`, `[[module CSS]]`, etc.) and pseudo-blocks
+ * (`[[include]]`, `[[iftags]]`) that require external data to resolve.
+ *
+ * This barrel module re-exports everything needed to:
+ *
+ * 1. **Extract** data requirements from a parsed AST
+ *    ({@link extractDataRequirements})
+ * 2. **Compile** body templates that contain `%%variable%%` placeholders
+ *    ({@link compileTemplate}, {@link compileListUsersTemplate})
+ * 3. **Resolve** modules by injecting fetched data back into the AST
+ *    ({@link resolveModules})
+ * 4. **Resolve includes** by fetching and inlining included pages
+ *    ({@link resolveIncludes})
+ *
+ * @module
  */
 
 // Module rule types and registry

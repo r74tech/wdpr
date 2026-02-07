@@ -9,19 +9,47 @@ import { mergeSpanStripParagraphs, cleanInternalFlags } from "./postprocess";
 import { buildTableOfContents } from "./toc";
 
 /**
- * Parser options
+ * Configuration for the {@link Parser} and the {@link parse} function.
+ *
+ * All fields are optional; sensible defaults are applied when omitted.
+ *
+ * @group Parser
  */
 export interface ParserOptions {
-  /** Wikidot version */
+  /** Markup dialect. Currently only `"wikidot"` is supported. */
   version?: "wikidot";
-  /** Track position information */
+  /**
+   * Propagate source-position data into every AST node.
+   * Defaults to `true`. Set to `false` for smaller output when positions
+   * are not needed.
+   */
   trackPositions?: boolean;
-  /** Wikitext settings controlling syntax availability */
+  /**
+   * Context-dependent feature flags (page vs. forum-post, etc.).
+   * Defaults to {@link DEFAULT_SETTINGS} (full page mode).
+   */
   settings?: WikitextSettings;
 }
 
 /**
- * Wikidot markup parser
+ * Converts a token stream into a Wikidot {@link SyntaxTree}.
+ *
+ * The parser consumes tokens produced by the `Lexer` and emits a
+ * tree of {@link Element} nodes. Block-level rules are tried in priority
+ * order; when none match, the fallback paragraph rule collects inline
+ * tokens until the next blank line.
+ *
+ * After the main parse pass, two post-processing steps run:
+ *
+ * 1. **Span-strip merging** — `[[span_]]` elements that set
+ *    `_paragraphStrip` are merged with adjacent paragraphs.
+ * 2. **Internal-flag cleanup** — all `_`-prefixed bookkeeping fields
+ *    are removed from the final AST.
+ *
+ * For most use-cases the standalone {@link parse} function is simpler
+ * than constructing a `Parser` directly.
+ *
+ * @group Parser
  */
 export class Parser {
   private ctx: ParseContext;

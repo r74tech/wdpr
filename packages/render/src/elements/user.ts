@@ -1,8 +1,35 @@
+/**
+ *
+ * Renderer for `[[user username]]` elements.
+ *
+ * User elements display a username with an optional avatar image and
+ * karma badge. The user profile data is resolved via the
+ * `resolvers.user` callback; when no resolver is provided or the user
+ * is not found, the raw username is rendered as plain text.
+ *
+ * The special username `"anonymous"` is always rendered as the literal
+ * text "Anonymous" without any link or avatar.
+ *
+ * @module
+ */
+
 import type { UserData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeHtml, escapeAttr } from "../escape";
 
-/** Render a user element */
+/**
+ * Render a `[[user username]]` element.
+ *
+ * Rendering modes:
+ * - "anonymous" username: plain text "Anonymous"
+ * - Unresolved user: plain escaped username text
+ * - Resolved without avatar: `<span class="printuser"><a>name</a></span>`
+ * - Resolved with avatar: `<span class="printuser avatarhover">` with
+ *   avatar image, optional karma badge, and linked display name
+ *
+ * @param ctx - The current render context.
+ * @param data - User element data with username and show-avatar flag.
+ */
 export function renderUser(ctx: RenderContext, data: UserData): void {
   const normalized = data.name.toLowerCase().trim();
 

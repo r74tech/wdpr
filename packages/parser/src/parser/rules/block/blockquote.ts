@@ -1,11 +1,54 @@
+/**
+ *
+ * Block rule for Wikidot-style blockquotes using `>` markers.
+ *
+ * Wikidot blockquotes are written with one or more `>` characters at the
+ * start of a line, followed by a mandatory space and then the content:
+ *
+ * ```
+ * > First level
+ * >> Second level
+ * > Back to first
+ * ```
+ *
+ * Key behaviours:
+ * - The depth is determined by the number of consecutive `>` characters.
+ * - A space after the `>` markers is required; lines like `>No space` are
+ *   consumed but silently discarded from output.
+ * - An empty line (just `> `) within the same depth acts as a paragraph
+ *   separator inside the blockquote.
+ * - Nesting is handled by the generic {@link processDepths} utility, which
+ *   converts flat depth-annotated rows into a recursive tree structure.
+ * - Maximum depth is capped at `MAX_BLOCKQUOTE_DEPTH` (30) to guard
+ *   against pathological input.
+ *
+ * @module
+ */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseInlineUntil } from "../inline/utils";
 import { processDepths, type DepthList } from "../../depth";
 
+/**
+ * Safety limit for blockquote nesting depth.
+ * Lines exceeding this depth are not parsed, preventing stack issues
+ * on deeply nested or malicious input.
+ */
 const MAX_BLOCKQUOTE_DEPTH = 30;
 
+/**
+ * Block rule for `>` prefix blockquotes.
+ *
+ * Parsing strategy:
+ * 1. Collect consecutive lines that begin with BLOCKQUOTE_MARKER at line start.
+ * 2. For each line, record the depth (number of `>` chars, zero-indexed)
+ *    and parse the inline content after the mandatory space.
+ * 3. Lines missing the required space are consumed but produce no output.
+ * 4. Feed the flat depth list into {@link processDepths} to build a nested tree.
+ * 5. Recursively convert the tree into nested blockquote container elements
+ *    via `buildBlockquoteElement()`.
+ */
 export const blockquoteRule: BlockRule = {
   name: "blockquote",
   startTokens: ["BLOCKQUOTE_MARKER"],
@@ -122,7 +165,15 @@ export const blockquoteRule: BlockRule = {
 };
 
 /**
- * Build a Blockquote element from a depth list
+ * Recursively converts a depth-tree (produced by `processDepths()`) into
+ * a blockquote container element.
+ *
+ * Leaf items are accumulated into paragraph containers. An empty-content
+ * item acts as a paragraph separator. When a nested sub-list is encountered,
+ * the current paragraph is flushed and a child blockquote is created.
+ *
+ * @param list - The depth list to convert.
+ * @returns A container element with `type: "blockquote"`.
  */
 function buildBlockquoteElement(
   list: DepthList<null, { elements: Element[]; hasLineBreak: boolean }>,

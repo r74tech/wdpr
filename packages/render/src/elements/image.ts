@@ -1,8 +1,35 @@
+/**
+ *
+ * Renderer for Wikidot image elements (`[[image source]]` and `[[f<image source]]`).
+ *
+ * Images can be sourced from URLs, page-attached files, or cross-site
+ * files. The renderer resolves the source to a URL, sanitizes all
+ * attributes, optionally wraps the image in a link (`link` attribute),
+ * and optionally wraps everything in an alignment container div.
+ *
+ * @module
+ */
+
 import type { ImageSource, ImageData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, isDangerousUrl, sanitizeAttributes } from "../escape";
 
-/** Render an image element */
+/**
+ * Render an image element with optional link wrapper and alignment container.
+ *
+ * Processing steps:
+ * 1. Resolve the image source to a URL via `ctx.resolveImageSource()`.
+ * 2. Sanitize user-supplied attributes.
+ * 3. Build the `<img>` tag with safe attributes.
+ * 4. Optionally wrap in an `<a>` tag if a link target is specified.
+ * 5. Optionally wrap in a `<div class="image-container ...">` for alignment.
+ *
+ * Dangerous URLs are replaced with `#invalid-url`. Local paths blocked
+ * by settings cause the entire image to be silently dropped.
+ *
+ * @param ctx - The current render context.
+ * @param data - Image element data with source, attributes, optional link, and alignment.
+ */
 export function renderImage(ctx: RenderContext, data: ImageData): void {
   let src = ctx.resolveImageSource(data.source);
   if (src === null) return; // Local path blocked by settings
@@ -70,6 +97,13 @@ export function renderImage(ctx: RenderContext, data: ImageData): void {
   }
 }
 
+/**
+ * Map an alignment direction and float flag to a Wikidot CSS class name.
+ *
+ * @param align - Alignment direction (`"left"`, `"right"`, `"center"`).
+ * @param isFloat - Whether the image uses float positioning.
+ * @returns CSS class name (e.g. `"floatleft"`, `"aligncenter"`).
+ */
 function getAlignmentClass(align: string, isFloat: boolean): string {
   if (isFloat) {
     switch (align) {
@@ -95,6 +129,15 @@ function getAlignmentClass(align: string, isFloat: boolean): string {
   }
 }
 
+/**
+ * Extract a filename from an image source for use as the default `alt` text.
+ *
+ * For URL sources, the last path segment is returned. For file-type sources,
+ * the file name field is returned directly.
+ *
+ * @param source - The image source descriptor.
+ * @returns The extracted filename string.
+ */
 function getFilenameFromSource(source: ImageSource): string {
   switch (source.type) {
     case "url": {

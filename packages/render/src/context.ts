@@ -21,6 +21,7 @@ export class RenderContext {
   private _equationIndex = 0;
   private _htmlBlockIndex = 0;
   private _bibciteCounter = 0;
+  private _idSuffix: string | null;
 
   readonly settings: WikitextSettings;
   readonly options: RenderOptions;
@@ -35,6 +36,10 @@ export class RenderContext {
 
   constructor(tree: SyntaxTree, options: RenderOptions = {}) {
     this.settings = options.settings ?? DEFAULT_SETTINGS;
+    // When useTrueIds is false, generate a per-context random suffix for all IDs
+    this._idSuffix = this.settings.useTrueIds
+      ? null
+      : Math.random().toString(16).slice(2, 8);
     this.options = options;
     this.footnotes = options.footnotes ?? tree.footnotes ?? [];
     this.styles = tree.styles ?? [];
@@ -109,6 +114,29 @@ export class RenderContext {
   /** Get and increment the bibcite counter (for unique IDs) */
   nextBibciteCounter(): number {
     return ++this._bibciteCounter;
+  }
+
+  /**
+   * Generate an element ID.
+   * When useTrueIds is true, returns `${prefix}${index}`.
+   * When false, appends a random suffix to prevent collisions across fragments.
+   */
+  generateId(prefix: string, index: number | string): string {
+    if (this._idSuffix === null) {
+      return `${prefix}${index}`;
+    }
+    return `${prefix}${index}-${this._idSuffix}`;
+  }
+
+  /**
+   * Generate a fixed element ID (no index).
+   * When useTrueIds is false, appends a random suffix.
+   */
+  generateFixedId(name: string): string {
+    if (this._idSuffix === null) {
+      return name;
+    }
+    return `${name}-${this._idSuffix}`;
   }
 
   /** Get page context */

@@ -34,8 +34,8 @@ function renderHeader(
 ): void {
   const tag = `h${level}`;
   if (hasToc) {
-    const tocId = ctx.nextTocIndex();
-    ctx.push(`<${tag} id="toc${tocId}"${renderAttrs(attributes)}>`);
+    const tocId = ctx.generateId("toc", ctx.nextTocIndex());
+    ctx.push(`<${tag} id="${tocId}"${renderAttrs(attributes)}>`);
   } else {
     ctx.push(`<${tag}${renderAttrs(attributes)}>`);
   }

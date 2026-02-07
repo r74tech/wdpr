@@ -10,7 +10,7 @@ export function renderTabView(ctx: RenderContext, tabs: TabData[]): void {
   const labelString = tabs.map((t) => t.label).join("");
   const hash = md5Hash(labelString);
 
-  const widgetId = `wiki-tabview-${hash}`;
+  const widgetId = ctx.generateFixedId(`wiki-tabview-${hash}`);
 
   // Container
   ctx.push(`<div id="${widgetId}" class="yui-navset">`);
@@ -31,7 +31,8 @@ export function renderTabView(ctx: RenderContext, tabs: TabData[]): void {
   for (let i = 0; i < tabs.length; i++) {
     const tab = tabs[i]!;
     const displayStyle = i === 0 ? "" : ` style="display:none"`;
-    ctx.push(`<div id="wiki-tab-0-${i}"${displayStyle}>`);
+    const tabId = ctx.generateId("wiki-tab-0-", i);
+    ctx.push(`<div id="${tabId}"${displayStyle}>`);
     renderElements(ctx, tab.elements);
     ctx.push("</div>");
   }

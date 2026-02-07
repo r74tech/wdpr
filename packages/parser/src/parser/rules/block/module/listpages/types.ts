@@ -336,7 +336,7 @@ export interface ListPagesExternalData {
  * Callback to fetch data for a ListPages module
  *
  * Called by resolveModules for each ListPages module in the AST.
- * Receives a normalized query with all @URL parameters resolved.
+ * Receives a normalized query with all `@URL` parameters resolved.
  * Return null/undefined to skip the module (outputs nothing).
  *
  * @param query - Normalized query with structured types (tags, category, order, etc.)

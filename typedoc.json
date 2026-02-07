@@ -1,0 +1,13 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPointStrategy": "packages",
+  "entryPoints": ["packages/*"],
+  "out": "docs",
+  "name": "wdpr",
+  "packageOptions": {
+    "entryPoints": ["src/index.ts"],
+    "validation": {
+      "notExported": false
+    }
+  }
+}

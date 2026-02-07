@@ -43,7 +43,7 @@ export interface ResolveOptions {
     listUsers?: ListUsersDataRequirement[];
   };
   /**
-   * URL path for @URL parameter resolution (HPC support)
+   * URL path for `@URL` parameter resolution (HPC support)
    * Format: "/page-name/param/value/param/value"
    * Example: "/scp-001/offset/10/page2_limit/5"
    */

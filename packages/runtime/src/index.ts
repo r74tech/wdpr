@@ -1,3 +1,22 @@
+/**
+ * Browser-side runtime for Wikidot rendered HTML.
+ *
+ * After `@wdprlib/render` produces static HTML, this package brings it
+ * to life by attaching event listeners for interactive elements:
+ * collapsibles, tab views, table-of-contents scrolling, footnote
+ * back-references, rating widgets, etc.
+ *
+ * ```ts
+ * import { initWdprRuntime } from "@wdprlib/runtime";
+ *
+ * const runtime = initWdprRuntime({ root: document.getElementById("content")! });
+ * // later, to clean up:
+ * runtime.destroy();
+ * ```
+ *
+ * @packageDocumentation
+ */
+
 import { initBibcite } from "./bibcite";
 import { initCollapsible } from "./collapsible";
 import { initEmail } from "./email";
@@ -15,7 +34,19 @@ import type { ModuleCleanup, RuntimeOptions, WdprRuntime } from "./types";
 export { HTML_BLOCK_RESIZE_SCRIPT } from "./html-block";
 export type { RateResult, RuntimeOptions, WdprRuntime } from "./types";
 
-/** Initialize the wdpr runtime, binding event listeners for interactive elements */
+/**
+ * Initialise the wdpr runtime by scanning the DOM and binding event
+ * listeners for all interactive Wikidot elements found under `root`.
+ *
+ * Returns a {@link WdprRuntime} handle whose `destroy()` method removes
+ * every listener that was attached — call it before unmounting the
+ * content (e.g. on SPA route changes) to avoid memory leaks.
+ *
+ * @param options - Configuration including root element and callbacks
+ * @returns A handle with a `destroy()` cleanup method
+ *
+ * @group Runtime
+ */
 export function initWdprRuntime(options?: RuntimeOptions): WdprRuntime {
   const root = options?.root ?? document.body;
   const cleanups: ModuleCleanup[] = [];

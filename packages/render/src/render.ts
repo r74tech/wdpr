@@ -37,7 +37,7 @@ export function renderToHtml(tree: SyntaxTree, options: RenderOptions = {}): str
   renderElements(ctx, tree.elements);
 
   // Append styles (with tag breakout prevention)
-  if (tree.styles?.length) {
+  if (ctx.settings.allowStyleElements && tree.styles?.length) {
     for (const style of tree.styles) {
       ctx.push(`<style>${escapeStyleContent(style)}</style>`);
     }

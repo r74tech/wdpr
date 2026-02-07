@@ -204,6 +204,39 @@ describe("WikitextSettings - Renderer", () => {
     });
   });
 
+  describe("allowStyleElements = false (draft mode)", () => {
+    it("style が出力されない", () => {
+      const tree: SyntaxTree = {
+        elements: [],
+        styles: ["body { color: red; }"],
+      };
+      const html = renderToHtml(tree, { settings: draftSettings });
+      expect(html).not.toContain("<style>");
+      expect(html).not.toContain("body { color: red; }");
+    });
+
+    it("forum-post モードでも style が出力されない", () => {
+      const tree: SyntaxTree = {
+        elements: [],
+        styles: [".custom { display: none; }"],
+      };
+      const html = renderToHtml(tree, { settings: forumSettings });
+      expect(html).not.toContain("<style>");
+    });
+  });
+
+  describe("allowStyleElements = true (page mode)", () => {
+    it("style が出力される", () => {
+      const tree: SyntaxTree = {
+        elements: [],
+        styles: ["body { color: red; }"],
+      };
+      const html = renderToHtml(tree, { settings: pageSettings });
+      expect(html).toContain("<style>");
+      expect(html).toContain("body { color: red; }");
+    });
+  });
+
   describe("settings 未指定時のデフォルト動作", () => {
     it("デフォルトで file1 画像がレンダリングされる (page モード)", () => {
       const tree: SyntaxTree = {
@@ -222,6 +255,16 @@ describe("WikitextSettings - Renderer", () => {
       const html = renderToHtml(tree, { page: { pageName: "test-page" } });
       expect(html).toContain("<img");
       expect(html).toContain("/local--files/test-page/test.png");
+    });
+
+    it("デフォルトで style が出力される (page モード)", () => {
+      const tree: SyntaxTree = {
+        elements: [],
+        styles: ["body { color: red; }"],
+      };
+      const html = renderToHtml(tree);
+      expect(html).toContain("<style>");
+      expect(html).toContain("body { color: red; }");
     });
 
     it("デフォルトで heading ID が sequential になる", () => {

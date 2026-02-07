@@ -26,6 +26,12 @@ export interface WikitextSettings {
    * when multiple rendered fragments appear on the same page.
    */
   useTrueIds: boolean;
+  /**
+   * Whether [[module CSS]] style elements are rendered as <style> tags.
+   * Disable to prevent user-authored CSS from affecting the page layout
+   * (e.g., in draft previews, forum posts).
+   */
+  allowStyleElements: boolean;
 }
 
 /**
@@ -34,12 +40,30 @@ export interface WikitextSettings {
 export function createSettings(mode: WikitextMode): WikitextSettings {
   switch (mode) {
     case "page":
-      return { mode, enablePageSyntax: true, allowLocalPaths: true, useTrueIds: true };
+      return {
+        mode,
+        enablePageSyntax: true,
+        allowLocalPaths: true,
+        useTrueIds: true,
+        allowStyleElements: true,
+      };
     case "draft":
-      return { mode, enablePageSyntax: true, allowLocalPaths: true, useTrueIds: false };
+      return {
+        mode,
+        enablePageSyntax: true,
+        allowLocalPaths: true,
+        useTrueIds: false,
+        allowStyleElements: false,
+      };
     case "forum-post":
     case "direct-message":
-      return { mode, enablePageSyntax: false, allowLocalPaths: false, useTrueIds: false };
+      return {
+        mode,
+        enablePageSyntax: false,
+        allowLocalPaths: false,
+        useTrueIds: false,
+        allowStyleElements: false,
+      };
   }
 }
 

@@ -1,41 +1,97 @@
 /**
- * Wikitext parsing/rendering mode.
- * Each mode has different default settings for syntax availability.
+ * Context-dependent settings for the Wikidot parser and renderer.
+ *
+ * Wikidot content appears in several different contexts — full wiki pages,
+ * draft previews, forum posts, and direct messages — each with different
+ * security and capability requirements. {@link WikitextSettings} captures
+ * those differences so the parser/renderer can enable or disable features
+ * accordingly.
+ *
+ * Use {@link createSettings} to get sane defaults for a given
+ * {@link WikitextMode}, then override individual fields as needed.
+ *
+ * @module
+ */
+
+/**
+ * The context in which wikitext is being parsed and rendered.
+ *
+ * Each mode implies a different set of defaults for
+ * {@link WikitextSettings}. The modes correspond to the places where
+ * user-authored wikitext can appear on a Wikidot site.
+ *
+ * | Mode               | Page syntax | Local paths | True IDs | Style elements |
+ * |--------------------|:-----------:|:-----------:|:--------:|:--------------:|
+ * | `"page"`           | yes         | yes         | yes      | yes            |
+ * | `"draft"`          | yes         | yes         | no       | no             |
+ * | `"forum-post"`     | no          | no          | no       | no             |
+ * | `"direct-message"` | no          | no          | no       | no             |
+ *
+ * @group Settings
  */
 export type WikitextMode = "page" | "draft" | "forum-post" | "direct-message";
 
 /**
- * Settings that control parser and renderer behavior based on context.
+ * Controls which parser and renderer features are active.
+ *
+ * These flags gate syntax availability and rendering behaviour based on the
+ * context where the wikitext appears. Construct via {@link createSettings}
+ * and override individual fields when non-default behaviour is needed.
+ *
+ * @group Settings
  */
 export interface WikitextSettings {
-  /** Operating mode */
+  /** The context mode this settings object was created for */
   mode: WikitextMode;
+
   /**
    * Whether page-contextual syntax is permitted.
-   * Controls: include, module, table-of-contents.
+   *
+   * When `true`, the parser recognises `[[include]]`, `[[module]]`, and
+   * `[[toc]]` blocks. These constructs are meaningful only inside a full
+   * wiki page and are disabled in forum posts and direct messages.
    */
   enablePageSyntax: boolean;
+
   /**
-   * Whether local file paths (file1, file2, file3) are permitted for images.
-   * Disable in contexts without a "local" page (forum posts, direct messages).
+   * Whether local file references (`file1`, `file2`, `file3`) are allowed
+   * in image sources.
+   *
+   * Local files belong to a specific wiki page. In contexts that lack a
+   * "current page" — such as forum posts and direct messages — local file
+   * references are meaningless and should be rejected.
    */
   allowLocalPaths: boolean;
+
   /**
-   * Whether element IDs should be stable sequential values.
-   * When false, IDs are randomized to prevent collisions
-   * when multiple rendered fragments appear on the same page.
+   * Whether heading and footnote IDs use stable sequential values
+   * (`toc0`, `toc1`, ...) or randomised strings.
+   *
+   * Stable IDs are appropriate when a single rendered page owns the full
+   * document. Randomised IDs prevent collisions when multiple rendered
+   * fragments (e.g. a live draft preview) coexist on the same HTML page.
    */
   useTrueIds: boolean;
+
   /**
-   * Whether [[module CSS]] style elements are rendered as <style> tags.
-   * Disable to prevent user-authored CSS from affecting the page layout
-   * (e.g., in draft previews, forum posts).
+   * Whether `[[module CSS]]` blocks are rendered as `<style>` tags.
+   *
+   * User-authored CSS can break page layout, so it is allowed only on
+   * full wiki pages. In draft previews, forum posts, and direct messages
+   * the CSS module is silently ignored.
    */
   allowStyleElements: boolean;
 }
 
 /**
- * Create WikitextSettings with defaults for the given mode.
+ * Create a {@link WikitextSettings} with sensible defaults for the given mode.
+ *
+ * See the table on {@link WikitextMode} for which flags each mode enables.
+ *
+ * @param mode - The context in which wikitext will be parsed
+ * @returns A new settings object with defaults for that mode
+ *
+ * @group Settings
  */
 export function createSettings(mode: WikitextMode): WikitextSettings {
   switch (mode) {
@@ -67,5 +123,12 @@ export function createSettings(mode: WikitextMode): WikitextSettings {
   }
 }
 
-/** Default settings (page mode) */
+/**
+ * Pre-built settings for `"page"` mode — the most common context.
+ *
+ * Equivalent to `createSettings("page")`. Provided as a convenience
+ * for call-sites that always operate on full wiki pages.
+ *
+ * @group Settings
+ */
 export const DEFAULT_SETTINGS: WikitextSettings = createSettings("page");

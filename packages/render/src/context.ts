@@ -116,26 +116,31 @@ export class RenderContext {
     return this.options.page;
   }
 
-  /** Resolve an ImageSource to a src URL */
-  resolveImageSource(source: ImageSource): string {
+  /** Resolve an ImageSource to a src URL. Returns null if blocked by settings. */
+  resolveImageSource(source: ImageSource): string | null {
     const pageName = this.page?.pageName;
     switch (source.type) {
       case "url": {
-        // Convert /path to /local--files/path (Wikidot file reference)
         const url = source.data;
+        // Local path (e.g., /local-file.png) — blocked when allowLocalPaths is false
         if (url.startsWith("/") && !url.startsWith("//")) {
+          if (!this.settings.allowLocalPaths) return null;
           return `/local--files${url}`;
         }
         return url;
       }
       case "file1":
-        // file1 uses current page context
-        return pageName
-          ? `/local--files/${pageName}/${source.data.file}`
-          : `/local--files/${source.data.file}`;
       case "file2":
-        return `/local--files/${source.data.page}/${source.data.file}`;
       case "file3":
+        if (!this.settings.allowLocalPaths) return null;
+        if (source.type === "file1") {
+          return pageName
+            ? `/local--files/${pageName}/${source.data.file}`
+            : `/local--files/${source.data.file}`;
+        }
+        if (source.type === "file2") {
+          return `/local--files/${source.data.page}/${source.data.file}`;
+        }
         return `/local--files/${source.data.site}/${source.data.page}/${source.data.file}`;
     }
   }

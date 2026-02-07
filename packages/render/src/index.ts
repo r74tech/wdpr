@@ -1,7 +1,7 @@
 /**
  * HTML renderer for the Wikidot AST.
  *
- * Takes a {@link SyntaxTree} produced by `@wdprlib/parser` and serialises
+ * Takes a `SyntaxTree` produced by `@wdprlib/parser` and serialises
  * it to an HTML string. Page context, user resolution, and security
  * settings (embed allowlists, iframe sandboxing) are configurable via
  * {@link RenderOptions}.

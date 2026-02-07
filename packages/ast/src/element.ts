@@ -780,7 +780,7 @@ export interface IframeData {
 
 /**
  * Data for `[[include page]]` elements.
- * After resolution via {@link resolveIncludes}, `elements` is populated
+ * After resolution via `resolveIncludes()`, `elements` is populated
  * with the included page's parsed content.
  *
  * @group Element Data

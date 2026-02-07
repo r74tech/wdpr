@@ -50,7 +50,7 @@ export interface ResolvedUser {
 /**
  * Async/sync resolver callbacks for content that depends on external data.
  *
- * Unlike the parser's {@link DataProvider} (which fetches bulk data for
+ * Unlike the parser's `DataProvider` (which fetches bulk data for
  * module expansion), these resolvers are called per-element during the
  * rendering pass.
  *

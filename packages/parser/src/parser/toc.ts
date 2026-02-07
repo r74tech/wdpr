@@ -1,25 +1,49 @@
 /**
- * Table of Contents generation
+ * @module toc
  *
- * Converts flat TocEntry[] to nested List elements
+ * Table of Contents (TOC) generation for Wikidot markup.
+ *
+ * Converts a flat array of `TocEntry` items (collected from heading elements
+ * during parsing) into nested bullet-list `Element` nodes suitable for rendering
+ * as `[[toc]]`. Uses the depth module to transform flat heading levels (h1-h6)
+ * into a properly nested list hierarchy.
+ *
+ * Each TOC entry becomes an anchor link (`#toc0`, `#toc1`, ...) pointing to the
+ * corresponding heading in the rendered page, matching Wikidot's original
+ * anchor naming scheme.
  */
 
 import type { Element, TocEntry, ListItem } from "@wdprlib/ast";
 import { processDepths, type DepthList, type DepthItem } from "./depth";
 
 /**
- * TOC index incrementer
+ * Sequential counter for generating unique TOC anchor IDs.
+ *
+ * Wikidot assigns sequential `#toc0`, `#toc1`, ... anchors to headings in
+ * document order. This class maintains a monotonically increasing counter
+ * that is shared across all TOC trees to ensure globally unique anchors.
  */
 class TocIndexer {
   private index = 0;
 
+  /**
+   * Returns the next sequential index and advances the counter.
+   * @returns The current index value (0-based) before incrementing
+   */
   next(): number {
     return this.index++;
   }
 }
 
 /**
- * Build a nested List element from depth-processed items
+ * Build a nested bullet-list Element from depth-processed TOC items.
+ *
+ * Each item in the depth list is converted to a `ListItem`, with nested lists
+ * becoming sub-list items and leaf items becoming anchor links.
+ *
+ * @param indexer - Shared counter for generating sequential `#tocN` anchors
+ * @param items - Depth-processed list of heading text strings
+ * @returns A `list` Element with type "bullet" containing the TOC hierarchy
  */
 function buildTocList(indexer: TocIndexer, items: DepthList<null, string>): Element {
   const listItems: ListItem[] = items.map((item) => buildTocListItem(indexer, item));
@@ -35,7 +59,14 @@ function buildTocList(indexer: TocIndexer, items: DepthList<null, string>): Elem
 }
 
 /**
- * Build a single list item from a depth item
+ * Build a single TOC list item from a depth item.
+ *
+ * For leaf items, creates an anchor link element with a `#tocN` href.
+ * For nested list items, recursively builds a sub-list.
+ *
+ * @param indexer - Shared counter for generating sequential `#tocN` anchors
+ * @param item - A single depth item (either a leaf heading or a nested list)
+ * @returns A `ListItem` for inclusion in the TOC list
  */
 function buildTocListItem(indexer: TocIndexer, item: DepthItem<null, string>): ListItem {
   if (item.kind === "list") {

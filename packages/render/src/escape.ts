@@ -598,6 +598,11 @@ export function isValidEmail(email: string): boolean {
   return /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
 }
 
+/**
+ * Set of HTML attribute names whose values are interpreted as URLs
+ * by the browser. Values of these attributes must be checked via
+ * {@link isDangerousUrl} before rendering.
+ */
 const URL_ATTRIBUTES = new Set([
   "href",
   "src",
@@ -609,8 +614,18 @@ const URL_ATTRIBUTES = new Set([
 ]);
 
 /**
- * Sanitize an attribute map, removing dangerous attributes and values.
- * Returns a new map with only safe entries.
+ * Sanitize a map of HTML attributes, returning a new map containing
+ * only entries that pass all safety checks.
+ *
+ * For each attribute, this function:
+ * 1. Drops attributes that fail {@link isSafeAttribute} (event handlers, unknown names)
+ * 2. Drops URL-bearing attributes whose values fail {@link isDangerousUrl}
+ * 3. Sanitizes `style` values via {@link sanitizeStyleValue}, dropping them entirely
+ *    if the result is empty
+ * 4. Passes all other safe attributes through unchanged
+ *
+ * @param attributes - The raw attribute name-value map to sanitize.
+ * @returns A new map containing only the safe attributes and their (possibly sanitized) values.
  */
 export function sanitizeAttributes(attributes: Record<string, string>): Record<string, string> {
   const result: Record<string, string> = {};

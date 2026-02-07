@@ -5,8 +5,9 @@ import { renderElements } from "../render";
 
 /** Render a footnote reference (superscript link) */
 export function renderFootnoteRef(ctx: RenderContext, index: number): void {
+  const id = ctx.generateId("footnoteref-", index);
   ctx.push(`<sup class="footnoteref">`);
-  ctx.push(`<a id="footnoteref-${index}" href="javascript:;" class="footnoteref">${index}</a>`);
+  ctx.push(`<a id="${id}" href="javascript:;" class="footnoteref">${index}</a>`);
   ctx.push("</sup>");
 }
 
@@ -23,7 +24,8 @@ export function renderFootnoteBlock(ctx: RenderContext, data: FootnoteBlockData)
     const index = i + 1;
     const elements = ctx.footnotes[i] ?? [];
 
-    ctx.push(`<div class="footnote-footer" id="footnote-${index}">`);
+    const fnId = ctx.generateId("footnote-", index);
+    ctx.push(`<div class="footnote-footer" id="${fnId}">`);
     ctx.push(`<a href="javascript:;">${index}</a>. `);
     renderElements(ctx, elements);
     ctx.push("</div>");

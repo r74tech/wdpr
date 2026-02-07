@@ -61,6 +61,10 @@ export const tocRule: BlockRule = {
 
     if (firstValue === "toc") {
       // [[toc ...]]
+      // Page syntax disabled (e.g., forum-post mode)
+      if (!ctx.settings.enablePageSyntax) {
+        return { success: false };
+      }
       pos++;
     } else if (firstValue === "f") {
       // Possibly [[f<toc ...]] or [[f>toc ...]]
@@ -86,6 +90,10 @@ export const tocRule: BlockRule = {
         return { success: false };
       }
       if (tocToken.value.toLowerCase() !== "toc") {
+        return { success: false };
+      }
+      // Page syntax disabled (e.g., forum-post mode)
+      if (!ctx.settings.enablePageSyntax) {
         return { success: false };
       }
       pos++;

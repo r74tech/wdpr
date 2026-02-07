@@ -85,6 +85,12 @@ export const includeRule: BlockRule = {
     if (!nameResult || nameResult.name.toLowerCase() !== "include") {
       return { success: false };
     }
+
+    // Page syntax disabled (e.g., forum-post mode)
+    if (!ctx.settings.enablePageSyntax) {
+      return { success: false };
+    }
+
     pos += nameResult.consumed;
     consumed += nameResult.consumed;
 

@@ -54,6 +54,10 @@ export {
   listItemSubList,
 } from "@wdprlib/ast";
 
+// Wikitext settings (re-exported from @wdprlib/ast)
+export type { WikitextMode, WikitextSettings } from "@wdprlib/ast";
+export { createSettings, DEFAULT_SETTINGS } from "@wdprlib/ast";
+
 // Lexer
 export type { TokenType, Token, LexerOptions } from "./lexer";
 export { Lexer, tokenize, createToken } from "./lexer";

@@ -5,7 +5,7 @@
  * allowing block structures (like div) to span across include boundaries.
  */
 
-import type { PageRef, VariableMap } from "@wdprlib/ast";
+import type { PageRef, VariableMap, WikitextSettings } from "@wdprlib/ast";
 
 /**
  * Callback to fetch page content for include resolution.
@@ -23,6 +23,8 @@ export type IncludeFetcher = (pageRef: PageRef) => string | null;
 export interface ResolveIncludesOptions {
   /** Maximum recursion depth for nested includes (default: 5) */
   maxDepth?: number;
+  /** Wikitext settings. If enablePageSyntax is false, includes are not expanded. */
+  settings?: WikitextSettings;
 }
 
 /**
@@ -44,6 +46,10 @@ export function resolveIncludes(
   fetcher: IncludeFetcher,
   options?: ResolveIncludesOptions,
 ): string {
+  if (options?.settings && !options.settings.enablePageSyntax) {
+    return source;
+  }
+
   const maxDepth = options?.maxDepth ?? 5;
   const cache = new Map<string, string | null>();
 

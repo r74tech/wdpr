@@ -1,3 +1,16 @@
+/**
+ * @module context
+ *
+ * Central rendering context that tracks state during a single HTML render pass.
+ *
+ * Every render invocation creates one {@link RenderContext} instance, which serves
+ * as both an output buffer and a registry for sequential counters (footnotes,
+ * TOC headings, equations, HTML blocks, bibliography citations). The context
+ * also exposes helpers for resolving image sources, page links, and
+ * HTML attribute maps -- operations that depend on the current
+ * {@link WikitextSettings} and {@link PageContext}.
+ */
+
 import type {
   Element,
   ImageSource,
@@ -12,28 +25,67 @@ import type { RenderOptions, PageContext } from "./types";
 import { escapeHtml, escapeAttr, sanitizeAttributes } from "./escape";
 
 /**
- * Render context - manages state and output buffer during rendering
+ * Manages rendering state and accumulates HTML output for a single render pass.
+ *
+ * The context is created once per call to `renderToHtml` and threaded through
+ * every element renderer. It provides:
+ *
+ * - An HTML output buffer ({@link push}, {@link pushEscaped}, {@link getOutput})
+ * - Sequential counters for footnotes, TOC entries, equations, etc.
+ * - ID generation that optionally appends a random suffix to avoid collisions
+ *   when multiple rendered fragments coexist on the same page
+ * - Resolution of {@link ImageSource} and {@link LinkLocation} values into
+ *   concrete URLs, applying Wikidot page-name normalization rules
+ * - Attribute rendering with XSS sanitization
+ * - A bibliography map built by scanning the AST for `bibliography-block`
+ *   elements, assigning continuous 1-indexed citation numbers across blocks
  */
 export class RenderContext {
+  /** Accumulated HTML fragments; joined by {@link getOutput}. */
   private chunks: string[] = [];
+  /** Auto-incrementing counter for table-of-contents heading IDs. */
   private _tocIndex = 0;
+  /** Auto-incrementing counter for footnote reference/body IDs. */
   private _footnoteIndex = 0;
+  /** Auto-incrementing counter for equation numbering. */
   private _equationIndex = 0;
+  /** Auto-incrementing counter for `[[html]]` block iframe indices. */
   private _htmlBlockIndex = 0;
+  /** Auto-incrementing counter for unique bibliography citation IDs. */
   private _bibciteCounter = 0;
+  /**
+   * Random hex suffix appended to element IDs when `useTrueIds` is false.
+   * Prevents ID collisions when multiple rendered fragments appear on one page.
+   * `null` when `useTrueIds` is true (IDs are deterministic).
+   */
   private _idSuffix: string | null;
 
+  /** Merged wikitext settings (page-mode defaults when omitted). */
   readonly settings: WikitextSettings;
+  /** Full render options supplied by the caller. */
   readonly options: RenderOptions;
+  /** Footnote element arrays collected from the syntax tree. */
   readonly footnotes: Element[][];
+  /** CSS `<style>` blocks extracted from the syntax tree. */
   readonly styles: string[];
+  /** Raw HTML strings for `[[html]]` blocks, indexed by insertion order. */
   readonly htmlBlocks: string[];
+  /** Pre-built TOC element tree for `[[toc]]` rendering. */
   readonly tocElements: Element[];
-  /** Map from bibliography label to citation number (1-indexed) */
+  /** Map from bibliography label to its 1-indexed citation number. */
   readonly bibliographyMap: Map<string, number>;
-  /** Bibliography entries (from bibliography-block) */
+  /** Ordered bibliography definition-list entries from `[[bibliography]]` blocks. */
   readonly bibliographyEntries: DefinitionListItem[];
 
+  /**
+   * Create a new render context from a parsed syntax tree.
+   *
+   * @param tree - The syntax tree produced by the parser. Footnotes,
+   *   styles, html-blocks, and table-of-contents data are extracted from
+   *   the tree and stored for later use by element renderers.
+   * @param options - Caller-supplied render configuration. Missing fields
+   *   fall back to safe defaults.
+   */
   constructor(tree: SyntaxTree, options: RenderOptions = {}) {
     this.settings = options.settings ?? DEFAULT_SETTINGS;
     // When useTrueIds is false, generate a per-context random suffix for all IDs
@@ -50,7 +102,15 @@ export class RenderContext {
     this.buildBibliographyMap(tree.elements);
   }
 
-  /** Build bibliography label to number mapping from AST */
+  /**
+   * Recursively scan the AST for `bibliography-block` elements and assign
+   * continuous 1-indexed citation numbers to each unique label.
+   *
+   * Duplicate labels across multiple bibliography blocks receive the same
+   * number, preserving the order of first occurrence.
+   *
+   * @param elements - Array of AST elements to scan (may contain nested children).
+   */
   private buildBibliographyMap(elements: Element[]): void {
     for (const el of elements) {
       if (el.element === "bibliography-block") {
@@ -74,42 +134,75 @@ export class RenderContext {
     }
   }
 
-  /** Append raw HTML to the output */
+  /**
+   * Append a raw HTML string to the output buffer without escaping.
+   *
+   * @param html - Trusted HTML fragment to append.
+   */
   push(html: string): void {
     this.chunks.push(html);
   }
 
-  /** Append escaped text to the output */
+  /**
+   * HTML-escape the given text and append it to the output buffer.
+   *
+   * @param text - Untrusted text content (will be entity-escaped).
+   */
   pushEscaped(text: string): void {
     this.chunks.push(escapeHtml(text));
   }
 
-  /** Get the accumulated HTML output */
+  /**
+   * Join all buffered HTML fragments and return the final HTML string.
+   *
+   * @returns The complete rendered HTML output.
+   */
   getOutput(): string {
     return this.chunks.join("");
   }
 
-  /** Get and increment the TOC index */
+  /**
+   * Return the current TOC heading index and advance the counter.
+   *
+   * @returns The index before incrementing (0-based).
+   */
   nextTocIndex(): number {
     return this._tocIndex++;
   }
 
-  /** Get and increment the footnote index */
+  /**
+   * Return the current footnote index and advance the counter.
+   *
+   * @returns The index before incrementing (0-based).
+   */
   nextFootnoteIndex(): number {
     return this._footnoteIndex++;
   }
 
-  /** Get and increment the equation index */
+  /**
+   * Return the current equation index and advance the counter.
+   *
+   * @returns The index before incrementing (0-based).
+   */
   nextEquationIndex(): number {
     return this._equationIndex++;
   }
 
-  /** Get and increment the htmlBlock index */
+  /**
+   * Return the current HTML block index and advance the counter.
+   *
+   * @returns The index before incrementing (0-based).
+   */
   nextHtmlBlockIndex(): number {
     return this._htmlBlockIndex++;
   }
 
-  /** Get and increment the bibcite counter (for unique IDs) */
+  /**
+   * Advance the bibliography citation counter and return the new value.
+   * Used to generate unique `bibcite-N-XXXXX` element IDs.
+   *
+   * @returns The counter value after incrementing (1-based).
+   */
   nextBibciteCounter(): number {
     return ++this._bibciteCounter;
   }
@@ -137,12 +230,29 @@ export class RenderContext {
     return `${name}-${this._idSuffix}`;
   }
 
-  /** Get page context */
+  /**
+   * The page context for the current render, if provided.
+   * Contains page name, site, tags, and a page-existence checker.
+   */
   get page(): PageContext | undefined {
     return this.options.page;
   }
 
-  /** Resolve an ImageSource to a src URL. Returns null if blocked by settings. */
+  /**
+   * Resolve an {@link ImageSource} to a concrete `src` URL string.
+   *
+   * Wikidot supports several image source forms:
+   * - `url` -- a direct URL or local path
+   * - `file1` -- a file attached to the current page (`/local--files/{page}/{file}`)
+   * - `file2` -- a file attached to a named page
+   * - `file3` -- a file on a named site and page
+   *
+   * Local paths (starting with `/` but not `//`) and file-type sources are
+   * blocked when `allowLocalPaths` is false in the settings.
+   *
+   * @param source - The image source descriptor from the AST.
+   * @returns The resolved URL, or `null` if the source is blocked by settings.
+   */
   resolveImageSource(source: ImageSource): string | null {
     const pageName = this.page?.pageName;
     switch (source.type) {
@@ -169,7 +279,18 @@ export class RenderContext {
     }
   }
 
-  /** Resolve a LinkLocation to an href string */
+  /**
+   * Resolve a {@link LinkLocation} to an `href` string.
+   *
+   * Handles plain URL strings and structured `PageRef` objects. For page
+   * references the page name is normalized to lowercase, spaces are replaced
+   * with hyphens, and slashes become hyphens (Wikidot URL convention).
+   * Anchors (`#`) and cross-site references (`site` field) are handled.
+   *
+   * @param location - A raw URL string or a `PageRef` object from the AST.
+   * @returns The resolved href string, always starting with `/` for local
+   *   pages or `https://` for cross-site links.
+   */
   resolvePageLink(location: LinkLocation): string {
     if (typeof location === "string") {
       return location;
@@ -207,7 +328,16 @@ export class RenderContext {
     return `/${safePage}`;
   }
 
-  /** Normalize a page name according to Wikidot rules */
+  /**
+   * Normalize a page name following Wikidot URL conventions.
+   *
+   * Rules applied in order: lowercase, strip spaces after category colon,
+   * replace remaining spaces with hyphens, replace slashes with hyphens
+   * (unless the name starts with `/`).
+   *
+   * @param page - Raw page name from the AST.
+   * @returns Normalized page name suitable for URL paths.
+   */
   private normalizePageName(page: string): string {
     // Lowercase
     let normalized = page.toLowerCase();
@@ -222,7 +352,16 @@ export class RenderContext {
     return normalized;
   }
 
-  /** Render an AttributeMap to HTML attribute string (with leading space) */
+  /**
+   * Sanitize and render an attribute map to an HTML attribute string.
+   *
+   * Dangerous attributes (event handlers, unsafe URLs) are stripped by
+   * {@link sanitizeAttributes}. Each surviving key-value pair is escaped
+   * and formatted as ` key="value"`.
+   *
+   * @param attributes - Raw attribute map from the AST.
+   * @returns A string of HTML attributes with a leading space, or `""` if empty.
+   */
   renderAttributes(attributes: Record<string, string>): string {
     const safe = sanitizeAttributes(attributes);
     let result = "";

@@ -1,10 +1,32 @@
+/**
+ * @module elements/list
+ *
+ * Renderers for Wikidot ordered/unordered lists and definition lists.
+ *
+ * Wikidot list syntax uses `*` (unordered) and `#` (ordered) prefixes
+ * with indentation controlling nesting depth. The parser produces a
+ * recursive `ListData` structure with items that can be either
+ * "elements" (content) or "sub-list" (nested list).
+ *
+ * Special behaviors replicated from Wikidot:
+ * - Empty lists are silently dropped (no output at all).
+ * - Items with `_noMarker` have `list-style: none` and the first
+ *   paragraph is unwrapped (no `<p>` tags).
+ * - Sub-lists without a preceding content item get an inline hidden `<li>`.
+ * - Leading/trailing whitespace-only text nodes are trimmed from items.
+ */
+
 import type { ListData, DefinitionListItem, Element, ContainerData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, sanitizeAttributes } from "../escape";
 import { renderElements, renderElement } from "../render";
 
 /**
- * Trim leading/trailing whitespace-only text elements from an array
+ * Trim leading and trailing whitespace-only text elements from an array.
+ *
+ * @param elements - Array of AST elements.
+ * @returns A slice of the array with whitespace-only text nodes removed
+ *   from both ends.
  */
 function trimTextElements(elements: Element[]): Element[] {
   if (elements.length === 0) return elements;
@@ -36,7 +58,14 @@ function trimTextElements(elements: Element[]): Element[] {
 }
 
 /**
- * Check if a paragraph element contains only text that looks like [[/li]]
+ * Check whether a paragraph element contains only the text `[[/li]]`.
+ *
+ * The parser sometimes wraps stray `[[/li]]` closing tags in a paragraph.
+ * When found as the last paragraph in a `_noMarker` item, the paragraph
+ * wrapper is removed to match Wikidot output.
+ *
+ * @param el - An AST element to check.
+ * @returns `true` if the element is a paragraph containing only `[[/li]]`.
  */
 function isLiCloseTextParagraph(el: Element): boolean {
   if (el.element !== "container") return false;
@@ -51,10 +80,15 @@ function isLiCloseTextParagraph(el: Element): boolean {
 }
 
 /**
- * Render elements for _noMarker items with special Wikidot paragraph handling:
- * - First paragraph: unwrap (no <p> tag)
- * - Middle paragraphs: keep <p> tags
- * - Last paragraph if it's just [[/li]]: unwrap (no <p> tag)
+ * Render elements for `_noMarker` list items with special paragraph handling.
+ *
+ * Wikidot treats bare content (without `[[li]]`) differently:
+ * - The first paragraph is unwrapped (children rendered without `<p>` tags).
+ * - Middle paragraphs retain their `<p>` wrappers.
+ * - The last paragraph is unwrapped if it contains only `[[/li]]` text.
+ *
+ * @param ctx - The current render context.
+ * @param elements - The list item's child elements.
  */
 function renderNoMarkerElements(ctx: RenderContext, elements: Element[]): void {
   const trimmed = trimTextElements(elements);
@@ -102,7 +136,16 @@ function renderNoMarkerElements(ctx: RenderContext, elements: Element[]): void {
   }
 }
 
-/** Render a list element */
+/**
+ * Render an ordered or unordered list.
+ *
+ * Wikidot drops empty lists entirely (no HTML output). Sub-lists
+ * following a content item are rendered inside the same `<li>`.
+ * Sub-lists without a preceding content item get a hidden `<li>` wrapper.
+ *
+ * @param ctx - The current render context.
+ * @param data - List data with type (numbered/bulleted), items, and attributes.
+ */
 export function renderList(ctx: RenderContext, data: ListData): void {
   // Wikidot behavior: empty lists or lists with only empty items are ignored
   // and converted to <br />
@@ -159,6 +202,12 @@ export function renderList(ctx: RenderContext, data: ListData): void {
   ctx.push(`</${tag}>`);
 }
 
+/**
+ * Sanitize and render list-specific attributes, excluding internal `_`-prefixed keys.
+ *
+ * @param attributes - Raw attribute map from the AST.
+ * @returns An HTML attribute string with leading space, or `""` if empty.
+ */
 function renderListAttrs(attributes: Record<string, string>): string {
   const safe = sanitizeAttributes(attributes);
   let result = "";
@@ -169,7 +218,14 @@ function renderListAttrs(attributes: Record<string, string>): string {
   return result;
 }
 
-/** Render a definition list */
+/**
+ * Render a definition list (`:`-prefixed items in Wikidot markup).
+ *
+ * Produces `<dl>` with `<dt>`/`<dd>` pairs for each definition item.
+ *
+ * @param ctx - The current render context.
+ * @param items - Array of definition list items, each with key and value elements.
+ */
 export function renderDefinitionList(ctx: RenderContext, items: DefinitionListItem[]): void {
   ctx.push("<dl>");
   for (const item of items) {

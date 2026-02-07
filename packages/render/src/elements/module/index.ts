@@ -1,3 +1,17 @@
+/**
+ * @module elements/module
+ *
+ * Dispatcher for `[[module ModuleName]]` elements.
+ *
+ * Wikidot modules are server-side components that generate dynamic content.
+ * This renderer dispatches to the appropriate module-specific renderer based
+ * on the module name. Supported modules include Rate, Join, Backlinks,
+ * Categories, PageTree, ListPages, and ListUsers.
+ *
+ * Unknown module names produce a Wikidot-compatible error block with a
+ * link to the modules documentation page.
+ */
+
 import type { Module } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
 import { renderBacklinks } from "./backlinks";
@@ -8,7 +22,17 @@ import { renderRate } from "./rate";
 import { renderListUsers } from "./listusers";
 import { renderListPages } from "./listpages";
 
-/** Render a module element */
+/**
+ * Render a `[[module]]` element by dispatching on the module name.
+ *
+ * Each module outputs a container `<div>` with a module-specific CSS class.
+ * Some modules (like Rate and Join) render interactive UI elements; others
+ * (like Backlinks and ListPages) render empty containers that can be
+ * populated at runtime.
+ *
+ * @param ctx - The current render context.
+ * @param data - Module data with discriminated module type.
+ */
 export function renderModule(ctx: RenderContext, data: Module): void {
   switch (data.module) {
     case "unknown":

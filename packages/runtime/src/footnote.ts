@@ -1,7 +1,44 @@
+/**
+ * @module footnote
+ *
+ * Runtime module for footnote hover tooltips and bidirectional scroll navigation.
+ *
+ * Sets up three types of DOM interactions:
+ *
+ * 1. Click on `a.footnoteref` -- scrolls to the corresponding footnote body
+ * 2. Click on a link inside `.footnote-footer` -- scrolls back to the reference
+ * 3. Hover on `a.footnoteref` -- shows a Wikidot-compatible tooltip with the
+ *    footnote content
+ *
+ * Tooltips are pre-built during initialization and appended to a dedicated
+ * `#odialog-hovertips` container element. Positioning is calculated
+ * dynamically on each hover to account for scroll position.
+ *
+ * DOM interactions:
+ * - Listens for `click` (bubble) for footnote ref/body navigation
+ * - Listens for `mouseenter` (capture) on `a.footnoteref` to show tooltip
+ * - Listens for `mouseleave` (capture) on `a.footnoteref` to hide tooltip
+ * - Creates `#odialog-hovertips` container appended to `document.body`
+ *
+ * The `destroy()` cleanup function removes all event listeners and the
+ * tooltip container element.
+ */
+
 import type { ModuleCleanup } from "./types";
 import { isElement } from "./utils/dom";
 import { scrollToElement } from "./utils/scroll";
 
+/**
+ * Initialize footnote interaction behavior within the given root element.
+ *
+ * Pre-builds tooltips for all footnote references, attaches click handlers
+ * for bidirectional scrolling between references and bodies, and attaches
+ * hover handlers for tooltip display.
+ *
+ * @param root - The root DOM element containing rendered Wikidot markup.
+ * @returns A cleanup handle whose `destroy()` method removes all listeners
+ *   and the tooltip container.
+ */
 export function initFootnote(root: HTMLElement): ModuleCleanup {
   const doc = root.ownerDocument;
 
@@ -90,6 +127,15 @@ export function initFootnote(root: HTMLElement): ModuleCleanup {
   };
 }
 
+/**
+ * Position a tooltip element below (or above) the given anchor element.
+ *
+ * The tooltip is briefly shown to measure its dimensions, then repositioned
+ * to stay within the viewport boundaries.
+ *
+ * @param tip - The tooltip element to position.
+ * @param anchor - The anchor element the tooltip is attached to.
+ */
 function positionTooltip(tip: HTMLElement, anchor: HTMLElement): void {
   const doc = anchor.ownerDocument;
   const win = doc.defaultView ?? window;
@@ -114,7 +160,20 @@ function positionTooltip(tip: HTMLElement, anchor: HTMLElement): void {
   tip.style.top = `${top}px`;
 }
 
-/** Build Wikidot-compatible hovertip: .hovertip > .content > .footnote > .f-heading + .f-content + .f-footer */
+/**
+ * Build a Wikidot-compatible footnote tooltip element.
+ *
+ * Structure: `.hovertip > .content > .footnote > .f-heading + .f-content + .f-footer`
+ *
+ * The tooltip clones the footnote body, strips the leading link and
+ * numbering (e.g., `<a>1</a>. `), and wraps the remaining content in
+ * the standard tooltip structure.
+ *
+ * @param doc - The owner document for DOM element creation.
+ * @param footnoteEl - The `.footnote-footer` element to extract content from.
+ * @param id - The footnote number (for the heading text).
+ * @returns A detached tooltip DOM element, initially hidden.
+ */
 function buildFootnoteTooltip(doc: Document, footnoteEl: HTMLElement, id: string): HTMLElement {
   const tip = doc.createElement("div");
   tip.className = "hovertip";
@@ -159,6 +218,15 @@ function buildFootnoteTooltip(doc: Document, footnoteEl: HTMLElement, id: string
   return tip;
 }
 
+/**
+ * Extract the footnote body element ID from a footnote reference link.
+ *
+ * Checks the `href` attribute first (e.g., `#footnote-1`), then falls back
+ * to deriving the ID from the link's own `id` attribute.
+ *
+ * @param link - The `a.footnoteref` anchor element.
+ * @returns The footnote body element ID, or `null` if it cannot be determined.
+ */
 function getFootnoteId(link: HTMLAnchorElement): string | null {
   const href = link.getAttribute("href");
   if (href?.startsWith("#")) return href.slice(1);
@@ -169,6 +237,16 @@ function getFootnoteId(link: HTMLAnchorElement): string | null {
   return null;
 }
 
+/**
+ * Extract the back-reference element ID from a footnote body link.
+ *
+ * Used for "scroll back to reference" behavior. Derives the `footnoteref-N`
+ * ID from the footnote footer's own `footnote-N` ID.
+ *
+ * @param link - The anchor element clicked within the footnote body.
+ * @param footer - The `.footnote-footer` container element.
+ * @returns The footnote reference element ID, or `null` if it cannot be determined.
+ */
 function getBackrefId(link: HTMLAnchorElement, footer: HTMLElement): string | null {
   const href = link.getAttribute("href");
   if (href?.startsWith("#")) return href.slice(1);

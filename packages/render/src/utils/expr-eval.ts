@@ -12,34 +12,57 @@
  * Expression limit: 256 characters (enforced by parser)
  */
 
-// False values for #if (string-based check)
+/**
+ * Set of string values considered falsy by Wikidot's `#if` construct.
+ * Case-insensitive after lowercasing and trimming.
+ */
 const FALSE_VALUES = new Set(["false", "null", "", "0"]);
 
 /**
- * Check if a string value is truthy for #if
+ * Determine whether a string value is truthy for Wikidot's `#if` construct.
+ *
+ * The value is lowercased and trimmed before checking against the set of
+ * known falsy strings (`"false"`, `"null"`, `""`, `"0"`).
+ *
+ * @param value - The condition string to check.
+ * @returns `true` if the value is not in the falsy set.
  */
 export function isTruthy(value: string): boolean {
   return !FALSE_VALUES.has(value.toLowerCase().trim());
 }
 
+/** Maximum allowed expression length (enforced by the parser, checked here as a safety net). */
 const MAX_EXPRESSION_LENGTH = 256;
 
 /**
- * Check if a number is truthy for logical operations
- * 0 and NaN are falsy, everything else is truthy
+ * Determine whether a number is truthy for logical operators (`and`, `or`, `not`).
+ *
+ * 0 and `NaN` are falsy; all other finite and infinite values are truthy.
+ *
+ * @param n - The number to check.
+ * @returns `true` if the number is non-zero and not `NaN`.
  */
 function isTruthyNum(n: number): boolean {
   return n !== 0 && !Number.isNaN(n);
 }
 
 /**
- * Expression evaluation result
+ * Result of evaluating a mathematical expression.
+ * Either a successful numeric value or an error message string.
  */
 export type ExprResult = { success: true; value: number } | { success: false; error: string };
 
 /**
- * Evaluate a mathematical expression
- * Returns success with value, or error with Wikidot-compatible message
+ * Evaluate a mathematical expression string and return the result.
+ *
+ * The expression is tokenized, parsed with a recursive descent parser,
+ * and evaluated in a single pass. Errors produce Wikidot-compatible
+ * messages (e.g., `"division by zero"`, `"too many values in the stack"`).
+ *
+ * NaN and Infinity results are treated as division-by-zero errors.
+ *
+ * @param expr - The expression string to evaluate.
+ * @returns A success result with a numeric value, or an error result with a message.
  */
 export function evaluateExpression(expr: string): ExprResult {
   try {
@@ -68,7 +91,7 @@ export function evaluateExpression(expr: string): ExprResult {
   }
 }
 
-// Token types for expression parsing
+/** Discriminant for expression tokens. */
 type TokenKind =
   | "NUMBER"
   | "IDENTIFIER"
@@ -89,13 +112,25 @@ type TokenKind =
   | "NE"
   | "EOF";
 
+/** A single token produced by the expression tokenizer. */
 interface ExprToken {
+  /** The type of this token. */
   kind: TokenKind;
+  /** Numeric value for NUMBER tokens; string representation for all others. */
   value: string | number;
 }
 
 /**
- * Tokenize an expression string
+ * Tokenize a mathematical expression string into a sequence of tokens.
+ *
+ * Handles numbers (including decimals), identifiers (function names and
+ * keywords like `and`/`or`/`not`), two-character operators (`<=`, `>=`,
+ * `!=`, `<>`), and single-character operators. Unknown characters throw
+ * an error.
+ *
+ * @param expr - The expression string to tokenize.
+ * @returns Array of tokens, always ending with an EOF token.
+ * @throws {Error} On encountering an unknown character or invalid number.
  */
 function tokenize(expr: string): ExprToken[] {
   const tokens: ExprToken[] = [];

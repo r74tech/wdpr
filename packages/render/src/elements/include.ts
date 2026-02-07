@@ -1,9 +1,29 @@
+/**
+ * @module elements/include
+ *
+ * Renderer for `[[include page-name]]` transclusion elements.
+ *
+ * Includes are resolved by the parser before rendering: if the target
+ * page exists, its parsed elements are injected into the AST. At render
+ * time, the renderer either outputs the pre-resolved elements or shows
+ * a Wikidot-compatible error message with a "create it now" link.
+ */
+
 import type { IncludeData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, escapeHtml } from "../escape";
 import { renderElements } from "../render";
 
-/** Render include - renders resolved elements or error if not resolved */
+/**
+ * Render an `[[include]]` element.
+ *
+ * If the include was resolved by the parser (i.e., `data.elements` is
+ * non-empty), the resolved elements are rendered directly. Otherwise,
+ * a Wikidot-compatible error block with a "create it now" link is shown.
+ *
+ * @param ctx - The current render context.
+ * @param data - Include data with the target page location and resolved elements.
+ */
 export function renderInclude(ctx: RenderContext, data: IncludeData): void {
   // If elements is empty, the include was not resolved - show error
   if (data.elements.length === 0) {

@@ -1,9 +1,32 @@
+/**
+ * @module elements/table
+ *
+ * Renderer for Wikidot table elements.
+ *
+ * Wikidot supports two table syntaxes:
+ * - Pipe syntax (`||cell||cell||`) -- adds `class="wiki-content-table"`
+ * - Block syntax (`[[table]]...[[/table]]`) -- no default class
+ *
+ * Both syntaxes support cell alignment (via tildes), column/row spans,
+ * header cells (marked with `~`), and custom attributes on rows and cells.
+ */
+
 import type { TableData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { escapeAttr, sanitizeAttributes } from "../escape";
 import { renderElements } from "../render";
 
-/** Render a table element */
+/**
+ * Render a table element.
+ *
+ * Pipe-syntax tables receive `class="wiki-content-table"` on the `<table>`
+ * element. Cell alignment is rendered as inline `text-align` styles.
+ * Header cells use `<th>` instead of `<td>`. Column and row spans are
+ * applied from the AST data and attributes, respectively.
+ *
+ * @param ctx - The current render context.
+ * @param data - Table data with rows, cells, attributes, and source type.
+ */
 export function renderTable(ctx: RenderContext, data: TableData): void {
   // Only add wiki-content-table class for pipe syntax tables
   const isPipeTable = data.attributes._source === "pipe";
@@ -59,6 +82,13 @@ export function renderTable(ctx: RenderContext, data: TableData): void {
   ctx.push("</table>");
 }
 
+/**
+ * Sanitize and render table-level or row-level attributes, excluding
+ * internal `_`-prefixed keys.
+ *
+ * @param attributes - Raw attribute map from the AST.
+ * @returns An HTML attribute string with leading space, or `""` if empty.
+ */
 function renderTableAttrs(attributes: Record<string, string>): string {
   const safe = sanitizeAttributes(attributes);
   let result = "";

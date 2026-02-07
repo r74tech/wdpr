@@ -1,3 +1,22 @@
+/**
+ * @module elements/embed-block
+ *
+ * Renderer for `[[embed]]...[[/embed]]` block-level embeds.
+ *
+ * Unlike inline embeds (which target specific providers like YouTube),
+ * embed blocks contain raw HTML that the user provides. This module
+ * validates and sanitizes that HTML through a multi-layer pipeline:
+ *
+ * 1. `sanitize-html` strips everything except a single `<iframe>` with
+ *    a limited set of safe attributes.
+ * 2. The iframe's `src` URL must use HTTP or HTTPS.
+ * 3. The hostname and path must match the configured allowlist (or the
+ *    allowlist can be set to `null` for Wikidot's "anyiframe" mode).
+ *
+ * If any validation step fails, a Wikidot-compatible error block is
+ * rendered instead.
+ */
+
 import type { EmbedBlockData } from "@wdprlib/ast";
 import type { Element } from "domhandler";
 import { parseDocument } from "htmlparser2";
@@ -92,7 +111,14 @@ const SANITIZE_CONFIG: sanitizeHtml.IOptions = {
 };
 
 /**
- * Find all iframe elements in parsed HTML (recursive to detect nested iframes)
+ * Parse HTML and recursively find all `<iframe>` elements.
+ *
+ * Recursion is needed because `sanitize-html` might leave nested
+ * structures intact, and we need to ensure exactly one iframe exists
+ * at any nesting level.
+ *
+ * @param html - Sanitized HTML string.
+ * @returns Array of found iframe DOM elements.
  */
 function findIframes(html: string): Element[] {
   const doc = parseDocument(html);
@@ -114,8 +140,15 @@ function findIframes(html: string): Element[] {
 }
 
 /**
- * Check if a hostname matches an allowlist entry
- * Supports wildcard prefix with '*.' (e.g., '*.youtube.com' matches 'www.youtube.com')
+ * Check whether a hostname matches a host pattern.
+ *
+ * Supports wildcard prefix `*.` (e.g., `*.youtube.com` matches both
+ * `youtube.com` and `www.youtube.com` but not `evil-youtube.com`).
+ * Non-wildcard patterns require an exact match.
+ *
+ * @param hostname - The actual hostname from the iframe `src` URL.
+ * @param pattern - The allowlist host pattern to match against.
+ * @returns `true` if the hostname matches the pattern.
  */
 function matchesHostPattern(hostname: string, pattern: string): boolean {
   const lowerHostname = hostname.toLowerCase();
@@ -132,8 +165,15 @@ function matchesHostPattern(hostname: string, pattern: string): boolean {
 }
 
 /**
- * Check if URL matches an allowlist entry (host and optional path prefix)
- * Path prefix must match at a boundary (followed by /, ?, #, or end of path)
+ * Check whether a URL matches an allowlist entry's host and optional path prefix.
+ *
+ * The path prefix must match at a boundary: it must be followed by `/`, `?`,
+ * `#`, or end of string to prevent partial matches (e.g., `/embed` must not
+ * match `/embedX`).
+ *
+ * @param url - Parsed URL from the iframe `src` attribute.
+ * @param entry - Allowlist entry with host pattern and optional path prefix.
+ * @returns `true` if both host and path conditions are satisfied.
  */
 function matchesAllowlistEntry(url: URL, entry: EmbedAllowlistEntry): boolean {
   if (!matchesHostPattern(url.hostname, entry.host)) {
@@ -158,14 +198,18 @@ function matchesAllowlistEntry(url: URL, entry: EmbedAllowlistEntry): boolean {
 }
 
 /**
- * Validate and sanitize embed content
- * Returns sanitized HTML string or null if content is invalid/dangerous
+ * Validate and sanitize embed block content through a multi-step pipeline.
  *
- * Validation rules:
- * - Content must contain exactly one iframe element
- * - iframe must have a valid HTTPS src URL
- * - src URL must match the allowlist (host + path prefix)
- * - sanitize-html removes dangerous attributes
+ * Steps:
+ * 1. Strip all elements except `<iframe>` with safe attributes via `sanitize-html`.
+ * 2. Verify exactly one iframe element exists.
+ * 3. Parse the iframe `src` URL and enforce HTTP/HTTPS scheme.
+ * 4. Match the URL against the allowlist (unless `null` for anyiframe mode).
+ *
+ * @param content - Raw HTML content from the `[[embed]]` block.
+ * @param allowlist - Host/path allowlist entries, or `null` for anyiframe mode.
+ * @param baseUrl - Optional base URL for resolving protocol-relative `src` values.
+ * @returns Sanitized HTML string, or `null` if validation fails.
  */
 function validateAndSanitizeEmbed(
   content: string,
@@ -225,7 +269,14 @@ function validateAndSanitizeEmbed(
 }
 
 /**
- * Normalize boolean attributes to Wikidot format (attr -> attr="attr" or attr="" -> attr="attr")
+ * Normalize HTML boolean attributes to Wikidot's format.
+ *
+ * Wikidot outputs boolean attributes as `attr="attr"` rather than the
+ * minimized form (`attr`) or empty form (`attr=""`). This function
+ * rewrites both forms to match.
+ *
+ * @param html - HTML string potentially containing boolean attributes.
+ * @returns HTML with boolean attributes in `attr="attr"` format.
  */
 function normalizeBooleanAttributes(html: string): string {
   let result = html;
@@ -243,12 +294,18 @@ function normalizeBooleanAttributes(html: string): string {
 }
 
 /**
- * Render embed-block element (Wikidot style [[embed]]..[[/embed]])
+ * Render an `[[embed]]...[[/embed]]` block element.
  *
- * Content is validated in a single pass:
- * 1. sanitize-html sanitization (removes dangerous attributes)
- * 2. Single iframe requirement check
- * 3. HTTPS-only and allowlist (host + path) validation
+ * The raw HTML content is validated and sanitized through the full
+ * pipeline. On failure, a Wikidot-compatible error block is shown:
+ * `<div class="error-block">Sorry, no match for the embedded content.</div>`.
+ *
+ * The allowlist is taken from `ctx.options.embedAllowlist`, falling back
+ * to {@link DEFAULT_EMBED_ALLOWLIST} when not specified. Setting it to
+ * `null` enables Wikidot's "anyiframe" mode (any HTTPS iframe allowed).
+ *
+ * @param ctx - The current render context.
+ * @param data - Embed block data containing the raw HTML contents.
  */
 export function renderEmbedBlock(ctx: RenderContext, data: EmbedBlockData): void {
   // Use explicit undefined check to allow null (anyiframe mode)

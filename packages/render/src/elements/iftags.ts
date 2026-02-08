@@ -49,12 +49,19 @@ function evaluateIfTagsCondition(condition: string, pageTags: string[]): boolean
 
   for (const token of tokens) {
     if (token.startsWith("+")) {
-      required.push(token.slice(1).toLowerCase());
+      const tag = token.slice(1).toLowerCase();
+      if (tag) required.push(tag);
     } else if (token.startsWith("-")) {
-      excluded.push(token.slice(1).toLowerCase());
+      const tag = token.slice(1).toLowerCase();
+      if (tag) excluded.push(tag);
     } else {
       optional.push(token.toLowerCase());
     }
+  }
+
+  // If all tokens had empty tag names (e.g. "+" or "-"), treat as empty condition
+  if (required.length === 0 && excluded.length === 0 && optional.length === 0) {
+    return false;
   }
 
   // All required tags must be present

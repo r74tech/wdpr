@@ -1,3 +1,13 @@
+## 1.1.4 (2026-02-08)
+
+### 🩹 Fixes
+
+- **parser,render:** [[iftags]]の条件評価バグとCSS漏出を修正 ([#22](https://github.com/r74tech/wdpr/pull/22))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 1.1.3 (2026-02-08)
 
 ### 🩹 Fixes

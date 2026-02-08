@@ -11,7 +11,7 @@
 
 import type { Module } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
-import { escapeHtml } from "../../escape";
+import { escapeAttr, escapeHtml } from "../../escape";
 
 /**
  * Render a `[[module Join]]` element with a clickable join button.
@@ -27,7 +27,7 @@ export function renderJoin(ctx: RenderContext, data: Extract<Module, { module: "
   const buttonText = data["button-text"] ?? "Join";
   const attrs = data.attributes ?? {};
   const className = attrs.class ?? "join-box";
-  ctx.push(`<div class="${escapeHtml(className)}">`);
+  ctx.push(`<div class="${escapeAttr(className)}">`);
   ctx.push(`<a href="javascript:;">${escapeHtml(buttonText)}</a>`);
   ctx.push("</div>");
 }

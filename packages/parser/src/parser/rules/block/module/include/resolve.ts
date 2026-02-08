@@ -110,12 +110,34 @@ function parseIncludeDirective(inner: string): { location: PageRef; variables: V
 
   // Split by pipe to get target and variable assignments
   const parts = normalized.split("|");
-  const target = parts[0]!.trim();
+  const firstSegment = parts[0]!.trim();
 
-  const variables: VariableMap = {};
+  // Separate page name from space-separated parameters in the first segment.
+  // e.g. "component:coltop show=+ 開く" → target="component:coltop", rest="show=+ 開く"
+  const spaceIndex = firstSegment.indexOf(" ");
+  let target: string;
+  const varSegments: string[] = [];
+
+  if (spaceIndex !== -1) {
+    target = firstSegment.slice(0, spaceIndex);
+    const rest = firstSegment.slice(spaceIndex + 1).trim();
+    if (rest) {
+      varSegments.push(rest);
+    }
+  } else {
+    target = firstSegment;
+  }
+
+  // Collect pipe-separated variable segments
   for (let i = 1; i < parts.length; i++) {
     const segment = parts[i]!.trim();
-    if (!segment) continue;
+    if (segment) {
+      varSegments.push(segment);
+    }
+  }
+
+  const variables: VariableMap = {};
+  for (const segment of varSegments) {
     const eqIndex = segment.indexOf("=");
     if (eqIndex !== -1) {
       const key = segment.slice(0, eqIndex).trim();

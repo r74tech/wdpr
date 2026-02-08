@@ -171,6 +171,32 @@ describe("resolveIncludes", () => {
     expect(expanded).toContain("{$site}");
   });
 
+  test("handles space-separated parameters in first segment", () => {
+    const source = "[[include component:coltop show=+ 開く|hide=- 閉じる]]";
+    let receivedPageRef: { site: string | null; page: string } | null = null;
+    const fetcher = (pageRef: { site: string | null; page: string }) => {
+      receivedPageRef = pageRef;
+      return "Content with {$show} and {$hide}";
+    };
+
+    const expanded = resolveIncludes(source, fetcher);
+    expect(receivedPageRef!.page).toBe("component:coltop");
+    expect(expanded).toContain("Content with + 開く and - 閉じる");
+  });
+
+  test("handles space-separated parameters without pipe", () => {
+    const source = "[[include my-page key=value]]";
+    let receivedPageRef: { site: string | null; page: string } | null = null;
+    const fetcher = (pageRef: { site: string | null; page: string }) => {
+      receivedPageRef = pageRef;
+      return "Got {$key}";
+    };
+
+    const expanded = resolveIncludes(source, fetcher);
+    expect(receivedPageRef!.page).toBe("my-page");
+    expect(expanded).toContain("Got value");
+  });
+
   test("preserves surrounding text", () => {
     const source = "Before\n[[include my-page]]\nAfter";
     const fetcher = () => "Included";

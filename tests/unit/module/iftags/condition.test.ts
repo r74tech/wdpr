@@ -81,13 +81,13 @@ describe("evaluateTagCondition", () => {
     expect(evaluateTagCondition(condition, ["fruit", "public"])).toBe(true);
   });
 
-  test("matches empty condition with any tags", () => {
+  test("empty condition never matches (supercommentout)", () => {
     const condition = { required: [], forbidden: [] };
-    expect(evaluateTagCondition(condition, ["any", "tags"])).toBe(true);
+    expect(evaluateTagCondition(condition, ["any", "tags"])).toBe(false);
   });
 
-  test("matches empty condition with empty tags", () => {
+  test("empty condition never matches even with empty tags", () => {
     const condition = { required: [], forbidden: [] };
-    expect(evaluateTagCondition(condition, [])).toBe(true);
+    expect(evaluateTagCondition(condition, [])).toBe(false);
   });
 });

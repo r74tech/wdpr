@@ -54,6 +54,11 @@ export function parseTagCondition(condition: string): TagCondition {
  * @returns true if condition is satisfied
  */
 export function evaluateTagCondition(condition: TagCondition, pageTags: string[]): boolean {
+  // Empty condition = never match (supercommentout)
+  if (condition.required.length === 0 && condition.forbidden.length === 0) {
+    return false;
+  }
+
   const tagSet = new Set(pageTags);
 
   // All required tags must be present

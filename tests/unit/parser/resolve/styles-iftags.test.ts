@@ -186,6 +186,32 @@ describe("resolve: iftags", () => {
     expect(resolved.styles).toEqual([".fruit { color: green; }"]);
   });
 
+  it("excludes elements with empty condition (supercommentout)", async () => {
+    const input = [
+      "[[iftags]]",
+      "[[module css]]",
+      "body { color: red; }",
+      "[[/module]]",
+      "Hidden content",
+      "[[/iftags]]",
+    ].join("\n");
+    const ast = parse(input);
+    const resolved = await resolveWithTags(ast, ["fruit"]);
+
+    expect(resolved.styles).toBeUndefined();
+    const text = getAllText(resolved.elements);
+    expect(text).not.toContain("Hidden content");
+  });
+
+  it("excludes elements with empty condition even with no page tags", async () => {
+    const input = "[[iftags]]\nHidden\n[[/iftags]]";
+    const ast = parse(input);
+    const resolved = await resolveWithTags(ast, []);
+
+    const text = getAllText(resolved.elements);
+    expect(text).not.toContain("Hidden");
+  });
+
   it("handles negated tag conditions", async () => {
     const input = "[[iftags -admin]]\nPublic content\n[[/iftags]]";
     const ast = parse(input);

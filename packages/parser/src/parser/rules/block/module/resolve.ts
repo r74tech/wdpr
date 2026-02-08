@@ -358,7 +358,10 @@ function countModulesInElements(elements: Element[]): { listPages: number; listU
  * Collect and remove style elements from the AST.
  *
  * Walks the element tree recursively, extracting style elements
- * from any depth and returning them separately.
+ * from any depth and returning them separately. Unresolved `if-tags`
+ * elements are skipped — their internal styles remain in the AST and
+ * are rendered inline at render time when the condition is evaluated.
+ *
  * The order of collected styles reflects their appearance order in the AST.
  */
 function collectStyles(elements: Element[]): { elements: Element[]; styles: string[] } {

@@ -4,7 +4,7 @@
  *
  * `[[iftags]]` is a Wikidot block that conditionally renders its content
  * based on the current page's tags. The condition syntax supports required
- * tags (`+tag` or bare `tag`) and forbidden tags (`-tag`).
+ * tags (`+tag`), forbidden tags (`-tag`), and optional tags (bare `tag`).
  *
  * @module
  */

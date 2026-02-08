@@ -20,7 +20,7 @@ import type { TagCondition } from "./types";
  * Parse iftags condition string into structured format
  *
  * @param condition - Raw condition string like "+fruit -admin component"
- * @returns Parsed condition with required and forbidden tags
+ * @returns Parsed condition with required, forbidden, and optional tags
  */
 export function parseTagCondition(condition: string): TagCondition {
   const required: string[] = [];

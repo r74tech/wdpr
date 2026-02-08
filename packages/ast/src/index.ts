@@ -104,6 +104,9 @@ export {
   isParagraphSafe,
 } from "./element";
 
+// Constants
+export { STYLE_SLOT_PREFIX } from "./constants";
+
 // Wikitext settings
 export type { WikitextMode, WikitextSettings } from "./settings";
 export { createSettings, DEFAULT_SETTINGS } from "./settings";

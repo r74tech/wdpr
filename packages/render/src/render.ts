@@ -1,5 +1,5 @@
 import type { Element, SyntaxTree } from "@wdprlib/ast";
-import { STYLE_SLOT_PREFIX } from "@wdprlib/parser";
+import { STYLE_SLOT_PREFIX } from "@wdprlib/ast";
 import { RenderContext } from "./context";
 import { escapeStyleContent } from "./escape";
 import type { RenderOptions } from "./types";

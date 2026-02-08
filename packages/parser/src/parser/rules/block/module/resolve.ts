@@ -17,6 +17,7 @@
  */
 
 import type { Element, SyntaxTree } from "@wdprlib/ast";
+import { STYLE_SLOT_PREFIX } from "@wdprlib/ast";
 import type { DataProvider } from "./types-common";
 import { walkElements, mapElementChildren, mapElementChildrenWithState } from "./walk";
 import type {
@@ -364,11 +365,6 @@ function countModulesInElements(elements: Element[]): { listPages: number; listU
  *
  * The order of collected styles reflects their appearance order in the AST.
  */
-/**
- * Sentinel prefix for style slot placeholders in the styles array.
- * A null byte prefix ensures no collision with valid CSS content.
- */
-export const STYLE_SLOT_PREFIX = "\0__IFTAGS_SLOT__";
 
 function collectStyles(elements: Element[]): { elements: Element[]; styles: string[] } {
   const styles: string[] = [];

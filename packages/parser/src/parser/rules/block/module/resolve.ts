@@ -17,6 +17,7 @@
  */
 
 import type { Element, SyntaxTree } from "@wdprlib/ast";
+import { STYLE_SLOT_PREFIX } from "@wdprlib/ast";
 import type { DataProvider } from "./types-common";
 import { walkElements, mapElementChildren, mapElementChildrenWithState } from "./walk";
 import type {
@@ -358,16 +359,25 @@ function countModulesInElements(elements: Element[]): { listPages: number; listU
  * Collect and remove style elements from the AST.
  *
  * Walks the element tree recursively, extracting style elements
- * from any depth and returning them separately.
+ * from any depth and returning them separately. Unresolved `if-tags`
+ * elements are skipped — their internal styles remain in the AST and
+ * are rendered inline at render time when the condition is evaluated.
+ *
  * The order of collected styles reflects their appearance order in the AST.
  */
+
 function collectStyles(elements: Element[]): { elements: Element[]; styles: string[] } {
   const styles: string[] = [];
-  const filtered = collectStylesFromElements(elements, styles);
+  const ctx = { nextSlotId: 0 };
+  const filtered = collectStylesFromElements(elements, styles, ctx);
   return { elements: filtered, styles };
 }
 
-function collectStylesFromElements(elements: Element[], styles: string[]): Element[] {
+function collectStylesFromElements(
+  elements: Element[],
+  styles: string[],
+  ctx: { nextSlotId: number },
+): Element[] {
   const result: Element[] = [];
 
   for (const element of elements) {
@@ -376,9 +386,23 @@ function collectStylesFromElements(elements: Element[], styles: string[]): Eleme
       continue;
     }
 
+    // Unresolved iftags: insert a style-slot placeholder to preserve
+    // source-order of styles relative to other collected styles.
+    // The slot ID is attached to the element data so the renderer can
+    // collect styles into the correct slot at render time.
+    if (element.element === "if-tags") {
+      const slotId = ctx.nextSlotId++;
+      styles.push(`${STYLE_SLOT_PREFIX}${slotId}`);
+      result.push({
+        element: "if-tags",
+        data: { ...(element.data as IfTagsData), _styleSlot: slotId },
+      } as unknown as Element);
+      continue;
+    }
+
     // Recurse into children using mapElementChildren
     const mapped = mapElementChildren(element, (children) =>
-      collectStylesFromElements(children, styles),
+      collectStylesFromElements(children, styles, ctx),
     );
     result.push(mapped);
   }

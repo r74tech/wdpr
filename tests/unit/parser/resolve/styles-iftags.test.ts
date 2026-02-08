@@ -138,6 +138,28 @@ describe("resolve: iftags", () => {
     expect(hasIfTags).toBe(true);
   });
 
+  it("does not collect styles from unresolved iftags", async () => {
+    const input = [
+      "[[iftags +admin]]",
+      "[[module css]]",
+      ".admin { color: red; }",
+      "[[/module]]",
+      "[[/iftags]]",
+    ].join("\n");
+    const ast = parse(input);
+    const resolved = await resolveWithoutTags(ast);
+
+    // tree.styles should contain only a slot placeholder, not the actual CSS
+    expect(resolved.styles).toBeDefined();
+    expect(resolved.styles!.every((s) => s.startsWith("\0"))).toBe(true);
+    // The iftags element should still contain the style element
+    const ifTagsEl = resolved.elements.find((el) => el.element === "if-tags");
+    expect(ifTagsEl).toBeDefined();
+    const ifTagsData = ifTagsEl!.data as { elements: Element[] };
+    const hasStyle = ifTagsData.elements.some((el) => el.element === "style");
+    expect(hasStyle).toBe(true);
+  });
+
   it("collects styles from resolved iftags into SyntaxTree.styles", async () => {
     const input = [
       "[[iftags +fruit]]",
@@ -184,6 +206,54 @@ describe("resolve: iftags", () => {
     const resolved = await resolveWithTags(ast, ["fruit"]);
 
     expect(resolved.styles).toEqual([".fruit { color: green; }"]);
+  });
+
+  it("excludes elements with empty condition (supercommentout)", async () => {
+    const input = [
+      "[[iftags]]",
+      "[[module css]]",
+      "body { color: red; }",
+      "[[/module]]",
+      "Hidden content",
+      "[[/iftags]]",
+    ].join("\n");
+    const ast = parse(input);
+    const resolved = await resolveWithTags(ast, ["fruit"]);
+
+    expect(resolved.styles).toBeUndefined();
+    const text = getAllText(resolved.elements);
+    expect(text).not.toContain("Hidden content");
+  });
+
+  it("excludes elements with empty condition even with no page tags", async () => {
+    const input = "[[iftags]]\nHidden\n[[/iftags]]";
+    const ast = parse(input);
+    const resolved = await resolveWithTags(ast, []);
+
+    const text = getAllText(resolved.elements);
+    expect(text).not.toContain("Hidden");
+  });
+
+  it("preserves styles nested inside containers in unresolved iftags", async () => {
+    const input = [
+      "[[iftags +component]]",
+      "[[div]]",
+      "[[module css]]",
+      ".nested { color: red; }",
+      "[[/module]]",
+      "[[/div]]",
+      "[[/iftags]]",
+    ].join("\n");
+    const ast = parse(input);
+    const resolved = await resolveWithoutTags(ast);
+
+    // tree.styles should contain only a slot placeholder, not the actual CSS
+    expect(resolved.styles).toBeDefined();
+    expect(resolved.styles!.every((s) => s.startsWith("\0"))).toBe(true);
+    // The iftags element should still contain the style element (inside container)
+    const ifTagsEl = resolved.elements.find((el) => el.element === "if-tags");
+    expect(ifTagsEl).toBeDefined();
+    expect(hasStyleElements([ifTagsEl!])).toBe(true);
   });
 
   it("handles negated tag conditions", async () => {
@@ -249,6 +319,82 @@ describe("resolve: include with styles", () => {
     const resolved = await resolveWithTags(withIncludes, ["component"]);
 
     expect(resolved.styles).toEqual([".theme { background: black; }"]);
+  });
+});
+
+describe("resolve → render: CSS order consistency", () => {
+  it("produces same CSS order regardless of resolve path", async () => {
+    const { renderToHtml } = await import("@wdprlib/render");
+
+    const input = [
+      "[[module CSS]]",
+      ".top { color: blue; }",
+      "[[/module]]",
+      "[[iftags +x]]",
+      "[[module CSS]]",
+      ".conditional { color: red; }",
+      "[[/module]]",
+      "[[/iftags]]",
+    ].join("\n");
+
+    const ast = parse(input);
+
+    // Path A: resolved with tags (iftags evaluated at resolve time)
+    const resolvedWithTags = await resolveWithTags(ast, ["x"]);
+    const htmlA = renderToHtml(resolvedWithTags, {
+      page: { pageName: "p", tags: ["x"] },
+    });
+
+    // Path B: unresolved (iftags evaluated at render time)
+    const unresolved = await resolveWithoutTags(ast);
+    const htmlB = renderToHtml(unresolved, {
+      page: { pageName: "p", tags: ["x"] },
+    });
+
+    // Both paths should produce .top before .conditional
+    const topPosA = htmlA.indexOf(".top");
+    const condPosA = htmlA.indexOf(".conditional");
+    const topPosB = htmlB.indexOf(".top");
+    const condPosB = htmlB.indexOf(".conditional");
+
+    expect(topPosA).toBeLessThan(condPosA);
+    expect(topPosB).toBeLessThan(condPosB);
+  });
+
+  it("preserves CSS order with iftags before top-level style", async () => {
+    const { renderToHtml } = await import("@wdprlib/render");
+
+    const input = [
+      "[[iftags +x]]",
+      "[[module CSS]]",
+      ".conditional { color: red; }",
+      "[[/module]]",
+      "[[/iftags]]",
+      "[[module CSS]]",
+      ".bottom { color: blue; }",
+      "[[/module]]",
+    ].join("\n");
+
+    const ast = parse(input);
+
+    const resolvedWithTags = await resolveWithTags(ast, ["x"]);
+    const htmlA = renderToHtml(resolvedWithTags, {
+      page: { pageName: "p", tags: ["x"] },
+    });
+
+    const unresolved = await resolveWithoutTags(ast);
+    const htmlB = renderToHtml(unresolved, {
+      page: { pageName: "p", tags: ["x"] },
+    });
+
+    // Both paths should produce .conditional before .bottom
+    const condPosA = htmlA.indexOf(".conditional");
+    const bottomPosA = htmlA.indexOf(".bottom");
+    const condPosB = htmlB.indexOf(".conditional");
+    const bottomPosB = htmlB.indexOf(".bottom");
+
+    expect(condPosA).toBeLessThan(bottomPosA);
+    expect(condPosB).toBeLessThan(bottomPosB);
   });
 });
 

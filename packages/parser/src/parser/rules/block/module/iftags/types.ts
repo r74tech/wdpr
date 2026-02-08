@@ -4,7 +4,7 @@
  *
  * `[[iftags]]` is a Wikidot block that conditionally renders its content
  * based on the current page's tags. The condition syntax supports required
- * tags (`+tag` or bare `tag`) and forbidden tags (`-tag`).
+ * tags (`+tag`), forbidden tags (`-tag`), and optional tags (bare `tag`).
  *
  * @module
  */
@@ -12,24 +12,28 @@
 /**
  * Parsed representation of an `[[iftags +tag -tag ...]]` condition.
  *
- * The condition string is parsed into two arrays:
- * - `required` tags must ALL be present on the page for the condition to match
- * - `forbidden` tags must ALL be absent from the page for the condition to match
+ * The condition string is parsed into three arrays:
+ * - `required` tags must ALL be present on the page (AND logic, `+tag` syntax)
+ * - `forbidden` tags must ALL be absent from the page (AND logic, `-tag` syntax)
+ * - `optional` tags require at least ONE to be present (OR logic, bare `tag` syntax)
  *
- * Both conditions must be satisfied simultaneously (AND logic).
+ * All three categories must independently be satisfied.
  *
  * @example
- * `[[iftags +fruit -admin component]]` parses to:
+ * `[[iftags +fruit -admin component template]]` parses to:
  * ```
- * { required: ["fruit", "component"], forbidden: ["admin"] }
+ * { required: ["fruit"], forbidden: ["admin"], optional: ["component", "template"] }
  * ```
  */
 export interface TagCondition {
-  /** Tags that must all be present on the page (`+tag` or bare `tag` syntax) */
+  /** Tags that must all be present on the page (`+tag` syntax) */
   required: string[];
 
   /** Tags that must all be absent from the page (`-tag` syntax) */
   forbidden: string[];
+
+  /** Tags where at least one must be present (bare `tag` syntax, OR logic) */
+  optional: string[];
 }
 
 /**

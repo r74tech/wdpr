@@ -1,4 +1,5 @@
 import type { Element, SyntaxTree } from "@wdprlib/ast";
+import { STYLE_SLOT_PREFIX } from "@wdprlib/ast";
 import { RenderContext } from "./context";
 import { escapeStyleContent } from "./escape";
 import type { RenderOptions } from "./types";
@@ -47,10 +48,19 @@ export function renderToHtml(tree: SyntaxTree, options: RenderOptions = {}): str
   const ctx = new RenderContext(tree, options);
   renderElements(ctx, tree.elements);
 
-  // Append styles (with tag breakout prevention)
+  // Append styles (with tag breakout prevention).
+  // Sentinel entries (STYLE_SLOT_PREFIX) mark positions where unresolved
+  // iftags styles should be spliced in, preserving source order.
   if (ctx.settings.allowStyleElements && tree.styles?.length) {
     for (const style of tree.styles) {
-      ctx.push(`<style>${escapeStyleContent(style)}</style>`);
+      if (style.startsWith(STYLE_SLOT_PREFIX)) {
+        const slotId = parseInt(style.slice(STYLE_SLOT_PREFIX.length), 10);
+        for (const css of ctx.getStyleSlotContents(slotId)) {
+          ctx.push(`<style>${escapeStyleContent(css)}</style>`);
+        }
+      } else {
+        ctx.push(`<style>${escapeStyleContent(style)}</style>`);
+      }
     }
   }
 
@@ -178,7 +188,17 @@ export function renderElement(ctx: RenderContext, element: Element): void {
       renderIfTags(ctx, element.data);
       break;
     case "style":
-      // Styles are collected and rendered at the end
+      // Styles are collected into tree.styles during resolve and rendered
+      // at the end of renderToHtml. Style elements remaining in the AST
+      // (inside unresolved iftags) are either collected into a style slot
+      // (preserving source order) or rendered inline as a fallback.
+      if (ctx.renderInlineStyles && ctx.settings.allowStyleElements) {
+        if (ctx.hasActiveStyleSlot()) {
+          ctx.pushToStyleSlot(element.data);
+        } else {
+          ctx.push(`<style>${escapeStyleContent(element.data)}</style>`);
+        }
+      }
       break;
     case "line-break":
       ctx.push("<br />");

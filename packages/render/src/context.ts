@@ -44,6 +44,20 @@ import { escapeHtml, escapeAttr, sanitizeAttributes } from "./escape";
 export class RenderContext {
   /** Accumulated HTML fragments; joined by {@link getOutput}. */
   private chunks: string[] = [];
+  /**
+   * When true, style elements in the AST are rendered rather than
+   * silently skipped. Set while rendering children of unresolved
+   * `[[iftags]]` blocks whose styles were not collected during resolve.
+   */
+  renderInlineStyles = false;
+  /**
+   * Active style slot ID. When set, style content is collected into
+   * the slot (via {@link pushToStyleSlot}) instead of being rendered
+   * inline, preserving source-order relative to other collected styles.
+   */
+  private _styleSlotId: number | null = null;
+  /** Collected CSS strings per style slot, keyed by slot ID. */
+  private _styleSlotContents = new Map<number, string[]>();
   /** Auto-incrementing counter for table-of-contents heading IDs. */
   private _tocIndex = 0;
   /** Auto-incrementing counter for footnote reference/body IDs. */
@@ -160,6 +174,36 @@ export class RenderContext {
    */
   getOutput(): string {
     return this.chunks.join("");
+  }
+
+  /** Enter a style slot: subsequent {@link pushToStyleSlot} calls collect into this slot. */
+  enterStyleSlot(slotId: number): void {
+    this._styleSlotId = slotId;
+    if (!this._styleSlotContents.has(slotId)) {
+      this._styleSlotContents.set(slotId, []);
+    }
+  }
+
+  /** Exit the current style slot. */
+  exitStyleSlot(): void {
+    this._styleSlotId = null;
+  }
+
+  /** Whether a style slot is currently active. */
+  hasActiveStyleSlot(): boolean {
+    return this._styleSlotId !== null;
+  }
+
+  /** Push a CSS string into the active style slot. */
+  pushToStyleSlot(css: string): void {
+    if (this._styleSlotId !== null) {
+      this._styleSlotContents.get(this._styleSlotId)!.push(css);
+    }
+  }
+
+  /** Retrieve collected CSS strings for a given style slot. */
+  getStyleSlotContents(slotId: number): string[] {
+    return this._styleSlotContents.get(slotId) ?? [];
   }
 
   /**

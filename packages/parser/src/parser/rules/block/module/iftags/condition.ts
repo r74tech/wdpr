@@ -6,10 +6,10 @@
  * token is a tag name with an optional prefix:
  * - `+tag` - Tag must be present (AND condition)
  * - `-tag` - Tag must be absent (NOT condition)
- * - `tag` - Tag must be present (same as `+tag`)
+ * - `tag` - At least one bare tag must be present (OR condition)
  *
- * All required tags must be present AND all forbidden tags must be absent
- * for the condition to evaluate to true.
+ * All three categories must independently be satisfied:
+ * required (AND) + forbidden (AND) + optional (OR).
  *
  * @module
  */
@@ -20,11 +20,12 @@ import type { TagCondition } from "./types";
  * Parse iftags condition string into structured format
  *
  * @param condition - Raw condition string like "+fruit -admin component"
- * @returns Parsed condition with required and forbidden tags
+ * @returns Parsed condition with required, forbidden, and optional tags
  */
 export function parseTagCondition(condition: string): TagCondition {
   const required: string[] = [];
   const forbidden: string[] = [];
+  const optional: string[] = [];
 
   const parts = condition.trim().split(/\s+/);
 
@@ -38,12 +39,11 @@ export function parseTagCondition(condition: string): TagCondition {
       const tag = part.slice(1);
       if (tag) forbidden.push(tag);
     } else {
-      // No prefix means required
-      required.push(part);
+      optional.push(part);
     }
   }
 
-  return { required, forbidden };
+  return { required, forbidden, optional };
 }
 
 /**
@@ -54,6 +54,15 @@ export function parseTagCondition(condition: string): TagCondition {
  * @returns true if condition is satisfied
  */
 export function evaluateTagCondition(condition: TagCondition, pageTags: string[]): boolean {
+  // Empty condition = never match (supercommentout)
+  if (
+    condition.required.length === 0 &&
+    condition.forbidden.length === 0 &&
+    condition.optional.length === 0
+  ) {
+    return false;
+  }
+
   const tagSet = new Set(pageTags);
 
   // All required tags must be present
@@ -66,6 +75,13 @@ export function evaluateTagCondition(condition: TagCondition, pageTags: string[]
   // All forbidden tags must be absent
   for (const tag of condition.forbidden) {
     if (tagSet.has(tag)) {
+      return false;
+    }
+  }
+
+  // At least one optional tag must be present (if any specified)
+  if (condition.optional.length > 0) {
+    if (!condition.optional.some((tag) => tagSet.has(tag))) {
       return false;
     }
   }

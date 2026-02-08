@@ -113,3 +113,4 @@ export {
 // Module resolver
 export type { ResolveOptions } from "./resolve";
 export { resolveModules } from "./resolve";
+export { STYLE_SLOT_PREFIX } from "@wdprlib/ast";

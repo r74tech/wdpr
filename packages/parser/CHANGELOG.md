@@ -1,3 +1,14 @@
+## 1.1.1 (2026-02-08)
+
+### 🩹 Fixes
+
+- パーサー・レンダラーの軽微なバグ4件を修正 ([#18](https://github.com/r74tech/wdpr/pull/18), [#7](https://github.com/r74tech/wdpr/issues/7))
+- polynomial ReDoSの正規表現パターンを修正 ([#15](https://github.com/r74tech/wdpr/pull/15), [#20](https://github.com/r74tech/wdpr/issues/20), [#23](https://github.com/r74tech/wdpr/issues/23), [#24](https://github.com/r74tech/wdpr/issues/24))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 # Changelog
 
 ## 1.1.0 (2026-02-07)

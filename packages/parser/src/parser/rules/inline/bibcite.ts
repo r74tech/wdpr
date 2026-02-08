@@ -98,6 +98,7 @@ export const bibciteRule: InlineRule = {
 
     // Collect label (may span multiple tokens until ))
     let label = "";
+    let foundClose = false;
     while (pos < ctx.tokens.length) {
       const t = ctx.tokens[pos];
       if (!t) break;
@@ -108,6 +109,7 @@ export const bibciteRule: InlineRule = {
         if (nextT?.type === "TEXT" && nextT.value === ")") {
           // Found closing ))
           consumed += 2;
+          foundClose = true;
           break;
         }
       }
@@ -120,6 +122,10 @@ export const bibciteRule: InlineRule = {
       label += t.value;
       pos++;
       consumed++;
+    }
+
+    if (!foundClose) {
+      return { success: false };
     }
 
     label = label.trim();

@@ -53,7 +53,8 @@ interface BibliographyEntry {
  * The entry starts with a COLON token at line start, followed by mandatory
  * whitespace, then the label text, a second COLON, and the citation content.
  * Content parsing continues until a double newline, a new entry (`: ...`),
- * or the closing `[[/bibliography]]` tag is reached.
+ * or the closing `[[/bibliography]]` tag is reached. Single newlines within
+ * the citation text produce `line-break` elements.
  *
  * @param ctx      - Current parse context.
  * @param startPos - Token index where the entry begins (expected COLON).

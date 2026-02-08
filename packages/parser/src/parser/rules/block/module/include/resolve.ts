@@ -98,8 +98,10 @@ const INCLUDE_PATTERN = /\[\[include\s([^\]]*(?:\](?!\])[^\]]*)*)\]\]/gi;
  * Parse the inner content of an `[[include ...]]` directive into a page reference
  * and variable assignments.
  *
- * The inner content has the format: `page-name | key1=value1 | key2=value2`
- * where the page name may include a cross-site prefix (`:site-name:page-name`).
+ * The inner content has the format: `page-name key1=value1 | key2=value2`
+ * where variable assignments can appear space-separated after the page name
+ * in the first segment (before any pipe), as well as in pipe-separated segments.
+ * The page name may include a cross-site prefix (`:site-name:page-name`).
  *
  * @param inner - The text between `[[include` and `]]`
  * @returns Object containing the parsed page location and variable map

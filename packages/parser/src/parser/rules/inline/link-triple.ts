@@ -124,8 +124,13 @@ export const linkTripleRule: InlineRule = {
         break;
       }
 
-      // Skip newlines in link content (Wikidot allows this)
+      // Convert newlines to spaces in link content (Wikidot allows single newlines)
       if (token.type === "NEWLINE") {
+        if (foundPipe) {
+          labelText += " ";
+        } else {
+          target += " ";
+        }
         consumed++;
         pos++;
         continue;

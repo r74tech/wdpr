@@ -160,7 +160,11 @@ function parseBibliographyEntry(
         consumed++;
         break;
       }
-      // Single newline - continue (becomes line break)
+      // Single newline - add line break and continue
+      contentNodes.push({ element: "line-break" });
+      pos++;
+      consumed++;
+      continue;
     }
 
     // Parse inline content

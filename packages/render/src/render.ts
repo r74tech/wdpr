@@ -178,7 +178,9 @@ export function renderElement(ctx: RenderContext, element: Element): void {
       renderIfTags(ctx, element.data);
       break;
     case "style":
-      // Styles are collected and rendered at the end
+      // Styles are collected into tree.styles during resolve and rendered
+      // at the end of renderToHtml. Style elements remaining in the AST
+      // (e.g. inside unresolved iftags) are handled by renderIfTags.
       break;
     case "line-break":
       ctx.push("<br />");

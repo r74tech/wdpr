@@ -18,7 +18,8 @@
 
 import type { IfTagsData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
-import { renderElements } from "../render";
+import { escapeStyleContent } from "../escape";
+import { renderElement } from "../render";
 
 /**
  * Evaluate an iftags condition string against a list of page tags.
@@ -90,6 +91,15 @@ export function renderIfTags(ctx: RenderContext, data: IfTagsData): void {
   const pageTags = ctx.page?.tags ?? [];
 
   if (evaluateIfTagsCondition(data.condition, pageTags)) {
-    renderElements(ctx, data.elements);
+    // Process children in source order. Style elements that were not
+    // collected during resolve (inside unresolved iftags) are rendered
+    // inline to maintain correct CSS ordering.
+    for (const el of data.elements) {
+      if (el.element === "style" && ctx.settings.allowStyleElements) {
+        ctx.push(`<style>${escapeStyleContent(el.data)}</style>`);
+      } else {
+        renderElement(ctx, el);
+      }
+    }
   }
 }

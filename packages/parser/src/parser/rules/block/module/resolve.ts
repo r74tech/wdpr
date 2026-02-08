@@ -376,6 +376,14 @@ function collectStylesFromElements(elements: Element[], styles: string[]): Eleme
       continue;
     }
 
+    // Unresolved iftags: keep as-is without extracting internal styles.
+    // Styles inside will be rendered inline when the iftags condition
+    // is evaluated at render time.
+    if (element.element === "if-tags") {
+      result.push(element);
+      continue;
+    }
+
     // Recurse into children using mapElementChildren
     const mapped = mapElementChildren(element, (children) =>
       collectStylesFromElements(children, styles),

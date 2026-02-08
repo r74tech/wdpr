@@ -138,6 +138,27 @@ describe("resolve: iftags", () => {
     expect(hasIfTags).toBe(true);
   });
 
+  it("does not collect styles from unresolved iftags", async () => {
+    const input = [
+      "[[iftags +admin]]",
+      "[[module css]]",
+      ".admin { color: red; }",
+      "[[/module]]",
+      "[[/iftags]]",
+    ].join("\n");
+    const ast = parse(input);
+    const resolved = await resolveWithoutTags(ast);
+
+    // Styles inside unresolved iftags should NOT be extracted to tree.styles
+    expect(resolved.styles).toBeUndefined();
+    // The iftags element should still contain the style element
+    const ifTagsEl = resolved.elements.find((el) => el.element === "if-tags");
+    expect(ifTagsEl).toBeDefined();
+    const ifTagsData = ifTagsEl!.data as { elements: Element[] };
+    const hasStyle = ifTagsData.elements.some((el) => el.element === "style");
+    expect(hasStyle).toBe(true);
+  });
+
   it("collects styles from resolved iftags into SyntaxTree.styles", async () => {
     const input = [
       "[[iftags +fruit]]",

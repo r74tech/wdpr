@@ -180,7 +180,11 @@ export function renderElement(ctx: RenderContext, element: Element): void {
     case "style":
       // Styles are collected into tree.styles during resolve and rendered
       // at the end of renderToHtml. Style elements remaining in the AST
-      // (e.g. inside unresolved iftags) are handled by renderIfTags.
+      // (inside unresolved iftags) are rendered inline when the
+      // renderInlineStyles flag is set by renderIfTags.
+      if (ctx.renderInlineStyles && ctx.settings.allowStyleElements) {
+        ctx.push(`<style>${escapeStyleContent(element.data)}</style>`);
+      }
       break;
     case "line-break":
       ctx.push("<br />");

@@ -233,6 +233,27 @@ describe("resolve: iftags", () => {
     expect(text).not.toContain("Hidden");
   });
 
+  it("preserves styles nested inside containers in unresolved iftags", async () => {
+    const input = [
+      "[[iftags +component]]",
+      "[[div]]",
+      "[[module css]]",
+      ".nested { color: red; }",
+      "[[/module]]",
+      "[[/div]]",
+      "[[/iftags]]",
+    ].join("\n");
+    const ast = parse(input);
+    const resolved = await resolveWithoutTags(ast);
+
+    // Styles inside unresolved iftags should NOT be extracted
+    expect(resolved.styles).toBeUndefined();
+    // The iftags element should still contain the style element (inside container)
+    const ifTagsEl = resolved.elements.find((el) => el.element === "if-tags");
+    expect(ifTagsEl).toBeDefined();
+    expect(hasStyleElements([ifTagsEl!])).toBe(true);
+  });
+
   it("handles negated tag conditions", async () => {
     const input = "[[iftags -admin]]\nPublic content\n[[/iftags]]";
     const ast = parse(input);

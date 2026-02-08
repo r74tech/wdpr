@@ -44,6 +44,13 @@ import { escapeHtml, escapeAttr, sanitizeAttributes } from "./escape";
 export class RenderContext {
   /** Accumulated HTML fragments; joined by {@link getOutput}. */
   private chunks: string[] = [];
+  /**
+   * When true, style elements in the AST should be rendered inline as
+   * `<style>` tags rather than being silently skipped. This is set while
+   * rendering children of unresolved `[[iftags]]` blocks whose styles
+   * were intentionally not collected during resolve.
+   */
+  renderInlineStyles = false;
   /** Auto-incrementing counter for table-of-contents heading IDs. */
   private _tocIndex = 0;
   /** Auto-incrementing counter for footnote reference/body IDs. */

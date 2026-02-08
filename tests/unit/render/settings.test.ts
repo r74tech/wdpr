@@ -234,6 +234,78 @@ describe("WikitextSettings - Renderer", () => {
       expect(html).toContain("<style>");
       expect(html).toContain("body { color: red; }");
     });
+
+    it("renders styles inside unresolved iftags (direct child)", () => {
+      const tree: SyntaxTree = {
+        elements: [
+          {
+            element: "if-tags",
+            data: {
+              condition: "+component",
+              elements: [
+                { element: "style", data: ".theme { color: red; }" },
+              ],
+            },
+          },
+        ],
+      };
+      const html = renderToHtml(tree, {
+        settings: pageSettings,
+        page: { pageName: "test", tags: ["component"] },
+      });
+      expect(html).toContain("<style>.theme { color: red; }</style>");
+    });
+
+    it("renders styles nested inside containers in unresolved iftags", () => {
+      const tree: SyntaxTree = {
+        elements: [
+          {
+            element: "if-tags",
+            data: {
+              condition: "+component",
+              elements: [
+                {
+                  element: "container",
+                  data: {
+                    type: "div",
+                    attributes: {},
+                    elements: [
+                      { element: "style", data: ".nested { margin: 0; }" },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      };
+      const html = renderToHtml(tree, {
+        settings: pageSettings,
+        page: { pageName: "test", tags: ["component"] },
+      });
+      expect(html).toContain("<style>.nested { margin: 0; }</style>");
+    });
+
+    it("does not render styles when iftags condition does not match", () => {
+      const tree: SyntaxTree = {
+        elements: [
+          {
+            element: "if-tags",
+            data: {
+              condition: "+admin",
+              elements: [
+                { element: "style", data: ".admin { color: red; }" },
+              ],
+            },
+          },
+        ],
+      };
+      const html = renderToHtml(tree, {
+        settings: pageSettings,
+        page: { pageName: "test", tags: ["component"] },
+      });
+      expect(html).not.toContain("<style>");
+    });
   });
 
   describe("default behavior (no settings specified)", () => {

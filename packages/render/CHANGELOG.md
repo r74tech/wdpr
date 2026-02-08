@@ -1,3 +1,17 @@
+## 1.2.2 (2026-02-08)
+
+### 🩹 Fixes
+
+- **parser,render:** [[iftags]]の条件評価バグとCSS漏出を修正 ([#22](https://github.com/r74tech/wdpr/pull/22))
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/ast to 1.1.1
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 1.2.1 (2026-02-08)
 
 ### 🚀 Features

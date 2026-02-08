@@ -1,9 +1,12 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "wdpr-demo-v1",
+  "main": "dist/index.js",
   "compatibility_date": "2026-01-25",
-  "pages_build_output_dir": "./dist",
   "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "dist",
+  },
   "d1_databases": [
     {
       "binding": "DB",

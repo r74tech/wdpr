@@ -242,9 +242,7 @@ describe("WikitextSettings - Renderer", () => {
             element: "if-tags",
             data: {
               condition: "+component",
-              elements: [
-                { element: "style", data: ".theme { color: red; }" },
-              ],
+              elements: [{ element: "style", data: ".theme { color: red; }" }],
             },
           },
         ],
@@ -269,9 +267,7 @@ describe("WikitextSettings - Renderer", () => {
                   data: {
                     type: "div",
                     attributes: {},
-                    elements: [
-                      { element: "style", data: ".nested { margin: 0; }" },
-                    ],
+                    elements: [{ element: "style", data: ".nested { margin: 0; }" }],
                   },
                 },
               ],
@@ -293,9 +289,7 @@ describe("WikitextSettings - Renderer", () => {
             element: "if-tags",
             data: {
               condition: "+admin",
-              elements: [
-                { element: "style", data: ".admin { color: red; }" },
-              ],
+              elements: [{ element: "style", data: ".admin { color: red; }" }],
             },
           },
         ],

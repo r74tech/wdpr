@@ -364,13 +364,24 @@ function countModulesInElements(elements: Element[]): { listPages: number; listU
  *
  * The order of collected styles reflects their appearance order in the AST.
  */
+/**
+ * Sentinel prefix for style slot placeholders in the styles array.
+ * A null byte prefix ensures no collision with valid CSS content.
+ */
+export const STYLE_SLOT_PREFIX = "\0__IFTAGS_SLOT__";
+
 function collectStyles(elements: Element[]): { elements: Element[]; styles: string[] } {
   const styles: string[] = [];
-  const filtered = collectStylesFromElements(elements, styles);
+  const ctx = { nextSlotId: 0 };
+  const filtered = collectStylesFromElements(elements, styles, ctx);
   return { elements: filtered, styles };
 }
 
-function collectStylesFromElements(elements: Element[], styles: string[]): Element[] {
+function collectStylesFromElements(
+  elements: Element[],
+  styles: string[],
+  ctx: { nextSlotId: number },
+): Element[] {
   const result: Element[] = [];
 
   for (const element of elements) {
@@ -379,17 +390,23 @@ function collectStylesFromElements(elements: Element[], styles: string[]): Eleme
       continue;
     }
 
-    // Unresolved iftags: keep as-is without extracting internal styles.
-    // Styles inside will be rendered inline when the iftags condition
-    // is evaluated at render time.
+    // Unresolved iftags: insert a style-slot placeholder to preserve
+    // source-order of styles relative to other collected styles.
+    // The slot ID is attached to the element data so the renderer can
+    // collect styles into the correct slot at render time.
     if (element.element === "if-tags") {
-      result.push(element);
+      const slotId = ctx.nextSlotId++;
+      styles.push(`${STYLE_SLOT_PREFIX}${slotId}`);
+      result.push({
+        element: "if-tags",
+        data: { ...(element.data as IfTagsData), _styleSlot: slotId },
+      } as unknown as Element);
       continue;
     }
 
     // Recurse into children using mapElementChildren
     const mapped = mapElementChildren(element, (children) =>
-      collectStylesFromElements(children, styles),
+      collectStylesFromElements(children, styles, ctx),
     );
     result.push(mapped);
   }

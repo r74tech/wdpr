@@ -135,6 +135,7 @@ export type {
 export {
   extractDataRequirements,
   resolveModules,
+  STYLE_SLOT_PREFIX,
   compileTemplate,
   // Include resolution
   resolveIncludes,

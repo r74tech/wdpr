@@ -90,12 +90,22 @@ export function renderIfTags(ctx: RenderContext, data: IfTagsData): void {
   const pageTags = ctx.page?.tags ?? [];
 
   if (evaluateIfTagsCondition(data.condition, pageTags)) {
-    // Enable inline style rendering for children. Style elements inside
-    // unresolved iftags were not collected during resolve, so they must
-    // be rendered inline here (at any nesting depth).
     const prev = ctx.renderInlineStyles;
     ctx.renderInlineStyles = true;
+
+    // If a style slot was assigned during resolve, collect styles into
+    // it so they appear at the correct source-order position in the
+    // final output. Otherwise fall back to inline rendering.
+    const slotId = (data as IfTagsData & { _styleSlot?: number })._styleSlot;
+    if (slotId !== undefined) {
+      ctx.enterStyleSlot(slotId);
+    }
+
     renderElements(ctx, data.elements);
+
+    if (slotId !== undefined) {
+      ctx.exitStyleSlot();
+    }
     ctx.renderInlineStyles = prev;
   }
 }

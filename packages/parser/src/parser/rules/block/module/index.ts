@@ -112,4 +112,4 @@ export {
 
 // Module resolver
 export type { ResolveOptions } from "./resolve";
-export { resolveModules } from "./resolve";
+export { resolveModules, STYLE_SLOT_PREFIX } from "./resolve";

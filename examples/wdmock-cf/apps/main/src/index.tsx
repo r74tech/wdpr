@@ -1,14 +1,10 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { serveStatic } from "hono/cloudflare-pages";
 import type { Bindings } from "@wdmock/shared";
 import { api } from "./routes/api";
 import { renderer } from "./renderer";
 
 const app = new Hono<{ Bindings: Bindings }>();
-
-// Static files
-app.use("/static/*", serveStatic());
 
 // CORS for API
 app.use("/api/*", cors());

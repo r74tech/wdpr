@@ -1,3 +1,13 @@
+## 1.1.2 (2026-02-08)
+
+### 🩹 Fixes
+
+- **parser:** パーサーのminor bug 4件を修正 ([#20](https://github.com/r74tech/wdpr/pull/20))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 1.1.1 (2026-02-08)
 
 ### 🩹 Fixes

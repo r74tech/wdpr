@@ -16,9 +16,9 @@
  * - `[[[*|label]]]` -- links to root `/` with the given label
  * - `[[[page|]]]` -- empty label after pipe defaults to the page name
  *
- * Multi-line support: a single newline is allowed within the link
- * (typically after the pipe), but a double newline (paragraph break) or
- * a newline directly before `]]]` invalidates the link.
+ * Multi-line support: a single newline within the link is converted to
+ * a space (in both target and label portions), but a double newline
+ * (paragraph break) or a newline directly before `]]]` invalidates the link.
  *
  * When the opening `[[[` has no valid closing `]]]`, it falls through
  * as literal text rather than failing.
@@ -111,7 +111,7 @@ export const linkTripleRule: InlineRule = {
       };
     }
 
-    // Collect tokens until LINK_CLOSE (allowing single newline)
+    // Collect tokens until LINK_CLOSE (newlines converted to spaces)
     let target = "";
     let labelText = "";
     let foundPipe = false;

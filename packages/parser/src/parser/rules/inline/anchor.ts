@@ -10,7 +10,8 @@
  * - `[[a_ href="url"]]text[[/a]]` -- paragraph strip mode (trailing underscore)
  *
  * Paragraph strip mode (`[[a_]]`) suppresses newlines within the anchor
- * body and strips trailing newlines after the closing tag. This prevents
+ * body and strips at most one trailing newline after the closing tag
+ * (preserving double newlines as paragraph breaks). This prevents
  * unwanted `<br>` elements when consecutive anchor blocks are placed on
  * separate lines.
  *
@@ -126,8 +127,11 @@ function parseAnchorBlockName(
  * Edge cases:
  * - If no matching closing tag is found, the rule fails (returns `{ success: false }`),
  *   allowing the tokens to fall through to other rules or the text fallback.
- * - In paragraph strip mode, newlines within the body and after the closing tag
- *   are consumed silently rather than converted to line-break elements.
+ * - In paragraph strip mode, newlines within the body are consumed silently
+ *   rather than converted to line-break elements. After the closing tag,
+ *   at most one trailing newline is consumed to prevent a line-break between
+ *   consecutive `[[a_]]` blocks, but double newlines are preserved as
+ *   paragraph breaks.
  * - The `href` attribute is sanitized to block `javascript:`, `data:`, and
  *   `vbscript:` schemes.
  */

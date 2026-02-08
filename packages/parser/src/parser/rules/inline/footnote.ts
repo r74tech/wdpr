@@ -122,6 +122,11 @@ export const footnoteRule: InlineRule = {
       if (token.type === "NEWLINE") {
         pos++;
         consumed++;
+        // Skip whitespace between newlines (blank line with spaces)
+        while (ctx.tokens[pos]?.type === "WHITESPACE") {
+          pos++;
+          consumed++;
+        }
         // Look ahead for another NEWLINE (blank line = paragraph break)
         if (ctx.tokens[pos]?.type === "NEWLINE") {
           // Skip all consecutive newlines

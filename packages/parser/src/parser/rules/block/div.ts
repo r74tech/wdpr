@@ -87,6 +87,9 @@ export const divRule: BlockRule = {
     pos++;
     consumed++;
 
+    // Record opening tag position for diagnostics
+    const openPosition = openToken.position;
+
     // Close condition for [[/div]]
     const closeCondition = (checkCtx: ParseContext): boolean => {
       const token = checkCtx.tokens[checkCtx.pos];
@@ -115,6 +118,16 @@ export const divRule: BlockRule = {
       consumed += bodyResult.consumed;
       pos += bodyResult.consumed;
       children = bodyResult.elements;
+    }
+
+    // Check for missing close tag
+    if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: `Missing closing tag [[/div]] for [[${blockName}]]`,
+        position: openPosition,
+      });
     }
 
     // Consume [[/div]]
@@ -198,6 +211,17 @@ function consumeFailedDiv(ctx: ParseContext): RuleResult<Element> {
   if (lastClosePos === -1) {
     // No [[/div]] found, fall back to normal failure
     return { success: false };
+  }
+
+  // Emit diagnostic for inline block element
+  const inlineOpenToken = ctx.tokens[ctx.pos];
+  if (inlineOpenToken?.position) {
+    ctx.diagnostics.push({
+      severity: "error",
+      code: "inline-block-element",
+      message: "[[div]] must be followed by a newline to be a block element",
+      position: inlineOpenToken.position,
+    });
   }
 
   // Consume everything from current position to after the last [[/div]]

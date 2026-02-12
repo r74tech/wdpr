@@ -255,6 +255,9 @@ export const collapsibleRule: BlockRule = {
     pos++;
     consumed++;
 
+    // Record opening tag position for diagnostics
+    const openPosition = openToken.position;
+
     const hasNewlineAfterOpen = ctx.tokens[pos]?.type === "NEWLINE";
     if (hasNewlineAfterOpen) {
       pos++;
@@ -320,6 +323,16 @@ export const collapsibleRule: BlockRule = {
       // Merge consecutive paragraphs into one (Wikidot doesn't split paragraphs
       // at unrecognized [[block]] tokens inside collapsible)
       bodyElements = mergeParagraphs(bodyResult.elements);
+    }
+
+    // Check for missing close tag
+    if (!isCollapsibleClose(ctx, pos)) {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: "Missing closing tag [[/collapsible]] for [[collapsible]]",
+        position: openPosition,
+      });
     }
 
     // Consume [[/collapsible]]

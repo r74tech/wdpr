@@ -102,6 +102,16 @@ export const iftagsRule: BlockRule = {
     consumed += bodyResult.consumed;
     pos += bodyResult.consumed;
 
+    // Check for missing close tag
+    if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: "Missing closing tag [[/iftags]] for [[iftags]]",
+        position: openToken.position,
+      });
+    }
+
     // Consume [[/iftags]]
     if (ctx.tokens[pos]?.type === "BLOCK_END_OPEN") {
       pos++;

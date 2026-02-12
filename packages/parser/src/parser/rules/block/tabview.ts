@@ -124,6 +124,19 @@ function parseTab(ctx: ParseContext): { tab: TabData; consumed: number } | null 
   consumed += bodyResult.consumed;
   pos += bodyResult.consumed;
 
+  // Check for missing close tag
+  if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") {
+    ctx.diagnostics.push({
+      severity: "warning",
+      code: "unclosed-block",
+      message: "Missing closing tag [[/tab]] for [[tab]]",
+      position: ctx.tokens[ctx.pos]?.position ?? {
+        start: { line: 0, column: 0, offset: 0 },
+        end: { line: 0, column: 0, offset: 0 },
+      },
+    });
+  }
+
   // Consume [[/tab]]
   if (ctx.tokens[pos]?.type === "BLOCK_END_OPEN") {
     pos++;
@@ -251,6 +264,23 @@ export const tabviewRule: BlockRule = {
           return { success: false };
         }
       }
+    }
+
+    // Check for missing close tag
+    const hasTabviewClose =
+      ctx.tokens[pos]?.type === "BLOCK_END_OPEN" &&
+      (() => {
+        const n = parseBlockName(ctx, pos + 1);
+        const name = n?.name.toLowerCase();
+        return name === "tabview" || name === "tabs";
+      })();
+    if (!hasTabviewClose) {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: `Missing closing tag [[/${blockName}]] for [[${blockName}]]`,
+        position: openToken.position,
+      });
     }
 
     // Consume [[/tabview]] or [[/tabs]]

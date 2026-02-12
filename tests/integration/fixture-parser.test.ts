@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { parse } from "@wdprlib/parser";
-import type { SyntaxTree } from "@wdprlib/ast";
+import type { SyntaxTree, Diagnostic } from "@wdprlib/ast";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -32,6 +32,7 @@ interface FixtureCase {
   name: string;
   inputPath: string;
   expectedPath: string | null;
+  diagnosticsPath: string | null;
 }
 
 function findFixtureCases(dir: string, category = ""): FixtureCase[] {
@@ -51,11 +52,13 @@ function findFixtureCases(dir: string, category = ""): FixtureCase[] {
       cases.push(...findFixtureCases(fullPath, newCategory));
     } else if (entry.name === "input.ftml") {
       const expectedPath = path.join(dir, "expected.json");
+      const diagnosticsPath = path.join(dir, "expected-diagnostics.json");
       cases.push({
         category,
         name: path.basename(dir),
         inputPath: fullPath,
         expectedPath: fs.existsSync(expectedPath) ? expectedPath : null,
+        diagnosticsPath: fs.existsSync(diagnosticsPath) ? diagnosticsPath : null,
       });
     }
   }
@@ -121,6 +124,24 @@ describe("Parser Fixture Tests", () => {
         const expected = loadExpected(testCase.expectedPath!);
 
         expect(result).toEqual(expected);
+      });
+    }
+  });
+
+  describe("Diagnostics verification", () => {
+    const casesWithDiagnostics = includedCases.filter((c) => c.diagnosticsPath !== null);
+    for (const testCase of casesWithDiagnostics) {
+      it(`[${testCase.category}] diagnostics should match expected`, () => {
+        const input = loadInput(testCase.inputPath);
+        const result = parse(input);
+        const expected: Pick<Diagnostic, "severity" | "code">[] = JSON.parse(
+          fs.readFileSync(testCase.diagnosticsPath!, "utf-8"),
+        );
+        const actual = result.diagnostics.map((d) => ({
+          severity: d.severity,
+          code: d.code,
+        }));
+        expect(actual).toEqual(expected);
       });
     }
   });

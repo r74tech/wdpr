@@ -88,6 +88,7 @@ export const footnoteRule: InlineRule = {
     // - After blank line: content wrapped in <p> tag
     const paragraphs: Element[][] = [[]];
     let currentParagraph = 0;
+    let foundClose = false;
 
     while (pos < ctx.tokens.length) {
       const token = ctx.tokens[pos];
@@ -99,6 +100,7 @@ export const footnoteRule: InlineRule = {
       if (token.type === "BLOCK_END_OPEN") {
         const closeNameResult = parseBlockName(ctx, pos + 1);
         if (closeNameResult && closeNameResult.name === "footnote") {
+          foundClose = true;
           // Skip [[/footnote]]
           pos++; // [[/
           consumed++;
@@ -193,6 +195,15 @@ export const footnoteRule: InlineRule = {
           },
         });
       }
+    }
+
+    if (!foundClose) {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: "Missing closing tag [[/footnote]] for [[footnote]]",
+        position: openToken.position,
+      });
     }
 
     // Store footnote content in context

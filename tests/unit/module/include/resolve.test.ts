@@ -1,6 +1,11 @@
 import { test, expect, describe } from "bun:test";
-import { parse, resolveIncludes } from "@wdprlib/parser";
+import { parse, resolveIncludes, type ParserOptions } from "@wdprlib/parser";
+import type { SyntaxTree } from "@wdprlib/ast";
 import { getAllText } from "../../../helpers";
+
+function parseAst(input: string, options?: ParserOptions): SyntaxTree {
+  return parse(input, options).ast;
+}
 
 describe("resolveIncludes", () => {
   test("resolves a simple include", () => {
@@ -219,7 +224,7 @@ describe("resolveIncludes", () => {
     expect(expanded).toContain("[[/div]]");
 
     // パースすると正しいAST構造になる
-    const ast = parse(expanded);
+    const ast = parseAst(expanded);
     const divElement = ast.elements.find(
       (el) => el.element === "container" && (el.data as Record<string, unknown>).type === "div",
     );
@@ -232,7 +237,7 @@ describe("resolveIncludes", () => {
 
   test("complex credit include with nested divs", () => {
     const creditStart = `[[div_ class="creditRate creditModule"]]\n[[div_ class="rateBox"]]\n[[div_ class="rate-box-with-credit-button"]]\n[[/div]]\n[[/div]]\n[[/div]]\n[[div class="credit"]]\n`;
-    const creditEnd = `\n[[/div]]`;
+    const creditEnd = "\n[[/div]]";
 
     const source = "[[include credit:start]]\nContent here\n[[include credit:end]]";
     const fetcher = (pageRef: { site: string | null; page: string }) => {
@@ -242,7 +247,7 @@ describe("resolveIncludes", () => {
     };
 
     const expanded = resolveIncludes(source, fetcher);
-    const ast = parse(expanded);
+    const ast = parseAst(expanded);
     const allText = getAllText(ast.elements);
     expect(allText).not.toContain("[[/div]]");
     expect(allText).toContain("Content here");

@@ -3,3 +3,21 @@
 
 [[div]]inline, closing tag is on a new line
 [[/div]]
+
+
+
+[[div]]
+[[div]]
+div opening tag is missing
+[[/div]]
+[[/div]]
+[[/div]]
+
+
+
+[[div]]
+[[div]]
+[[div]]
+div closing tag is missing
+[[/div]]
+[[/div]]

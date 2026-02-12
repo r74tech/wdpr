@@ -104,6 +104,9 @@ export {
   isParagraphSafe,
 } from "./element";
 
+// Diagnostics
+export type { Diagnostic, DiagnosticSeverity, ParseResult } from "./diagnostic";
+
 // Constants
 export { STYLE_SLOT_PREFIX } from "./constants";
 

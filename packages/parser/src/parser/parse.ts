@@ -1,11 +1,15 @@
 import type { Token } from "../lexer";
 import { tokenize } from "../lexer";
 import { preprocess } from "./preprocess";
-import type { Element, SyntaxTree, WikitextSettings } from "@wdprlib/ast";
+import type { Element, SyntaxTree, WikitextSettings, ParseResult } from "@wdprlib/ast";
 import { DEFAULT_SETTINGS } from "@wdprlib/ast";
 import { blockRules, blockFallbackRule, inlineRules, type ParseContext } from "./rules";
 import { canApplyBlockRule } from "./rules/block/utils";
-import { mergeSpanStripParagraphs, cleanInternalFlags } from "./postprocess";
+import {
+  mergeSpanStripParagraphs,
+  cleanInternalFlags,
+  suppressDivAdjacentParagraphs,
+} from "./postprocess";
 import { buildTableOfContents } from "./toc";
 
 /**
@@ -69,6 +73,8 @@ export class Parser {
       // State flags
       footnoteBlockParsed: false,
       bibcites: [],
+      // Diagnostics
+      diagnostics: [],
       // Rules (injected to avoid circular dependency)
       blockRules,
       blockFallbackRule,
@@ -77,9 +83,12 @@ export class Parser {
   }
 
   /**
-   * Parse tokens into SyntaxTree
+   * Parse tokens into a {@link ParseResult} containing the AST and
+   * any diagnostics emitted during parsing.
+   *
+   * @since 2.0.0
    */
-  parse(): SyntaxTree {
+  parse(): ParseResult {
     const children: Element[] = [];
 
     while (!this.isAtEnd()) {
@@ -90,8 +99,11 @@ export class Parser {
     // Post-process: merge paragraphs that contain span_ (paragraph strip mode)
     const mergedChildren = mergeSpanStripParagraphs(children);
 
+    // Wikidot: paragraphs directly adjacent to div blocks lose <p> wrapping
+    const divProcessed = suppressDivAdjacentParagraphs(mergedChildren);
+
     // Clean internal flags from AST
-    const cleanedChildren = cleanInternalFlags(mergedChildren);
+    const cleanedChildren = cleanInternalFlags(divProcessed);
 
     // Add footnote-block at the end if not present
     const hasFootnoteBlock = cleanedChildren.some((el) => el.element === "footnote-block");
@@ -126,7 +138,7 @@ export class Parser {
       result["html-blocks"] = this.ctx.htmlBlocks;
     }
 
-    return result;
+    return { ast: result, diagnostics: this.ctx.diagnostics };
   }
 
   /**
@@ -211,9 +223,18 @@ export class Parser {
 }
 
 /**
- * Parse source string into SyntaxTree
+ * Parse a Wikidot markup string into an AST with diagnostics.
+ *
+ * @example
+ * ```ts
+ * import { parse } from "@wdprlib/parser";
+ *
+ * const { ast, diagnostics } = parse("**bold** and //italic//");
+ * ```
+ *
+ * @since 2.0.0
  */
-export function parse(source: string, options?: ParserOptions): SyntaxTree {
+export function parse(source: string, options?: ParserOptions): ParseResult {
   const preprocessed = preprocess(source);
   const tokens = tokenize(preprocessed, { trackPositions: options?.trackPositions });
   return new Parser(tokens, options).parse();

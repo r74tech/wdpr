@@ -89,6 +89,12 @@ export const htmlBlockRule: BlockRule = {
 
     // If no closing tag found, fail (Wikidot treats unclosed [[html]] as text)
     if (!foundClose) {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: "Missing closing tag [[/html]] for [[html]]",
+        position: openToken.position,
+      });
       return { success: false };
     }
 

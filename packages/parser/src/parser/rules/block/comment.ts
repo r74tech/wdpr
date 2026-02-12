@@ -57,7 +57,8 @@ export const blockCommentRule: BlockRule = {
       }
 
       if (token.type === "EOF") {
-        // Unterminated comment - fail
+        // Unterminated comment — let the inline comment rule emit the diagnostic
+        // to avoid duplication when the paragraph fallback retries this token.
         return { success: false };
       }
 
@@ -65,6 +66,8 @@ export const blockCommentRule: BlockRule = {
       consumed++;
     }
 
+    // Unterminated comment — let the inline comment rule emit the diagnostic
+    // to avoid duplication when the paragraph fallback retries this token.
     return { success: false };
   },
 };

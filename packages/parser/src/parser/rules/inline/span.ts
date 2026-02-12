@@ -229,6 +229,12 @@ export const spanRule: InlineRule = {
 
     // If we didn't find [[/span]], this is not a valid span
     if (!foundClose) {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: `Missing closing tag [[/span]] for [[${blockName}]]`,
+        position: openToken.position,
+      });
       return { success: false };
     }
 

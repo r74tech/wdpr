@@ -11,7 +11,7 @@
  * ```ts
  * import { parse } from "@wdprlib/parser";
  *
- * const ast = parse("**bold** and //italic//");
+ * const { ast, diagnostics } = parse("**bold** and //italic//");
  * ```
  *
  * For server-side module resolution, see {@link extractDataRequirements},
@@ -58,6 +58,10 @@ export type {
   DateItem,
   Embed,
   TocEntry,
+  // Diagnostics
+  Diagnostic,
+  DiagnosticSeverity,
+  ParseResult,
 } from "@wdprlib/ast";
 export {
   createPoint,

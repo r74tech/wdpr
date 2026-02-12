@@ -72,6 +72,7 @@ export const moduleRule: BlockRule = {
       consumed++;
 
       let bodyContent = "";
+      let foundClose = false;
       while (pos < ctx.tokens.length) {
         const token = ctx.tokens[pos];
         if (!token || token.type === "EOF") {
@@ -84,6 +85,7 @@ export const moduleRule: BlockRule = {
             closeNameResult &&
             (closeNameResult.name === "module" || closeNameResult.name === "module654")
           ) {
+            foundClose = true;
             pos++;
             consumed++;
             pos += closeNameResult.consumed;
@@ -103,6 +105,15 @@ export const moduleRule: BlockRule = {
         bodyContent += token.value;
         pos++;
         consumed++;
+      }
+
+      if (!foundClose) {
+        ctx.diagnostics.push({
+          severity: "warning",
+          code: "unclosed-block",
+          message: "Missing closing tag [[/module]] for [[module]]",
+          position: openToken.position,
+        });
       }
 
       if (bodyContent.trim()) {

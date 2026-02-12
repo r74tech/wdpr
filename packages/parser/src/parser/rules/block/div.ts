@@ -84,8 +84,30 @@ export const divRule: BlockRule = {
     if (ctx.tokens[pos]?.type !== "NEWLINE") {
       return consumeFailedDiv(ctx);
     }
+
+    // Wikidot matches [[div]]/[[/div]] pairs from outside-in. When there are
+    // more opens than closes, the innermost excess opens become text. We enforce
+    // this with a "closes budget": the number of additional nested divs that can
+    // open. When budget reaches 0, this div cannot open.
+    if (ctx.divClosesBudget === 0) {
+      return { success: false };
+    }
+
     pos++;
     consumed++;
+
+    // Record opening tag position for diagnostics
+    const openPosition = openToken.position;
+
+    // Calculate closes budget for nested divs in the body.
+    // Count [[/div]] from body start to scope boundary, subtract 1 (for self).
+    let bodyBudget: number | undefined;
+    if (ctx.divClosesBudget !== undefined) {
+      bodyBudget = ctx.divClosesBudget - 1;
+    } else {
+      const closesInScope = countDivCloses(ctx, pos);
+      bodyBudget = closesInScope > 0 ? closesInScope - 1 : 0;
+    }
 
     // Close condition for [[/div]]
     const closeCondition = (checkCtx: ParseContext): boolean => {
@@ -99,7 +121,7 @@ export const divRule: BlockRule = {
       return false;
     };
 
-    const bodyCtx: ParseContext = { ...ctx, pos };
+    const bodyCtx: ParseContext = { ...ctx, pos, divClosesBudget: bodyBudget };
     let children: Element[];
 
     if (paragraphStrip) {
@@ -115,6 +137,16 @@ export const divRule: BlockRule = {
       consumed += bodyResult.consumed;
       pos += bodyResult.consumed;
       children = bodyResult.elements;
+    }
+
+    // Check for missing close tag
+    if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: `Missing closing tag [[/div]] for [[${blockName}]]`,
+        position: openPosition,
+      });
     }
 
     // Consume [[/div]]
@@ -154,6 +186,25 @@ export const divRule: BlockRule = {
 };
 
 /**
+ * Counts `[[/div]]` close tags from a given position to the end of the
+ * token stream. Used to calculate the nesting budget for div blocks.
+ */
+function countDivCloses(ctx: ParseContext, startPos: number): number {
+  let count = 0;
+  for (let i = startPos; i < ctx.tokens.length; i++) {
+    const t = ctx.tokens[i];
+    if (!t || t.type === "EOF") break;
+    if (t.type === "BLOCK_END_OPEN") {
+      const nameResult = parseBlockName(ctx, i + 1);
+      if (nameResult?.name === "div") {
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+/**
  * Handles the case where `[[div]]` fails as a block element because
  * the closing `]]` is not followed by a NEWLINE.
  *
@@ -175,11 +226,32 @@ function consumeFailedDiv(ctx: ParseContext): RuleResult<Element> {
   let lastClosePos = -1;
   let lastCloseConsumed = 0;
 
-  // Find the last [[/div]] in the contiguous block
+  // Find the last [[/div]] before the next valid div block.
+  // A valid div block is [[div]]/[[div_]] at line start followed by ]] + NEWLINE.
+  // When a valid div block is found, stop scanning — it should be parsed as a
+  // separate block element, not absorbed into this failed div's text.
   let scanPos = pos;
   while (scanPos < ctx.tokens.length) {
     const t = ctx.tokens[scanPos];
     if (!t || t.type === "EOF") break;
+
+    // Check for a valid div block opening (skip the initial failed div at pos)
+    if (t.type === "BLOCK_OPEN" && t.lineStart && scanPos > pos) {
+      const nameResult = parseBlockName(ctx, scanPos + 1);
+      if (nameResult?.name === "div" || nameResult?.name === "div_") {
+        let checkPos = scanPos + 1 + nameResult.consumed;
+        const attrResult = parseAttributes(ctx, checkPos);
+        checkPos += attrResult.consumed;
+        if (ctx.tokens[checkPos]?.type === "BLOCK_CLOSE") {
+          checkPos++;
+          if (ctx.tokens[checkPos]?.type === "NEWLINE" || ctx.tokens[checkPos]?.type === "EOF") {
+            // Valid div block found — stop scanning here
+            break;
+          }
+        }
+      }
+    }
+
     if (t.type === "BLOCK_END_OPEN") {
       const nameResult = parseBlockName(ctx, scanPos + 1);
       if (nameResult?.name === "div") {
@@ -198,6 +270,27 @@ function consumeFailedDiv(ctx: ParseContext): RuleResult<Element> {
   if (lastClosePos === -1) {
     // No [[/div]] found, fall back to normal failure
     return { success: false };
+  }
+
+  // Emit diagnostics for all inline [[div]] patterns in the absorbed range.
+  // The initial [[div]] at ctx.pos is always included; any additional [[div]]
+  // patterns within the range also get diagnostics.
+  const endPosForDiag = lastClosePos;
+  for (let diagPos = ctx.pos; diagPos < endPosForDiag; diagPos++) {
+    const t = ctx.tokens[diagPos];
+    if (t?.type === "BLOCK_OPEN") {
+      const nameResult = parseBlockName(ctx, diagPos + 1);
+      if (nameResult?.name === "div" || nameResult?.name === "div_") {
+        if (t.position) {
+          ctx.diagnostics.push({
+            severity: "error",
+            code: "inline-block-element",
+            message: `[[${nameResult.name}]] must be followed by a newline to be a block element`,
+            position: t.position,
+          });
+        }
+      }
+    }
   }
 
   // Consume everything from current position to after the last [[/div]]

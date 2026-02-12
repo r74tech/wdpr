@@ -12,3 +12,4 @@
  */
 
 export { mergeSpanStripParagraphs, cleanInternalFlags } from "./spanStrip";
+export { suppressDivAdjacentParagraphs } from "./divAdjacentParagraph";

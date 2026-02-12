@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { parse } from "@wdprlib/parser";
+import { parse, type ParserOptions } from "@wdprlib/parser";
 import type { Element, SyntaxTree } from "@wdprlib/ast";
+
+function parseAst(input: string, options?: ParserOptions): SyntaxTree {
+  return parse(input, options).ast;
+}
 
 /**
  * Parser Unit Tests
@@ -34,12 +38,12 @@ function getContentElements(doc: SyntaxTree): Element[] {
 describe("Parser", () => {
   describe("document structure", () => {
     it("empty string produces only footnote-block", () => {
-      const doc = parse("");
+      const doc = parseAst("");
       expect(doc.elements).toEqual([FOOTNOTE_BLOCK]);
     });
 
     it("single text produces paragraph with text and footnote-block", () => {
-      const doc = parse("Hello");
+      const doc = parseAst("Hello");
       expect(doc.elements).toEqual([
         {
           element: "container",
@@ -56,7 +60,7 @@ describe("Parser", () => {
 
   describe("paragraph separation", () => {
     it("blank line creates separate paragraphs", () => {
-      const doc = parse("First\n\nSecond");
+      const doc = parseAst("First\n\nSecond");
       const content = getContentElements(doc);
 
       expect(content).toEqual([
@@ -80,7 +84,7 @@ describe("Parser", () => {
     });
 
     it("multiple blank lines are treated as single separator", () => {
-      const doc = parse("First\n\n\n\nSecond");
+      const doc = parseAst("First\n\n\n\nSecond");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(2);
@@ -91,14 +95,14 @@ describe("Parser", () => {
 
   describe("horizontal rule", () => {
     it("---- produces horizontal-rule", () => {
-      const doc = parse("----");
+      const doc = parseAst("----");
       const content = getContentElements(doc);
 
       expect(content).toEqual([{ element: "horizontal-rule" }]);
     });
 
     it("longer dashes also produce horizontal-rule", () => {
-      const doc = parse("--------");
+      const doc = parseAst("--------");
       const content = getContentElements(doc);
 
       expect(content).toEqual([{ element: "horizontal-rule" }]);
@@ -107,7 +111,7 @@ describe("Parser", () => {
 
   describe("unclosed inline formatting", () => {
     it("unclosed ** is treated as separate text nodes", () => {
-      const doc = parse("**unclosed");
+      const doc = parseAst("**unclosed");
       const content = getContentElements(doc);
 
       expect(content).toEqual([
@@ -126,7 +130,7 @@ describe("Parser", () => {
     });
 
     it("unclosed // is treated as separate text nodes", () => {
-      const doc = parse("//unclosed");
+      const doc = parseAst("//unclosed");
       const content = getContentElements(doc);
 
       expect(content).toEqual([
@@ -145,7 +149,7 @@ describe("Parser", () => {
     });
 
     it("unclosed @@ is treated as separate text nodes", () => {
-      const doc = parse("@@unclosed");
+      const doc = parseAst("@@unclosed");
       const content = getContentElements(doc);
 
       expect(content).toEqual([
@@ -166,7 +170,7 @@ describe("Parser", () => {
 
   describe("raw escape special cases", () => {
     it("@@@@ produces text with @@", () => {
-      const doc = parse("@@@@");
+      const doc = parseAst("@@@@");
       const content = getContentElements(doc);
 
       expect(content).toEqual([
@@ -182,7 +186,7 @@ describe("Parser", () => {
     });
 
     it("@@@@@ produces text with single @", () => {
-      const doc = parse("@@@@@");
+      const doc = parseAst("@@@@@");
       const content = getContentElements(doc);
 
       expect(content).toEqual([
@@ -198,7 +202,7 @@ describe("Parser", () => {
     });
 
     it("@@@@@@ produces text with @@", () => {
-      const doc = parse("@@@@@@");
+      const doc = parseAst("@@@@@@");
       const content = getContentElements(doc);
 
       expect(content).toEqual([
@@ -216,7 +220,7 @@ describe("Parser", () => {
 
   describe("comment", () => {
     it("comment is discarded from output", () => {
-      const doc = parse("[!-- comment --]visible");
+      const doc = parseAst("[!-- comment --]visible");
       const content = getContentElements(doc);
 
       expect(content).toEqual([
@@ -232,7 +236,7 @@ describe("Parser", () => {
     });
 
     it("comment between text is removed", () => {
-      const doc = parse("before[!-- hidden --]after");
+      const doc = parseAst("before[!-- hidden --]after");
       const content = getContentElements(doc);
 
       expect(content).toEqual([
@@ -251,7 +255,7 @@ describe("Parser", () => {
     });
 
     it("multi-line comment is removed", () => {
-      const doc = parse("[!-- line 1\nline 2 --]after");
+      const doc = parseAst("[!-- line 1\nline 2 --]after");
       const content = getContentElements(doc);
 
       expect(content).toEqual([
@@ -269,7 +273,7 @@ describe("Parser", () => {
 
   describe("color without pipe separator", () => {
     it("##red## without pipe is treated as separate text nodes", () => {
-      const doc = parse("##red##");
+      const doc = parseAst("##red##");
       const content = getContentElements(doc);
 
       expect(content).toEqual([
@@ -291,7 +295,7 @@ describe("Parser", () => {
 
   describe("fake anchor link", () => {
     it("[# label] produces javascript:; link with type anchor", () => {
-      const doc = parse("[# Click me]");
+      const doc = parseAst("[# Click me]");
       const content = getContentElements(doc);
 
       expect(content).toEqual([
@@ -320,7 +324,7 @@ describe("Parser", () => {
 
   describe("mixed block elements", () => {
     it("heading followed by paragraph", () => {
-      const doc = parse("+ Title\n\nContent");
+      const doc = parseAst("+ Title\n\nContent");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(2);
@@ -341,7 +345,7 @@ describe("Parser", () => {
     });
 
     it("list followed by paragraph", () => {
-      const doc = parse("* Item\n\nParagraph");
+      const doc = parseAst("* Item\n\nParagraph");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(2);
@@ -356,7 +360,7 @@ describe("Parser", () => {
     });
 
     it("different list types create separate lists", () => {
-      const doc = parse("* Bullet\n# Number");
+      const doc = parseAst("* Bullet\n# Number");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(2);
@@ -385,7 +389,7 @@ describe("Parser", () => {
     // data-* attributes should not be accepted (Wikidot behavior)
     // Importantly, they should not bypass security by splitting into separate attributes
     it("data-src does not override src or become separate attribute", () => {
-      const doc = parse('[[image foo.jpg data-src="evil.jpg"]]');
+      const doc = parseAst('[[image foo.jpg data-src="evil.jpg"]]');
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(1);
@@ -398,7 +402,7 @@ describe("Parser", () => {
     });
 
     it("data--src (double hyphen) does not bypass to separate src", () => {
-      const doc = parse('[[image foo.jpg data--src="evil.jpg"]]');
+      const doc = parseAst('[[image foo.jpg data--src="evil.jpg"]]');
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(1);
@@ -410,7 +414,7 @@ describe("Parser", () => {
     });
 
     it("data---src (triple hyphen) does not bypass to separate src", () => {
-      const doc = parse('[[image foo.jpg data---src="evil.jpg"]]');
+      const doc = parseAst('[[image foo.jpg data---src="evil.jpg"]]');
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(1);
@@ -421,7 +425,7 @@ describe("Parser", () => {
     });
 
     it("data----src (quadruple hyphen) does not bypass to separate src", () => {
-      const doc = parse('[[image foo.jpg data----src="evil.jpg"]]');
+      const doc = parseAst('[[image foo.jpg data----src="evil.jpg"]]');
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(1);
@@ -432,7 +436,7 @@ describe("Parser", () => {
     });
 
     it("valid image attributes are preserved", () => {
-      const doc = parse('[[image foo.jpg alt="Description" width="100"]]');
+      const doc = parseAst('[[image foo.jpg alt="Description" width="100"]]');
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(1);

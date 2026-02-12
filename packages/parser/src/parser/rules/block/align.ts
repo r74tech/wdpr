@@ -240,8 +240,19 @@ export const alignRule: BlockRule = {
     consumed += bodyResult.consumed;
     pos += bodyResult.consumed;
 
-    // Consume closing tag
+    // Check for missing close tag
+    const directionSymbol = { left: "<", right: ">", center: "=", justify: "==" }[direction];
     const closeCheck = isAlignClose({ ...ctx, pos }, direction);
+    if (!closeCheck.match) {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: `Missing closing tag [[/${directionSymbol}]] for [[${directionSymbol}]]`,
+        position: openToken.position,
+      });
+    }
+
+    // Consume closing tag
     if (closeCheck.match) {
       consumed += closeCheck.consumed;
       pos += closeCheck.consumed;

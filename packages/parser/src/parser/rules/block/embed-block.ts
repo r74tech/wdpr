@@ -96,6 +96,12 @@ export const embedBlockRule: BlockRule = {
 
     // Require closing tag - without it, fail to prevent consuming entire document
     if (!foundClose) {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: `Missing closing tag [[/${blockName}]] for [[${blockName}]]`,
+        position: openToken.position,
+      });
       return { success: false };
     }
 

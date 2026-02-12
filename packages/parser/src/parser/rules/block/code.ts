@@ -110,6 +110,7 @@ export const codeBlockRule: BlockRule = {
 
     // Collect raw content until [[/code]]
     let codeContent = "";
+    let foundClose = closingSwallowed;
 
     while (!closingSwallowed && pos < ctx.tokens.length) {
       const token = ctx.tokens[pos];
@@ -121,6 +122,7 @@ export const codeBlockRule: BlockRule = {
       if (token.type === "BLOCK_END_OPEN") {
         const closeNameResult = parseBlockName(ctx, pos + 1);
         if (closeNameResult && closeNameResult.name === "code") {
+          foundClose = true;
           // Skip [[/code]]
           pos++; // [[/
           consumed++;
@@ -144,6 +146,16 @@ export const codeBlockRule: BlockRule = {
       codeContent += token.value;
       pos++;
       consumed++;
+    }
+
+    // Diagnostic for missing close tag
+    if (!foundClose) {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: "Missing closing tag [[/code]] for [[code]]",
+        position: openToken.position,
+      });
     }
 
     // Trim trailing newline from content

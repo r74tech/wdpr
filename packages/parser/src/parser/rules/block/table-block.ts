@@ -83,6 +83,7 @@ export const tableBlockRule: BlockRule = {
 
     // Parse rows
     const rows: TableRow[] = [];
+    let foundTableClose = false;
 
     while (pos < ctx.tokens.length) {
       // Skip whitespace and newlines
@@ -100,6 +101,7 @@ export const tableBlockRule: BlockRule = {
       if (token.type === "BLOCK_END_OPEN") {
         const closeNameResult = parseBlockName(ctx, pos + 1);
         if (closeNameResult?.name === "table") {
+          foundTableClose = true;
           // Consume [[/table]]
           pos++; // [[/
           consumed++;
@@ -134,6 +136,15 @@ export const tableBlockRule: BlockRule = {
       // Unknown token, skip to avoid infinite loop
       pos++;
       consumed++;
+    }
+
+    if (!foundTableClose) {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: "Missing closing tag [[/table]] for [[table]]",
+        position: openToken.position,
+      });
     }
 
     // Wikidot behavior: empty tables or tables with only empty rows are not parsed
@@ -209,6 +220,7 @@ function parseRow(ctx: ParseContext, startPos: number): { row: TableRow; consume
 
   // Parse cells
   const cells: TableCell[] = [];
+  let foundRowClose = false;
 
   while (pos < ctx.tokens.length) {
     // Skip whitespace and newlines
@@ -226,6 +238,7 @@ function parseRow(ctx: ParseContext, startPos: number): { row: TableRow; consume
     if (token.type === "BLOCK_END_OPEN") {
       const closeNameResult = parseBlockName(ctx, pos + 1);
       if (closeNameResult?.name === "row") {
+        foundRowClose = true;
         // Consume [[/row]]
         pos++;
         consumed++;
@@ -260,6 +273,18 @@ function parseRow(ctx: ParseContext, startPos: number): { row: TableRow; consume
     // Unknown token, skip
     pos++;
     consumed++;
+  }
+
+  if (!foundRowClose) {
+    ctx.diagnostics.push({
+      severity: "warning",
+      code: "unclosed-block",
+      message: "Missing closing tag [[/row]] for [[row]]",
+      position: ctx.tokens[startPos]?.position ?? {
+        start: { line: 0, column: 0, offset: 0 },
+        end: { line: 0, column: 0, offset: 0 },
+      },
+    });
   }
 
   return {
@@ -364,6 +389,19 @@ function parseCell(
   consumed += bodyResult.consumed;
   pos += bodyResult.consumed;
   const hadParagraphBreaks = bodyResult.hadParagraphBreaks;
+
+  // Check for missing close tag
+  if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") {
+    ctx.diagnostics.push({
+      severity: "warning",
+      code: "unclosed-block",
+      message: `Missing closing tag [[/${closeName}]] for [[${closeName}]]`,
+      position: ctx.tokens[startPos]?.position ?? {
+        start: { line: 0, column: 0, offset: 0 },
+        end: { line: 0, column: 0, offset: 0 },
+      },
+    });
+  }
 
   // Consume [[/cell]] or [[/hcell]]
   if (ctx.tokens[pos]?.type === "BLOCK_END_OPEN") {

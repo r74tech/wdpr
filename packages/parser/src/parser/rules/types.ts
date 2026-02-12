@@ -1,5 +1,5 @@
 import type { Token, TokenType } from "../../lexer";
-import type { Version, WikitextSettings } from "@wdprlib/ast";
+import type { Version, WikitextSettings, Diagnostic } from "@wdprlib/ast";
 import type { Element, CodeBlockData, TocEntry } from "@wdprlib/ast";
 
 /**
@@ -26,6 +26,12 @@ export interface ParseContext {
   inlineRules: InlineRule[];
   // Close condition for current block (passed to paragraph parser)
   blockCloseCondition?: (ctx: ParseContext) => boolean;
+  // Diagnostics collected during parsing
+  diagnostics: Diagnostic[];
+  // Budget for div nesting: tracks how many more nested divs can open.
+  // When 0, div rule fails (innermost excess opens become text).
+  // undefined means "not yet calculated" (top-level or non-div context).
+  divClosesBudget?: number;
 }
 
 /**

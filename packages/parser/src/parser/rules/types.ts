@@ -28,6 +28,10 @@ export interface ParseContext {
   blockCloseCondition?: (ctx: ParseContext) => boolean;
   // Diagnostics collected during parsing
   diagnostics: Diagnostic[];
+  // Budget for div nesting: tracks how many more nested divs can open.
+  // When 0, div rule fails (innermost excess opens become text).
+  // undefined means "not yet calculated" (top-level or non-div context).
+  divClosesBudget?: number;
 }
 
 /**

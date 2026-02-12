@@ -1,3 +1,7 @@
+## 1.3.0 (2026-02-12)
+
+This was a version bump only for @wdprlib/render to align it with other projects, there were no code changes.
+
 ## 1.2.4 (2026-02-12)
 
 ### 🧱 Updated Dependencies

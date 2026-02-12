@@ -1,6 +1,11 @@
 [
   {
     "severity": "warning",
-    "code": "unclosed-block"
+    "code": "unclosed-block",
+    "message": "Missing closing tag [[/html]] for [[html]]",
+    "position": {
+      "start": { "line": 5, "column": 1, "offset": 55 },
+      "end": { "line": 5, "column": 3, "offset": 57 }
+    }
   }
 ]

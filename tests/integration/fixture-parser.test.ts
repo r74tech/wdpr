@@ -134,14 +134,10 @@ describe("Parser Fixture Tests", () => {
       it(`[${testCase.category}] diagnostics should match expected`, () => {
         const input = loadInput(testCase.inputPath);
         const result = parse(input);
-        const expected: Pick<Diagnostic, "severity" | "code">[] = JSON.parse(
+        const expected: Diagnostic[] = JSON.parse(
           fs.readFileSync(testCase.diagnosticsPath!, "utf-8"),
         );
-        const actual = result.diagnostics.map((d) => ({
-          severity: d.severity,
-          code: d.code,
-        }));
-        expect(actual).toEqual(expected);
+        expect(result.diagnostics).toEqual(expected);
       });
     }
   });

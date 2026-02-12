@@ -94,11 +94,12 @@ describe("Diagnostics", () => {
       expect(diags[0]!.message).toContain("[[==]]");
     });
 
-    it("nested div with inner unclosed", () => {
+    it("nested div with inner unclosed — budget blocks excess open", () => {
       const input = "[[div]]\n[[div]]\nInner content\n[[/div]]";
       const diags = getDiagnostics(input);
-      // Outer div is closed by [[/div]], inner div has no close tag
-      expect(diags.some((d) => d.code === "unclosed-block")).toBe(true);
+      // 2 opens, 1 close: budget blocks the inner open → it becomes text.
+      // No unclosed-block because the outer div closes normally.
+      expect(diags.some((d) => d.code === "unclosed-block")).toBe(false);
     });
 
     it("unclosed code", () => {
@@ -350,12 +351,14 @@ describe("Diagnostics", () => {
   });
 
   describe("AST is still produced with diagnostics", () => {
-    it("unclosed div still produces AST elements", () => {
+    it("excess div opens become text, all opened divs close normally", () => {
       const result = parse(
         "[[div]]\n[[div]]\n[[div]]\n[[div]]\n[[div]]\nSome content\n[[/div]]\n[[/div]]\n[[/div]]",
       );
+      // 5 opens, 3 closes: budget blocks the 4th and 5th opens → text.
+      // The 3 opened divs match the 3 closes → no diagnostics.
       expect(result.ast.elements.length).toBeGreaterThan(0);
-      expect(result.diagnostics.length).toBeGreaterThan(0);
+      expect(result.diagnostics.length).toBe(0);
     });
   });
 });

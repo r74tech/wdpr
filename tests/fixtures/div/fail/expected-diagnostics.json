@@ -1,6 +1,36 @@
 [
   {
     "severity": "error",
-    "code": "inline-block-element"
+    "code": "inline-block-element",
+    "message": "[[div]] must be followed by a newline to be a block element",
+    "position": {
+      "start": {
+        "line": 1,
+        "column": 1,
+        "offset": 0
+      },
+      "end": {
+        "line": 1,
+        "column": 3,
+        "offset": 2
+      }
+    }
+  },
+  {
+    "severity": "error",
+    "code": "inline-block-element",
+    "message": "[[div]] must be followed by a newline to be a block element",
+    "position": {
+      "start": {
+        "line": 3,
+        "column": 1,
+        "offset": 23
+      },
+      "end": {
+        "line": 3,
+        "column": 3,
+        "offset": 25
+      }
+    }
   }
 ]

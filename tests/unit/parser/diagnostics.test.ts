@@ -136,6 +136,20 @@ describe("Diagnostics", () => {
       expect(diags[0]!.message).toContain("[[module]]");
     });
 
+    it("unclosed anchor", () => {
+      const diags = getDiagnostics('[[a href="#"]]link text without close');
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+      expect(diags[0]!.message).toContain("[[/a]]");
+    });
+
+    it("unclosed footnote", () => {
+      const diags = getDiagnostics("[[footnote]]note without close");
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+      expect(diags[0]!.message).toContain("[[footnote]]");
+    });
+
     it("unclosed span", () => {
       const diags = getDiagnostics("[[span]]text without close");
       expect(diags).toHaveLength(1);
@@ -148,6 +162,25 @@ describe("Diagnostics", () => {
       expect(diags).toHaveLength(1);
       expect(diags[0]!.code).toBe("unclosed-block");
       expect(diags[0]!.message).toContain("[[size]]");
+    });
+
+    it("unclosed bibliography", () => {
+      const diags = getDiagnostics("[[bibliography]]\n: ref1 : Some reference");
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+      expect(diags[0]!.message).toContain("[[bibliography]]");
+    });
+  });
+
+  describe("unclosed-comment", () => {
+    it("unterminated block comment", () => {
+      const diags = getDiagnostics("[!-- unclosed comment");
+      expect(diags.some((d) => d.code === "unclosed-comment")).toBe(true);
+    });
+
+    it("unterminated inline comment", () => {
+      const diags = getDiagnostics("text [!-- unclosed");
+      expect(diags.some((d) => d.code === "unclosed-comment")).toBe(true);
     });
   });
 
@@ -170,6 +203,26 @@ describe("Diagnostics", () => {
 
     it("properly closed html", () => {
       expect(getDiagnostics("[[html]]\n<p>hi</p>\n[[/html]]")).toEqual([]);
+    });
+
+    it("properly closed anchor", () => {
+      expect(getDiagnostics('[[a href="#"]]link[[/a]]')).toEqual([]);
+    });
+
+    it("properly closed footnote", () => {
+      expect(getDiagnostics("[[footnote]]note[[/footnote]]")).toEqual([]);
+    });
+
+    it("properly closed bibliography", () => {
+      expect(getDiagnostics("[[bibliography]]\n: ref1 : Reference\n[[/bibliography]]")).toEqual([]);
+    });
+
+    it("properly closed comment", () => {
+      expect(getDiagnostics("[!-- comment --]")).toEqual([]);
+    });
+
+    it("properly closed block list", () => {
+      expect(getDiagnostics("[[ul]]\n[[li]]Item[[/li]]\n[[/ul]]")).toEqual([]);
     });
   });
 

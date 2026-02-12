@@ -222,6 +222,25 @@ describe("Diagnostics", () => {
       expect(diags).toHaveLength(1);
       expect(diags[0]!.code).toBe("unclosed-block");
     });
+
+    it("unclosed orphan li", () => {
+      const diags = getDiagnostics("[[li]]content without close");
+      expect(diags.some((d) => d.code === "unclosed-block")).toBe(true);
+    });
+
+    it("unclosed li inside list", () => {
+      const diags = getDiagnostics("[[ul]]\n[[li]]Item\n[[/ul]]");
+      expect(diags.some((d) => d.code === "unclosed-block" && d.message.includes("[[/li]]"))).toBe(
+        true,
+      );
+    });
+
+    it("unclosed left align", () => {
+      const diags = getDiagnostics("[[<]]\nLeft aligned");
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+      expect(diags[0]!.message).toContain("[[<]]");
+    });
   });
 
   describe("unclosed-comment", () => {

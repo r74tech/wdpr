@@ -5,7 +5,11 @@ import type { Element, SyntaxTree, WikitextSettings, ParseResult } from "@wdprli
 import { DEFAULT_SETTINGS } from "@wdprlib/ast";
 import { blockRules, blockFallbackRule, inlineRules, type ParseContext } from "./rules";
 import { canApplyBlockRule } from "./rules/block/utils";
-import { mergeSpanStripParagraphs, cleanInternalFlags } from "./postprocess";
+import {
+  mergeSpanStripParagraphs,
+  cleanInternalFlags,
+  suppressDivAdjacentParagraphs,
+} from "./postprocess";
 import { buildTableOfContents } from "./toc";
 
 /**
@@ -95,8 +99,11 @@ export class Parser {
     // Post-process: merge paragraphs that contain span_ (paragraph strip mode)
     const mergedChildren = mergeSpanStripParagraphs(children);
 
+    // Wikidot: paragraphs directly adjacent to div blocks lose <p> wrapping
+    const divProcessed = suppressDivAdjacentParagraphs(mergedChildren);
+
     // Clean internal flags from AST
-    const cleanedChildren = cleanInternalFlags(mergedChildren);
+    const cleanedChildren = cleanInternalFlags(divProcessed);
 
     // Add footnote-block at the end if not present
     const hasFootnoteBlock = cleanedChildren.some((el) => el.element === "footnote-block");

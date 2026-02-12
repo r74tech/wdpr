@@ -170,6 +170,58 @@ describe("Diagnostics", () => {
       expect(diags[0]!.code).toBe("unclosed-block");
       expect(diags[0]!.message).toContain("[[bibliography]]");
     });
+
+    it("unclosed tabview", () => {
+      const diags = getDiagnostics("[[tabview]]\n[[tab Title]]\nContent\n[[/tab]]");
+      expect(diags.some((d) => d.code === "unclosed-block")).toBe(true);
+    });
+
+    it("unclosed tab", () => {
+      const diags = getDiagnostics("[[tabview]]\n[[tab Title]]\nContent\n[[/tabview]]");
+      expect(diags.some((d) => d.code === "unclosed-block")).toBe(true);
+    });
+
+    it("unclosed ul", () => {
+      const diags = getDiagnostics("[[ul]]\n[[li]]Item[[/li]]");
+      expect(diags.some((d) => d.code === "unclosed-block")).toBe(true);
+    });
+
+    it("unclosed ol", () => {
+      const diags = getDiagnostics("[[ol]]\n[[li]]Item[[/li]]");
+      expect(diags.some((d) => d.code === "unclosed-block")).toBe(true);
+    });
+
+    it("unclosed table", () => {
+      const diags = getDiagnostics("[[table]]\n[[row]]\n[[cell]]Content[[/cell]]\n[[/row]]");
+      expect(diags.some((d) => d.code === "unclosed-block")).toBe(true);
+    });
+
+    it("unclosed row", () => {
+      const diags = getDiagnostics("[[table]]\n[[row]]\n[[cell]]Content[[/cell]]\n[[/table]]");
+      expect(diags.some((d) => d.code === "unclosed-block")).toBe(true);
+    });
+
+    it("unclosed cell", () => {
+      const diags = getDiagnostics("[[table]]\n[[row]]\n[[cell]]Content\n[[/row]]\n[[/table]]");
+      expect(diags.some((d) => d.code === "unclosed-block")).toBe(true);
+    });
+
+    it("unclosed hcell", () => {
+      const diags = getDiagnostics("[[table]]\n[[row]]\n[[hcell]]Header\n[[/row]]\n[[/table]]");
+      expect(diags.some((d) => d.code === "unclosed-block")).toBe(true);
+    });
+
+    it("unclosed embedvideo", () => {
+      const diags = getDiagnostics("[[embedvideo]]\n<video></video>");
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+    });
+
+    it("unclosed embedaudio", () => {
+      const diags = getDiagnostics("[[embedaudio]]\n<audio></audio>");
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+    });
   });
 
   describe("unclosed-comment", () => {
@@ -223,6 +275,24 @@ describe("Diagnostics", () => {
 
     it("properly closed block list", () => {
       expect(getDiagnostics("[[ul]]\n[[li]]Item[[/li]]\n[[/ul]]")).toEqual([]);
+    });
+
+    it("properly closed ol", () => {
+      expect(getDiagnostics("[[ol]]\n[[li]]Item[[/li]]\n[[/ol]]")).toEqual([]);
+    });
+
+    it("properly closed table", () => {
+      expect(
+        getDiagnostics("[[table]]\n[[row]]\n[[cell]]Content[[/cell]]\n[[/row]]\n[[/table]]"),
+      ).toEqual([]);
+    });
+
+    it("properly closed embed", () => {
+      expect(getDiagnostics("[[embed]]\n<iframe></iframe>\n[[/embed]]")).toEqual([]);
+    });
+
+    it("properly closed module CSS", () => {
+      expect(getDiagnostics("[[module CSS]]\n.foo { color: red; }\n[[/module]]")).toEqual([]);
     });
   });
 

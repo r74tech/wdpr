@@ -239,6 +239,11 @@ export const tabviewRule: BlockRule = {
     const tabCtx: ParseContext = { ...ctx, pos };
 
     while (pos < ctx.tokens.length) {
+      // Check for EOF
+      if (ctx.tokens[pos]?.type === "EOF") {
+        break;
+      }
+
       // Check for closing [[/tabview]] or [[/tabs]]
       if (ctx.tokens[pos]?.type === "BLOCK_END_OPEN") {
         const closeNameResult = parseBlockName(ctx, pos + 1);

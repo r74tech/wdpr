@@ -1,15 +1,19 @@
 import { describe, expect, it } from "bun:test";
-import { parse, resolveModules, resolveIncludes } from "@wdprlib/parser";
+import { parse, resolveModules, resolveIncludes, type ParserOptions } from "@wdprlib/parser";
 import type { SyntaxTree, Element } from "@wdprlib/ast";
 import type { DataProvider } from "../../../../packages/parser/src/parser/rules/block/module/types-common";
 import type { ResolveOptions } from "../../../../packages/parser/src/parser/rules/block/module/resolve";
+
+function parseAst(input: string, options?: ParserOptions): SyntaxTree {
+  return parse(input, options).ast;
+}
 
 /**
  * Helper: create minimal ResolveOptions
  */
 function createResolveOptions(overrides: Partial<ResolveOptions> = {}): ResolveOptions {
   return {
-    parse,
+    parse: (input: string) => parse(input).ast,
     compiledListPagesTemplates: new Map(),
     requirements: {},
     ...overrides,
@@ -52,7 +56,7 @@ function hasStyleElements(elements: Element[]): boolean {
 
 describe("resolve: style collection", () => {
   it("collects top-level style elements into SyntaxTree.styles", async () => {
-    const ast = parse("[[module css]]\n.blue { color: blue; }\n[[/module]]");
+    const ast = parseAst("[[module css]]\n.blue { color: blue; }\n[[/module]]");
     const resolved = await resolveWithoutTags(ast);
 
     expect(resolved.styles).toEqual([".blue { color: blue; }"]);
@@ -69,7 +73,7 @@ describe("resolve: style collection", () => {
       ".b { color: blue; }",
       "[[/module]]",
     ].join("\n");
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithoutTags(ast);
 
     expect(resolved.styles).toEqual([".a { color: red; }", ".b { color: blue; }"]);
@@ -84,7 +88,7 @@ describe("resolve: style collection", () => {
       "[[/module]]",
       "[[/div]]",
     ].join("\n");
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithoutTags(ast);
 
     expect(resolved.styles).toEqual([".nested { margin: 0; }"]);
@@ -92,14 +96,14 @@ describe("resolve: style collection", () => {
   });
 
   it("does not set styles field when no style elements exist", async () => {
-    const ast = parse("Hello world");
+    const ast = parseAst("Hello world");
     const resolved = await resolveWithoutTags(ast);
 
     expect(resolved.styles).toBeUndefined();
   });
 
   it("collects empty style (module css with no body)", async () => {
-    const ast = parse("[[module css]]\n[[/module]]");
+    const ast = parseAst("[[module css]]\n[[/module]]");
     const resolved = await resolveWithoutTags(ast);
 
     expect(resolved.styles).toEqual([""]);
@@ -109,7 +113,7 @@ describe("resolve: style collection", () => {
 describe("resolve: iftags", () => {
   it("includes elements when tag condition matches", async () => {
     const input = "[[iftags +fruit]]\nApple\n[[/iftags]]";
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithTags(ast, ["fruit"]);
 
     // iftags element should be removed, content should be at top level
@@ -122,7 +126,7 @@ describe("resolve: iftags", () => {
 
   it("excludes elements when tag condition does not match", async () => {
     const input = "[[iftags +fruit]]\nApple\n[[/iftags]]";
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithTags(ast, ["vegetable"]);
 
     const text = getAllText(resolved.elements);
@@ -131,7 +135,7 @@ describe("resolve: iftags", () => {
 
   it("keeps iftags unresolved when no tags callback provided", async () => {
     const input = "[[iftags +fruit]]\nApple\n[[/iftags]]";
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithoutTags(ast);
 
     const hasIfTags = resolved.elements.some((el) => el.element === "if-tags");
@@ -146,7 +150,7 @@ describe("resolve: iftags", () => {
       "[[/module]]",
       "[[/iftags]]",
     ].join("\n");
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithoutTags(ast);
 
     // tree.styles should contain only a slot placeholder, not the actual CSS
@@ -168,7 +172,7 @@ describe("resolve: iftags", () => {
       "[[/module]]",
       "[[/iftags]]",
     ].join("\n");
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithTags(ast, ["fruit"]);
 
     expect(resolved.styles).toEqual(["body { color: red; }"]);
@@ -183,7 +187,7 @@ describe("resolve: iftags", () => {
       "[[/module]]",
       "[[/iftags]]",
     ].join("\n");
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithTags(ast, ["vegetable"]);
 
     expect(resolved.styles).toBeUndefined();
@@ -202,7 +206,7 @@ describe("resolve: iftags", () => {
       "[[/module]]",
       "[[/iftags]]",
     ].join("\n");
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithTags(ast, ["fruit"]);
 
     expect(resolved.styles).toEqual([".fruit { color: green; }"]);
@@ -217,7 +221,7 @@ describe("resolve: iftags", () => {
       "Hidden content",
       "[[/iftags]]",
     ].join("\n");
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithTags(ast, ["fruit"]);
 
     expect(resolved.styles).toBeUndefined();
@@ -227,7 +231,7 @@ describe("resolve: iftags", () => {
 
   it("excludes elements with empty condition even with no page tags", async () => {
     const input = "[[iftags]]\nHidden\n[[/iftags]]";
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithTags(ast, []);
 
     const text = getAllText(resolved.elements);
@@ -244,7 +248,7 @@ describe("resolve: iftags", () => {
       "[[/div]]",
       "[[/iftags]]",
     ].join("\n");
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithoutTags(ast);
 
     // tree.styles should contain only a slot placeholder, not the actual CSS
@@ -258,7 +262,7 @@ describe("resolve: iftags", () => {
 
   it("handles negated tag conditions", async () => {
     const input = "[[iftags -admin]]\nPublic content\n[[/iftags]]";
-    const ast = parse(input);
+    const ast = parseAst(input);
     const resolved = await resolveWithTags(ast, ["fruit"]);
 
     const text = getAllText(resolved.elements);
@@ -277,7 +281,7 @@ describe("resolve: include with styles", () => {
     };
 
     const expanded = resolveIncludes(input, fetcher);
-    const resolved = parse(expanded);
+    const resolved = parseAst(expanded);
     const finalResolved = await resolveWithoutTags(resolved);
 
     expect(finalResolved.styles).toEqual([".included { margin: 0; }"]);
@@ -297,7 +301,7 @@ describe("resolve: include with styles", () => {
     };
 
     const expanded = resolveIncludes(input, fetcher);
-    const resolved = parse(expanded);
+    const resolved = parseAst(expanded);
     const finalResolved = await resolveWithoutTags(resolved);
 
     expect(finalResolved.styles).toEqual([".a { color: red; }", ".b { color: blue; }"]);
@@ -315,7 +319,7 @@ describe("resolve: include with styles", () => {
     };
 
     const expanded = resolveIncludes(input, fetcher);
-    const withIncludes = parse(expanded);
+    const withIncludes = parseAst(expanded);
     const resolved = await resolveWithTags(withIncludes, ["component"]);
 
     expect(resolved.styles).toEqual([".theme { background: black; }"]);
@@ -337,7 +341,7 @@ describe("resolve → render: CSS order consistency", () => {
       "[[/iftags]]",
     ].join("\n");
 
-    const ast = parse(input);
+    const ast = parseAst(input);
 
     // Path A: resolved with tags (iftags evaluated at resolve time)
     const resolvedWithTags = await resolveWithTags(ast, ["x"]);
@@ -375,7 +379,7 @@ describe("resolve → render: CSS order consistency", () => {
       "[[/module]]",
     ].join("\n");
 
-    const ast = parse(input);
+    const ast = parseAst(input);
 
     const resolvedWithTags = await resolveWithTags(ast, ["x"]);
     const htmlA = renderToHtml(resolvedWithTags, {

@@ -117,7 +117,7 @@ describe("Parser Fixture Tests", () => {
     for (const testCase of casesWithExpected) {
       it(`[${testCase.category}] AST should match expected`, () => {
         const input = loadInput(testCase.inputPath);
-        const result = parse(input);
+        const result = parse(input).ast;
         const expected = loadExpected(testCase.expectedPath!);
 
         expect(result).toEqual(expected);

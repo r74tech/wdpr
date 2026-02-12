@@ -1,6 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { parse } from "@wdprlib/parser";
+import { parse, type ParserOptions } from "@wdprlib/parser";
 import type { Element, SyntaxTree } from "@wdprlib/ast";
+
+function parseAst(input: string, options?: ParserOptions): SyntaxTree {
+  return parse(input, options).ast;
+}
 
 /**
  * Line Break Unit Tests
@@ -33,7 +37,7 @@ function collectText(elements: Element[]): string {
 describe("Line Break", () => {
   describe("single newline within paragraph", () => {
     it("inserts line-break between text nodes for single newline", () => {
-      const doc = parse("line1\nline2");
+      const doc = parseAst("line1\nline2");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(1);
@@ -48,7 +52,7 @@ describe("Line Break", () => {
     });
 
     it("inserts multiple line-breaks for multiple newlines", () => {
-      const doc = parse("line1\nline2\nline3");
+      const doc = parseAst("line1\nline2\nline3");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(1);
@@ -62,7 +66,7 @@ describe("Line Break", () => {
 
   describe("blank line creates new paragraph", () => {
     it("creates separate paragraphs for blank line", () => {
-      const doc = parse("paragraph1\n\nparagraph2");
+      const doc = parseAst("paragraph1\n\nparagraph2");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(2);
@@ -83,7 +87,7 @@ describe("Line Break", () => {
 
   describe("no line-break before block elements", () => {
     it("paragraph ends without line-break when followed by list", () => {
-      const doc = parse("text\n* item");
+      const doc = parseAst("text\n* item");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(2);
@@ -96,7 +100,7 @@ describe("Line Break", () => {
     });
 
     it("paragraph ends without line-break when followed by heading", () => {
-      const doc = parse("text\n+ Heading");
+      const doc = parseAst("text\n+ Heading");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(2);
@@ -111,7 +115,7 @@ describe("Line Break", () => {
     });
 
     it("paragraph ends without line-break when followed by blockquote", () => {
-      const doc = parse("text\n> quoted");
+      const doc = parseAst("text\n> quoted");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(2);
@@ -123,7 +127,7 @@ describe("Line Break", () => {
     });
 
     it("paragraph ends without line-break when followed by horizontal rule", () => {
-      const doc = parse("text\n----");
+      const doc = parseAst("text\n----");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(2);
@@ -135,7 +139,7 @@ describe("Line Break", () => {
     });
 
     it("paragraph ends without line-break when followed by table", () => {
-      const doc = parse("text\n|| cell ||");
+      const doc = parseAst("text\n|| cell ||");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(2);
@@ -149,7 +153,7 @@ describe("Line Break", () => {
 
   describe("combined cases", () => {
     it("handles line-breaks within paragraph followed by block element", () => {
-      const doc = parse("line1\nline2\n* item\n\nnewpara");
+      const doc = parseAst("line1\nline2\n* item\n\nnewpara");
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(3);

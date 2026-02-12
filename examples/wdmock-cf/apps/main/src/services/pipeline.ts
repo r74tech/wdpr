@@ -47,7 +47,7 @@ export async function renderPage(
   const expanded = resolveIncludes(source, (pageRef: PageRef) => {
     return pageSourceMap.get(pageRef.page) ?? null;
   });
-  const resolved = parse(expanded);
+  const { ast: resolved, diagnostics: _diagnostics = [] } = parse(expanded);
 
   const { requirements, compiledListPagesTemplates } = extractDataRequirements(resolved);
 
@@ -66,7 +66,7 @@ export async function renderPage(
       getPageTags: () => pageTags,
     },
     {
-      parse,
+      parse: (input: string) => parse(input).ast,
       compiledListPagesTemplates,
       requirements,
       urlPath: options?.urlPath,

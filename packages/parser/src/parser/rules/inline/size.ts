@@ -175,6 +175,7 @@ export const sizeRule: InlineRule = {
 
     // Parse inline content until [[/size]]
     const children: Element[] = [];
+    let foundClose = false;
 
     while (pos < ctx.tokens.length) {
       const token = ctx.tokens[pos];
@@ -186,6 +187,7 @@ export const sizeRule: InlineRule = {
       if (token.type === "BLOCK_END_OPEN") {
         const closeNameResult = parseBlockName(ctx, pos + 1);
         if (closeNameResult && closeNameResult.name === "size") {
+          foundClose = true;
           // Skip [[/size]]
           pos++; // [[/
           consumed++;
@@ -213,6 +215,15 @@ export const sizeRule: InlineRule = {
         pos++;
         consumed++;
       }
+    }
+
+    if (!foundClose) {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: "Missing closing tag [[/size]] for [[size]]",
+        position: openToken.position,
+      });
     }
 
     return {

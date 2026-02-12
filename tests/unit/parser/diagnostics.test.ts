@@ -100,6 +100,77 @@ describe("Diagnostics", () => {
       // Outer div is closed by [[/div]], inner div has no close tag
       expect(diags.some((d) => d.code === "unclosed-block")).toBe(true);
     });
+
+    it("unclosed code", () => {
+      const diags = getDiagnostics("[[code]]\nsome code here");
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+      expect(diags[0]!.message).toContain("[[code]]");
+    });
+
+    it("unclosed math", () => {
+      const diags = getDiagnostics("[[math]]\nx^2 + y^2 = z^2");
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+      expect(diags[0]!.message).toContain("[[math]]");
+    });
+
+    it("unclosed html", () => {
+      const diags = getDiagnostics("[[html]]\n<p>hello</p>");
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+      expect(diags[0]!.message).toContain("[[html]]");
+    });
+
+    it("unclosed embed", () => {
+      const diags = getDiagnostics("[[embed]]\n<iframe></iframe>");
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+      expect(diags[0]!.message).toContain("[[embed]]");
+    });
+
+    it("unclosed module CSS", () => {
+      const diags = getDiagnostics("[[module CSS]]\n.foo { color: red; }");
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+      expect(diags[0]!.message).toContain("[[module]]");
+    });
+
+    it("unclosed span", () => {
+      const diags = getDiagnostics("[[span]]text without close");
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+      expect(diags[0]!.message).toContain("[[span]]");
+    });
+
+    it("unclosed size", () => {
+      const diags = getDiagnostics("[[size 120%]]large text without close");
+      expect(diags).toHaveLength(1);
+      expect(diags[0]!.code).toBe("unclosed-block");
+      expect(diags[0]!.message).toContain("[[size]]");
+    });
+  });
+
+  describe("clean inline input produces no diagnostics", () => {
+    it("properly closed span", () => {
+      expect(getDiagnostics("[[span]]text[[/span]]")).toEqual([]);
+    });
+
+    it("properly closed size", () => {
+      expect(getDiagnostics("[[size 120%]]text[[/size]]")).toEqual([]);
+    });
+
+    it("properly closed code", () => {
+      expect(getDiagnostics("[[code]]\nfoo\n[[/code]]")).toEqual([]);
+    });
+
+    it("properly closed math", () => {
+      expect(getDiagnostics("[[math]]\nx^2\n[[/math]]")).toEqual([]);
+    });
+
+    it("properly closed html", () => {
+      expect(getDiagnostics("[[html]]\n<p>hi</p>\n[[/html]]")).toEqual([]);
+    });
   });
 
   describe("inline-block-element", () => {
@@ -142,7 +213,6 @@ describe("Diagnostics", () => {
         "[[div]]\n[[div]]\n[[div]]\n[[div]]\n[[div]]\nSome content\n[[/div]]\n[[/div]]\n[[/div]]",
       );
       expect(result.ast.elements.length).toBeGreaterThan(0);
-      console.table(result.diagnostics);
       expect(result.diagnostics.length).toBeGreaterThan(0);
     });
   });

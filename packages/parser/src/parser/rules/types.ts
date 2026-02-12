@@ -1,5 +1,5 @@
 import type { Token, TokenType } from "../../lexer";
-import type { Version, WikitextSettings } from "@wdprlib/ast";
+import type { Version, WikitextSettings, Diagnostic } from "@wdprlib/ast";
 import type { Element, CodeBlockData, TocEntry } from "@wdprlib/ast";
 
 /**
@@ -26,6 +26,8 @@ export interface ParseContext {
   inlineRules: InlineRule[];
   // Close condition for current block (passed to paragraph parser)
   blockCloseCondition?: (ctx: ParseContext) => boolean;
+  // Diagnostics collected during parsing
+  diagnostics: Diagnostic[];
 }
 
 /**

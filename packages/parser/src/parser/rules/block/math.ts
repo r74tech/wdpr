@@ -129,6 +129,16 @@ export const mathBlockRule: BlockRule = {
       consumed++;
     }
 
+    // Diagnostic for missing close tag
+    if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: "Missing closing tag [[/math]] for [[math]]",
+        position: openToken.position,
+      });
+    }
+
     // Consume [[/math]]
     if (ctx.tokens[pos]?.type === "BLOCK_END_OPEN") {
       pos++;

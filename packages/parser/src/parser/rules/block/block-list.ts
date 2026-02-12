@@ -300,6 +300,19 @@ function parseLiItem(
     }
   }
 
+  // Diagnostic for missing [[/li]]
+  if (!isLiClose(ctx, pos)) {
+    ctx.diagnostics.push({
+      severity: "warning",
+      code: "unclosed-block",
+      message: "Missing closing tag [[/li]] for [[li]]",
+      position: ctx.tokens[startPos]?.position ?? {
+        start: { line: 0, column: 0, offset: 0 },
+        end: { line: 0, column: 0, offset: 0 },
+      },
+    });
+  }
+
   // Consume [[/li]] if present
   if (isLiClose(ctx, pos)) {
     const closeConsumed = consumeCloseTag(ctx, pos);
@@ -443,6 +456,7 @@ function parseListBlock(
 
   // Parse list items
   const items: ListItem[] = [];
+  let foundListClose = false;
 
   while (pos < ctx.tokens.length) {
     const token = ctx.tokens[pos];
@@ -450,6 +464,7 @@ function parseListBlock(
 
     // Check for [[/ul]] or [[/ol]] close
     if (isListClose(ctx, pos, listType)) {
+      foundListClose = true;
       const closeConsumed = consumeCloseTag(ctx, pos);
       consumed += closeConsumed;
       break;
@@ -604,6 +619,18 @@ function parseListBlock(
         elements: finalElements,
       });
     }
+  }
+
+  if (!foundListClose) {
+    ctx.diagnostics.push({
+      severity: "warning",
+      code: "unclosed-block",
+      message: `Missing closing tag [[/${listType}]] for [[${listType}]]`,
+      position: ctx.tokens[startPos]?.position ?? {
+        start: { line: 0, column: 0, offset: 0 },
+        end: { line: 0, column: 0, offset: 0 },
+      },
+    });
   }
 
   const listData: ListData = {

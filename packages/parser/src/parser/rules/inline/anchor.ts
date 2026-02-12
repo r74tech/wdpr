@@ -274,6 +274,12 @@ export const anchorRule: InlineRule = {
     }
 
     if (!foundClose) {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: `Missing closing tag [[/a]] for [[${nameResult.name}]]`,
+        position: openToken.position,
+      });
       return { success: false };
     }
 

@@ -18,6 +18,7 @@
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
+import { currentToken } from "../types";
 
 /**
  * Inline rule for parsing `[!-- comment --]` syntax.
@@ -41,6 +42,7 @@ export const commentRule: InlineRule = {
    *          or `{ success: false }` if the comment is unterminated
    */
   parse(ctx: ParseContext): RuleResult<Element> {
+    const openToken = currentToken(ctx);
     let pos = ctx.pos + 1; // skip [!--
     let consumed = 1;
 
@@ -64,6 +66,12 @@ export const commentRule: InlineRule = {
 
       if (token.type === "EOF") {
         // Unterminated comment - fail
+        ctx.diagnostics.push({
+          severity: "warning",
+          code: "unclosed-comment",
+          message: "Unterminated comment: missing closing --]",
+          position: openToken.position,
+        });
         return { success: false };
       }
 
@@ -71,6 +79,12 @@ export const commentRule: InlineRule = {
       consumed++;
     }
 
+    ctx.diagnostics.push({
+      severity: "warning",
+      code: "unclosed-comment",
+      message: "Unterminated comment: missing closing --]",
+      position: openToken.position,
+    });
     return { success: false };
   },
 };

@@ -321,6 +321,12 @@ export const bibliographyRule: BlockRule = {
 
     // Require closing tag - without it, fail to prevent consuming entire document
     if (!foundClose) {
+      ctx.diagnostics.push({
+        severity: "warning",
+        code: "unclosed-block",
+        message: "Missing closing tag [[/bibliography]] for [[bibliography]]",
+        position: openToken.position,
+      });
       return { success: false };
     }
 

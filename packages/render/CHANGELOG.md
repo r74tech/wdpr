@@ -1,3 +1,9 @@
+## 1.2.4 (2026-02-12)
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/ast to 1.2.0
+
 ## 1.2.3 (2026-02-08)
 
 ### 🩹 Fixes

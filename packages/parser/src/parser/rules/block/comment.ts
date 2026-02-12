@@ -17,7 +17,6 @@
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../types";
-import { currentToken } from "../types";
 
 /**
  * Block rule for line-start comments (`[!-- ... --]`).
@@ -30,7 +29,6 @@ export const blockCommentRule: BlockRule = {
   requiresLineStart: true,
 
   parse(ctx: ParseContext): RuleResult<Element> {
-    const openToken = currentToken(ctx);
     let pos = ctx.pos + 1; // skip [!--
     let consumed = 1;
 
@@ -59,13 +57,8 @@ export const blockCommentRule: BlockRule = {
       }
 
       if (token.type === "EOF") {
-        // Unterminated comment - fail
-        ctx.diagnostics.push({
-          severity: "warning",
-          code: "unclosed-comment",
-          message: "Unterminated comment: missing closing --]",
-          position: openToken.position,
-        });
+        // Unterminated comment — let the inline comment rule emit the diagnostic
+        // to avoid duplication when the paragraph fallback retries this token.
         return { success: false };
       }
 
@@ -73,12 +66,8 @@ export const blockCommentRule: BlockRule = {
       consumed++;
     }
 
-    ctx.diagnostics.push({
-      severity: "warning",
-      code: "unclosed-comment",
-      message: "Unterminated comment: missing closing --]",
-      position: openToken.position,
-    });
+    // Unterminated comment — let the inline comment rule emit the diagnostic
+    // to avoid duplication when the paragraph fallback retries this token.
     return { success: false };
   },
 };

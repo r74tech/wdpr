@@ -12,5 +12,8 @@
       "root": "../../docs"
     }
   },
-  "plugin": ["@r74tech/typedoc-plugin-monorepo-versions"]
+  "plugin": ["@r74tech/typedoc-plugin-monorepo-versions"],
+  "navigation": {
+    "includeGroups": true
+  }
 }

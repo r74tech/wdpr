@@ -6,7 +6,7 @@
       "name": "wdpr",
       "devDependencies": {
         "@nx/js": "^22.4.5",
-        "@r74tech/typedoc-plugin-monorepo-versions": "^1.0.0",
+        "@r74tech/typedoc-plugin-monorepo-versions": "^1.0.1",
         "@swc-node/register": "^1.11.1",
         "@swc/core": "^1.15.11",
         "@types/bun": "latest",
@@ -631,7 +631,7 @@
 
     "@poppinss/exception": ["@poppinss/exception@1.2.3", "", {}, "sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw=="],
 
-    "@r74tech/typedoc-plugin-monorepo-versions": ["@r74tech/typedoc-plugin-monorepo-versions@1.0.0", "", { "dependencies": { "fs-extra": "^11.2.0", "semver": "^7.6.3" }, "peerDependencies": { "typedoc": ">=0.26.0 <0.29.0" } }, "sha512-pSIzWJw2ZnPXymg/ma37c9KC97bsS1Sujh6qVcjPSK9RKSRbkIkx58bLOUvUUziGuvTknYyzXzXixezkv/haLA=="],
+    "@r74tech/typedoc-plugin-monorepo-versions": ["@r74tech/typedoc-plugin-monorepo-versions@1.0.1", "", { "dependencies": { "fs-extra": "^11.2.0", "semver": "^7.6.3" }, "peerDependencies": { "typedoc": ">=0.26.0 <0.29.0" } }, "sha512-UOae3r8d4aQzbJxjahBONjPaPymwiJJU2foAfYWF6qjHRjPRISjgPuqqL6hpGLEzc7+ta+e12zJ42+jdVAYJIQ=="],
 
     "@rollup/rollup-android-arm-eabi": ["@rollup/rollup-android-arm-eabi@4.57.0", "", { "os": "android", "cpu": "arm" }, "sha512-tPgXB6cDTndIe1ah7u6amCI1T0SsnlOuKgg10Xh3uizJk4e5M1JGaUMk7J4ciuAUcFpbOiNhm2XIjP9ON0dUqA=="],
 

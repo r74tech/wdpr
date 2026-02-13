@@ -32,7 +32,7 @@
   },
   "devDependencies": {
     "@nx/js": "^22.4.5",
-    "@r74tech/typedoc-plugin-monorepo-versions": "^1.0.0",
+    "@r74tech/typedoc-plugin-monorepo-versions": "^1.0.1",
     "@swc-node/register": "^1.11.1",
     "@swc/core": "^1.15.11",
     "@types/bun": "latest",

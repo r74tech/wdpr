@@ -30,8 +30,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: ${{ github.event_name == 'workflow_dispatch' && 0 || 1 }}
-          fetch-tags: ${{ github.event_name == 'workflow_dispatch' }}
+          fetch-depth: 0
+          fetch-tags: true
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -40,7 +40,6 @@ jobs:
       - run: bun install --frozen-lockfile
 
       - name: Import versioned API docs from release tags
-        if: github.event_name == 'workflow_dispatch'
         run: bun run docs:api:import
 
       - run: bun run docs:all

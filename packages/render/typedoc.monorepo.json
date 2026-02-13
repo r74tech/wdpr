@@ -11,7 +11,7 @@
     "makeRelativeLinks": true,
     "monorepo": {
       "name": "render",
-      "root": "../../docs/api"
+      "root": "../../docs"
     }
   },
   "plugin": [

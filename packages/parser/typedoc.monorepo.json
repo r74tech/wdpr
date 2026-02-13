@@ -11,7 +11,7 @@
     "makeRelativeLinks": true,
     "monorepo": {
       "name": "parser",
-      "root": "../../docs/api"
+      "root": "../../docs"
     }
   },
   "plugin": [

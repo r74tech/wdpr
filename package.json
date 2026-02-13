@@ -28,7 +28,9 @@
     "docs": "typedoc",
     "docs:watch": "typedoc --watch",
     "docs:llms": "typedoc --options typedoc.llms.json && bun scripts/build-llms.ts",
-    "docs:all": "bun run docs && bun run docs:llms"
+    "docs:api": "bun scripts/build-versioned-docs.ts",
+    "docs:api:import": "bun scripts/import-release-docs.ts",
+    "docs:all": "bun run docs:api && bun run docs:llms"
   },
   "devDependencies": {
     "@nx/js": "^22.4.5",

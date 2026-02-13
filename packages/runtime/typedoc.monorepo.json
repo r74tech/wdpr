@@ -11,7 +11,7 @@
     "makeRelativeLinks": true,
     "monorepo": {
       "name": "runtime",
-      "root": "../../docs/api"
+      "root": "../../docs"
     }
   },
   "plugin": [

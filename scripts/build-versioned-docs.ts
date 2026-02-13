@@ -13,7 +13,7 @@ import fs from "fs";
 const PACKAGES = ["ast", "parser", "render", "runtime"];
 const ROOT = path.resolve(import.meta.dir, "..");
 
-console.log(`Output: ${path.join(ROOT, "docs/api")}`);
+console.log(`Output: ${path.join(ROOT, "docs")}`);
 console.log(`Packages: ${PACKAGES.join(", ")}\n`);
 
 for (const pkg of PACKAGES) {

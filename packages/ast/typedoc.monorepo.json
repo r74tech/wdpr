@@ -11,7 +11,7 @@
     "makeRelativeLinks": true,
     "monorepo": {
       "name": "ast",
-      "root": "../../docs/api"
+      "root": "../../docs"
     }
   },
   "plugin": [

@@ -98,7 +98,7 @@ for (const { tag, pkg, version } of releases) {
 				makeRelativeLinks: true,
 				monorepo: {
 					name: pkg,
-					root: "../../docs/api",
+					root: "../../docs",
 				},
 			},
 		},

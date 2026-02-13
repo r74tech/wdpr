@@ -51,6 +51,7 @@ const html = renderToHtml(ast, {
 
 - [@wdprlib/ast](https://www.npmjs.com/package/@wdprlib/ast) - AST type definitions
 - [@wdprlib/parser](https://www.npmjs.com/package/@wdprlib/parser) - Wikidot markup parser
+- [@wdprlib/decompiler](https://www.npmjs.com/package/@wdprlib/decompiler) - HTML to Wikidot decompiler
 - [@wdprlib/runtime](https://www.npmjs.com/package/@wdprlib/runtime) - Client-side runtime
 
 ## License

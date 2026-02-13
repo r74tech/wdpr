@@ -1,6 +1,6 @@
 # @wdprlib/runtime
 
-Client-side runtime for interactive Wikidot elements.
+Client-side runtime for Wikidot markup.
 
 ## Installation
 
@@ -48,6 +48,7 @@ runtime.destroy();
 - [@wdprlib/ast](https://www.npmjs.com/package/@wdprlib/ast) - AST type definitions
 - [@wdprlib/parser](https://www.npmjs.com/package/@wdprlib/parser) - Wikidot markup parser
 - [@wdprlib/render](https://www.npmjs.com/package/@wdprlib/render) - HTML renderer
+- [@wdprlib/decompiler](https://www.npmjs.com/package/@wdprlib/decompiler) - HTML to Wikidot decompiler
 
 ## License
 

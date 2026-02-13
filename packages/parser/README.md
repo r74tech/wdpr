@@ -1,6 +1,6 @@
 # @wdprlib/parser
 
-Wikidot markup parser.
+Parser for Wikidot markup.
 
 ## Installation
 
@@ -56,6 +56,7 @@ const resolved = await resolveModules(ast, {
 
 - [@wdprlib/ast](https://www.npmjs.com/package/@wdprlib/ast) - AST type definitions
 - [@wdprlib/render](https://www.npmjs.com/package/@wdprlib/render) - HTML renderer
+- [@wdprlib/decompiler](https://www.npmjs.com/package/@wdprlib/decompiler) - HTML to Wikidot decompiler
 - [@wdprlib/runtime](https://www.npmjs.com/package/@wdprlib/runtime) - Client-side runtime
 
 ## License

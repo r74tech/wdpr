@@ -9,6 +9,7 @@ Wikidot markup parser and renderer.
 | [@wdprlib/ast](./packages/ast) | AST types for Wikidot markup |
 | [@wdprlib/parser](./packages/parser) | Parser for Wikidot markup |
 | [@wdprlib/render](./packages/render) | HTML renderer for Wikidot markup |
+| [@wdprlib/decompiler](./packages/decompiler) | Decompiler for Wikidot markup |
 | [@wdprlib/runtime](./packages/runtime) | Client-side runtime for Wikidot markup |
 
 ## Installation

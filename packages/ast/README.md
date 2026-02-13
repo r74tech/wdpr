@@ -1,6 +1,6 @@
 # @wdprlib/ast
 
-AST type definitions for Wikidot markup.
+AST types for Wikidot markup.
 
 ## Installation
 
@@ -30,6 +30,7 @@ Helpers: `text`, `paragraph`, `bold`, `italics`, `heading`, `link`, `list`, `lin
 
 - [@wdprlib/parser](https://www.npmjs.com/package/@wdprlib/parser) - Wikidot markup parser
 - [@wdprlib/render](https://www.npmjs.com/package/@wdprlib/render) - HTML renderer
+- [@wdprlib/decompiler](https://www.npmjs.com/package/@wdprlib/decompiler) - HTML to Wikidot decompiler
 - [@wdprlib/runtime](https://www.npmjs.com/package/@wdprlib/runtime) - Client-side runtime
 
 ## License

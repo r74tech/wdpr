@@ -2,6 +2,9 @@
   "$schema": "https://typedoc.org/schema.json",
   "entryPoints": ["src/**/*.ts"],
   "tsconfig": "tsconfig.typedoc.json",
+  "validation": {
+    "notExported": false
+  },
   "versions": {
     "stable": "auto",
     "dev": "auto",
@@ -12,9 +15,5 @@
       "root": "../../docs"
     }
   },
-  "plugin": ["@r74tech/typedoc-plugin-monorepo-versions"],
-  "navigation": {
-    "includeGroups": true,
-    "includeFolders": true
-  }
+  "plugin": ["@r74tech/typedoc-plugin-monorepo-versions"]
 }

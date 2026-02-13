@@ -86,11 +86,14 @@ for (const { tag, pkg, version } of releases) {
 	const configContent = JSON.stringify(
 		{
 			$schema: "https://typedoc.org/schema.json",
-			entryPoints: ["src/index.ts"],
+			entryPoints: ["src/**/*.ts"],
 			tsconfig: fs.existsSync(path.join(pkgDir, "tsconfig.typedoc.json"))
 				? "tsconfig.typedoc.json"
 				: "tsconfig.json",
 			plugin: ["@r74tech/typedoc-plugin-monorepo-versions"],
+			validation: {
+				notExported: false,
+			},
 			versions: {
 				stable: "auto",
 				dev: "auto",

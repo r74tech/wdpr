@@ -1,0 +1,16 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/index.ts"],
+  "tsconfig": "tsconfig.json",
+  "versions": {
+    "stable": "auto",
+    "dev": "auto",
+    "packageFile": "package.json",
+    "makeRelativeLinks": true,
+    "monorepo": {
+      "name": "runtime",
+      "root": "../../docs"
+    }
+  },
+  "plugin": ["@r74tech/typedoc-plugin-monorepo-versions"]
+}

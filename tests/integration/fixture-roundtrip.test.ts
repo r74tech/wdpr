@@ -128,9 +128,9 @@ function normalizeHtml(html: string): string {
       .replace(/&#187;/g, "\u00BB")
       .replace(/&#8212;/g, "\u2014")
       .replace(/&quot;/g, '"')
-      .replace(/&amp;/g, "&")
       .replace(/&lt;/g, "<")
       .replace(/&gt;/g, ">")
+      .replace(/&amp;/g, "&")
       .trim()
   );
 }

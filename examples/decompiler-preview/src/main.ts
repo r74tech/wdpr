@@ -1,4 +1,5 @@
 import "./style.css";
+import DOMPurify from "dompurify";
 import { parse } from "@wdprlib/parser";
 import { renderToHtml } from "@wdprlib/render";
 import { decompile } from "@wdprlib/decompiler";
@@ -63,7 +64,7 @@ function processWikidot(source: string) {
 
 function processHtml(html: string) {
   try {
-    outputPreview.innerHTML = html;
+    outputPreview.innerHTML = DOMPurify.sanitize(html);
     const wikidot = decompile(html);
     outputDecompiled.textContent = wikidot;
 

@@ -6,12 +6,12 @@ on:
     paths:
       - "packages/*/src/**"
       - "packages/*/README.md"
-      - "README.md"
-      - "typedoc.json"
-      - "typedoc.llms.json"
       - "packages/*/typedoc.json"
+      - "packages/*/typedoc.monorepo.json"
       - "packages/*/tsconfig.typedoc.json"
+      - "typedoc.llms.json"
       - "scripts/build-llms.ts"
+      - "scripts/build-versioned-docs.ts"
       - ".github/workflows/docs.yml"
   workflow_dispatch:
 
@@ -29,12 +29,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
 
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
 
       - run: bun install --frozen-lockfile
+
+      - name: Import versioned API docs from release tags
+        run: bun run docs:api:import
 
       - run: bun run docs:all
 

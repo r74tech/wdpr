@@ -1,0 +1,19 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src/**/*.ts"],
+  "tsconfig": "tsconfig.json",
+  "validation": {
+    "notExported": false
+  },
+  "versions": {
+    "stable": "auto",
+    "dev": "auto",
+    "packageFile": "package.json",
+    "makeRelativeLinks": true,
+    "monorepo": {
+      "name": "ast",
+      "root": "../../docs"
+    }
+  },
+  "plugin": ["@r74tech/typedoc-plugin-monorepo-versions"]
+}

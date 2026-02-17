@@ -37,6 +37,18 @@ export default defineWorkspace([
     },
   },
   {
+    name: "decompiler",
+    root: "packages/decompiler",
+    config: {
+      entry: "src/index.ts",
+      format: ["esm", "cjs"],
+      dts: true,
+      minify: false,
+      clean: true,
+      external: ["@wdprlib/ast"],
+    },
+  },
+  {
     name: "runtime",
     root: "packages/runtime",
     config: {

@@ -1,0 +1,28 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": false,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "paths": {
+      "@wdprlib/ast": ["../../packages/ast/src/index.ts"],
+      "@wdprlib/parser": ["../../packages/parser/src/index.ts"],
+      "@wdprlib/render": ["../../packages/render/src/index.ts"],
+      "@wdprlib/decompiler": ["../../packages/decompiler/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

@@ -6,6 +6,7 @@ on:
       - "@wdprlib/ast@*"
       - "@wdprlib/parser@*"
       - "@wdprlib/render@*"
+      - "@wdprlib/decompiler@*"
       - "@wdprlib/runtime@*"
 
 concurrency:

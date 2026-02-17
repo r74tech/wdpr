@@ -17,14 +17,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "verbatimModuleSyntax": true,
-    "noEmit": true,
-    "baseUrl": ".",
-    "paths": {
-      "@wdprlib/ast": ["packages/ast/src/index.ts"],
-      "@wdprlib/decompiler": ["packages/decompiler/src/index.ts"],
-      "@wdprlib/runtime": ["packages/runtime/src/index.ts"]
-    }
+    "noEmit": true
   },
-  "include": ["packages/*/src/**/*"],
-  "exclude": ["node_modules", "**/dist", "packages/runtime"]
+  "include": ["src/**/*"]
 }

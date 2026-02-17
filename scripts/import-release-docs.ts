@@ -23,6 +23,7 @@ const PKG_MAP: Record<string, string> = {
 	"@wdprlib/parser": "parser",
 	"@wdprlib/render": "render",
 	"@wdprlib/runtime": "runtime",
+	"@wdprlib/decompiler": "decompiler",
 };
 
 // Get current branch to return to

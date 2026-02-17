@@ -218,8 +218,14 @@ function serializeBlockSpan(
 /**
  * Serialize a div container.
  *
- * Uses `div_` (paragraph-strip) when the first child is an inline element,
- * and `div` (normal) when the first child is block-level.
+ * Uses `div_` (paragraph-strip) when the first or last child is inline text
+ * content (indicating `unwrapEdgeParagraphs` was applied), and `div` (normal)
+ * otherwise.
+ *
+ * Only text-like inline elements (text, line-break, inline formatting, links,
+ * etc.) trigger `div_`. Non-text inline elements like `image` do not, because
+ * they can appear without `<p>` wrapping in `[[div]]` too (e.g. Wikidot
+ * renders `[[image]]` inside `[[div]]` without a `<p>` wrapper).
  */
 function serializeDivContainer(
   ctx: SerializeContext,
@@ -228,8 +234,10 @@ function serializeDivContainer(
 ): void {
   const attrStr = formatAttributes(attributes);
 
-  // div_ detection: first child is inline (not a paragraph) → paragraph-strip
-  const isParagraphStrip = elements.length > 0 && !isBlockLevelElement(elements[0]!);
+  // div_ detection: first or last child is inline text content → paragraph-strip
+  const isParagraphStrip =
+    elements.length > 0 &&
+    (isInlineTextElement(elements[0]!) || isInlineTextElement(elements[elements.length - 1]!));
 
   const openTag = isParagraphStrip ? "div_" : "div";
   ctx.pushBlockLine(`[[${openTag}${attrStr}]]`);
@@ -277,7 +285,7 @@ function serializeDivStripInner(parentCtx: SerializeContext, elements: Element[]
   return innerCtx.getBlockInnerOutput();
 }
 
-/** Check whether an AST element is block-level (for div_ detection). */
+/** Check whether an AST element is block-level (used by serializeDivStripInner). */
 function isBlockLevelElement(el: Element): boolean {
   switch (el.element) {
     case "container": {
@@ -305,6 +313,59 @@ function isBlockLevelElement(el: Element): boolean {
     case "math":
     case "bibliography-block":
       return true;
+    default:
+      return false;
+  }
+}
+
+/**
+ * Check whether an AST element is inline text content (for div_ detection).
+ *
+ * Returns true for elements that would normally be inside a `<p>` tag.
+ * Their direct presence as a div child indicates paragraph stripping (div_).
+ *
+ * Non-text inline elements like `image` return false because they can
+ * appear without `<p>` wrapping in `[[div]]` too.
+ */
+function isInlineTextElement(el: Element): boolean {
+  switch (el.element) {
+    case "text":
+    case "line-break":
+    case "line-breaks":
+    case "raw":
+    case "variable":
+    case "email":
+    case "link":
+    case "anchor":
+    case "anchor-name":
+    case "footnote":
+    case "footnote-ref":
+    case "bibliography-cite":
+    case "user":
+    case "date":
+    case "color":
+    case "math-inline":
+    case "equation-reference":
+    case "expr":
+      return true;
+    case "container": {
+      const type = (el.data as ContainerData)?.type;
+      if (typeof type === "string") {
+        switch (type) {
+          case "bold":
+          case "italics":
+          case "underline":
+          case "strikethrough":
+          case "superscript":
+          case "subscript":
+          case "monospace":
+          case "span":
+          case "size":
+            return true;
+        }
+      }
+      return false;
+    }
     default:
       return false;
   }

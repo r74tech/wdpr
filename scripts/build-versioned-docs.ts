@@ -10,7 +10,7 @@ import { $ } from "bun";
 import path from "path";
 import fs from "fs";
 
-const PACKAGES = ["ast", "parser", "render", "runtime"];
+const PACKAGES = ["ast", "parser", "render", "decompiler", "runtime"];
 const ROOT = path.resolve(import.meta.dir, "..");
 
 console.log(`Output: ${path.join(ROOT, "docs")}`);

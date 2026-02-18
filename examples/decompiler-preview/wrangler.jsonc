@@ -1,0 +1,7 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "decompiler-preview",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-02-18",
+  "assets": { "directory": "public" },
+}

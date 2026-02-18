@@ -38,54 +38,66 @@ setupTabs(outputPane, (tab) => {
 
 // --- Processing ---
 
+let currentController = null;
+
 function escapeHtml(s) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-async function processWikidot(source) {
+async function processWikidot(source, signal) {
   try {
     const res = await fetch("/api/wikidot", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ source }),
+      signal,
     });
     const data = await res.json();
+    if (signal.aborted) return;
     if (data.error) throw new Error(data.error);
 
     outputPreview.innerHTML = data.html;
     outputDecompiled.textContent = data.decompiled;
     outputAst.textContent = JSON.stringify(data.ast, null, 2);
   } catch (e) {
+    if (e.name === "AbortError") return;
     outputPreview.innerHTML = `<span class="error">${escapeHtml(e.message)}</span>`;
     outputDecompiled.textContent = "";
     outputAst.textContent = "";
   }
 }
 
-async function processHtml(html) {
+async function processHtml(html, signal) {
   try {
     const res = await fetch("/api/html", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ html }),
+      signal,
     });
     const data = await res.json();
+    if (signal.aborted) return;
     if (data.error) throw new Error(data.error);
 
     outputPreview.innerHTML = data.preview;
     outputDecompiled.textContent = data.decompiled;
     outputAst.textContent = JSON.stringify(data.ast, null, 2);
   } catch (e) {
+    if (e.name === "AbortError") return;
     outputDecompiled.textContent = e.message;
     outputAst.textContent = "";
   }
 }
 
 function update() {
+  if (currentController) currentController.abort();
+  currentController = new AbortController();
+  const { signal } = currentController;
+
   if (activeInputTab === "wikidot") {
-    processWikidot(inputWikidot.value);
+    processWikidot(inputWikidot.value, signal);
   } else {
-    processHtml(inputHtml.value);
+    processHtml(inputHtml.value, signal);
   }
 }
 

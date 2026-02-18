@@ -6,8 +6,8 @@ import { decompile } from "@wdprlib/decompiler";
 const app = new Hono();
 
 app.post("/api/wikidot", async (c) => {
-  const { source } = await c.req.json<{ source: string }>();
   try {
+    const { source } = await c.req.json<{ source: string }>();
     const { ast } = parse(source);
     const html = renderToHtml(ast, { footnotes: ast.footnotes });
     const decompiled = decompile(html);
@@ -19,8 +19,8 @@ app.post("/api/wikidot", async (c) => {
 });
 
 app.post("/api/html", async (c) => {
-  const { html } = await c.req.json<{ html: string }>();
   try {
+    const { html } = await c.req.json<{ html: string }>();
     const decompiled = decompile(html);
     const { ast } = parse(decompiled);
     const preview = renderToHtml(ast, { footnotes: ast.footnotes });

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wikidot Decompiler &amp; Preview</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header>
+        <h1>Wikidot Decompiler &amp; Preview</h1>
+      </header>
+      <main>
+        <section class="pane pane-input">
+          <div class="tabs">
+            <button class="tab active" data-tab="wikidot">Wikidot</button>
+            <button class="tab" data-tab="html">HTML</button>
+          </div>
+          <textarea
+            id="input-wikidot"
+            class="editor"
+            spellcheck="false"
+            placeholder="Enter Wikidot markup..."
+          >
+**Hello** //world//
+
++ Heading
+
+This is a paragraph with [[[some-page|a link]]].
+
+* List item 1
+* List item 2
+* List item 3</textarea
+          >
+          <textarea
+            id="input-html"
+            class="editor hidden"
+            spellcheck="false"
+            placeholder="Paste HTML..."
+          ></textarea>
+        </section>
+        <section class="pane pane-output">
+          <div class="tabs">
+            <button class="tab active" data-tab="preview">Preview</button>
+            <button class="tab" data-tab="decompiled">Decompiled</button>
+            <button class="tab" data-tab="ast">AST</button>
+          </div>
+          <div id="output-preview" class="output"></div>
+          <pre id="output-decompiled" class="output hidden"></pre>
+          <pre id="output-ast" class="output hidden"></pre>
+        </section>
+      </main>
+    </div>
+    <script src="/main.js"></script>
+  </body>
+</html>

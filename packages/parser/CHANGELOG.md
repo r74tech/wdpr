@@ -1,3 +1,13 @@
+## 2.0.7 (2026-02-21)
+
+### 🩹 Fixes
+
+- QUOTED_STRINGがインラインのリンク構文を飲み込む問題を修正 ([082d009](https://github.com/r74tech/wdpr/commit/082d009))
+
+### ❤️ Thank You
+
+- r74tech
+
 ## 2.0.6 (2026-02-21)
 
 ### 🩹 Fixes

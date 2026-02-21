@@ -90,9 +90,12 @@ export function resolveIncludes(
 /**
  * Regex to match [[include ...]] directives.
  * Captures the content between [[include and ]] (may span multiple lines).
+ *
+ * The `m` flag makes `^` match at line boundaries, enforcing the Wikidot
+ * rule that `[[include]]` must appear at the start of a line.
  */
 // \s (single char, no quantifier) avoids overlap with [^\]]* that causes polynomial backtracking
-const INCLUDE_PATTERN = /\[\[include\s([^\]]*(?:\](?!\])[^\]]*)*)\]\]/gi;
+const INCLUDE_PATTERN = /^\[\[include\s([^\]]*(?:\](?!\])[^\]]*)*)\]\]/gim;
 
 /**
  * Parse the inner content of an `[[include ...]]` directive into a page reference

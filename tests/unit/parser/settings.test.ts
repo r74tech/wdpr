@@ -129,19 +129,19 @@ describe("WikitextSettings - Parser", () => {
     const fetcher = (ref: { page: string }) => `Content of ${ref.page}`;
 
     it("skips expansion when enablePageSyntax = false", () => {
-      const source = "Before [[include test-page]] After";
+      const source = "Before\n[[include test-page]]\nAfter";
       const result = resolveIncludes(source, fetcher, { settings: forumSettings });
       expect(result).toBe(source);
     });
 
     it("expands when enablePageSyntax = true", () => {
-      const source = "Before [[include test-page]] After";
+      const source = "Before\n[[include test-page]]\nAfter";
       const result = resolveIncludes(source, fetcher, { settings: pageSettings });
       expect(result).toContain("Content of test-page");
     });
 
     it("expands when settings not specified (backward compat)", () => {
-      const source = "Before [[include test-page]] After";
+      const source = "Before\n[[include test-page]]\nAfter";
       const result = resolveIncludes(source, fetcher);
       expect(result).toContain("Content of test-page");
     });

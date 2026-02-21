@@ -210,6 +210,22 @@ describe("resolveIncludes", () => {
     expect(expanded).toBe("Before\nIncluded\nAfter");
   });
 
+  test("does not resolve include that is not at line start", () => {
+    const source = "abc [[include my-page]]";
+    const fetcher = () => "Should not appear";
+
+    const expanded = resolveIncludes(source, fetcher);
+    expect(expanded).toBe("abc [[include my-page]]");
+  });
+
+  test("does not resolve include preceded by @@", () => {
+    const source = "@@[[include my-page]]@@";
+    const fetcher = () => "Should not appear";
+
+    const expanded = resolveIncludes(source, fetcher);
+    expect(expanded).toBe("@@[[include my-page]]@@");
+  });
+
   test("div blocks spanning across includes are correctly parsed", () => {
     const source = "[[include credit:start]]\naaa\n[[include credit:end]]";
     const fetcher = (pageRef: { site: string | null; page: string }) => {

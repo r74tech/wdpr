@@ -338,6 +338,30 @@ describe("embed-block security", () => {
     });
   });
 
+  describe("iframe attributes preservation", () => {
+    test("style attribute is preserved on iframe", () => {
+      const ctx = createMockContext({ embedAllowlist: null });
+      const data = {
+        contents: '<iframe src="https://example.com/frame.html" style="display: none"></iframe>',
+      };
+      renderEmbedBlock(ctx, data);
+      const output = ctx.getOutput();
+      expect(output).not.toContain("error-block");
+      expect(output).toMatch(/style="display:\s*none"/);
+    });
+
+    test("class attribute is preserved on iframe", () => {
+      const ctx = createMockContext({ embedAllowlist: null });
+      const data = {
+        contents: '<iframe src="https://example.com/frame.html" class="my-iframe"></iframe>',
+      };
+      renderEmbedBlock(ctx, data);
+      const output = ctx.getOutput();
+      expect(output).not.toContain("error-block");
+      expect(output).toContain('class="my-iframe"');
+    });
+  });
+
   describe("custom allowlist", () => {
     test("Custom allowlist with host only", () => {
       const allowlist: EmbedAllowlistEntry[] = [{ host: "example.com" }];

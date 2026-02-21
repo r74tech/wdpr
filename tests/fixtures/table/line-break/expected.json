@@ -1,0 +1,733 @@
+{
+  "elements": [
+    {
+      "element": "table",
+      "data": {
+        "attributes": {
+          "_source": "pipe"
+        },
+        "rows": [
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "ラ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "イ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ン"
+                  },
+                  {
+                    "element": "text",
+                    "data": "は"
+                  },
+                  {
+                    "element": "text",
+                    "data": "二"
+                  },
+                  {
+                    "element": "text",
+                    "data": "つ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ず"
+                  },
+                  {
+                    "element": "text",
+                    "data": "つ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "の"
+                  },
+                  {
+                    "element": "text",
+                    "data": "バ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ー"
+                  },
+                  {
+                    "element": "text",
+                    "data": "テ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ィ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "カ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ル"
+                  },
+                  {
+                    "element": "text",
+                    "data": "バ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ー"
+                  },
+                  {
+                    "element": "text",
+                    "data": "で"
+                  }
+                ]
+              },
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "始"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ま"
+                  },
+                  {
+                    "element": "text",
+                    "data": "り"
+                  },
+                  {
+                    "element": "text",
+                    "data": "と"
+                  },
+                  {
+                    "element": "text",
+                    "data": "終"
+                  },
+                  {
+                    "element": "text",
+                    "data": "わ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "り"
+                  },
+                  {
+                    "element": "text",
+                    "data": "に"
+                  },
+                  {
+                    "element": "text",
+                    "data": "あ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "る"
+                  },
+                  {
+                    "element": "text",
+                    "data": "必"
+                  },
+                  {
+                    "element": "text",
+                    "data": "要"
+                  },
+                  {
+                    "element": "text",
+                    "data": "が"
+                  },
+                  {
+                    "element": "text",
+                    "data": "あ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "り"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ま"
+                  },
+                  {
+                    "element": "text",
+                    "data": "す"
+                  }
+                ]
+              },
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "何"
+                  },
+                  {
+                    "element": "text",
+                    "data": "も"
+                  },
+                  {
+                    "element": "text",
+                    "data": "書"
+                  },
+                  {
+                    "element": "text",
+                    "data": "い"
+                  },
+                  {
+                    "element": "text",
+                    "data": "て"
+                  },
+                  {
+                    "element": "text",
+                    "data": "あ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "り"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ま"
+                  },
+                  {
+                    "element": "text",
+                    "data": "せ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ん"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "セ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ル"
+                  },
+                  {
+                    "element": "text",
+                    "data": "は"
+                  },
+                  {
+                    "element": "text",
+                    "data": "二"
+                  },
+                  {
+                    "element": "text",
+                    "data": "つ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ず"
+                  },
+                  {
+                    "element": "text",
+                    "data": "つ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "の"
+                  },
+                  {
+                    "element": "text",
+                    "data": "バ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ー"
+                  },
+                  {
+                    "element": "text",
+                    "data": "テ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ィ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "カ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ル"
+                  },
+                  {
+                    "element": "text",
+                    "data": "バ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ー"
+                  },
+                  {
+                    "element": "text",
+                    "data": "に"
+                  },
+                  {
+                    "element": "text",
+                    "data": "よ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "っ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "て"
+                  }
+                ]
+              },
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "分"
+                  },
+                  {
+                    "element": "text",
+                    "data": "離"
+                  },
+                  {
+                    "element": "text",
+                    "data": "さ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "れ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ま"
+                  },
+                  {
+                    "element": "text",
+                    "data": "す"
+                  }
+                ]
+              },
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "何"
+                  },
+                  {
+                    "element": "text",
+                    "data": "も"
+                  },
+                  {
+                    "element": "text",
+                    "data": "書"
+                  },
+                  {
+                    "element": "text",
+                    "data": "い"
+                  },
+                  {
+                    "element": "text",
+                    "data": "て"
+                  },
+                  {
+                    "element": "text",
+                    "data": "あ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "り"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ま"
+                  },
+                  {
+                    "element": "text",
+                    "data": "せ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ん"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 2,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "各"
+                  },
+                  {
+                    "element": "text",
+                    "data": "セ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ル"
+                  },
+                  {
+                    "element": "text",
+                    "data": "の"
+                  },
+                  {
+                    "element": "text",
+                    "data": "始"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ま"
+                  },
+                  {
+                    "element": "text",
+                    "data": "り"
+                  },
+                  {
+                    "element": "text",
+                    "data": "に"
+                  }
+                ]
+              },
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "エ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "キ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ス"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ト"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ラ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "・"
+                  },
+                  {
+                    "element": "text",
+                    "data": "セ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ル"
+                  },
+                  {
+                    "element": "text",
+                    "data": "・"
+                  },
+                  {
+                    "element": "text",
+                    "data": "セ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "パ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "レ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ー"
+                  },
+                  {
+                    "element": "text",
+                    "data": "タ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "を"
+                  },
+                  {
+                    "element": "text",
+                    "data": "追"
+                  },
+                  {
+                    "element": "text",
+                    "data": "加"
+                  },
+                  {
+                    "element": "text",
+                    "data": "す"
+                  },
+                  {
+                    "element": "text",
+                    "data": "る"
+                  },
+                  {
+                    "element": "text",
+                    "data": "こ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "と"
+                  },
+                  {
+                    "element": "text",
+                    "data": "で"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "複"
+                  },
+                  {
+                    "element": "text",
+                    "data": "数"
+                  },
+                  {
+                    "element": "text",
+                    "data": "の"
+                  },
+                  {
+                    "element": "text",
+                    "data": "列"
+                  },
+                  {
+                    "element": "text",
+                    "data": "を"
+                  }
+                ]
+              },
+              {
+                "header": false,
+                "column-span": 2,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "拡"
+                  },
+                  {
+                    "element": "text",
+                    "data": "張"
+                  },
+                  {
+                    "element": "text",
+                    "data": "す"
+                  },
+                  {
+                    "element": "text",
+                    "data": "る"
+                  },
+                  {
+                    "element": "text",
+                    "data": "こ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "と"
+                  },
+                  {
+                    "element": "text",
+                    "data": "が"
+                  },
+                  {
+                    "element": "text",
+                    "data": "で"
+                  },
+                  {
+                    "element": "text",
+                    "data": "き"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ま"
+                  },
+                  {
+                    "element": "text",
+                    "data": "す"
+                  },
+                  {
+                    "element": "text",
+                    "data": "。"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 3,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "多"
+                  },
+                  {
+                    "element": "text",
+                    "data": "分"
+                  },
+                  {
+                    "element": "text",
+                    "data": "、"
+                  },
+                  {
+                    "element": "text",
+                    "data": "例"
+                  },
+                  {
+                    "element": "text",
+                    "data": "を"
+                  },
+                  {
+                    "element": "text",
+                    "data": "見"
+                  },
+                  {
+                    "element": "text",
+                    "data": "る"
+                  },
+                  {
+                    "element": "text",
+                    "data": "こ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "と"
+                  },
+                  {
+                    "element": "text",
+                    "data": "が"
+                  },
+                  {
+                    "element": "line-break"
+                  },
+                  {
+                    "element": "text",
+                    "data": "一"
+                  },
+                  {
+                    "element": "text",
+                    "data": "番"
+                  },
+                  {
+                    "element": "text",
+                    "data": "簡"
+                  },
+                  {
+                    "element": "text",
+                    "data": "単"
+                  },
+                  {
+                    "element": "text",
+                    "data": "な"
+                  },
+                  {
+                    "element": "text",
+                    "data": "方"
+                  },
+                  {
+                    "element": "text",
+                    "data": "法"
+                  },
+                  {
+                    "element": "text",
+                    "data": "で"
+                  },
+                  {
+                    "element": "text",
+                    "data": "し"
+                  },
+                  {
+                    "element": "text",
+                    "data": "ょ"
+                  },
+                  {
+                    "element": "text",
+                    "data": "う"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

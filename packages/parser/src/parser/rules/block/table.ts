@@ -321,6 +321,26 @@ function parseTableCell(
       break;
     }
 
+    // Check for underscore line-break pattern: WHITESPACE + UNDERSCORE + NEWLINE
+    // Wikidot processes " _\n" before table parsing, replacing it with <br />.
+    // This allows cell content to continue on the next line.
+    if (token.type === "WHITESPACE") {
+      const nextTok = ctx.tokens[pos + 1];
+      const afterTok = ctx.tokens[pos + 2];
+      if (
+        nextTok?.type === "UNDERSCORE" &&
+        afterTok &&
+        (afterTok.type === "NEWLINE" || afterTok.type === "EOF")
+      ) {
+        const lb: Element & { _preservedTrailingBreak?: boolean } = { element: "line-break" };
+        lb._preservedTrailingBreak = true;
+        children.push(lb);
+        pos += 3;
+        consumed += 3;
+        continue;
+      }
+    }
+
     // Skip whitespace between tokens but preserve it as text if not at start
     if (token.type === "WHITESPACE") {
       children.push({ element: "text", data: token.value });

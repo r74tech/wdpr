@@ -29,7 +29,10 @@ export function serializeTable(ctx: SerializeContext, data: TableData): void {
       }
 
       // Serialize cell content
+      // Force ` _\n` syntax for line breaks inside pipe table cells,
+      // since bare newlines would break the row structure.
       const innerCtx = new SerializeContext({ newline: ctx.newline });
+      innerCtx.forceLineBreakSyntax = true;
       serializeElements(innerCtx, cell.elements);
       const content = innerCtx.getOutput().replace(/\n$/, "");
 

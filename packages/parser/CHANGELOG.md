@@ -1,3 +1,13 @@
+## 2.0.4 (2026-02-21)
+
+### 🩹 Fixes
+
+- includeの行頭限定とembed iframeのstyle/class属性保持 ([#29](https://github.com/r74tech/wdpr/pull/29))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 2.0.3 (2026-02-21)
 
 ### 🩹 Fixes

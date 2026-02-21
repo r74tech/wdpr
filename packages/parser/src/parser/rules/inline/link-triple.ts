@@ -12,7 +12,8 @@
  * - Interwiki links: `[[[wikipedia:Article]]]` (for known prefixes)
  *
  * Special syntax:
- * - `[[[*page]]]` -- `*` prefix is treated as a label prefix (ignored in target)
+ * - `[[[*target]]]` -- `*` prefix is stripped from target; for external URLs,
+ *   adds `target="_blank"` (new tab)
  * - `[[[*|label]]]` -- links to root `/` with the given label
  * - `[[[page|]]]` -- empty label after pipe defaults to the page name
  *
@@ -86,7 +87,7 @@ function hasClosingLinkMarker(ctx: ParseContext, startPos: number): boolean {
  * - Empty target with pipe (`[[[|text]]]`) is invalid
  * - Multiple consecutive `#` in the target (`[[[page##anchor]]]`) is invalid
  * - `[[[*|label]]]` links to root `/`
- * - `[[[*page]]]` strips the `*` prefix from the target
+ * - `[[[*target]]]` strips `*`; adds `target="_blank"` for external URLs
  * - Category pages show only the text after the colon when no label is given
  */
 export const linkTripleRule: InlineRule = {
@@ -174,13 +175,11 @@ export const linkTripleRule: InlineRule = {
       };
     }
 
-    // Special case: [[[*|label]]] means link to root "/" with label
+    // `*` prefix: stripped from target; sets target="_blank" for external URLs
     let finalTarget = trimmedTarget;
-    if (trimmedTarget === "*" && foundPipe) {
-      finalTarget = "";
-    }
-    // Special case: [[[*page]]] - * is a label prefix, page is the target
-    if (trimmedTarget.startsWith("*") && !foundPipe) {
+    let hasStar = false;
+    if (trimmedTarget.startsWith("*")) {
+      hasStar = true;
       finalTarget = trimmedTarget.slice(1);
     }
 
@@ -194,8 +193,9 @@ export const linkTripleRule: InlineRule = {
       displayText = trimmedLabel || finalTarget;
     } else {
       // For category pages (system:Recent Changes), use only the part after colon
+      // Use trimmedTarget (preserves * prefix) for display when no pipe
       const colonIdx = trimmedTarget.indexOf(":");
-      if (colonIdx !== -1 && !trimmedTarget.startsWith("http")) {
+      if (colonIdx !== -1 && !trimmedTarget.startsWith("http") && !trimmedTarget.startsWith("*")) {
         displayText = trimmedTarget.slice(colonIdx + 1).trim();
       } else {
         displayText = trimmedTarget;
@@ -214,7 +214,7 @@ export const linkTripleRule: InlineRule = {
             link,
             extra: null,
             label,
-            target: null,
+            target: hasStar && linkType === "direct" ? "new-tab" : null,
           },
         },
       ],

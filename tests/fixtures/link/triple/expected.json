@@ -531,6 +531,84 @@
       }
     },
     {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "bold",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Star"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "prefix"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "direct",
+                  "link": "http://example.com",
+                  "extra": null,
+                  "label": {
+                    "text": "example"
+                  },
+                  "target": "new-tab"
+                }
+              }
+            ]
+          },
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "page",
+                  "link": {
+                    "site": null,
+                    "page": "test"
+                  },
+                  "extra": null,
+                  "label": {
+                    "text": "*test"
+                  },
+                  "target": null
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
       "element": "footnote-block",
       "data": {
         "title": null,

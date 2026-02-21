@@ -669,8 +669,7 @@
                     "data": "が"
                   },
                   {
-                    "element": "line-break",
-                    "_preservedTrailingBreak": true
+                    "element": "line-break"
                   },
                   {
                     "element": "text",

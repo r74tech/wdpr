@@ -332,9 +332,7 @@ function parseTableCell(
         afterTok &&
         (afterTok.type === "NEWLINE" || afterTok.type === "EOF")
       ) {
-        const lb: Element & { _preservedTrailingBreak?: boolean } = { element: "line-break" };
-        lb._preservedTrailingBreak = true;
-        children.push(lb);
+        children.push({ element: "line-break" });
         pos += 3;
         consumed += 3;
         continue;

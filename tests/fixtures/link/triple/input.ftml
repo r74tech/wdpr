@@ -23,3 +23,7 @@
 
 **URL**
 * [[[https://example.com/|Example]]]
+
+**Star prefix**
+* [[[*http://example.com|example]]]
+* [[[*test|*test]]]

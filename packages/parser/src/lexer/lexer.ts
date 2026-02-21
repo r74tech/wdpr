@@ -177,6 +177,17 @@ export class Lexer {
   }
 
   /**
+   * Returns the type of the last non-whitespace token, or null if none.
+   */
+  private lastNonWhitespaceTokenType(): TokenType | null {
+    for (let i = this.state.tokens.length - 1; i >= 0; i--) {
+      const t = this.state.tokens[i]!;
+      if (t.type !== "WHITESPACE") return t.type;
+    }
+    return null;
+  }
+
+  /**
    * Add token
    */
   private addToken(type: TokenType, value: string): void {
@@ -543,16 +554,23 @@ export class Lexer {
       return;
     }
 
-    // Quoted string
+    // Quoted string (only after EQUALS for block attribute values)
+    // In inline context, " is just a text character (typographic quotes)
     if (char === '"') {
-      let quoted = this.advance(); // opening "
-      while (!this.isAtEnd() && this.current() !== '"' && this.current() !== "\n") {
-        quoted += this.advance();
+      const lastNonWs = this.lastNonWhitespaceTokenType();
+      if (lastNonWs === "EQUALS") {
+        let quoted = this.advance(); // opening "
+        while (!this.isAtEnd() && this.current() !== '"' && this.current() !== "\n") {
+          quoted += this.advance();
+        }
+        if (this.current() === '"') {
+          quoted += this.advance(); // closing "
+        }
+        this.addToken("QUOTED_STRING", quoted);
+        return;
       }
-      if (this.current() === '"') {
-        quoted += this.advance(); // closing "
-      }
-      this.addToken("QUOTED_STRING", quoted);
+      this.advance();
+      this.addToken("TEXT", '"');
       return;
     }
 

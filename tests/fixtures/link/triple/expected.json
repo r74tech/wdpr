@@ -133,7 +133,23 @@
               },
               {
                 "element": "text",
-                "data": "\"Recent Changes\""
+                "data": "\""
+              },
+              {
+                "element": "text",
+                "data": "Recent"
+              },
+              {
+                "element": "text",
+                "data": " "
+              },
+              {
+                "element": "text",
+                "data": "Changes"
+              },
+              {
+                "element": "text",
+                "data": "\""
               },
               {
                 "element": "text",

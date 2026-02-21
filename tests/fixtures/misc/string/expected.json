@@ -16,7 +16,15 @@
           },
           {
             "element": "text",
-            "data": "\"string\""
+            "data": "\""
+          },
+          {
+            "element": "text",
+            "data": "string"
+          },
+          {
+            "element": "text",
+            "data": "\""
           },
           {
             "element": "text",
@@ -41,7 +49,75 @@
         "elements": [
           {
             "element": "text",
-            "data": "\"This one\\x01 has\\t escapes \\n\\b\""
+            "data": "\""
+          },
+          {
+            "element": "text",
+            "data": "This"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "one"
+          },
+          {
+            "element": "text",
+            "data": "\\"
+          },
+          {
+            "element": "text",
+            "data": "x01"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "has"
+          },
+          {
+            "element": "text",
+            "data": "\\"
+          },
+          {
+            "element": "text",
+            "data": "t"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "escapes"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "\\"
+          },
+          {
+            "element": "text",
+            "data": "n"
+          },
+          {
+            "element": "text",
+            "data": "\\"
+          },
+          {
+            "element": "text",
+            "data": "b"
+          },
+          {
+            "element": "text",
+            "data": "\""
           }
         ]
       }

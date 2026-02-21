@@ -1,3 +1,13 @@
+## 2.0.6 (2026-02-21)
+
+### 🩹 Fixes
+
+- トリプルブラケットリンクの*prefixがpipe付きで機能しない問題を修正 ([#30](https://github.com/r74tech/wdpr/pull/30))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 2.0.4 (2026-02-21)
 
 ### 🩹 Fixes

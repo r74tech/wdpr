@@ -96,7 +96,9 @@ const SANITIZE_CONFIG: sanitizeHtml.IOptions = {
   allowedTags: ["iframe"],
   allowedAttributes: {
     iframe: [
+      "class",
       "src",
+      "style",
       "allow",
       "allowfullscreen",
       "frameborder",

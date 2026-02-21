@@ -2,7 +2,7 @@
 
 ### 🩹 Fixes
 
-- トリプルブラケットリンクの*prefixがpipe付きで機能しない問題を修正 ([#30](https://github.com/r74tech/wdpr/pull/30))
+- トリプルブラケットリンクの\*prefixがpipe付きで機能しない問題を修正 ([#30](https://github.com/r74tech/wdpr/pull/30))
 
 ### ❤️ Thank You
 

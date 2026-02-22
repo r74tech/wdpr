@@ -19,6 +19,7 @@
       "data": {
         "url": "https://example.com/",
         "attributes": {
+          "class": "iframe",
           "width": "90%"
         }
       }
@@ -28,6 +29,7 @@
       "data": {
         "url": "https://example.com/",
         "attributes": {
+          "class": "iframe",
           "style": "width: 90%"
         }
       }

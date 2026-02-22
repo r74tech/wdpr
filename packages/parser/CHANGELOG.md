@@ -1,3 +1,13 @@
+## 2.0.9 (2026-02-22)
+
+### 🩹 Fixes
+
+- [[iframe]]のclass/align属性がパースされない問題を修正 ([#32](https://github.com/r74tech/wdpr/pull/32))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 2.0.8 (2026-02-21)
 
 ### 🩹 Fixes

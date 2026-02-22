@@ -12,9 +12,10 @@
  * - URL normalisation strips whitespace and control characters to prevent
  *   evasion via character insertion.
  * - Only a specific set of HTML attributes is allowed (Wikidot filters
- *   out `class` and `id`).
+ *   out `id` but permits `class`).
  *
- * Allowed attributes: `width`, `height`, `style`, `scrolling`, `frameborder`.
+ * Allowed attributes: `align`, `class`, `frameborder`, `height`,
+ * `scrolling`, `style`, `width`.
  *
  * @module
  */
@@ -25,9 +26,17 @@ import { parseBlockName } from "./utils";
 
 /**
  * Whitelist of attributes permitted on `[[iframe]]`. Wikidot strips
- * `class` and `id` for security reasons.
+ * `id` but permits `class`.
  */
-const ALLOWED_IFRAME_ATTRS = new Set(["width", "height", "style", "scrolling", "frameborder"]);
+const ALLOWED_IFRAME_ATTRS = new Set([
+  "align",
+  "class",
+  "frameborder",
+  "height",
+  "scrolling",
+  "style",
+  "width",
+]);
 
 /**
  * Normalises a URL string for security checks by removing whitespace and

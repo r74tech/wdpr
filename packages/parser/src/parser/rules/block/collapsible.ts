@@ -19,9 +19,6 @@
  *   emitted as `<br />` + literal text, matching Wikidot rendering.
  * - An inline form (`[[collapsible]]text[[/collapsible]]` on one line) is
  *   supported but uncommon.
- * - Consecutive paragraph containers in the body are merged back into a single
- *   paragraph via `mergeParagraphs`, because Wikidot does not split
- *   paragraphs at unrecognised block tokens inside a collapsible.
  *
  * @module
  */
@@ -141,66 +138,64 @@ function consumeCloseTag(ctx: ParseContext, pos: number): number {
 }
 
 /**
- * Merges consecutive paragraph container elements into a single paragraph.
+ * Merges consecutive paragraph containers that were split by unrecognised
+ * block tokens back into the preceding paragraph.
  *
- * When the collapsible rule is disabled during body parsing (to prevent
- * nesting), unrecognised `[[collapsible...]]` tokens cause the paragraph
- * parser to split content into multiple paragraphs. Wikidot itself keeps
- * this content as one paragraph, so this function re-joins them, inserting
- * line-break elements between the merged runs.
+ * When a `[[collapsible]]` token appears inside a collapsible body (the rule
+ * is filtered out to prevent nesting), the paragraph parser treats the
+ * `BLOCK_OPEN` as a paragraph boundary, splitting content that Wikidot keeps
+ * in a single paragraph. This function detects those artificial splits —
+ * paragraphs whose first text element is `"[["` — and merges them back,
+ * inserting a line-break between runs.
  *
- * Non-paragraph elements (divs, tables, etc.) act as merge boundaries and
- * are emitted as-is.
- *
- * @param elements - The body elements produced by block parsing.
- * @returns A new array with adjacent paragraphs merged.
+ * Paragraphs separated by blank lines (double newline) do NOT start with
+ * `"[["` and are therefore left as separate paragraphs.
  */
-function mergeParagraphs(elements: Element[]): Element[] {
+function mergeSplitParagraphs(elements: Element[]): Element[] {
   const result: Element[] = [];
-  let mergedElements: Element[] = [];
 
   for (const elem of elements) {
     if (
-      elem.element === "container" &&
-      elem.data &&
-      typeof elem.data === "object" &&
-      "type" in elem.data &&
-      elem.data.type === "paragraph"
+      elem.element !== "container" ||
+      !elem.data ||
+      typeof elem.data !== "object" ||
+      !("type" in elem.data) ||
+      elem.data.type !== "paragraph" ||
+      !("elements" in elem.data) ||
+      !Array.isArray(elem.data.elements)
     ) {
-      // Add line-break between merged paragraphs
-      if (mergedElements.length > 0) {
-        mergedElements.push({ element: "line-break" });
-      }
-      if ("elements" in elem.data && Array.isArray(elem.data.elements)) {
-        mergedElements.push(...elem.data.elements);
-      }
+      result.push(elem);
+      continue;
+    }
+
+    // Check if this paragraph starts with "[[" (unrecognised block token)
+    const firstElem = elem.data.elements[0];
+    const startsWithBlockOpen =
+      firstElem?.element === "text" &&
+      typeof firstElem.data === "string" &&
+      firstElem.data === "[[";
+
+    if (!startsWithBlockOpen) {
+      result.push(elem);
+      continue;
+    }
+
+    // Try to merge into the previous paragraph
+    const prev = result[result.length - 1];
+    if (
+      prev?.element === "container" &&
+      prev.data &&
+      typeof prev.data === "object" &&
+      "type" in prev.data &&
+      prev.data.type === "paragraph" &&
+      "elements" in prev.data &&
+      Array.isArray(prev.data.elements)
+    ) {
+      prev.data.elements.push({ element: "line-break" });
+      prev.data.elements.push(...elem.data.elements);
     } else {
-      // Non-paragraph element: flush merged paragraphs
-      if (mergedElements.length > 0) {
-        result.push({
-          element: "container",
-          data: {
-            type: "paragraph",
-            attributes: {},
-            elements: mergedElements,
-          },
-        });
-        mergedElements = [];
-      }
       result.push(elem);
     }
-  }
-
-  // Flush remaining merged paragraphs
-  if (mergedElements.length > 0) {
-    result.push({
-      element: "container",
-      data: {
-        type: "paragraph",
-        attributes: {},
-        elements: mergedElements,
-      },
-    });
   }
 
   return result;
@@ -216,11 +211,10 @@ function mergeParagraphs(elements: Element[]): Element[] {
  *    with the collapsible rule itself removed (to prevent nesting).
  *    Otherwise, parse inline content until close tag or end of line
  *    (inline form).
- * 4. Merge consecutive paragraphs in the body via `mergeParagraphs()`.
- * 5. Consume the `[[/collapsible]]` closing tag.
- * 6. Consume any orphaned `[[/collapsible]]` tags that follow, converting
+ * 4. Consume the `[[/collapsible]]` closing tag.
+ * 5. Consume any orphaned `[[/collapsible]]` tags that follow, converting
  *    them to `<br />` + literal text.
- * 7. Derive `show-top` / `show-bottom` booleans from the `hideLocation`
+ * 6. Derive `show-top` / `show-bottom` booleans from the `hideLocation`
  *    attribute.
  */
 export const collapsibleRule: BlockRule = {
@@ -320,9 +314,9 @@ export const collapsibleRule: BlockRule = {
       consumed += bodyResult.consumed;
       pos += bodyResult.consumed;
 
-      // Merge consecutive paragraphs into one (Wikidot doesn't split paragraphs
-      // at unrecognized [[block]] tokens inside collapsible)
-      bodyElements = mergeParagraphs(bodyResult.elements);
+      // Merge paragraphs that were artificially split by unrecognised
+      // [[collapsible]] tokens (nested collapsible is treated as plain text)
+      bodyElements = mergeSplitParagraphs(bodyResult.elements);
     }
 
     // Check for missing close tag

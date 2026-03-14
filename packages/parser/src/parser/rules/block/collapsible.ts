@@ -143,13 +143,13 @@ function consumeCloseTag(ctx: ParseContext, pos: number): number {
  *
  * When a `[[collapsible]]` token appears inside a collapsible body (the rule
  * is filtered out to prevent nesting), the paragraph parser treats the
- * `BLOCK_OPEN` as a paragraph boundary, splitting content that Wikidot keeps
- * in a single paragraph. This function detects those artificial splits —
- * paragraphs whose first text element is `"[["` — and merges them back,
- * inserting a line-break between runs.
+ * `BLOCK_OPEN` or `BLOCK_END_OPEN` as a paragraph boundary, splitting content
+ * that Wikidot keeps in a single paragraph. This function detects those
+ * artificial splits — paragraphs whose first text element is `"[["` or
+ * `"[[/"` — and merges them back, inserting a line-break between runs.
  *
  * Paragraphs separated by blank lines (double newline) do NOT start with
- * `"[["` and are therefore left as separate paragraphs.
+ * block-open text and are therefore left as separate paragraphs.
  */
 function mergeSplitParagraphs(elements: Element[]): Element[] {
   const result: Element[] = [];
@@ -168,12 +168,12 @@ function mergeSplitParagraphs(elements: Element[]): Element[] {
       continue;
     }
 
-    // Check if this paragraph starts with "[[" (unrecognised block token)
+    // Check if this paragraph starts with "[[" or "[[/" (unrecognised block token)
     const firstElem = elem.data.elements[0];
     const startsWithBlockOpen =
       firstElem?.element === "text" &&
       typeof firstElem.data === "string" &&
-      firstElem.data === "[[";
+      (firstElem.data === "[[" || firstElem.data === "[[/");
 
     if (!startsWithBlockOpen) {
       result.push(elem);

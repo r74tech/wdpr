@@ -1,3 +1,13 @@
+## 2.0.10 (2026-03-15)
+
+### 🩹 Fixes
+
+- [[collapsible]]内で段落分けされない問題を修正 ([#35](https://github.com/r74tech/wdpr/pull/35), [#33](https://github.com/r74tech/wdpr/issues/33))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 2.0.9 (2026-02-22)
 
 ### 🩹 Fixes

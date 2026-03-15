@@ -1,6 +1,6 @@
 {
   "name": "@wdprlib/parser",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "Parser for Wikidot markup",
   "keywords": [
     "ast",

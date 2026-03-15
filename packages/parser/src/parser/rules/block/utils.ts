@@ -82,17 +82,29 @@ export function canApplyBlockRule(rule: BlockRule, token: Token): boolean {
  *
  * @param ctx            - Parse context positioned at the start of the body.
  * @param closeCondition - Predicate that signals the end of the block body.
+ * @param options        - Optional settings.
+ * @param options.excludedBlockNames - Block names that should be excluded
+ *   from both rule dispatch and paragraph-boundary detection. The named
+ *   rules are filtered out of `blockRules`, and the set is propagated to
+ *   the inline parser via `ParseContext.excludedBlockNames` so that
+ *   `BLOCK_OPEN` / `BLOCK_END_OPEN` tokens for these names do not trigger
+ *   paragraph breaks.
  * @returns Parsed elements and total tokens consumed.
  */
 export function parseBlocksUntil(
   ctx: ParseContext,
   closeCondition: (ctx: ParseContext) => boolean,
+  options?: { excludedBlockNames?: ReadonlySet<string> },
 ): BlockParseResult {
   const elements: Element[] = [];
   let consumed = 0;
   let pos = ctx.pos;
 
-  const { blockRules, blockFallbackRule } = ctx;
+  const excluded = options?.excludedBlockNames;
+  const blockRules = excluded
+    ? ctx.blockRules.filter((r) => !excluded.has(r.name))
+    : ctx.blockRules;
+  const { blockFallbackRule } = ctx;
 
   while (pos < ctx.tokens.length) {
     const token = ctx.tokens[pos];
@@ -122,8 +134,14 @@ export function parseBlocksUntil(
 
     // Try each block rule
     let matched = false;
-    // Pass close condition to context so paragraph parser can respect it
-    const blockCtx: ParseContext = { ...ctx, pos, blockCloseCondition: closeCondition };
+    // Pass close condition and excluded names to context
+    const blockCtx: ParseContext = {
+      ...ctx,
+      pos,
+      blockRules,
+      blockCloseCondition: closeCondition,
+      excludedBlockNames: excluded,
+    };
 
     for (const rule of blockRules) {
       if (canApplyBlockRule(rule, token)) {

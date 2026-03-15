@@ -137,69 +137,8 @@ function consumeCloseTag(ctx: ParseContext, pos: number): number {
   return closeConsumed;
 }
 
-/**
- * Merges consecutive paragraph containers that were split by unrecognised
- * block tokens back into the preceding paragraph.
- *
- * When a `[[collapsible]]` token appears inside a collapsible body (the rule
- * is filtered out to prevent nesting), the paragraph parser treats the
- * `BLOCK_OPEN` or `BLOCK_END_OPEN` as a paragraph boundary, splitting content
- * that Wikidot keeps in a single paragraph. This function detects those
- * artificial splits — paragraphs whose first text element is `"[["` or
- * `"[[/"` — and merges them back, inserting a line-break between runs.
- *
- * Paragraphs separated by blank lines (double newline) do NOT start with
- * block-open text and are therefore left as separate paragraphs.
- */
-function mergeSplitParagraphs(elements: Element[]): Element[] {
-  const result: Element[] = [];
-
-  for (const elem of elements) {
-    if (
-      elem.element !== "container" ||
-      !elem.data ||
-      typeof elem.data !== "object" ||
-      !("type" in elem.data) ||
-      elem.data.type !== "paragraph" ||
-      !("elements" in elem.data) ||
-      !Array.isArray(elem.data.elements)
-    ) {
-      result.push(elem);
-      continue;
-    }
-
-    // Check if this paragraph starts with "[[" or "[[/" (unrecognised block token)
-    const firstElem = elem.data.elements[0];
-    const startsWithBlockOpen =
-      firstElem?.element === "text" &&
-      typeof firstElem.data === "string" &&
-      (firstElem.data === "[[" || firstElem.data === "[[/");
-
-    if (!startsWithBlockOpen) {
-      result.push(elem);
-      continue;
-    }
-
-    // Try to merge into the previous paragraph
-    const prev = result[result.length - 1];
-    if (
-      prev?.element === "container" &&
-      prev.data &&
-      typeof prev.data === "object" &&
-      "type" in prev.data &&
-      prev.data.type === "paragraph" &&
-      "elements" in prev.data &&
-      Array.isArray(prev.data.elements)
-    ) {
-      prev.data.elements.push({ element: "line-break" });
-      prev.data.elements.push(...elem.data.elements);
-    } else {
-      result.push(elem);
-    }
-  }
-
-  return result;
-}
+/** Block names excluded from rule dispatch and paragraph-boundary detection. */
+const EXCLUDED_BLOCKS = new Set(["collapsible"]);
 
 /**
  * Block rule for `[[collapsible ...]]...[[/collapsible]]`.
@@ -208,7 +147,7 @@ function mergeSplitParagraphs(elements: Element[]): Element[] {
  * 1. Match BLOCK_OPEN + name "collapsible".
  * 2. Parse multiline attributes (show, hide, folded, hideLocation, etc.).
  * 3. If a NEWLINE follows the opening tag, parse body as block content
- *    with the collapsible rule itself removed (to prevent nesting).
+ *    with the collapsible rule itself excluded (to prevent nesting).
  *    Otherwise, parse inline content until close tag or end of line
  *    (inline form).
  * 4. Consume the `[[/collapsible]]` closing tag.
@@ -299,24 +238,22 @@ export const collapsibleRule: BlockRule = {
       }
     } else {
       // Block form: parse content recursively until [[/collapsible]]
-      // Collapsible cannot be nested in Wikidot - nested [[collapsible]] becomes plain text
-      const bodyCtx: ParseContext = {
-        ...ctx,
-        pos,
-        blockRules: ctx.blockRules.filter((r) => r.name !== "collapsible"),
-      };
+      // Collapsible cannot be nested in Wikidot - nested [[collapsible]] becomes plain text.
+      // excludedBlockNames removes the collapsible rule from dispatch AND prevents
+      // [[collapsible]] / [[/collapsible]] tokens from triggering paragraph splits.
+      const bodyCtx: ParseContext = { ...ctx, pos };
 
       const closeCondition = (checkCtx: ParseContext): boolean => {
         return isCollapsibleClose(checkCtx, checkCtx.pos);
       };
 
-      const bodyResult = parseBlocksUntil(bodyCtx, closeCondition);
+      const bodyResult = parseBlocksUntil(bodyCtx, closeCondition, {
+        excludedBlockNames: EXCLUDED_BLOCKS,
+      });
       consumed += bodyResult.consumed;
       pos += bodyResult.consumed;
 
-      // Merge paragraphs that were artificially split by unrecognised
-      // [[collapsible]] tokens (nested collapsible is treated as plain text)
-      bodyElements = mergeSplitParagraphs(bodyResult.elements);
+      bodyElements = bodyResult.elements;
     }
 
     // Check for missing close tag

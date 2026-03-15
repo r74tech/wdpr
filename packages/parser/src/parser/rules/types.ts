@@ -26,6 +26,11 @@ export interface ParseContext {
   inlineRules: InlineRule[];
   // Close condition for current block (passed to paragraph parser)
   blockCloseCondition?: (ctx: ParseContext) => boolean;
+  // Block names excluded from paragraph-boundary detection.
+  // When a BLOCK_OPEN/BLOCK_END_OPEN for an excluded name appears at
+  // line start, the inline parser does NOT treat it as a paragraph break.
+  // Used by collapsible to prevent nested [[collapsible]] from splitting paragraphs.
+  excludedBlockNames?: ReadonlySet<string>;
   // Diagnostics collected during parsing
   diagnostics: Diagnostic[];
   // Budget for div nesting: tracks how many more nested divs can open.

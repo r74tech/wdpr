@@ -2,6 +2,19 @@ import type { TokenType, Token } from "../../../lexer";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext, InlineRule } from "../types";
 import { BLOCK_START_TOKENS } from "../../constants";
+import { parseBlockName } from "../utils";
+
+/**
+ * Checks whether the block token at `tokenPos` (BLOCK_OPEN or BLOCK_END_OPEN)
+ * names a block in the excluded set.
+ */
+function isExcludedBlockToken(ctx: ParseContext, tokenPos: number): boolean {
+  if (!ctx.excludedBlockNames?.size) return false;
+  const token = ctx.tokens[tokenPos];
+  if (token?.type !== "BLOCK_OPEN" && token?.type !== "BLOCK_END_OPEN") return false;
+  const nameResult = parseBlockName(ctx, tokenPos + 1);
+  return nameResult !== null && ctx.excludedBlockNames.has(nameResult.name);
+}
 
 /**
  * Result of parsing inline content
@@ -146,8 +159,15 @@ export function parseInlineUntil(ctx: ParseContext, endType: TokenType): InlineP
         }
       }
 
+      // Check if this block token names an excluded block (e.g. nested collapsible)
+      const isExcludedBlock =
+        (nextMeaningfulToken?.type === "BLOCK_OPEN" ||
+          nextMeaningfulToken?.type === "BLOCK_END_OPEN") &&
+        isExcludedBlockToken(ctx, pos + lookAhead);
+
       // Stop at double NEWLINE, EOF, or block start token (at line start)
-      // But don't stop at [[/span]], [[# name]], [[>/[[<, or invalid headings
+      // But don't stop at [[/span]], [[# name]], [[>/[[<, invalid headings,
+      // or excluded block names
       const isBlockStart =
         nextMeaningfulToken &&
         BLOCK_START_TOKENS.includes(nextMeaningfulToken.type) &&
@@ -155,7 +175,8 @@ export function parseInlineUntil(ctx: ParseContext, endType: TokenType): InlineP
         !isOrphanCloseSpan &&
         !isAnchorName &&
         !isInvalidBlockOpen &&
-        !isInvalidHeading;
+        !isInvalidHeading &&
+        !isExcludedBlock;
       if (
         !nextMeaningfulToken ||
         nextMeaningfulToken.type === "NEWLINE" ||

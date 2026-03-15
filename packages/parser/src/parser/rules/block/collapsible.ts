@@ -19,9 +19,6 @@
  *   emitted as `<br />` + literal text, matching Wikidot rendering.
  * - An inline form (`[[collapsible]]text[[/collapsible]]` on one line) is
  *   supported but uncommon.
- * - Consecutive paragraph containers in the body are merged back into a single
- *   paragraph via `mergeParagraphs`, because Wikidot does not split
- *   paragraphs at unrecognised block tokens inside a collapsible.
  *
  * @module
  */
@@ -140,71 +137,8 @@ function consumeCloseTag(ctx: ParseContext, pos: number): number {
   return closeConsumed;
 }
 
-/**
- * Merges consecutive paragraph container elements into a single paragraph.
- *
- * When the collapsible rule is disabled during body parsing (to prevent
- * nesting), unrecognised `[[collapsible...]]` tokens cause the paragraph
- * parser to split content into multiple paragraphs. Wikidot itself keeps
- * this content as one paragraph, so this function re-joins them, inserting
- * line-break elements between the merged runs.
- *
- * Non-paragraph elements (divs, tables, etc.) act as merge boundaries and
- * are emitted as-is.
- *
- * @param elements - The body elements produced by block parsing.
- * @returns A new array with adjacent paragraphs merged.
- */
-function mergeParagraphs(elements: Element[]): Element[] {
-  const result: Element[] = [];
-  let mergedElements: Element[] = [];
-
-  for (const elem of elements) {
-    if (
-      elem.element === "container" &&
-      elem.data &&
-      typeof elem.data === "object" &&
-      "type" in elem.data &&
-      elem.data.type === "paragraph"
-    ) {
-      // Add line-break between merged paragraphs
-      if (mergedElements.length > 0) {
-        mergedElements.push({ element: "line-break" });
-      }
-      if ("elements" in elem.data && Array.isArray(elem.data.elements)) {
-        mergedElements.push(...elem.data.elements);
-      }
-    } else {
-      // Non-paragraph element: flush merged paragraphs
-      if (mergedElements.length > 0) {
-        result.push({
-          element: "container",
-          data: {
-            type: "paragraph",
-            attributes: {},
-            elements: mergedElements,
-          },
-        });
-        mergedElements = [];
-      }
-      result.push(elem);
-    }
-  }
-
-  // Flush remaining merged paragraphs
-  if (mergedElements.length > 0) {
-    result.push({
-      element: "container",
-      data: {
-        type: "paragraph",
-        attributes: {},
-        elements: mergedElements,
-      },
-    });
-  }
-
-  return result;
-}
+/** Block names excluded from rule dispatch and paragraph-boundary detection. */
+const EXCLUDED_BLOCKS = new Set(["collapsible"]);
 
 /**
  * Block rule for `[[collapsible ...]]...[[/collapsible]]`.
@@ -213,14 +147,13 @@ function mergeParagraphs(elements: Element[]): Element[] {
  * 1. Match BLOCK_OPEN + name "collapsible".
  * 2. Parse multiline attributes (show, hide, folded, hideLocation, etc.).
  * 3. If a NEWLINE follows the opening tag, parse body as block content
- *    with the collapsible rule itself removed (to prevent nesting).
+ *    with the collapsible rule itself excluded (to prevent nesting).
  *    Otherwise, parse inline content until close tag or end of line
  *    (inline form).
- * 4. Merge consecutive paragraphs in the body via `mergeParagraphs()`.
- * 5. Consume the `[[/collapsible]]` closing tag.
- * 6. Consume any orphaned `[[/collapsible]]` tags that follow, converting
+ * 4. Consume the `[[/collapsible]]` closing tag.
+ * 5. Consume any orphaned `[[/collapsible]]` tags that follow, converting
  *    them to `<br />` + literal text.
- * 7. Derive `show-top` / `show-bottom` booleans from the `hideLocation`
+ * 6. Derive `show-top` / `show-bottom` booleans from the `hideLocation`
  *    attribute.
  */
 export const collapsibleRule: BlockRule = {
@@ -305,24 +238,22 @@ export const collapsibleRule: BlockRule = {
       }
     } else {
       // Block form: parse content recursively until [[/collapsible]]
-      // Collapsible cannot be nested in Wikidot - nested [[collapsible]] becomes plain text
-      const bodyCtx: ParseContext = {
-        ...ctx,
-        pos,
-        blockRules: ctx.blockRules.filter((r) => r.name !== "collapsible"),
-      };
+      // Collapsible cannot be nested in Wikidot - nested [[collapsible]] becomes plain text.
+      // excludedBlockNames removes the collapsible rule from dispatch AND prevents
+      // [[collapsible]] / [[/collapsible]] tokens from triggering paragraph splits.
+      const bodyCtx: ParseContext = { ...ctx, pos };
 
       const closeCondition = (checkCtx: ParseContext): boolean => {
         return isCollapsibleClose(checkCtx, checkCtx.pos);
       };
 
-      const bodyResult = parseBlocksUntil(bodyCtx, closeCondition);
+      const bodyResult = parseBlocksUntil(bodyCtx, closeCondition, {
+        excludedBlockNames: EXCLUDED_BLOCKS,
+      });
       consumed += bodyResult.consumed;
       pos += bodyResult.consumed;
 
-      // Merge consecutive paragraphs into one (Wikidot doesn't split paragraphs
-      // at unrecognized [[block]] tokens inside collapsible)
-      bodyElements = mergeParagraphs(bodyResult.elements);
+      bodyElements = bodyResult.elements;
     }
 
     // Check for missing close tag

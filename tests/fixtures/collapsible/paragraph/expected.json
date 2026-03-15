@@ -1,0 +1,117 @@
+{
+  "elements": [
+    {
+      "element": "collapsible",
+      "data": {
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "文"
+                },
+                {
+                  "element": "text",
+                  "data": "章"
+                },
+                {
+                  "element": "text",
+                  "data": "1"
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "文"
+                },
+                {
+                  "element": "text",
+                  "data": "章"
+                },
+                {
+                  "element": "text",
+                  "data": "2"
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "文"
+                },
+                {
+                  "element": "text",
+                  "data": "章"
+                },
+                {
+                  "element": "text",
+                  "data": "3"
+                },
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "文"
+                },
+                {
+                  "element": "text",
+                  "data": "章"
+                },
+                {
+                  "element": "text",
+                  "data": "4"
+                },
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "文"
+                },
+                {
+                  "element": "text",
+                  "data": "章"
+                },
+                {
+                  "element": "text",
+                  "data": "5"
+                }
+              ]
+            }
+          }
+        ],
+        "attributes": {},
+        "start-open": false,
+        "show-text": null,
+        "hide-text": null,
+        "show-top": true,
+        "show-bottom": false
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

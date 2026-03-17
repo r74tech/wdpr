@@ -2,11 +2,11 @@
 
 ### 🚀 Features
 
-- ⚠️  resolveIncludesAsync追加 & include処理をWikidot互換イテレーティブ方式に書き換え ([#36](https://github.com/r74tech/wdpr/pull/36))
+- ⚠️ resolveIncludesAsync追加 & include処理をWikidot互換イテレーティブ方式に書き換え ([#36](https://github.com/r74tech/wdpr/pull/36))
 
-### ⚠️  Breaking Changes
+### ⚠️ Breaking Changes
 
-- resolveIncludesAsync追加 & include処理をWikidot互換イテレーティブ方式に書き換え  ([#36](https://github.com/r74tech/wdpr/pull/36))
+- resolveIncludesAsync追加 & include処理をWikidot互換イテレーティブ方式に書き換え ([#36](https://github.com/r74tech/wdpr/pull/36))
   maxDepthオプション削除、循環includeのエラー文言廃止
 
 ### ❤️ Thank You

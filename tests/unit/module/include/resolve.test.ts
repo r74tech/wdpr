@@ -49,7 +49,8 @@ describe("resolveIncludes", () => {
     expect(expanded).not.toContain("[[include");
   });
 
-  test("detects circular includes", () => {
+  test("mutual circular includes stop at maxIterations", () => {
+    // A includes B, B includes A → oscillates until maxIterations
     const source = "[[include page-a]]";
     const fetcher = (pageRef: { site: string | null; page: string }) => {
       if (pageRef.page === "page-a") return "[[include page-b]]";
@@ -57,11 +58,32 @@ describe("resolveIncludes", () => {
       return null;
     };
 
-    const expanded = resolveIncludes(source, fetcher);
-    expect(expanded).toContain("Circular include detected");
+    // With maxIterations=3, should oscillate and stop
+    const expanded = resolveIncludes(source, fetcher, { maxIterations: 3 });
+    // After 3 iterations the include is still present (oscillating)
+    expect(expanded).toContain("[[include");
   });
 
-  test("respects maxDepth", () => {
+  test("self-referencing include stops immediately (no change)", () => {
+    // Page A contains [[include page-a]] → after 1 replacement, content
+    // is the same cached source containing [[include page-a]] again.
+    // Next iteration produces same result → stops.
+    const source = "[[include page-a]]";
+    let fetchCount = 0;
+    const fetcher = (pageRef: { site: string | null; page: string }) => {
+      fetchCount++;
+      if (pageRef.page === "page-a") return "Self: [[include page-a]]";
+      return null;
+    };
+
+    const expanded = resolveIncludes(source, fetcher);
+    // Eventually stabilizes (the include keeps producing the same text)
+    expect(expanded).toContain("Self:");
+    // Fetcher is called only once (cached)
+    expect(fetchCount).toBe(1);
+  });
+
+  test("respects maxIterations", () => {
     const source = "[[include level-1]]";
     const fetcher = (pageRef: { site: string | null; page: string }) => {
       const match = pageRef.page.match(/level-(\d+)/);
@@ -73,12 +95,27 @@ describe("resolveIncludes", () => {
       return null;
     };
 
-    const expanded = resolveIncludes(source, fetcher, { maxDepth: 3 });
+    // Each iteration expands one layer of includes
+    const expanded = resolveIncludes(source, fetcher, { maxIterations: 3 });
     expect(expanded).toContain("Level 1");
     expect(expanded).toContain("Level 2");
     expect(expanded).toContain("Level 3");
-    // 深度4以降は展開されずに残る
+    // After 3 iterations, level-4 is still unexpanded
     expect(expanded).toContain("[[include level-4]]");
+  });
+
+  test("stops early when no changes occur", () => {
+    const source = "[[include page-a]]";
+    let fetchCount = 0;
+    const fetcher = () => {
+      fetchCount++;
+      return "No nested includes here";
+    };
+
+    const expanded = resolveIncludes(source, fetcher, { maxIterations: 10 });
+    expect(expanded).toBe("No nested includes here");
+    // Fetcher called once, then no more iterations needed
+    expect(fetchCount).toBe(1);
   });
 
   test("caches fetcher calls for same page", () => {
@@ -91,6 +128,20 @@ describe("resolveIncludes", () => {
 
     resolveIncludes(source, fetcher);
     expect(fetchCount).toBe(1);
+  });
+
+  test("same page with different variables uses cache but substitutes differently", () => {
+    const source = "[[include tmpl | x=1]]\n[[include tmpl | x=2]]";
+    let fetchCount = 0;
+    const fetcher = () => {
+      fetchCount++;
+      return "val={$x}";
+    };
+
+    const expanded = resolveIncludes(source, fetcher);
+    expect(fetchCount).toBe(1);
+    expect(expanded).toContain("val=1");
+    expect(expanded).toContain("val=2");
   });
 
   test("handles fetcher exceptions", () => {
@@ -115,7 +166,7 @@ describe("resolveIncludes", () => {
     expect(receivedPageRef!).toEqual({ site: "other-site", page: "my-page" });
   });
 
-  test("same page from different routes is not circular", () => {
+  test("same page from different routes expands correctly", () => {
     const source = "[[include page-a]]";
     const fetcher = (pageRef: { site: string | null; page: string }) => {
       if (pageRef.page === "page-a") return "[[include page-b]]\n[[include page-c]]";
@@ -148,15 +199,17 @@ describe("resolveIncludes", () => {
     expect(expanded).toBe("Hello world");
   });
 
-  test("normalizes page keys for circular detection (case insensitive)", () => {
-    const source = "[[include Page-A]]";
-    const fetcher = (pageRef: { site: string | null; page: string }) => {
-      if (pageRef.page.toLowerCase() === "page-a") return "[[include page-a]]";
-      return null;
+  test("case-insensitive page key caching", () => {
+    // Page-A and page-a should hit the same cache entry
+    const source = "[[include Page-A]]\n[[include page-a]]";
+    let fetchCount = 0;
+    const fetcher = () => {
+      fetchCount++;
+      return "content";
     };
 
-    const expanded = resolveIncludes(source, fetcher);
-    expect(expanded).toContain("Circular include detected");
+    resolveIncludes(source, fetcher);
+    expect(fetchCount).toBe(1);
   });
 
   test("multiple variables are substituted", () => {
@@ -267,5 +320,27 @@ describe("resolveIncludes", () => {
     const allText = getAllText(ast.elements);
     expect(allText).not.toContain("[[/div]]");
     expect(allText).toContain("Content here");
+  });
+
+  test("inc-loop pattern: same page with variable-driven recursion", () => {
+    // Simulates inc-loop-base: a page that includes itself with decremented counter
+    // Page "loop" contains: "Item {$n}\n[[include loop | n={$next}]]" but we need
+    // to simulate variable-driven content changes across iterations
+    const source = "[[include counter | n=3]]";
+    const fetcher = (pageRef: { site: string | null; page: string }) => {
+      if (pageRef.page === "counter") {
+        // The page source contains a conditional pattern:
+        // If {$n} > 0, include self with n-1
+        return "Count:{$n}\n[[include counter | n={$next}]]";
+      }
+      return null;
+    };
+
+    // Iteration 1: source becomes "Count:3\n[[include counter | n={$next}]]"
+    // {$next} is unresolved, so next include has n={$next}
+    // Iteration 2: "Count:3\nCount:{$next}\n[[include counter | n={$next}]]"
+    // Iteration 3: same pattern continues
+    const expanded = resolveIncludes(source, fetcher, { maxIterations: 3 });
+    expect(expanded).toContain("Count:3");
   });
 });

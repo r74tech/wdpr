@@ -8,15 +8,16 @@
  * (e.g., an opening `[[div]]` tag in one include and its closing `[[/div]]` in
  * another) that must be visible to the parser as a single continuous text.
  *
- * The resolution process:
- * 1. Scan the source text for `[[include page | var=val]]` patterns
- * 2. Fetch the included page's content via the provided fetcher callback
- * 3. Apply variable substitutions (`{$key}` -> `value`)
- * 4. Recursively resolve includes in the fetched content (up to max depth)
- * 5. Replace the original `[[include ...]]` directive with the expanded text
+ * The resolution process follows Wikidot's iterative (do-while) approach:
+ * 1. Scan the entire source text for `[[include page | var=val]]` patterns
+ * 2. Replace ALL matches in one pass (each fetched, variable-substituted)
+ * 3. Compare the result with the previous source
+ * 4. Repeat until no changes occur or `maxIterations` is reached
  *
- * Safety features include circular dependency detection (using a trace of
- * visited pages) and a configurable maximum recursion depth (default: 5).
+ * This differs from a DFS recursive approach: each iteration expands one
+ * "layer" of includes across the whole source, rather than drilling into
+ * each include immediately. This allows patterns like inc-loop (where the
+ * same page is included with different variables across iterations) to work.
  *
  * @module
  */
@@ -34,11 +35,27 @@ import type { PageRef, VariableMap, WikitextSettings } from "@wdprlib/ast";
 export type IncludeFetcher = (pageRef: PageRef) => string | null;
 
 /**
- * Options for resolveIncludes
+ * Async callback to fetch page content for include resolution.
+ * Returns a promise of the wikitext source, or null if the page does not exist.
+ *
+ * @security The fetcher is called with user-provided page references.
+ * Implementations should validate and sanitize page references before
+ * using them in database queries or file system access.
+ */
+export type AsyncIncludeFetcher = (pageRef: PageRef) => Promise<string | null>;
+
+/**
+ * Options for resolveIncludes / resolveIncludesAsync
  */
 export interface ResolveIncludesOptions {
-  /** Maximum recursion depth for nested includes (default: 5) */
-  maxDepth?: number;
+  /**
+   * Maximum number of expansion iterations (default: 10).
+   *
+   * Each iteration replaces all `[[include]]` directives in the current
+   * source with fetched content. Iteration stops when the source is
+   * unchanged or this limit is reached.
+   */
+  maxIterations?: number;
   /** Wikitext settings. If enablePageSyntax is false, includes are not expanded. */
   settings?: WikitextSettings;
 }
@@ -46,10 +63,10 @@ export interface ResolveIncludesOptions {
 /**
  * Expand all [[include]] directives in the source text.
  *
- * Include directives are treated as macro expansions: `[[include page]]`
- * is replaced with the fetched page content (after variable substitution).
- * The result is a single expanded text that can be parsed as a whole,
- * allowing block structures (like div) to span across include boundaries.
+ * Uses Wikidot-compatible iterative expansion: each iteration replaces
+ * all include directives in the current source with fetched (and
+ * variable-substituted) content. Iteration continues until no further
+ * changes occur or `maxIterations` is reached.
  *
  * @example
  * ```ts
@@ -66,7 +83,7 @@ export function resolveIncludes(
     return source;
   }
 
-  const maxDepth = options?.maxDepth ?? 5;
+  const maxIterations = options?.maxIterations ?? 10;
   const cache = new Map<string, string | null>();
 
   const cachedFetcher: IncludeFetcher = (pageRef: PageRef) => {
@@ -84,7 +101,51 @@ export function resolveIncludes(
     return result;
   };
 
-  return expandText(source, cachedFetcher, 0, maxDepth, []);
+  return expandIterative(source, cachedFetcher, maxIterations);
+}
+
+/**
+ * Async version of {@link resolveIncludes}.
+ *
+ * Expand all [[include]] directives using an async fetcher, allowing
+ * page content to be loaded from async sources such as databases.
+ *
+ * @example
+ * ```ts
+ * const expanded = await resolveIncludesAsync(source, async (ref) => {
+ *   return await db.getPageContent(ref.page);
+ * });
+ * const ast = parse(expanded);
+ * ```
+ */
+export async function resolveIncludesAsync(
+  source: string,
+  fetcher: AsyncIncludeFetcher,
+  options?: ResolveIncludesOptions,
+): Promise<string> {
+  if (options?.settings && !options.settings.enablePageSyntax) {
+    return source;
+  }
+
+  const maxIterations = options?.maxIterations ?? 10;
+  const cache = new Map<string, string | null>();
+
+  const cachedFetcher: AsyncIncludeFetcher = async (pageRef: PageRef) => {
+    const key = normalizePageKey(pageRef);
+    if (cache.has(key)) {
+      return cache.get(key)!;
+    }
+    let result: string | null;
+    try {
+      result = await fetcher(pageRef);
+    } catch {
+      result = null;
+    }
+    cache.set(key, result);
+    return result;
+  };
+
+  return expandIterativeAsync(source, cachedFetcher, maxIterations);
 }
 
 /**
@@ -171,57 +232,86 @@ function parseIncludeDirective(inner: string): { location: PageRef; variables: V
 }
 
 /**
- * Recursively expand `[[include ...]]` directives in source text.
- *
- * Each include directive is replaced with the fetched and variable-substituted
- * page content. The expansion recurses into the fetched content to handle
- * nested includes, up to `maxDepth` levels.
- *
- * Circular includes are detected by maintaining a trace of visited page keys.
- * When a circular include is found, an error div is emitted instead.
- *
- * @param source - The text to scan for include directives
- * @param fetcher - Callback to fetch page content (with caching)
- * @param depth - Current recursion depth
- * @param maxDepth - Maximum allowed recursion depth
- * @param trace - Stack of visited page keys for circular dependency detection
- * @returns Text with all include directives expanded
+ * Replace a single include match with its fetched + variable-substituted content.
+ * Used as the callback for String.replace in the synchronous iterative expansion.
  */
-function expandText(
-  source: string,
-  fetcher: IncludeFetcher,
-  depth: number,
-  maxDepth: number,
-  trace: string[],
-): string {
-  if (depth >= maxDepth) return source;
-
-  return source.replace(INCLUDE_PATTERN, (_match, inner: string) => {
-    const { location, variables } = parseIncludeDirective(inner);
-    const pageKey = normalizePageKey(location);
-
-    // Circular include detection
-    if (trace.includes(pageKey)) {
-      return `[[div class="error-block"]]\nCircular include detected: "${location.page}"\n[[/div]]`;
-    }
-
-    // Fetch page content
-    const content = fetcher(location);
-    if (content === null) {
-      return `[[div class="error-block"]]\nPage to be included "${location.page}" cannot be found!\n[[/div]]`;
-    }
-
-    // Apply variable substitutions
-    const substituted = substituteVariables(content, variables);
-
-    // Recursively expand includes in the fetched content
-    return expandText(substituted, fetcher, depth + 1, maxDepth, [...trace, pageKey]);
-  });
+function replaceOneInclude(_match: string, inner: string, fetcher: IncludeFetcher): string {
+  const { location, variables } = parseIncludeDirective(inner);
+  const content = fetcher(location);
+  if (content === null) {
+    return `[[div class="error-block"]]\nPage to be included "${location.page}" cannot be found!\n[[/div]]`;
+  }
+  return substituteVariables(content, variables);
 }
 
 /**
- * Normalize a PageRef into a consistent string key for cache lookups
- * and circular dependency detection.
+ * Iteratively expand all `[[include]]` directives in source text.
+ *
+ * Each iteration replaces every include directive in the current source
+ * with its fetched content (after variable substitution). No recursion
+ * into individual includes — the next iteration handles nested includes.
+ *
+ * Stops when the source is unchanged (no includes left or all resolved)
+ * or `maxIterations` is reached.
+ */
+function expandIterative(source: string, fetcher: IncludeFetcher, maxIterations: number): string {
+  let current = source;
+  for (let i = 0; i < maxIterations; i++) {
+    const previous = current;
+    current = current.replace(INCLUDE_PATTERN, (_match, inner: string) =>
+      replaceOneInclude(_match, inner, fetcher),
+    );
+    if (current === previous) break;
+  }
+  return current;
+}
+
+/**
+ * Async iterative expansion of `[[include]]` directives.
+ *
+ * Each iteration scans the current source for include directives using
+ * RegExp.exec(), fetches content sequentially (to preserve cache semantics),
+ * and builds the replacement string. A fresh RegExp is created per iteration
+ * to avoid lastIndex conflicts.
+ */
+async function expandIterativeAsync(
+  source: string,
+  fetcher: AsyncIncludeFetcher,
+  maxIterations: number,
+): Promise<string> {
+  let current = source;
+  for (let i = 0; i < maxIterations; i++) {
+    const previous = current;
+    const pattern = new RegExp(INCLUDE_PATTERN.source, INCLUDE_PATTERN.flags);
+    let result = "";
+    let lastPos = 0;
+    let match: RegExpExecArray | null;
+
+    while ((match = pattern.exec(current)) !== null) {
+      const fullMatch = match[0]!;
+      const inner = match[1]!;
+      result += current.slice(lastPos, match.index);
+
+      const { location, variables } = parseIncludeDirective(inner);
+      const content = await fetcher(location);
+      if (content === null) {
+        result += `[[div class="error-block"]]\nPage to be included "${location.page}" cannot be found!\n[[/div]]`;
+      } else {
+        result += substituteVariables(content, variables);
+      }
+
+      lastPos = match.index + fullMatch.length;
+    }
+
+    result += current.slice(lastPos);
+    current = result;
+    if (current === previous) break;
+  }
+  return current;
+}
+
+/**
+ * Normalize a PageRef into a consistent string key for cache lookups.
  *
  * Page names are lowercased for case-insensitive matching. Cross-site
  * references include the site name as a prefix.

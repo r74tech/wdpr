@@ -1,3 +1,18 @@
+## 2.1.0 (2026-03-17)
+
+### 🚀 Features
+
+- ⚠️  resolveIncludesAsync追加 & include処理をWikidot互換イテレーティブ方式に書き換え ([#36](https://github.com/r74tech/wdpr/pull/36))
+
+### ⚠️  Breaking Changes
+
+- resolveIncludesAsync追加 & include処理をWikidot互換イテレーティブ方式に書き換え  ([#36](https://github.com/r74tech/wdpr/pull/36))
+  maxDepthオプション削除、循環includeのエラー文言廃止
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 2.0.10 (2026-03-15)
 
 ### 🩹 Fixes

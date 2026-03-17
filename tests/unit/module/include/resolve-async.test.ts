@@ -49,7 +49,7 @@ describe("resolveIncludesAsync", () => {
     expect(expanded).not.toContain("[[include");
   });
 
-  test("detects circular includes", async () => {
+  test("mutual circular includes stop at maxIterations", async () => {
     const source = "[[include page-a]]";
     const fetcher = async (pageRef: { site: string | null; page: string }) => {
       if (pageRef.page === "page-a") return "[[include page-b]]";
@@ -57,11 +57,25 @@ describe("resolveIncludesAsync", () => {
       return null;
     };
 
-    const expanded = await resolveIncludesAsync(source, fetcher);
-    expect(expanded).toContain("Circular include detected");
+    const expanded = await resolveIncludesAsync(source, fetcher, { maxIterations: 3 });
+    expect(expanded).toContain("[[include");
   });
 
-  test("respects maxDepth", async () => {
+  test("self-referencing include stops immediately", async () => {
+    const source = "[[include page-a]]";
+    let fetchCount = 0;
+    const fetcher = async (pageRef: { site: string | null; page: string }) => {
+      fetchCount++;
+      if (pageRef.page === "page-a") return "Self: [[include page-a]]";
+      return null;
+    };
+
+    const expanded = await resolveIncludesAsync(source, fetcher);
+    expect(expanded).toContain("Self:");
+    expect(fetchCount).toBe(1);
+  });
+
+  test("respects maxIterations", async () => {
     const source = "[[include level-1]]";
     const fetcher = async (pageRef: { site: string | null; page: string }) => {
       const match = pageRef.page.match(/level-(\d+)/);
@@ -73,13 +87,24 @@ describe("resolveIncludesAsync", () => {
       return null;
     };
 
-    const expanded = await resolveIncludesAsync(source, fetcher, {
-      maxDepth: 3,
-    });
+    const expanded = await resolveIncludesAsync(source, fetcher, { maxIterations: 3 });
     expect(expanded).toContain("Level 1");
     expect(expanded).toContain("Level 2");
     expect(expanded).toContain("Level 3");
     expect(expanded).toContain("[[include level-4]]");
+  });
+
+  test("stops early when no changes occur", async () => {
+    const source = "[[include page-a]]";
+    let fetchCount = 0;
+    const fetcher = async () => {
+      fetchCount++;
+      return "No nested includes here";
+    };
+
+    const expanded = await resolveIncludesAsync(source, fetcher, { maxIterations: 10 });
+    expect(expanded).toBe("No nested includes here");
+    expect(fetchCount).toBe(1);
   });
 
   test("caches fetcher calls for same page", async () => {
@@ -92,6 +117,20 @@ describe("resolveIncludesAsync", () => {
 
     await resolveIncludesAsync(source, fetcher);
     expect(fetchCount).toBe(1);
+  });
+
+  test("same page with different variables uses cache but substitutes differently", async () => {
+    const source = "[[include tmpl | x=1]]\n[[include tmpl | x=2]]";
+    let fetchCount = 0;
+    const fetcher = async () => {
+      fetchCount++;
+      return "val={$x}";
+    };
+
+    const expanded = await resolveIncludesAsync(source, fetcher);
+    expect(fetchCount).toBe(1);
+    expect(expanded).toContain("val=1");
+    expect(expanded).toContain("val=2");
   });
 
   test("handles fetcher exceptions", async () => {
@@ -116,7 +155,7 @@ describe("resolveIncludesAsync", () => {
     expect(receivedPageRef!).toEqual({ site: "other-site", page: "my-page" });
   });
 
-  test("same page from different routes is not circular", async () => {
+  test("same page from different routes expands correctly", async () => {
     const source = "[[include page-a]]";
     const fetcher = async (pageRef: { site: string | null; page: string }) => {
       if (pageRef.page === "page-a") return "[[include page-b]]\n[[include page-c]]";
@@ -166,15 +205,16 @@ describe("resolveIncludesAsync", () => {
     expect(expanded).toBe("async content");
   });
 
-  test("normalizes page keys for circular detection (case insensitive)", async () => {
-    const source = "[[include Page-A]]";
-    const fetcher = async (pageRef: { site: string | null; page: string }) => {
-      if (pageRef.page.toLowerCase() === "page-a") return "[[include page-a]]";
-      return null;
+  test("case-insensitive page key caching", async () => {
+    const source = "[[include Page-A]]\n[[include page-a]]";
+    let fetchCount = 0;
+    const fetcher = async () => {
+      fetchCount++;
+      return "content";
     };
 
-    const expanded = await resolveIncludesAsync(source, fetcher);
-    expect(expanded).toContain("Circular include detected");
+    await resolveIncludesAsync(source, fetcher);
+    expect(fetchCount).toBe(1);
   });
 
   test("multiple variables are substituted", async () => {

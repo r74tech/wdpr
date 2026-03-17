@@ -11,7 +11,7 @@
  * - Same-site includes: `[[include page-name]]`
  * - Cross-site includes: `[[include :site-name:page-name]]`
  * - Variable substitution: `[[include page | key=value]]` replaces `{$key}` in the included content
- * - Recursive includes with configurable depth limit and circular dependency detection
+ * - Iterative expansion with configurable iteration limit (Wikidot-compatible)
  *
  * @module
  */

@@ -88,8 +88,8 @@ export type { TagCondition, IfTagsResolver, IfTagsData, IfTagsResolveResult } fr
 export { parseTagCondition, evaluateTagCondition, isIfTagsElement, resolveIfTags } from "./iftags";
 
 // Include module
-export type { IncludeFetcher, ResolveIncludesOptions } from "./include";
-export { resolveIncludes } from "./include";
+export type { IncludeFetcher, AsyncIncludeFetcher, ResolveIncludesOptions } from "./include";
+export { resolveIncludes, resolveIncludesAsync } from "./include";
 
 // ListUsers module
 export type {

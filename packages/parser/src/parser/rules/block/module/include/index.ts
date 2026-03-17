@@ -16,5 +16,5 @@
  * @module
  */
 
-export { resolveIncludes } from "./resolve";
-export type { IncludeFetcher, ResolveIncludesOptions } from "./resolve";
+export { resolveIncludes, resolveIncludesAsync } from "./resolve";
+export type { IncludeFetcher, AsyncIncludeFetcher, ResolveIncludesOptions } from "./resolve";

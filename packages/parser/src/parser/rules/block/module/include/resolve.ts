@@ -34,6 +34,16 @@ import type { PageRef, VariableMap, WikitextSettings } from "@wdprlib/ast";
 export type IncludeFetcher = (pageRef: PageRef) => string | null;
 
 /**
+ * Async callback to fetch page content for include resolution.
+ * Returns a promise of the wikitext source, or null if the page does not exist.
+ *
+ * @security The fetcher is called with user-provided page references.
+ * Implementations should validate and sanitize page references before
+ * using them in database queries or file system access.
+ */
+export type AsyncIncludeFetcher = (pageRef: PageRef) => Promise<string | null>;
+
+/**
  * Options for resolveIncludes
  */
 export interface ResolveIncludesOptions {
@@ -85,6 +95,50 @@ export function resolveIncludes(
   };
 
   return expandText(source, cachedFetcher, 0, maxDepth, []);
+}
+
+/**
+ * Async version of {@link resolveIncludes}.
+ *
+ * Expand all [[include]] directives using an async fetcher, allowing
+ * page content to be loaded from async sources such as databases.
+ *
+ * @example
+ * ```ts
+ * const expanded = await resolveIncludesAsync(source, async (ref) => {
+ *   return await db.getPageContent(ref.page);
+ * });
+ * const ast = parse(expanded);
+ * ```
+ */
+export async function resolveIncludesAsync(
+  source: string,
+  fetcher: AsyncIncludeFetcher,
+  options?: ResolveIncludesOptions,
+): Promise<string> {
+  if (options?.settings && !options.settings.enablePageSyntax) {
+    return source;
+  }
+
+  const maxDepth = options?.maxDepth ?? 5;
+  const cache = new Map<string, string | null>();
+
+  const cachedFetcher: AsyncIncludeFetcher = async (pageRef: PageRef) => {
+    const key = normalizePageKey(pageRef);
+    if (cache.has(key)) {
+      return cache.get(key)!;
+    }
+    let result: string | null;
+    try {
+      result = await fetcher(pageRef);
+    } catch {
+      result = null;
+    }
+    cache.set(key, result);
+    return result;
+  };
+
+  return expandTextAsync(source, cachedFetcher, 0, maxDepth, []);
 }
 
 /**
@@ -217,6 +271,61 @@ function expandText(
     // Recursively expand includes in the fetched content
     return expandText(substituted, fetcher, depth + 1, maxDepth, [...trace, pageKey]);
   });
+}
+
+/**
+ * Async version of {@link expandText}.
+ *
+ * Uses a while loop with RegExp.exec() instead of String.replace() because
+ * replace() does not support async callbacks. A local copy of the regex is
+ * created per invocation to avoid lastIndex conflicts across recursive calls.
+ */
+async function expandTextAsync(
+  source: string,
+  fetcher: AsyncIncludeFetcher,
+  depth: number,
+  maxDepth: number,
+  trace: string[],
+): Promise<string> {
+  if (depth >= maxDepth) return source;
+
+  const pattern = new RegExp(INCLUDE_PATTERN.source, INCLUDE_PATTERN.flags);
+  let result = "";
+  let lastPos = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(source)) !== null) {
+    const fullMatch = match[0]!;
+    const inner = match[1]!;
+    result += source.slice(lastPos, match.index);
+
+    const { location, variables } = parseIncludeDirective(inner);
+    const pageKey = normalizePageKey(location);
+
+    // Circular include detection
+    if (trace.includes(pageKey)) {
+      result += `[[div class="error-block"]]\nCircular include detected: "${location.page}"\n[[/div]]`;
+    } else {
+      // Fetch page content
+      const content = await fetcher(location);
+      if (content === null) {
+        result += `[[div class="error-block"]]\nPage to be included "${location.page}" cannot be found!\n[[/div]]`;
+      } else {
+        // Apply variable substitutions
+        const substituted = substituteVariables(content, variables);
+        // Recursively expand includes in the fetched content
+        result += await expandTextAsync(substituted, fetcher, depth + 1, maxDepth, [
+          ...trace,
+          pageKey,
+        ]);
+      }
+    }
+
+    lastPos = match.index + fullMatch.length;
+  }
+
+  result += source.slice(lastPos);
+  return result;
 }
 
 /**

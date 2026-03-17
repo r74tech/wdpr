@@ -118,6 +118,7 @@ export type {
   ResolveOptions,
   // Include resolution
   IncludeFetcher,
+  AsyncIncludeFetcher,
   ResolveIncludesOptions,
   // ListUsers types
   ListUsersVariable,
@@ -143,6 +144,7 @@ export {
   compileTemplate,
   // Include resolution
   resolveIncludes,
+  resolveIncludesAsync,
   // Query normalization (for advanced use cases)
   normalizeQuery,
   parseTags,

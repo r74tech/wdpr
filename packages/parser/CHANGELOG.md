@@ -1,3 +1,13 @@
+## 2.2.0 (2026-05-20)
+
+### 🩹 Fixes
+
+- **parser:** 未知ブロックトークンを段落境界扱いしないように修正 ([ff700e5](https://github.com/r74tech/wdpr/commit/ff700e5))
+
+### ❤️ Thank You
+
+- r74tech
+
 ## 2.1.0 (2026-03-17)
 
 ### 🚀 Features

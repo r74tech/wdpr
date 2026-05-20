@@ -1,3 +1,13 @@
+## 1.4.0 (2026-05-20)
+
+### 🩹 Fixes
+
+- **render:** category-prefixedページのpageExistsチェックスキップ問題を修正 ([be79ba2](https://github.com/r74tech/wdpr/commit/be79ba2))
+
+### ❤️ Thank You
+
+- r74tech
+
 ## 1.3.3 (2026-02-21)
 
 ### 🩹 Fixes

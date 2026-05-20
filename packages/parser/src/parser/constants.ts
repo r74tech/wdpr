@@ -36,3 +36,72 @@ export const BLOCK_START_TOKENS: TokenType[] = [
   "CLEAR_FLOAT_LEFT", // ~~~~<
   "CLEAR_FLOAT_RIGHT", // ~~~~>
 ];
+
+/**
+ * Set of block names recognized by the parser at `[[name]]` / `[[/name]]`.
+ *
+ * Used by inline-parser logic to distinguish real block boundaries from
+ * unknown tokens like `[[foo]]`, which Wikidot treats as inline text
+ * rather than as a paragraph-breaking block.
+ *
+ * Keep in sync with the set of block rules registered in
+ * `packages/parser/src/parser/rules/block/index.ts`. Align-style markers
+ * (`<`, `>`, `=`, `==`) are intentionally included because `[[<]]` etc.
+ * open `alignRule`.
+ */
+export const KNOWN_BLOCK_NAMES: ReadonlySet<string> = new Set<string>([
+  // structural containers
+  "collapsible",
+  "div",
+  "div_",
+  "code",
+  // list blocks
+  "ul",
+  "ol",
+  "li",
+  // table blocks
+  "table",
+  "row",
+  "cell",
+  "hcell",
+  // tabview / module
+  "tabview",
+  "tabs",
+  "module",
+  "module654",
+  // misc named blocks
+  "bibliography",
+  "footnoteblock",
+  "toc",
+  "iframe",
+  "math",
+  "html",
+  "iftags",
+  "include",
+  "f", // float TOC prefix: `[[f<toc]]`, `[[f>toc]]` (see toc rule)
+  // embed family
+  "embed",
+  "embedvideo",
+  "embedaudio",
+  // align markers
+  "<",
+  ">",
+  "=",
+  "==",
+  // inline-level constructs that use BLOCK_OPEN tokens; recognized here so
+  // that the paragraph parser keeps existing block-boundary behavior for
+  // `[[span]]`, `[[user ...]]`, `[[$ ... $]]`, etc. when they appear at
+  // the start of a line.
+  "span",
+  "span_",
+  "user",
+  "a",
+  "anchor",
+  "size",
+  "footnote",
+  "eref",
+  "$",
+  "image",
+  "gallery",
+  "file",
+]);

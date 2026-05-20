@@ -1,0 +1,46 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "A"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "[["
+          },
+          {
+            "element": "text",
+            "data": "foo"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "B"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

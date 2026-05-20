@@ -24,8 +24,36 @@
 import type { Token } from "../../../lexer";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext, BlockRule } from "../types";
+import { KNOWN_BLOCK_NAMES } from "../../constants";
 import { canApplyInlineRule } from "../inline/utils";
 import { filterUnsafeAttributes, parseBlockName } from "../utils";
+
+/**
+ * Whether the BLOCK_OPEN / BLOCK_END_OPEN token at `pos` opens a block name
+ * that should *not* end the surrounding paragraph / inline run. Mirrors the
+ * logic used by `parseInlineUntil` so that paragraph-strip mode (`div_`)
+ * agrees with regular paragraph parsing about which block names are inline.
+ */
+function isNonBoundaryBlockToken(ctx: ParseContext, pos: number): boolean {
+  const token = ctx.tokens[pos];
+  if (token?.type !== "BLOCK_OPEN" && token?.type !== "BLOCK_END_OPEN") {
+    return false;
+  }
+  const nameResult = parseBlockName(ctx, pos + 1);
+  if (nameResult === null) {
+    // `[[=]]` / `[[==]]` align markers tokenize as EQUALS, not TEXT/IDENTIFIER —
+    // those are real block boundaries.
+    if (ctx.tokens[pos + 1]?.type === "EQUALS") {
+      return false;
+    }
+    // `[[` followed by no recognizable identifier -- treat as inline.
+    return true;
+  }
+  if (ctx.excludedBlockNames?.has(nameResult.name)) {
+    return true;
+  }
+  return !KNOWN_BLOCK_NAMES.has(nameResult.name);
+}
 
 // Re-export for backwards compatibility
 export { filterUnsafeAttributes, parseBlockName } from "../utils";
@@ -234,15 +262,20 @@ export function parseInlineContentUntil(
       }
 
       // Check if next token starts a block element (BLOCK_OPEN, BLOCK_END_OPEN)
-      // If so, don't add line-break - the newline just separates text from block
+      // If so, don't add line-break - the newline just separates text from block.
+      // But: excluded block names (e.g. nested collapsible inside div_) and
+      // unknown block names (e.g. `[[foo]]`) are treated as inline by the
+      // paragraph parser, so they must still produce a `<br />` here.
       const nextToken = ctx.tokens[pos];
-      if (
-        nextToken?.type === "BLOCK_OPEN" ||
-        nextToken?.type === "BLOCK_END_OPEN" ||
-        nextToken?.type === "EOF" ||
-        !nextToken
-      ) {
+      if (!nextToken || nextToken.type === "EOF") {
         continue;
+      }
+      if (nextToken.type === "BLOCK_OPEN" || nextToken.type === "BLOCK_END_OPEN") {
+        const peekCtx: ParseContext = { ...ctx, pos };
+        if (!isNonBoundaryBlockToken(peekCtx, pos)) {
+          continue;
+        }
+        // Fall through and emit a line-break for inline-treated `[[name]]`.
       }
 
       // Otherwise, add line-break

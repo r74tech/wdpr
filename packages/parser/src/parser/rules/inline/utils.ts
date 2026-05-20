@@ -1,7 +1,7 @@
 import type { TokenType, Token } from "../../../lexer";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext, InlineRule } from "../types";
-import { BLOCK_START_TOKENS } from "../../constants";
+import { BLOCK_START_TOKENS, KNOWN_BLOCK_NAMES } from "../../constants";
 import { parseBlockName } from "../utils";
 
 /**
@@ -14,6 +14,30 @@ function isExcludedBlockToken(ctx: ParseContext, tokenPos: number): boolean {
   if (token?.type !== "BLOCK_OPEN" && token?.type !== "BLOCK_END_OPEN") return false;
   const nameResult = parseBlockName(ctx, tokenPos + 1);
   return nameResult !== null && ctx.excludedBlockNames.has(nameResult.name);
+}
+
+/**
+ * Checks whether the block token at `tokenPos` names a block that no rule
+ * recognizes (e.g. `[[foo]]`). Wikidot leaves such tokens inside paragraphs
+ * rather than treating them as paragraph boundaries.
+ *
+ * Align blocks (`[[=]]`, `[[==]]`) are recognized as a special case: their
+ * marker tokens are `EQUALS`, not `TEXT`/`IDENTIFIER`, so `parseBlockName`
+ * cannot extract a name. They are still real block boundaries.
+ */
+function isUnknownBlockToken(ctx: ParseContext, tokenPos: number): boolean {
+  const token = ctx.tokens[tokenPos];
+  if (token?.type !== "BLOCK_OPEN" && token?.type !== "BLOCK_END_OPEN") return false;
+  const nameResult = parseBlockName(ctx, tokenPos + 1);
+  if (nameResult === null) {
+    // `[[=]]` / `[[==]]` align markers tokenize as EQUALS, not TEXT/IDENTIFIER.
+    if (ctx.tokens[tokenPos + 1]?.type === "EQUALS") {
+      return false;
+    }
+    // No recognizable identifier after [[ / [[/ — treat as inline.
+    return true;
+  }
+  return !KNOWN_BLOCK_NAMES.has(nameResult.name);
 }
 
 /**
@@ -165,9 +189,16 @@ export function parseInlineUntil(ctx: ParseContext, endType: TokenType): InlineP
           nextMeaningfulToken?.type === "BLOCK_END_OPEN") &&
         isExcludedBlockToken(ctx, pos + lookAhead);
 
+      // Wikidot treats `[[foo]]` (where `foo` is not a known block name) as
+      // inline text rather than a paragraph-breaking block. Mirror that here.
+      const isUnknownBlock =
+        (nextMeaningfulToken?.type === "BLOCK_OPEN" ||
+          nextMeaningfulToken?.type === "BLOCK_END_OPEN") &&
+        isUnknownBlockToken(ctx, pos + lookAhead);
+
       // Stop at double NEWLINE, EOF, or block start token (at line start)
       // But don't stop at [[/span]], [[# name]], [[>/[[<, invalid headings,
-      // or excluded block names
+      // excluded block names, or unrecognized block names
       const isBlockStart =
         nextMeaningfulToken &&
         BLOCK_START_TOKENS.includes(nextMeaningfulToken.type) &&
@@ -176,7 +207,8 @@ export function parseInlineUntil(ctx: ParseContext, endType: TokenType): InlineP
         !isAnchorName &&
         !isInvalidBlockOpen &&
         !isInvalidHeading &&
-        !isExcludedBlock;
+        !isExcludedBlock &&
+        !isUnknownBlock;
       if (
         !nextMeaningfulToken ||
         nextMeaningfulToken.type === "NEWLINE" ||

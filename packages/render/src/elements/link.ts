@@ -62,9 +62,10 @@ export function renderLink(ctx: RenderContext, data: LinkData): void {
     const page = data.link.page;
     // Skip newpage class for special pages:
     // - //path (protocol-relative or special routing)
-    // - category pages (contain :)
     // - paths with #/ (hash routing like MAIN/#/page)
-    const isSpecialPage = page.startsWith("//") || page.includes(":") || page.includes("#/");
+    // category-prefixed pages (`category:name`) are NOT skipped — pageExists is
+    // expected to handle them (e.g. share:<ULID>, private:<ULID>, system:Recent).
+    const isSpecialPage = page.startsWith("//") || page.includes("#/");
     if (!isSpecialPage) {
       // For anchor links (page#anchor), check if the page part exists
       const hashIdx = page.indexOf("#");

@@ -1,0 +1,5 @@
+Body[[footnote]]Foot 1[[/footnote]] more[[footnote]]Foot 2[[/footnote]] text.
+
+[[collapsible show="Show" hide="Hide"]]
+[[footnoteblock]]
+[[/collapsible]]

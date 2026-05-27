@@ -1,0 +1,93 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Body"
+          },
+          {
+            "element": "footnote"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "more"
+          },
+          {
+            "element": "footnote"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "text"
+          },
+          {
+            "element": "text",
+            "data": "."
+          }
+        ]
+      }
+    },
+    {
+      "element": "collapsible",
+      "data": {
+        "elements": [
+          {
+            "element": "footnote-block",
+            "data": {
+              "title": null,
+              "hide": false
+            }
+          }
+        ],
+        "attributes": {},
+        "start-open": false,
+        "show-text": "Show",
+        "hide-text": "Hide",
+        "show-top": true,
+        "show-bottom": false
+      }
+    }
+  ],
+  "footnotes": [
+    [
+      {
+        "element": "text",
+        "data": "Foot"
+      },
+      {
+        "element": "text",
+        "data": " "
+      },
+      {
+        "element": "text",
+        "data": "1"
+      }
+    ],
+    [
+      {
+        "element": "text",
+        "data": "Foot"
+      },
+      {
+        "element": "text",
+        "data": " "
+      },
+      {
+        "element": "text",
+        "data": "2"
+      }
+    ]
+  ]
+}

@@ -11,6 +11,7 @@ import {
   suppressDivAdjacentParagraphs,
 } from "./postprocess";
 import { buildTableOfContents } from "./toc";
+import { walkElements } from "./rules/block/module/walk";
 
 /**
  * Configuration for the {@link Parser} and the {@link parse} function.
@@ -105,9 +106,23 @@ export class Parser {
     // Clean internal flags from AST
     const cleanedChildren = cleanInternalFlags(divProcessed);
 
-    // Add footnote-block at the end if not present
-    const hasFootnoteBlock = cleanedChildren.some((el) => el.element === "footnote-block");
-    if (!hasFootnoteBlock) {
+    // Add a default footnote-block at the document end if no explicit
+    // `[[footnoteblock]]` exists anywhere in the final AST.
+    //
+    // We scan the post-parse, post-postprocess tree rather than relying
+    // on a parser-state flag because:
+    // - `ctx.footnoteBlockParsed` is a per-scope primitive that does
+    //   not propagate up through `parseBlocksUntil`'s `{ ...ctx, pos }`
+    //   spreads (so an explicit `[[footnoteblock]]` inside a collapsible
+    //   would be invisible at the top level), and
+    // - speculative parses (e.g. `[[tabview]]` falling back to
+    //   `success: false` after parsing tab bodies) would leave a shared
+    //   "we saw a footnoteblock" flag set even though those parsed
+    //   elements were discarded.
+    //
+    // The walk uses the existing `walkElements` so we do not duplicate
+    // the per-AST-shape descent rules.
+    if (!containsFootnoteBlock(cleanedChildren)) {
       cleanedChildren.push({
         element: "footnote-block",
         data: { title: null, hide: false },
@@ -238,4 +253,27 @@ export function parse(source: string, options?: ParserOptions): ParseResult {
   const preprocessed = preprocess(source);
   const tokens = tokenize(preprocessed, { trackPositions: options?.trackPositions });
   return new Parser(tokens, options).parse();
+}
+
+/**
+ * Return `true` when an explicit `footnote-block` element exists anywhere
+ * in the tree.
+ *
+ * Reuses the parser's general-purpose {@link walkElements} so descent
+ * into containers, collapsibles, list items, table cells, tab panels,
+ * definition lists, etc. matches the rest of the parser exactly.
+ *
+ * Note on `[[iftags]]`: the walker also descends into iftags bodies, so
+ * a `[[footnoteblock]]` that only renders conditionally still suppresses
+ * the auto-append. This matches the previous behaviour for unresolved
+ * iftags but means the implicit block does not reappear if the iftags
+ * condition evaluates to false during `resolveModules`. Tracked as a
+ * known limitation; iftags preprocessing (Task 6) would fix it.
+ */
+function containsFootnoteBlock(elements: Element[]): boolean {
+  let found = false;
+  walkElements(elements, (el) => {
+    if (el.element === "footnote-block") found = true;
+  });
+  return found;
 }

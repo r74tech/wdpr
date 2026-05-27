@@ -1,0 +1,44 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {
+          "class": "outer"
+        },
+        "elements": [
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "/url",
+              "extra": null,
+              "label": {
+                "text": "label"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "div",
+              "attributes": {
+                "class": "inner"
+              },
+              "elements": []
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

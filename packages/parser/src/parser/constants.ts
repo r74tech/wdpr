@@ -105,3 +105,69 @@ export const KNOWN_BLOCK_NAMES: ReadonlySet<string> = new Set<string>([
   "gallery",
   "file",
 ]);
+
+/**
+ * Block names whose rule sets `requiresLineStart: false`, i.e. they can
+ * legitimately start a block even when the `[[...]]` opener is preceded
+ * by leading whitespace on its line.
+ *
+ * Used by the inline parser to decide whether a `\n<indent>[[name]]`
+ * sequence ends the current paragraph. Without this list, the inline
+ * parser would either:
+ *   - keep `lineStart` strict and miss legitimately-indented container
+ *     blocks (Wikidot accepts e.g. `\n     [[div_]]`); the inner block
+ *     gets absorbed into the parent paragraph as literal text, or
+ *   - drop the `lineStart` check entirely and prematurely break out of
+ *     paragraphs for `\n  [[toc]]` — a rule with `requiresLineStart: true`
+ *     would refuse the indented token, leaving the paragraph split but
+ *     the block unconsumed (literal `[[toc]]` text in a new paragraph).
+ *
+ * Each entry corresponds to a name handled by a block rule whose
+ * `requiresLineStart` is `false`. Keep this list in sync when adding or
+ * changing such rules; the inline-level constructs that happen to share
+ * `BLOCK_OPEN` (`[[span]]`, `[[image]]`, `[[user]]`, etc.) are
+ * intentionally excluded — they remain inline and should not split
+ * paragraphs based on indentation alone.
+ *
+ * Sources (block rule → handled names):
+ * - `bibliographyRule` → bibliography
+ * - `blockListRule` → ul, ol, li
+ * - `codeRule` → code
+ * - `collapsibleRule` → collapsible
+ * - `divRule` → div, div_
+ * - `embedBlockRule` → embed, embedvideo, embedaudio
+ * - `htmlRule` → html
+ * - `iframeRule` → iframe
+ * - `iftagsRule` → iftags
+ * - `mathRule` → math
+ * - `moduleRule` → module, module654
+ * - `orphanLiRule` → li (also under blockListRule)
+ * - `tableBlockRule` → table (row, cell, hcell are private to the in-table
+ *   parser, never accepted by the top-level dispatcher)
+ * - `tabviewRule` → tabview, tabs (tab is private to the in-tabview parser)
+ *
+ * `includeRule` is omitted because `[[include ...]]` is expanded as a
+ * text-level macro by `resolveIncludes` before the parser sees it.
+ */
+export const INDENT_ACCEPTING_BLOCK_NAMES: ReadonlySet<string> = new Set<string>([
+  "bibliography",
+  "ul",
+  "ol",
+  "li",
+  "code",
+  "collapsible",
+  "div",
+  "div_",
+  "embed",
+  "embedvideo",
+  "embedaudio",
+  "html",
+  "iframe",
+  "iftags",
+  "math",
+  "module",
+  "module654",
+  "table",
+  "tabview",
+  "tabs",
+]);

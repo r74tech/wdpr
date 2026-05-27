@@ -517,42 +517,89 @@ describe("sanitizeCssColor", () => {
 });
 
 describe("isDangerousCssValue", () => {
-  it("should detect ALL url()", () => {
+  it("should detect dangerous url() schemes", () => {
     expect(isDangerousCssValue("url(javascript:alert(1))")).toBe(true);
     expect(isDangerousCssValue("url('javascript:alert(1)')")).toBe(true);
     expect(isDangerousCssValue("url(data:text/html,<script>)")).toBe(true);
-    // Even safe-looking URLs are blocked
-    expect(isDangerousCssValue("url(http://example.com/image.png)")).toBe(true);
+    expect(isDangerousCssValue("url(vbscript:msgbox(1))")).toBe(true);
+    expect(isDangerousCssValue("url(data:application/javascript,alert(1))")).toBe(true);
+    // SVG via data: can execute JS through embedded <script>
+    expect(isDangerousCssValue("url(data:image/svg+xml,<svg onload=alert(1)></svg>)")).toBe(true);
+    // unknown / opaque schemes also rejected
+    expect(isDangerousCssValue("url(x)")).toBe(true);
+    expect(isDangerousCssValue("url(ftp://example.com/foo)")).toBe(true);
   });
 
-  it("should detect CSS escape bypass attempts", () => {
+  it("should allow safe url() schemes", () => {
+    expect(isDangerousCssValue("url(http://example.com/files/foo.png)")).toBe(false);
+    expect(isDangerousCssValue("url(https://example.org/files/foo.png)")).toBe(false);
+    expect(isDangerousCssValue("url(//cdn.example.com/foo.png)")).toBe(false);
+    expect(isDangerousCssValue("url(/local--files/foo.png)")).toBe(false);
+    expect(isDangerousCssValue("url(./foo.png)")).toBe(false);
+    expect(isDangerousCssValue("url(../foo.png)")).toBe(false);
+    expect(isDangerousCssValue("url(#anchor)")).toBe(false);
+    expect(isDangerousCssValue("url(data:image/png;base64,iVBORw0KGgo)")).toBe(false);
+    expect(isDangerousCssValue("url(data:image/jpeg;base64,/9j/4AAQ)")).toBe(false);
+    expect(isDangerousCssValue("url(data:image/gif;base64,R0lGODlh)")).toBe(false);
+    expect(isDangerousCssValue("url(data:image/webp;base64,UklGR)")).toBe(false);
+    // Quoted variants
+    expect(isDangerousCssValue("url('http://example.com/image.png')")).toBe(false);
+    expect(isDangerousCssValue('url("http://example.com/image.png")')).toBe(false);
+  });
+
+  it("should fail-closed on malformed url(", () => {
+    // Unclosed url(
+    expect(isDangerousCssValue("url(")).toBe(true);
+    expect(isDangerousCssValue("url(http://example.com")).toBe(true);
+  });
+
+  it("should reject data:image MIME boundary tricks", () => {
+    // data:image/png<something> must NOT match the png allowlist entry
+    expect(isDangerousCssValue("url(data:image/png+xml,<svg onload=alert(1)></svg>)")).toBe(true);
+    expect(isDangerousCssValue("url(data:image/pnganything,foo)")).toBe(true);
+    expect(isDangerousCssValue("url(data:image/svg+xml,<svg/>)")).toBe(true);
+    // Boundary at `;` or `,` only — both forms must work with allowed MIME
+    expect(isDangerousCssValue("url(data:image/png;base64,iVBORw0)")).toBe(false);
+    expect(isDangerousCssValue("url(data:image/png,iVBORw0)")).toBe(false);
+  });
+
+  it("should respect quoted strings inside url(", () => {
+    // `)` inside a quoted URL value must not terminate url( early.
+    // (The value itself is unusual but should be accepted because the
+    // scheme is http; we test that the walker correctly extracts the
+    // full inner string.)
+    expect(isDangerousCssValue('url("http://example.com/a)b.png")')).toBe(false);
+    expect(isDangerousCssValue("url('http://example.com/a)b.png')")).toBe(false);
+  });
+
+  it("should detect CSS escape bypass attempts on dangerous schemes", () => {
     // \72 = 'r' in hex, so u\72l( = url(
-    expect(isDangerousCssValue("u\\72l(http://evil.com)")).toBe(true);
+    expect(isDangerousCssValue("u\\72l(javascript:alert(1))")).toBe(true);
     // \75 = 'u' in hex
-    expect(isDangerousCssValue("\\75rl(http://evil.com)")).toBe(true);
+    expect(isDangerousCssValue("\\75rl(javascript:alert(1))")).toBe(true);
     // expression with escapes
     expect(isDangerousCssValue("e\\78pression(alert(1))")).toBe(true);
   });
 
   it("should detect uppercase hex escape bypass attempts", () => {
     // \55 = 'U' (uppercase), must be lowercased after decode
-    expect(isDangerousCssValue("\\55rl(http://evil.com)")).toBe(true);
+    expect(isDangerousCssValue("\\55rl(javascript:alert(1))")).toBe(true);
     // \55\52\4c = URL (uppercase)
-    expect(isDangerousCssValue("\\55\\52\\4c(http://evil.com)")).toBe(true);
+    expect(isDangerousCssValue("\\55\\52\\4c(javascript:alert(1))")).toBe(true);
   });
 
   it("should detect CSS line continuation bypass attempts", () => {
     // Backslash + newline is removed in CSS
-    expect(isDangerousCssValue("u\\\nrl(http://evil.com)")).toBe(true);
-    expect(isDangerousCssValue("u\\\rrl(http://evil.com)")).toBe(true);
-    expect(isDangerousCssValue("u\\\r\nrl(http://evil.com)")).toBe(true);
+    expect(isDangerousCssValue("u\\\nrl(javascript:alert(1))")).toBe(true);
+    expect(isDangerousCssValue("u\\\rrl(javascript:alert(1))")).toBe(true);
+    expect(isDangerousCssValue("u\\\r\nrl(javascript:alert(1))")).toBe(true);
     expect(isDangerousCssValue("@im\\\nport 'evil.css'")).toBe(true);
   });
 
   it("should detect CSS comment bypass attempts", () => {
     // u/**/rl( = url(
-    expect(isDangerousCssValue("u/**/rl(http://evil.com)")).toBe(true);
-    expect(isDangerousCssValue("ur/*comment*/l(http://evil.com)")).toBe(true);
+    expect(isDangerousCssValue("u/**/rl(javascript:alert(1))")).toBe(true);
+    expect(isDangerousCssValue("ur/*comment*/l(javascript:alert(1))")).toBe(true);
     // @im/**/port = @import
     expect(isDangerousCssValue("@im/**/port 'evil.css'")).toBe(true);
   });
@@ -593,12 +640,45 @@ describe("sanitizeStyleValue", () => {
     );
   });
 
+  it("should preserve safe url() declarations", () => {
+    expect(
+      sanitizeStyleValue("background: url(http://example.com/files/foo.png) center/cover"),
+    ).toBe("background: url(http://example.com/files/foo.png) center/cover");
+    expect(sanitizeStyleValue("background-image: url(/local--files/foo.png)")).toBe(
+      "background-image: url(/local--files/foo.png)",
+    );
+  });
+
+  it("should preserve CSS custom properties with url()", () => {
+    // A custom property declaration like `--logo: url(...)` must survive
+    // sanitization intact so a downstream rule using `var(--logo)`
+    // (e.g. `background: var(--logo)`) can resolve to the image URL.
+    expect(sanitizeStyleValue("--logo: url(http://example.com/local--files/foo.png)")).toBe(
+      "--logo: url(http://example.com/local--files/foo.png)",
+    );
+  });
+
+  it("should preserve data:image URLs containing semicolons", () => {
+    // Base64 data URLs contain `;base64` -- declaration splitter must not split here
+    expect(sanitizeStyleValue("background: url(data:image/png;base64,iVBORw0KGgo)")).toBe(
+      "background: url(data:image/png;base64,iVBORw0KGgo)",
+    );
+  });
+
   it("should remove expression()", () => {
     expect(sanitizeStyleValue("width: expression(alert(1))")).toBe("");
   });
 
   it("should remove -moz-binding", () => {
     expect(sanitizeStyleValue("-moz-binding: url(x)")).toBe("");
+  });
+
+  it("should remove escaped dangerous property names", () => {
+    // `\7a` decodes to `z`, so `-mo\7a-binding` == `-moz-binding`.
+    // Pair with a value that would otherwise be allowed (so the only
+    // line of defense is the property-name check).
+    expect(sanitizeStyleValue("-mo\\7a-binding: url(http://example.com/files/foo.png)")).toBe("");
+    expect(sanitizeStyleValue("beh\\61vior: url(http://example.com/files/foo.png)")).toBe("");
   });
 
   it("should handle empty input", () => {

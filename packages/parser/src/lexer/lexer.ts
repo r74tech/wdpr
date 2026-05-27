@@ -45,6 +45,15 @@ export class Lexer {
   private options: Required<LexerOptions>;
   // Positions where ]] should be split into ] + ] (for invalid anchor names)
   private splitBlockClosePositions: Set<number> = new Set();
+  /**
+   * Nesting depth of block-opener context (between `[[` / `[[/` and the
+   * matching `]]`). Used to scope `QUOTED_STRING` recognition so that
+   * `"` after `=` only becomes a quoted attribute value while we are
+   * actually parsing block attributes — otherwise inline `=` followed by
+   * `"` (e.g. inside `[[footnote]]="[[/footnote]]`) would erroneously
+   * consume content up to the next `"` or newline.
+   */
+  private blockOpenerDepth = 0;
 
   constructor(source: string, options: LexerOptions = {}) {
     this.options = {
@@ -206,6 +215,14 @@ export class Lexer {
       this.state.tokens[this.state.tokens.length - 1]?.type === "NEWLINE";
 
     this.state.tokens.push(createToken(type, value, position, lineStart));
+
+    // Track block-opener nesting so `"` after `=` is only recognised as a
+    // quoted attribute value while we are actually inside `[[ ... ]]`.
+    if (type === "BLOCK_OPEN" || type === "BLOCK_END_OPEN") {
+      this.blockOpenerDepth++;
+    } else if (type === "BLOCK_CLOSE" && this.blockOpenerDepth > 0) {
+      this.blockOpenerDepth--;
+    }
   }
 
   /**
@@ -555,10 +572,13 @@ export class Lexer {
     }
 
     // Quoted string (only after EQUALS for block attribute values)
-    // In inline context, " is just a text character (typographic quotes)
+    // In inline context (outside of a `[[...]]` opener), `"` is just a
+    // text character (typographic quote). Without the depth gate, an
+    // inline `=` followed by `"` (e.g. `[[footnote]]="[[/footnote]]`)
+    // would otherwise eat the closing tag.
     if (char === '"') {
       const lastNonWs = this.lastNonWhitespaceTokenType();
-      if (lastNonWs === "EQUALS") {
+      if (this.blockOpenerDepth > 0 && lastNonWs === "EQUALS") {
         let quoted = this.advance(); // opening "
         while (!this.isAtEnd() && this.current() !== '"' && this.current() !== "\n") {
           quoted += this.advance();

@@ -229,6 +229,58 @@ describe("resolveIncludes", () => {
     expect(expanded).toContain("{$site}");
   });
 
+  describe("default-value idiom (duplicate key)", () => {
+    // A template forwards a variable with a fallback default by writing
+    // `key={$key}|key=default`. Once the caller's value is substituted,
+    // the duplicate-key pair must resolve to the caller's value when
+    // present, or the default otherwise.
+
+    test("caller value wins over the default", () => {
+      const source = "[[include tmpl | foo=given]]";
+      // Template forwards foo to an inner include with a default.
+      const fetcher = (ref: { site: string | null; page: string }) => {
+        if (ref.page === "tmpl") return "[[include base foo={$foo}|foo=fallback]]";
+        if (ref.page === "base") return "<<{$foo}>>";
+        return null;
+      };
+      expect(resolveIncludes(source, fetcher)).toBe("<<given>>");
+    });
+
+    test("default applies when caller omits the variable", () => {
+      const source = "[[include tmpl]]";
+      const fetcher = (ref: { site: string | null; page: string }) => {
+        if (ref.page === "tmpl") return "[[include base foo={$foo}|foo=fallback]]";
+        if (ref.page === "base") return "<<{$foo}>>";
+        return null;
+      };
+      // {$foo} stays unresolved (placeholder), so the default `fallback` wins.
+      expect(resolveIncludes(source, fetcher)).toBe("<<fallback>>");
+    });
+
+    test("default applies when caller passes an empty value", () => {
+      const source = "[[include base foo=|foo=fallback]]";
+      const fetcher = () => "<<{$foo}>>";
+      expect(resolveIncludes(source, fetcher)).toBe("<<fallback>>");
+    });
+
+    test("first concrete value wins among several duplicates", () => {
+      const source = "[[include base foo=first|foo=second|foo=third]]";
+      const fetcher = () => "<<{$foo}>>";
+      expect(resolveIncludes(source, fetcher)).toBe("<<first>>");
+    });
+
+    test("multiple keys each resolve independently", () => {
+      const source = "[[include tmpl | a=A]]";
+      const fetcher = (ref: { site: string | null; page: string }) => {
+        if (ref.page === "tmpl") return "[[include base a={$a}|a=da|b={$b}|b=db]]";
+        if (ref.page === "base") return "<<{$a}|{$b}>>";
+        return null;
+      };
+      // a supplied -> A ; b omitted -> default db
+      expect(resolveIncludes(source, fetcher)).toBe("<<A|db>>");
+    });
+  });
+
   test("handles space-separated parameters in first segment", () => {
     const source = "[[include component:coltop show=+ 開く|hide=- 閉じる]]";
     let receivedPageRef: { site: string | null; page: string } | null = null;

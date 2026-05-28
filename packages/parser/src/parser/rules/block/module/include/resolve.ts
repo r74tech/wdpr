@@ -202,15 +202,47 @@ function parseIncludeDirective(inner: string): { location: PageRef; variables: V
     }
   }
 
+  // Build the variable map, honouring Wikidot's default-value idiom.
+  //
+  // A template supplies a default for a forwarded variable by repeating
+  // the key: `key={$key} | key=default`. Once the outer include has
+  // substituted `{$key}`, that segment pair becomes one of:
+  //   - `key=value | key=default`        (caller supplied a value)
+  //   - `key= | key=default`             (caller passed an empty value)
+  //   - `key={$key} | key=default`       (caller omitted it; placeholder
+  //                                        left unresolved)
+  // The intended result is "use the caller's value if present, else the
+  // default", so the FIRST *concrete* value for a key wins. An empty
+  // string or a still-unresolved `{$...}` placeholder is not concrete and
+  // lets a later default apply.
+  //
+  // A key seen only with empty/placeholder values keeps that (empty or
+  // literal) value, preserving the existing pass-through behaviour for
+  // genuinely unset variables.
   const variables: VariableMap = {};
+  const hasConcrete = new Set<string>();
   for (const segment of varSegments) {
     const eqIndex = segment.indexOf("=");
-    if (eqIndex !== -1) {
-      const key = segment.slice(0, eqIndex).trim();
-      const value = segment.slice(eqIndex + 1).trim();
-      if (key) {
+    if (eqIndex === -1) continue;
+    const key = segment.slice(0, eqIndex).trim();
+    if (!key) continue;
+    const value = segment.slice(eqIndex + 1).trim();
+
+    const isPlaceholder = /^\{\$[^}]*\}$/.test(value);
+    const isConcrete = value !== "" && !isPlaceholder;
+
+    if (isConcrete) {
+      if (!hasConcrete.has(key)) {
         variables[key] = value;
+        hasConcrete.add(key);
       }
+      // A later concrete value for the same key is a default; ignore it.
+    } else if (!Object.hasOwn(variables, key)) {
+      // First empty/placeholder occurrence — keep it unless a concrete
+      // value (earlier or later) replaces it via the branch above.
+      // `Object.hasOwn` (not `in`) so keys like `toString` / `constructor`
+      // are not mistaken for already-present via the prototype chain.
+      variables[key] = value;
     }
   }
 

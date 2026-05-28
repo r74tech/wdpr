@@ -142,6 +142,15 @@ function positionTooltip(tip: HTMLElement, anchor: HTMLElement): void {
   const win = doc.defaultView ?? window;
   const anchorRect = anchor.getBoundingClientRect();
 
+  const margin = 8;
+
+  // Cap the tooltip width to the viewport before measuring. On narrow
+  // (mobile) screens a long footnote would otherwise render a tooltip
+  // wider than the screen; the horizontal clamps below cannot recover
+  // from that because there is no position at which an over-wide box
+  // fits, so it always bleeds past one edge.
+  tip.style.maxWidth = `${Math.max(0, win.innerWidth - margin * 2)}px`;
+
   let left = anchorRect.left + win.scrollX;
   let top = anchorRect.bottom + win.scrollY + 4;
 
@@ -150,8 +159,14 @@ function positionTooltip(tip: HTMLElement, anchor: HTMLElement): void {
   const tipRect = tip.getBoundingClientRect();
   tip.style.display = "none";
 
+  // Pull left so the right edge stays inside the viewport...
   if (left + tipRect.width > win.innerWidth + win.scrollX) {
-    left = win.innerWidth + win.scrollX - tipRect.width - 8;
+    left = win.innerWidth + win.scrollX - tipRect.width - margin;
+  }
+  // ...but never past the left margin (the right-edge clamp can push
+  // `left` negative when the tooltip is nearly viewport-wide).
+  if (left < win.scrollX + margin) {
+    left = win.scrollX + margin;
   }
   if (top + tipRect.height > win.innerHeight + win.scrollY) {
     top = anchorRect.top + win.scrollY - tipRect.height - 4;

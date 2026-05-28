@@ -273,6 +273,33 @@ describe("resolveIncludes", () => {
       // directive is not cut short by the link's `]]]`.
       expect(resolveIncludes(source, fetcher)).toBe("<<[[[*http://x>>");
     });
+
+    test("triple-bracket link butted against the close on one line", () => {
+      // The link's `]]]` and the directive's `]]` are adjacent: `[[[link]]]]]`.
+      // Link brackets are counted separately, so the `]]]` closes the link
+      // and only the trailing `]]` closes the directive — the link survives.
+      const source = "[[include tmpl |cap=[[[link]]]]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<[[[link]]]>>");
+    });
+
+    test("a `]]` inside a link does not close the directive early", () => {
+      // Inside `[[[ ... ]]]` the content is literal, so a stray `]]` there
+      // belongs to the link rather than terminating the directive.
+      const source = "[[include tmpl |cap=[[[a ]] b]]]]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<[[[a ]] b]]]>>");
+    });
+
+    test("a `[[` inside a link does not block the directive close", () => {
+      const source = "[[include tmpl |cap=[[[a [[ b]]]]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<[[[a [[ b]]]>>");
+    });
+
+    test("adjacent directives with links resolve independently", () => {
+      // Link brackets are counted locally, so the first directive's link
+      // does not reach into the second directive's `]]]`.
+      const source = "[[include tmpl |cap=[[[a]]]]]\n[[include tmpl |cap=[[[b]]]]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<[[[a]]]>>\n<<[[[b]]]>>");
+    });
   });
 
   describe("default-value idiom (duplicate key)", () => {

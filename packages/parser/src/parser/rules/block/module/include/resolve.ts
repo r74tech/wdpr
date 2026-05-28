@@ -204,12 +204,15 @@ function isRestOfLineBlank(source: string, pos: number): boolean {
  * markup or a bare symbol — therefore does not close the directive, so
  * captions such as `[[span]]...[[/span]]` survive intact.
  *
- * `[[[link]]]` is handled by plain `[[`/`]]` counting (a `[[[` is a `[[`
- * plus a literal `[`, and `]]]` a `]]` plus a literal `]`); the literal
- * text is preserved because the value is sliced, not tokenised. The one
- * case this does not reconstruct is a triple-bracket link butted
- * directly against the closing `]]` on the same line (`...[[[p]]]]]`),
- * which is left as a known limitation rather than special-cased.
+ * A `[[[ ... ]]]` triple-bracket link is an inline token, not a
+ * `[[ ... ]]` block. It is counted on a separate link depth (`]]]`
+ * matched against `[[[`), and while that depth is non-zero the link's
+ * content is treated as literal text — a plain `[[` or `]]` inside the
+ * link does not touch the block depth. This lets a link sit directly
+ * against the directive's closing `]]` on the same line
+ * (e.g. `...|cap=[[[link]]]]]`): the `]]]` closes the link and the next
+ * `]]` closes the directive. An unterminated `[[[` just leaves the link
+ * depth raised, which does not change where the block `]]` closes.
  *
  * Openers that never reach depth zero are left untouched.
  */
@@ -224,10 +227,24 @@ function scanIncludeDirectives(source: string): IncludeDirectiveMatch[] {
     const firstNewline = source.indexOf("\n", start);
 
     let depth = 0;
+    let linkDepth = 0;
     let i = start;
     let closeEnd = -1;
     while (i < source.length) {
-      if (source.startsWith("[[", i)) {
+      if (source.startsWith("[[[", i)) {
+        // `[[[` opens a triple-bracket link. Count it on a separate link
+        // depth so its brackets never affect the block depth that decides
+        // the directive close.
+        linkDepth++;
+        i += 3;
+      } else if (linkDepth > 0 && source.startsWith("]]]", i)) {
+        linkDepth--;
+        i += 3;
+      } else if (linkDepth > 0) {
+        // Inside a triple-bracket link the content is literal text, so a
+        // plain `[[` or `]]` here belongs to the link, not to block markup.
+        i++;
+      } else if (source.startsWith("[[", i)) {
         depth++;
         i += 2;
       } else if (source.startsWith("]]", i)) {
@@ -282,7 +299,7 @@ function parseIncludeDirective(inner: string): { location: PageRef; variables: V
   const firstSegment = parts[0]!.trim();
 
   // Separate page name from space-separated parameters in the first segment.
-  // e.g. "component:coltop show=+ 開く" → target="component:coltop", rest="show=+ 開く"
+  // e.g. "page-name key=value" → target="page-name", rest="key=value"
   const spaceIndex = firstSegment.indexOf(" ");
   let target: string;
   const varSegments: string[] = [];

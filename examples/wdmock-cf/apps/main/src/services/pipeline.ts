@@ -3,7 +3,13 @@
  *
  * Handles source parsing, module resolution, and HTML rendering.
  */
-import { parse, extractDataRequirements, resolveModules, resolveIncludes } from "@wdprlib/parser";
+import {
+  parse,
+  extractDataRequirements,
+  resolveModules,
+  resolveIncludes,
+  preprocessIftags,
+} from "@wdprlib/parser";
 import type {
   NormalizedListPagesQuery,
   ListPagesExternalData,
@@ -47,15 +53,21 @@ export async function renderPage(
   const expanded = resolveIncludes(source, (pageRef: PageRef) => {
     return pageSourceMap.get(pageRef.page) ?? null;
   });
-  const { ast: resolved, diagnostics: _diagnostics = [] } = parse(expanded);
 
-  const { requirements, compiledListPagesTemplates } = extractDataRequirements(resolved);
-
+  // Fetch the page's tags before parsing so source-level [[iftags]]
+  // (e.g. inside a [[div_]] opener attribute, which the AST resolver
+  // cannot reach because it would be eaten as garbage by the block
+  // tokenizer) can be expanded against them.
   const pageTags = await getTagsByFullname(
     db,
     parseFullname(pageName).category,
     parseFullname(pageName).name,
   );
+
+  const preprocessed = preprocessIftags(expanded, pageTags);
+  const { ast: resolved, diagnostics: _diagnostics = [] } = parse(preprocessed);
+
+  const { requirements, compiledListPagesTemplates } = extractDataRequirements(resolved);
 
   const modulesResolved = await resolveModules(
     resolved,

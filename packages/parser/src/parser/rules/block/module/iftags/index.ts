@@ -21,3 +21,6 @@ export { parseTagCondition, evaluateTagCondition } from "./condition";
 // Resolution
 export type { IfTagsData, IfTagsResolveResult } from "./resolve";
 export { isIfTagsElement, resolveIfTags } from "./resolve";
+
+// Source-level preprocessing (must run after include expansion, before parse)
+export { preprocessIftags } from "./preprocess";

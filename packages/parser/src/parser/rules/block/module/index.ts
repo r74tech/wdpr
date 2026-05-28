@@ -85,7 +85,13 @@ export {
 
 // IfTags module
 export type { TagCondition, IfTagsResolver, IfTagsData, IfTagsResolveResult } from "./iftags";
-export { parseTagCondition, evaluateTagCondition, isIfTagsElement, resolveIfTags } from "./iftags";
+export {
+  parseTagCondition,
+  evaluateTagCondition,
+  isIfTagsElement,
+  resolveIfTags,
+  preprocessIftags,
+} from "./iftags";
 
 // Include module
 export type { IncludeFetcher, AsyncIncludeFetcher, ResolveIncludesOptions } from "./include";

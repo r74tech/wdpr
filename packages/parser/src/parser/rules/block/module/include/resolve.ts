@@ -149,14 +149,117 @@ export async function resolveIncludesAsync(
 }
 
 /**
- * Regex to match [[include ...]] directives.
- * Captures the content between [[include and ]] (may span multiple lines).
+ * Matches the opening `[[include` token at the start of a line.
  *
  * The `m` flag makes `^` match at line boundaries, enforcing the Wikidot
- * rule that `[[include]]` must appear at the start of a line.
+ * rule that `[[include]]` must appear at the start of a line. The trailing
+ * `\s` separates the directive name from its arguments. The actual extent
+ * of each directive is found by {@link scanIncludeDirectives}, which
+ * balances nested `[[ ... ]]` so that block markup inside a parameter
+ * value does not terminate the directive at the first `]]`.
  */
-// \s (single char, no quantifier) avoids overlap with [^\]]* that causes polynomial backtracking
-const INCLUDE_PATTERN = /^\[\[include\s([^\]]*(?:\](?!\])[^\]]*)*)\]\]/gim;
+const INCLUDE_OPEN_PATTERN = /^\[\[include\s/gim;
+
+/** A located `[[include ...]]` directive with bracket-balanced extent. */
+interface IncludeDirectiveMatch {
+  /** Index of the opening `[[`. */
+  start: number;
+  /** Index just past the closing `]]`. */
+  end: number;
+  /** Text between `[[include ` and the closing `]]`. */
+  inner: string;
+}
+
+/**
+ * Returns `true` when everything between `pos` and the next newline (or
+ * end of string) is whitespace — i.e. `pos` sits at the end of its line.
+ */
+function isRestOfLineBlank(source: string, pos: number): boolean {
+  for (let i = pos; i < source.length; i++) {
+    const ch = source[i];
+    if (ch === "\n") return true;
+    if (ch !== " " && ch !== "\t" && ch !== "\r") return false;
+  }
+  return true; // reached EOF with only whitespace
+}
+
+/**
+ * Find all `[[include ...]]` directives in `source`, choosing each
+ * closing `]]` so that block markup inside a parameter value does not
+ * end the directive prematurely.
+ *
+ * A parameter value can contain nested `[[ ... ]]` (e.g. a `[[span]]`
+ * run) or a stray `]]`. The directive closes at the first `]]` that
+ * drives the `[[`/`]]` depth to zero or below AND is positioned as a
+ * real terminator, which (matching the observed Wikidot behaviour) means
+ * either:
+ *
+ * - it is on the opener's own line — a single-line / inline directive
+ *   like `[[include x ...]]` (and `[[include x]] trailing` closes right
+ *   after the first balanced `]]`, leaving the trailing text alone); or
+ * - it sits at the end of a line (only whitespace before the newline) —
+ *   the standalone `]]` that terminates a multi-line directive.
+ *
+ * A mid-line `]]` on a continuation line — whether part of balanced
+ * markup or a bare symbol — therefore does not close the directive, so
+ * captions such as `[[span]]...[[/span]]` survive intact.
+ *
+ * `[[[link]]]` is handled by plain `[[`/`]]` counting (a `[[[` is a `[[`
+ * plus a literal `[`, and `]]]` a `]]` plus a literal `]`); the literal
+ * text is preserved because the value is sliced, not tokenised. The one
+ * case this does not reconstruct is a triple-bracket link butted
+ * directly against the closing `]]` on the same line (`...[[[p]]]]]`),
+ * which is left as a known limitation rather than special-cased.
+ *
+ * Openers that never reach depth zero are left untouched.
+ */
+function scanIncludeDirectives(source: string): IncludeDirectiveMatch[] {
+  const matches: IncludeDirectiveMatch[] = [];
+  const opener = new RegExp(INCLUDE_OPEN_PATTERN.source, INCLUDE_OPEN_PATTERN.flags);
+  let m: RegExpExecArray | null;
+
+  while ((m = opener.exec(source)) !== null) {
+    const start = m.index;
+    const contentStart = start + m[0].length;
+    const firstNewline = source.indexOf("\n", start);
+
+    let depth = 0;
+    let i = start;
+    let closeEnd = -1;
+    while (i < source.length) {
+      if (source.startsWith("[[", i)) {
+        depth++;
+        i += 2;
+      } else if (source.startsWith("]]", i)) {
+        const closeStart = i;
+        depth--;
+        i += 2;
+        if (depth <= 0) {
+          const onOpenerLine = firstNewline === -1 || closeStart < firstNewline;
+          if (onOpenerLine || isRestOfLineBlank(source, i)) {
+            closeEnd = i;
+            break;
+          }
+        }
+      } else {
+        i++;
+      }
+    }
+
+    if (closeEnd === -1) {
+      // No terminating `]]` (opener-line or line-end) found — leave the
+      // opener untouched and resume scanning just past it so a later,
+      // well-formed directive can still match.
+      opener.lastIndex = start + 2;
+      continue;
+    }
+
+    matches.push({ start, end: closeEnd, inner: source.slice(contentStart, closeEnd - 2) });
+    opener.lastIndex = closeEnd;
+  }
+
+  return matches;
+}
 
 /**
  * Parse the inner content of an `[[include ...]]` directive into a page reference
@@ -265,9 +368,9 @@ function parseIncludeDirective(inner: string): { location: PageRef; variables: V
 
 /**
  * Replace a single include match with its fetched + variable-substituted content.
- * Used as the callback for String.replace in the synchronous iterative expansion.
+ * Returns the replacement text for a single directive's `inner` content.
  */
-function replaceOneInclude(_match: string, inner: string, fetcher: IncludeFetcher): string {
+function replaceOneInclude(inner: string, fetcher: IncludeFetcher): string {
   const { location, variables } = parseIncludeDirective(inner);
   const content = fetcher(location);
   if (content === null) {
@@ -289,11 +392,20 @@ function replaceOneInclude(_match: string, inner: string, fetcher: IncludeFetche
 function expandIterative(source: string, fetcher: IncludeFetcher, maxIterations: number): string {
   let current = source;
   for (let i = 0; i < maxIterations; i++) {
-    const previous = current;
-    current = current.replace(INCLUDE_PATTERN, (_match, inner: string) =>
-      replaceOneInclude(_match, inner, fetcher),
-    );
-    if (current === previous) break;
+    const directives = scanIncludeDirectives(current);
+    if (directives.length === 0) break;
+
+    let result = "";
+    let lastPos = 0;
+    for (const { start, end, inner } of directives) {
+      result += current.slice(lastPos, start);
+      result += replaceOneInclude(inner, fetcher);
+      lastPos = end;
+    }
+    result += current.slice(lastPos);
+
+    if (result === current) break;
+    current = result;
   }
   return current;
 }
@@ -313,16 +425,13 @@ async function expandIterativeAsync(
 ): Promise<string> {
   let current = source;
   for (let i = 0; i < maxIterations; i++) {
-    const previous = current;
-    const pattern = new RegExp(INCLUDE_PATTERN.source, INCLUDE_PATTERN.flags);
+    const directives = scanIncludeDirectives(current);
+    if (directives.length === 0) break;
+
     let result = "";
     let lastPos = 0;
-    let match: RegExpExecArray | null;
-
-    while ((match = pattern.exec(current)) !== null) {
-      const fullMatch = match[0]!;
-      const inner = match[1]!;
-      result += current.slice(lastPos, match.index);
+    for (const { start, end, inner } of directives) {
+      result += current.slice(lastPos, start);
 
       const { location, variables } = parseIncludeDirective(inner);
       const content = await fetcher(location);
@@ -332,12 +441,12 @@ async function expandIterativeAsync(
         result += substituteVariables(content, variables);
       }
 
-      lastPos = match.index + fullMatch.length;
+      lastPos = end;
     }
 
     result += current.slice(lastPos);
+    if (result === current) break;
     current = result;
-    if (current === previous) break;
   }
   return current;
 }

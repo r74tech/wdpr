@@ -229,6 +229,52 @@ describe("resolveIncludes", () => {
     expect(expanded).toContain("{$site}");
   });
 
+  describe("bracket-balanced directive extent", () => {
+    // The closing `]]` is chosen so that nested `[[ ... ]]` (or a stray
+    // `]]`) inside a parameter value does not end the directive early.
+    const fetcher = (ref: { site: string | null; page: string }) =>
+      ref.page === "tmpl" ? "<<{$cap}>>" : null;
+
+    test("nested [[...]] markup in a value is captured whole", () => {
+      const source = "[[include tmpl\n|cap=[[span]]A[[span]]B[[/span]][[/span]]C\n]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<[[span]]A[[span]]B[[/span]][[/span]]C>>");
+    });
+
+    test("a mid-line stray ]] does not close the directive early", () => {
+      const source = "[[include tmpl\n|cap=x ]] y\n]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<x ]] y>>");
+    });
+
+    test("single-line directive closes at the trailing ]]", () => {
+      const source = "[[include tmpl |cap=[[span]]hi[[/span]]]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<[[span]]hi[[/span]]>>");
+    });
+
+    test("inline directive followed by text falls back to the balanced close", () => {
+      const source = "[[include tmpl |cap=hi]] trailing";
+      expect(resolveIncludes(source, fetcher)).toBe("<<hi>> trailing");
+    });
+
+    test("two stacked directives each resolve independently", () => {
+      const source = "[[include tmpl |cap=A]]\n[[include tmpl |cap=[[span]]B[[/span]]]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<A>>\n<<[[span]]B[[/span]]>>");
+    });
+
+    test("an opener that never balances is left untouched", () => {
+      const source = "[[include tmpl |cap=foo [[ bar";
+      expect(resolveIncludes(source, fetcher)).toBe("[[include tmpl |cap=foo [[ bar");
+    });
+
+    test("triple-bracket link on its own line is kept whole", () => {
+      // The realistic shape: a link in a multi-line caption with the
+      // directive close `]]` on a separate line.
+      const source = "[[include tmpl\n|cap=[[[*http://x|L]]] note\n]]";
+      // Caption is split at the link's `|` (matching Wikidot), but the
+      // directive is not cut short by the link's `]]]`.
+      expect(resolveIncludes(source, fetcher)).toBe("<<[[[*http://x>>");
+    });
+  });
+
   describe("default-value idiom (duplicate key)", () => {
     // A template forwards a variable with a fallback default by writing
     // `key={$key}|key=default`. Once the caller's value is substituted,

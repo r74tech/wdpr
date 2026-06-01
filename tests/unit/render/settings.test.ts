@@ -349,4 +349,40 @@ describe("WikitextSettings - Renderer", () => {
       expect(html).toContain('id="toc0"');
     });
   });
+
+  describe("allowHtmlBlocks", () => {
+    const tree: SyntaxTree = {
+      elements: [{ element: "html", data: { contents: "<p>raw</p>" } }],
+      "html-blocks": ["<p>raw</p>"],
+    };
+
+    it("renders the iframe in page mode (allowHtmlBlocks=true)", () => {
+      const html = renderToHtml(tree, { settings: pageSettings });
+      expect(html).toContain('class="html-block-iframe"');
+    });
+
+    it("emits no iframe when disabled, even if the AST still has an html element", () => {
+      // Enforcement boundary: even a pre-built tree that already contains
+      // an `html` element must not produce an iframe when the setting
+      // disallows it. This catches manually-built ASTs and cached output.
+      const html = renderToHtml(tree, { settings: draftSettings });
+      expect(html).not.toContain("html-block-iframe");
+      expect(html).not.toContain("<iframe");
+      expect(html).not.toContain("<p>raw</p>");
+    });
+
+    it("does not call the htmlBlockUrl resolver when disabled", () => {
+      let called = false;
+      renderToHtml(tree, {
+        settings: draftSettings,
+        resolvers: {
+          htmlBlockUrl: () => {
+            called = true;
+            return "/should-not-be-called";
+          },
+        },
+      });
+      expect(called).toBe(false);
+    });
+  });
 });

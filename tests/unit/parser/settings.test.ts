@@ -147,6 +147,68 @@ describe("WikitextSettings - Parser", () => {
     });
   });
 
+  describe("allowHtmlBlocks", () => {
+    it("createSettings defaults: page=true, others=false", () => {
+      expect(pageSettings.allowHtmlBlocks).toBe(true);
+      expect(draftSettings.allowHtmlBlocks).toBe(false);
+      expect(forumSettings.allowHtmlBlocks).toBe(false);
+      expect(dmSettings.allowHtmlBlocks).toBe(false);
+    });
+
+    const html = '[[html]]\n<div class="x">hi</div>\n[[/html]]';
+
+    it("parses [[html]] when allowHtmlBlocks is true (page mode)", () => {
+      const result = parse(html, { settings: pageSettings });
+      const els = getContentElements(result.ast);
+      const htmlEl = els.find((el) => el.element === "html");
+      expect(htmlEl).toBeDefined();
+      expect(result.ast["html-blocks"]).toEqual(['<div class="x">hi</div>']);
+      expect(result.diagnostics.some((d) => d.code === "html-block-disabled")).toBe(false);
+    });
+
+    it("does NOT emit an html element when disabled, but consumes the whole block", () => {
+      const draftAst = parse(html, { settings: draftSettings });
+      const els = getContentElements(draftAst.ast);
+      expect(els.some((el) => el.element === "html")).toBe(false);
+      // No `html-blocks` array (or empty) — the body must not leak as text either.
+      expect(draftAst.ast["html-blocks"] ?? []).toEqual([]);
+      const allText = JSON.stringify(els);
+      expect(allText).not.toContain('<div class="x">hi</div>');
+      expect(draftAst.diagnostics.some((d) => d.code === "html-block-disabled")).toBe(true);
+    });
+
+    it("disabled + unclosed: consumes to EOF and emits both warnings", () => {
+      const unclosed = "[[html]]\n<p>leak?</p>\nno close here";
+      const result = parse(unclosed, { settings: draftSettings });
+      const els = getContentElements(result.ast);
+      expect(els.some((el) => el.element === "html")).toBe(false);
+      expect(JSON.stringify(els)).not.toContain("<p>leak?</p>");
+      const codes = result.diagnostics.map((d) => d.code);
+      expect(codes).toContain("html-block-disabled");
+      expect(codes).toContain("unclosed-block");
+    });
+
+    it("disabled does not affect surrounding content", () => {
+      const src = "before\n\n" + html + "\n\nafter";
+      const result = parse(src, { settings: draftSettings });
+      const els = getContentElements(result.ast);
+      // No html element, but the surrounding paragraphs survive.
+      expect(els.some((el) => el.element === "html")).toBe(false);
+      const text = JSON.stringify(els);
+      expect(text).toContain("before");
+      expect(text).toContain("after");
+    });
+
+    it("forum-post and direct-message also disable by default", () => {
+      for (const settings of [forumSettings, dmSettings]) {
+        const result = parse(html, { settings });
+        const els = getContentElements(result.ast);
+        expect(els.some((el) => el.element === "html")).toBe(false);
+        expect(result.diagnostics.some((d) => d.code === "html-block-disabled")).toBe(true);
+      }
+    });
+  });
+
   describe("non-page syntax is unaffected", () => {
     it("parses bold in forum-post mode", () => {
       const doc = parseAst("**bold text**", { settings: forumSettings });

@@ -265,6 +265,19 @@ describe("WikitextSettings - Parser", () => {
       expect(text).toContain("paragraph");
     });
 
+    it("disabled closed [[html]] with internal blank lines is fully consumed", () => {
+      // Regression: blank-line stop must NOT fire when a real close
+      // exists later in the stream. Otherwise `<p>two</p>` and `[[/html]]`
+      // leak as paragraph text.
+      const src = "[[html]]\n<p>one</p>\n\n<p>two</p>\n[[/html]]";
+      const result = parse(src, { settings: draftSettings });
+      const text = JSON.stringify(result.ast);
+      expect(text).not.toContain("<p>one</p>");
+      expect(text).not.toContain("<p>two</p>");
+      expect(text).not.toContain("[[/html]]");
+      expect(result.diagnostics.some((d) => d.code === "html-block-disabled")).toBe(true);
+    });
+
     it("enabled [[html]] with internal blank lines parses normally", () => {
       // Regression: a blank-line stop must NOT apply when html is enabled,
       // since `[[html]]` legitimately contains paragraphs separated by

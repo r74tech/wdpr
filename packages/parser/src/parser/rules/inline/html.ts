@@ -30,6 +30,7 @@ import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
 import { currentToken } from "../types";
 import { parseBlockName, parseAttributesRaw } from "../block/utils";
+import { lookaheadHasHtmlClose } from "../block/html";
 
 /**
  * Inline rule that gates `[[html]]` when the setting disallows it.
@@ -73,6 +74,9 @@ export const htmlInlineRule: InlineRule = {
 
     // Disabled path: consume the body until a real `[[/html]]` (BLOCK_END_OPEN
     // + name + BLOCK_CLOSE, allowing whitespace inside the close tag).
+    // Only allow the blank-line stop when no real close exists ahead, so
+    // a closed body that spans paragraphs is still consumed correctly.
+    const hasCloseAhead = lookaheadHasHtmlClose(ctx, pos);
     let foundClose = false;
     while (pos < ctx.tokens.length) {
       const token = ctx.tokens[pos];
@@ -80,7 +84,7 @@ export const htmlInlineRule: InlineRule = {
 
       // Stop at a blank line so an unclosed inline `[[html]]` does not
       // swallow subsequent paragraphs.
-      if (token.type === "NEWLINE" && ctx.tokens[pos + 1]?.type === "NEWLINE") {
+      if (!hasCloseAhead && token.type === "NEWLINE" && ctx.tokens[pos + 1]?.type === "NEWLINE") {
         break;
       }
 

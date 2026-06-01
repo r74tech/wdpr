@@ -72,7 +72,9 @@ export const htmlBlockRule: BlockRule = {
     // it falls through to text rendering as before.
     const disabled = ctx.settings.allowHtmlBlocks === false;
 
-    // Collect HTML content until [[/html]]
+    // Collect HTML content until [[/html]]. When disabled, the body is
+    // discarded so accumulation is skipped entirely to avoid building a
+    // large string only to drop it.
     let contents = "";
     let foundClose = false;
 
@@ -80,16 +82,24 @@ export const htmlBlockRule: BlockRule = {
       const token = ctx.tokens[pos];
       if (!token || token.type === "EOF") break;
 
-      // Check for closing [[/html]]
+      // Check for closing [[/html]] — require the trailing `]]` so a
+      // malformed `[[/html` without its close does not falsely terminate
+      // the body and leak the rest as text.
       if (token.type === "BLOCK_END_OPEN") {
         const closeNameResult = parseBlockName(ctx, pos + 1);
         if (closeNameResult?.name.toLowerCase() === "html") {
-          foundClose = true;
-          break;
+          let checkPos = pos + 1 + closeNameResult.consumed;
+          while (ctx.tokens[checkPos]?.type === "WHITESPACE") checkPos++;
+          if (ctx.tokens[checkPos]?.type === "BLOCK_CLOSE") {
+            foundClose = true;
+            break;
+          }
         }
       }
 
-      contents += token.value;
+      if (!disabled) {
+        contents += token.value;
+      }
       pos++;
       consumed++;
     }

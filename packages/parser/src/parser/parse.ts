@@ -1,7 +1,8 @@
 import type { Token } from "../lexer";
 import { tokenize } from "../lexer";
 import { preprocess } from "./preprocess";
-import type { Element, SyntaxTree, WikitextSettings, ParseResult } from "@wdprlib/ast";
+import { stripDisabledHtmlBlocks } from "./preprocess/strip-disabled-html";
+import type { Diagnostic, Element, SyntaxTree, WikitextSettings, ParseResult } from "@wdprlib/ast";
 import { DEFAULT_SETTINGS } from "@wdprlib/ast";
 import { blockRules, blockFallbackRule, inlineRules, type ParseContext } from "./rules";
 import { canApplyBlockRule } from "./rules/block/utils";
@@ -235,7 +236,22 @@ export class Parser {
  * @since 2.0.0
  */
 export function parse(source: string, options?: ParserOptions): ParseResult {
-  const preprocessed = preprocess(source);
+  // When `[[html]]` is disabled, strip the blocks at the text level
+  // before lexing. The block-rule gate alone misses inline-position
+  // occurrences (the block dispatcher does not reach mid-paragraph
+  // tokens), so an additional pre-pass is required to guarantee that
+  // no disabled body leaks as text.
+  const settings = options?.settings ?? DEFAULT_SETTINGS;
+  const preStripDiagnostics: Diagnostic[] = [];
+  const stripped = settings.allowHtmlBlocks
+    ? source
+    : stripDisabledHtmlBlocks(source, preStripDiagnostics);
+
+  const preprocessed = preprocess(stripped);
   const tokens = tokenize(preprocessed, { trackPositions: options?.trackPositions });
-  return new Parser(tokens, options).parse();
+  const result = new Parser(tokens, options).parse();
+  if (preStripDiagnostics.length > 0) {
+    result.diagnostics.unshift(...preStripDiagnostics);
+  }
+  return result;
 }

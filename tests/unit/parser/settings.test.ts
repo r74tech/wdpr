@@ -207,6 +207,31 @@ describe("WikitextSettings - Parser", () => {
         expect(result.diagnostics.some((d) => d.code === "html-block-disabled")).toBe(true);
       }
     });
+
+    it("mid-paragraph [[html]] is stripped too (not just block-position)", () => {
+      // The block-rule gate alone misses mid-paragraph occurrences because
+      // the block dispatcher never reaches them. The text-level pre-pass
+      // catches both positions, so neither the literal `[[html]]` text nor
+      // the body appears in the final output.
+      const src = "before [[html]]<p>SECRET</p>[[/html]] after";
+      const result = parse(src, { settings: draftSettings });
+      const text = JSON.stringify(result.ast);
+      expect(text).not.toContain("SECRET");
+      expect(text).not.toContain("[[html");
+      expect(text).toContain("before");
+      expect(text).toContain("after");
+      expect(result.diagnostics.some((d) => d.code === "html-block-disabled")).toBe(true);
+    });
+
+    it("malformed close tag does not leak the body (disabled)", () => {
+      // Earlier the rule treated `[[/html` (no `]]`) as a close as soon as
+      // the name matched, which would have left the body after it as text.
+      // The fix requires `BLOCK_CLOSE` to actually be present.
+      const src = "[[html]]\nSECRET\n[[/html no-close\nAFTER";
+      const result = parse(src, { settings: draftSettings });
+      const text = JSON.stringify(result.ast);
+      expect(text).not.toContain("SECRET");
+    });
   });
 
   describe("non-page syntax is unaffected", () => {

@@ -82,6 +82,13 @@ export const htmlBlockRule: BlockRule = {
       const token = ctx.tokens[pos];
       if (!token || token.type === "EOF") break;
 
+      // Stop at a blank line so an unclosed `[[html]]` does not swallow
+      // subsequent paragraphs. This matters especially in the disabled
+      // case where the rule would otherwise consume to EOF.
+      if (token.type === "NEWLINE" && ctx.tokens[pos + 1]?.type === "NEWLINE") {
+        break;
+      }
+
       // Check for closing [[/html]] — require the trailing `]]` so a
       // malformed `[[/html` without its close does not falsely terminate
       // the body and leak the rest as text.

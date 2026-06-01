@@ -1,5 +1,12 @@
 import { describe, expect, it } from "bun:test";
-import { parse, resolveIncludes, createSettings, type ParserOptions } from "@wdprlib/parser";
+import {
+  parse,
+  resolveIncludes,
+  createSettings,
+  Parser,
+  tokenize,
+  type ParserOptions,
+} from "@wdprlib/parser";
 import type { Element, SyntaxTree, WikitextSettings } from "@wdprlib/ast";
 
 function parseAst(input: string, options?: ParserOptions): SyntaxTree {
@@ -231,6 +238,41 @@ describe("WikitextSettings - Parser", () => {
       const result = parse(src, { settings: draftSettings });
       const text = JSON.stringify(result.ast);
       expect(text).not.toContain("SECRET");
+    });
+
+    it("Parser class direct usage also respects the setting", () => {
+      // The gate lives in the parse-time rules (block + inline), so it
+      // applies regardless of whether callers go through `parse()` or
+      // construct `Parser` themselves with pre-lexed tokens.
+      const src = "before [[html]]<p>SECRET</p>[[/html]] after";
+      const tokens = tokenize(src);
+      const result = new Parser(tokens, { settings: draftSettings }).parse();
+      const text = JSON.stringify(result.ast);
+      expect(text).not.toContain("SECRET");
+      expect(result.diagnostics.some((d) => d.code === "html-block-disabled")).toBe(true);
+    });
+
+    it("disabled unclosed stops at a blank line, preserving later paragraphs", () => {
+      // An unclosed [[html]] used to consume to EOF, eating subsequent
+      // paragraphs. The rule now stops at a blank line.
+      const src = "before [[html]]SECRET no-close\n\nlater paragraph";
+      const result = parse(src, { settings: draftSettings });
+      const text = JSON.stringify(result.ast);
+      expect(text).not.toContain("SECRET");
+      // Tokenisation splits text into multiple elements, so check for
+      // the individual words separately.
+      expect(text).toContain("later");
+      expect(text).toContain("paragraph");
+    });
+
+    it("inline [[html]] inside [[code]] is not affected (code is raw)", () => {
+      // Code blocks store their body as raw text, so the inline rule
+      // never sees the [[html]] token — its body is preserved verbatim
+      // even when allowHtmlBlocks is false.
+      const src = "[[code]]\n[[html]]body[[/html]]\n[[/code]]";
+      const result = parse(src, { settings: draftSettings });
+      const text = JSON.stringify(result.ast);
+      expect(text).toContain("[[html]]body[[/html]]");
     });
   });
 

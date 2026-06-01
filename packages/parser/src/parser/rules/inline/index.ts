@@ -37,6 +37,7 @@ import {
   underscoreLineBreakRule,
 } from "./line-break";
 import { commentRule } from "./comment";
+import { htmlInlineRule } from "./html";
 import { rawRule } from "./raw";
 import { spanRule, closeSpanRule } from "./span";
 import { sizeRule } from "./size";
@@ -70,6 +71,7 @@ export {
   underscoreLineBreakRule,
 } from "./line-break";
 export { commentRule } from "./comment";
+export { htmlInlineRule } from "./html";
 export { rawRule } from "./raw";
 export { spanRule, closeSpanRule } from "./span";
 export { sizeRule } from "./size";
@@ -125,6 +127,7 @@ export const inlineRules: InlineRule[] = [
   underscoreLineBreakRule,
   newlineLineBreakRule,
   commentRule,
+  htmlInlineRule,
   rawRule,
   imageRule,
   sizeRule,

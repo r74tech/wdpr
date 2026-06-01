@@ -50,6 +50,14 @@ function generateDefaultUrl(pageName: string, contents: string): string {
  * @param data - HTML block data containing the raw HTML contents and optional style.
  */
 export function renderHtmlBlock(ctx: RenderContext, data: HtmlData): void {
+  // Settings-level enforcement boundary: skip rendering entirely when
+  // `[[html]]` is disabled. Placed before any counter advance or
+  // resolver invocation so a disabled-but-still-in-AST block (manually
+  // built trees, cached ASTs, foreign parsers) has no observable effect.
+  if (ctx.settings.allowHtmlBlocks === false) {
+    return;
+  }
+
   const index = ctx.nextHtmlBlockIndex();
   const pageName = ctx.page?.pageName ?? "";
 

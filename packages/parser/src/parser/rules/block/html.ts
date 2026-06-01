@@ -82,10 +82,11 @@ export const htmlBlockRule: BlockRule = {
       const token = ctx.tokens[pos];
       if (!token || token.type === "EOF") break;
 
-      // Stop at a blank line so an unclosed `[[html]]` does not swallow
-      // subsequent paragraphs. This matters especially in the disabled
-      // case where the rule would otherwise consume to EOF.
-      if (token.type === "NEWLINE" && ctx.tokens[pos + 1]?.type === "NEWLINE") {
+      // When disabled, stop at a blank line so an unclosed `[[html]]`
+      // does not swallow subsequent paragraphs. Enabled blocks legitimately
+      // contain blank lines (e.g. `<p>one</p>\n\n<p>two</p>` inside the
+      // body), so the stop is gated to the disabled path only.
+      if (disabled && token.type === "NEWLINE" && ctx.tokens[pos + 1]?.type === "NEWLINE") {
         break;
       }
 
@@ -134,7 +135,8 @@ export const htmlBlockRule: BlockRule = {
       return { success: true, elements: [], consumed };
     }
 
-    // Consume [[/html]]
+    // Consume [[/html]] (skipping any whitespace between name and `]]`
+    // to match the close-detection above).
     if (ctx.tokens[pos]?.type === "BLOCK_END_OPEN") {
       pos++;
       consumed++;
@@ -142,6 +144,10 @@ export const htmlBlockRule: BlockRule = {
       if (closeNameResult) {
         pos += closeNameResult.consumed;
         consumed += closeNameResult.consumed;
+      }
+      while (ctx.tokens[pos]?.type === "WHITESPACE") {
+        pos++;
+        consumed++;
       }
       if (ctx.tokens[pos]?.type === "BLOCK_CLOSE") {
         pos++;

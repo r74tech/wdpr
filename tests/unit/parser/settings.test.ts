@@ -265,6 +265,29 @@ describe("WikitextSettings - Parser", () => {
       expect(text).toContain("paragraph");
     });
 
+    it("enabled [[html]] with internal blank lines parses normally", () => {
+      // Regression: a blank-line stop must NOT apply when html is enabled,
+      // since `[[html]]` legitimately contains paragraphs separated by
+      // blank lines.
+      const src = "[[html]]\n<p>one</p>\n\n<p>two</p>\n[[/html]]";
+      const result = parse(src, { settings: pageSettings });
+      const els = getContentElements(result.ast);
+      const htmlEl = els.find((el) => el.element === "html");
+      expect(htmlEl).toBeDefined();
+      expect((htmlEl as { data: { contents: string } }).data.contents).toContain("<p>one</p>");
+      expect((htmlEl as { data: { contents: string } }).data.contents).toContain("<p>two</p>");
+    });
+
+    it("close tag with whitespace before ]] is consumed cleanly", () => {
+      // `[[/html ]]` (whitespace before close) was previously detected as
+      // a close but the consume side left the trailing `]]` in the text.
+      const src = "[[html]]x[[/html ]]\nafter";
+      const result = parse(src, { settings: pageSettings });
+      const text = JSON.stringify(result.ast);
+      expect(text).not.toContain('"]]"');
+      expect(text).toContain("after");
+    });
+
     it("inline [[html]] inside [[code]] is not affected (code is raw)", () => {
       // Code blocks store their body as raw text, so the inline rule
       // never sees the [[html]] token — its body is preserved verbatim

@@ -65,6 +65,13 @@ export const htmlBlockRule: BlockRule = {
     pos++;
     consumed++;
 
+    // Settings-level gate: when `[[html]]` is disabled, still consume the
+    // entire block so the raw body cannot leak as text, but produce no
+    // AST element and skip the `ctx.htmlBlocks` push. The malformed
+    // opener path above (missing `]]`) is intentionally not affected —
+    // it falls through to text rendering as before.
+    const disabled = ctx.settings.allowHtmlBlocks === false;
+
     // Collect HTML content until [[/html]]
     let contents = "";
     let foundClose = false;
@@ -87,7 +94,10 @@ export const htmlBlockRule: BlockRule = {
       consumed++;
     }
 
-    // If no closing tag found, fail (Wikidot treats unclosed [[html]] as text)
+    // If no closing tag found:
+    //  - enabled: fail (matches Wikidot fallback to text)
+    //  - disabled: still consume to EOF so the body cannot leak, but emit
+    //    both the unclosed warning and the disabled-info diagnostics.
     if (!foundClose) {
       ctx.diagnostics.push({
         severity: "warning",
@@ -95,7 +105,16 @@ export const htmlBlockRule: BlockRule = {
         message: "Missing closing tag [[/html]] for [[html]]",
         position: openToken.position,
       });
-      return { success: false };
+      if (!disabled) {
+        return { success: false };
+      }
+      ctx.diagnostics.push({
+        severity: "info",
+        code: "html-block-disabled",
+        message: "[[html]] block ignored: disabled by settings",
+        position: openToken.position,
+      });
+      return { success: true, elements: [], consumed };
     }
 
     // Consume [[/html]]
@@ -115,6 +134,16 @@ export const htmlBlockRule: BlockRule = {
         pos++;
         consumed++;
       }
+    }
+
+    if (disabled) {
+      ctx.diagnostics.push({
+        severity: "info",
+        code: "html-block-disabled",
+        message: "[[html]] block ignored: disabled by settings",
+        position: openToken.position,
+      });
+      return { success: true, elements: [], consumed };
     }
 
     // Trim the contents

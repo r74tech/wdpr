@@ -89,7 +89,7 @@ export const divRule: BlockRule = {
     // more opens than closes, the innermost excess opens become text. We enforce
     // this with a "closes budget": the number of additional nested divs that can
     // open. When budget reaches 0, this div cannot open.
-    if (ctx.divClosesBudget === 0) {
+    if (ctx.scope.divClosesBudget === 0) {
       return { success: false };
     }
 
@@ -102,8 +102,8 @@ export const divRule: BlockRule = {
     // Calculate closes budget for nested divs in the body.
     // Count [[/div]] from body start to scope boundary, subtract 1 (for self).
     let bodyBudget: number | undefined;
-    if (ctx.divClosesBudget !== undefined) {
-      bodyBudget = ctx.divClosesBudget - 1;
+    if (ctx.scope.divClosesBudget !== undefined) {
+      bodyBudget = ctx.scope.divClosesBudget - 1;
     } else {
       const closesInScope = countDivCloses(ctx, pos);
       bodyBudget = closesInScope > 0 ? closesInScope - 1 : 0;
@@ -121,7 +121,11 @@ export const divRule: BlockRule = {
       return false;
     };
 
-    const bodyCtx: ParseContext = { ...ctx, pos, divClosesBudget: bodyBudget };
+    const bodyCtx: ParseContext = {
+      ...ctx,
+      pos,
+      scope: { ...ctx.scope, divClosesBudget: bodyBudget },
+    };
     let children: Element[];
 
     if (paragraphStrip) {

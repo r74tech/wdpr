@@ -3,19 +3,40 @@ import type { Version, WikitextSettings, Diagnostic } from "@wdprlib/ast";
 import type { Element, CodeBlockData, TocEntry } from "@wdprlib/ast";
 
 /**
- * Parser context passed to rules
+ * Per-scope state propagated by spread + override semantics.
+ *
+ * Every field is `readonly` so a rule cannot accidentally mutate the
+ * parent scope by writing through a shared reference. Updates must be
+ * expressed as a replacement: `ctx.scope = { ...ctx.scope, X: ... }`
+ * (or, more commonly, by constructing a new child context with the
+ * desired scope override).
+ *
+ * The motivation is to keep speculative parse rollback safe: when a
+ * block rule fails, any scope it built up is discarded with the failed
+ * context. A shared-state design that mutates fields in place does not
+ * survive rollback — grouping per-scope fields here and forbidding
+ * nested mutation makes the semantics explicit at the type level.
  */
-export interface ParseContext {
-  tokens: Token[];
-  pos: number;
-  version: Version;
-  trackPositions: boolean;
-  settings: WikitextSettings;
-  // Collections for SyntaxTree output
-  footnotes: Element[][];
-  tocEntries: TocEntry[];
-  codeBlocks: CodeBlockData[];
-  htmlBlocks: string[];
+export interface ScopeContext {
+  /**
+   * Close condition for the current block. The paragraph parser calls
+   * it to decide when to stop collecting inline content.
+   */
+  readonly blockCloseCondition?: (ctx: ParseContext) => boolean;
+  /**
+   * Block names excluded from paragraph-boundary detection. When a
+   * BLOCK_OPEN/BLOCK_END_OPEN for an excluded name appears at line
+   * start, the inline parser does NOT treat it as a paragraph break.
+   * Used by `[[collapsible]]` to prevent nested `[[collapsible]]` from
+   * splitting paragraphs.
+   */
+  readonly excludedBlockNames?: ReadonlySet<string>;
+  /**
+   * Budget for div nesting: tracks how many more nested divs can open.
+   * When 0, the div rule fails (innermost excess opens become text).
+   * `undefined` means "not yet calculated" (top-level or non-div context).
+   */
+  readonly divClosesBudget?: number;
   /**
    * Used by the footnote-block rule to reject duplicate occurrences.
    *
@@ -42,26 +63,42 @@ export interface ParseContext {
    * The auto-append decision in `Parser.parse` deliberately ignores
    * this flag and walks the final AST instead — see `containsFootnoteBlock`.
    */
-  footnoteBlockParsed: boolean;
+  readonly footnoteBlockParsed: boolean;
+}
+
+/**
+ * Parser context passed to rules.
+ *
+ * Fields are grouped by lifecycle:
+ * - Static config (`tokens`, `version`, `trackPositions`, `settings`,
+ *   rule arrays): constructor-fixed.
+ * - `pos`: per-scope cursor; kept top-level for ergonomics because
+ *   every rule spread overrides it.
+ * - Accumulators (`footnotes`, `tocEntries`, …, `diagnostics`):
+ *   reference-shared via array identity across spreads.
+ * - `scope`: per-scope state explicitly grouped; see {@link ScopeContext}.
+ */
+export interface ParseContext {
+  tokens: Token[];
+  pos: number;
+  version: Version;
+  trackPositions: boolean;
+  settings: WikitextSettings;
+  // Collections for SyntaxTree output
+  footnotes: Element[][];
+  tocEntries: TocEntry[];
+  codeBlocks: CodeBlockData[];
+  htmlBlocks: string[];
   // Bibliography citation labels collected during parsing
   bibcites: string[];
   // Rules (injected to avoid circular dependency)
   blockRules: BlockRule[];
   blockFallbackRule: BlockRule;
   inlineRules: InlineRule[];
-  // Close condition for current block (passed to paragraph parser)
-  blockCloseCondition?: (ctx: ParseContext) => boolean;
-  // Block names excluded from paragraph-boundary detection.
-  // When a BLOCK_OPEN/BLOCK_END_OPEN for an excluded name appears at
-  // line start, the inline parser does NOT treat it as a paragraph break.
-  // Used by collapsible to prevent nested [[collapsible]] from splitting paragraphs.
-  excludedBlockNames?: ReadonlySet<string>;
   // Diagnostics collected during parsing
   diagnostics: Diagnostic[];
-  // Budget for div nesting: tracks how many more nested divs can open.
-  // When 0, div rule fails (innermost excess opens become text).
-  // undefined means "not yet calculated" (top-level or non-div context).
-  divClosesBudget?: number;
+  // Per-scope state (readonly fields, immutable-replace semantics).
+  scope: ScopeContext;
 }
 
 /**

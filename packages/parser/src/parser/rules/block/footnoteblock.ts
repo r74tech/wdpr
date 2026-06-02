@@ -12,8 +12,8 @@
  *
  * Wikidot only honours the FIRST `[[footnoteblock]]` in a document;
  * subsequent occurrences are treated as plain text. The parser tracks
- * this via `ctx.footnoteBlockParsed`, but note: that flag is per spread
- * copy of `ParseContext` (see {@link ParseContext.footnoteBlockParsed}).
+ * this via `ctx.scope.footnoteBlockParsed`, but note: that flag is per
+ * spread copy of `ParseContext` (see {@link ScopeContext.footnoteBlockParsed}).
  * In practice the duplicate-rejection only fires for two top-level
  * `[[footnoteblock]]` tokens; siblings inside the same body or across
  * nested bodies both succeed today. The auto-append decision in
@@ -111,12 +111,12 @@ function parseAttributes(
  * 1. Match BLOCK_OPEN + name "footnoteblock" (case-insensitive).
  * 2. Parse optional attributes (`title`, `hide`).
  * 3. Consume closing `]]`.
- * 4. If `ctx.footnoteBlockParsed` is already `true` on the current
+ * 4. If `ctx.scope.footnoteBlockParsed` is already `true` on the current
  *    `ParseContext` copy, fail. Because `parseBlocksUntil` spreads a
  *    fresh `ctx` per sibling rule, this only rejects a second
  *    `[[footnoteblock]]` that arrives via the parser's top-level
- *    dispatch loop in practice. See {@link ParseContext.footnoteBlockParsed}.
- * 5. Set `ctx.footnoteBlockParsed = true` and emit a `footnote-block`
+ *    dispatch loop in practice. See {@link ScopeContext.footnoteBlockParsed}.
+ * 5. Replace `ctx.scope` with the flag set to `true` and emit a `footnote-block`
  *    element.
  */
 export const footnoteBlockRule: BlockRule = {
@@ -170,12 +170,14 @@ export const footnoteBlockRule: BlockRule = {
 
     // Reject a second `[[footnoteblock]]` that arrives on the same
     // `ParseContext` copy (in practice: at the top level — siblings
-    // inside `parseBlocksUntil` each get a fresh spread). The
-    // cross-scope duplicate-rejection is a separate, known limitation.
-    if (ctx.footnoteBlockParsed) {
+    // inside `parseBlocksUntil` each get a fresh spread). The flag
+    // lives in the immutable `scope` group, so the mutation is
+    // expressed as a scope replacement. The cross-scope duplicate-
+    // rejection is a separate, known limitation.
+    if (ctx.scope.footnoteBlockParsed) {
       return { success: false };
     }
-    ctx.footnoteBlockParsed = true;
+    ctx.scope = { ...ctx.scope, footnoteBlockParsed: true };
 
     // Extract title and hide from attributes
     const title = attrs.title !== undefined ? attrs.title : null;

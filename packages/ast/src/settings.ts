@@ -20,12 +20,12 @@
  * {@link WikitextSettings}. The modes correspond to the places where
  * user-authored wikitext can appear on a Wikidot site.
  *
- * | Mode               | Page syntax | Local paths | True IDs | Style elements |
- * |--------------------|:-----------:|:-----------:|:--------:|:--------------:|
- * | `"page"`           | yes         | yes         | yes      | yes            |
- * | `"draft"`          | yes         | yes         | no       | no             |
- * | `"forum-post"`     | no          | no          | no       | no             |
- * | `"direct-message"` | no          | no          | no       | no             |
+ * | Mode               | Page syntax | Local paths | True IDs | Style elements | HTML blocks |
+ * |--------------------|:-----------:|:-----------:|:--------:|:--------------:|:-----------:|
+ * | `"page"`           | yes         | yes         | yes      | yes            | yes         |
+ * | `"draft"`          | yes         | yes         | no       | no             | no          |
+ * | `"forum-post"`     | no          | no          | no       | no             | no          |
+ * | `"direct-message"` | no          | no          | no       | no             | no          |
  *
  * @group Settings
  */
@@ -81,6 +81,26 @@ export interface WikitextSettings {
    * the CSS module is silently ignored.
    */
   allowStyleElements: boolean;
+
+  /**
+   * Whether `[[html]]` blocks are recognised by the parser and rendered.
+   *
+   * HTML blocks embed raw HTML that the renderer serves inside a sandboxed
+   * iframe. The capability is meaningful only in contexts that can host
+   * the auxiliary iframe URL, so it is disabled in drafts, forum posts,
+   * and direct messages.
+   *
+   * When `false`, the parser still consumes the entire `[[html]]...[[/html]]`
+   * span (so the raw body cannot leak as text) but emits no AST node, and
+   * the renderer skips any pre-existing `html` element it encounters.
+   *
+   * Wikidot's legacy `Text_Wiki` keeps `Html` in its `$disable` list by
+   * default (`lib/Text_Wiki/Text/Wiki.php` line 145-147), so an authentic
+   * Wikidot-compat default would be `false` even in `"page"` mode. wp
+   * keeps `"page"` at `true` for now to preserve existing consumers; a
+   * future change may align with Wikidot.
+   */
+  allowHtmlBlocks: boolean;
 }
 
 /**
@@ -102,6 +122,7 @@ export function createSettings(mode: WikitextMode): WikitextSettings {
         allowLocalPaths: true,
         useTrueIds: true,
         allowStyleElements: true,
+        allowHtmlBlocks: true,
       };
     case "draft":
       return {
@@ -110,6 +131,7 @@ export function createSettings(mode: WikitextMode): WikitextSettings {
         allowLocalPaths: true,
         useTrueIds: false,
         allowStyleElements: false,
+        allowHtmlBlocks: false,
       };
     case "forum-post":
     case "direct-message":
@@ -119,6 +141,7 @@ export function createSettings(mode: WikitextMode): WikitextSettings {
         allowLocalPaths: false,
         useTrueIds: false,
         allowStyleElements: false,
+        allowHtmlBlocks: false,
       };
   }
 }

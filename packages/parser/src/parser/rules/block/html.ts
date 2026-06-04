@@ -24,6 +24,28 @@ import { currentToken } from "../types";
 import { parseBlockName, parseAttributesRaw } from "./utils";
 
 /**
+ * Scan forward from `from` to see whether a real `[[/html]]` close tag
+ * exists later in the token stream. Used by the disabled path to decide
+ * whether the blank-line stop should fire.
+ *
+ * Recognises whitespace between the name and the closing `]]` so the
+ * answer matches what the main consume loop would actually accept.
+ */
+export function lookaheadHasHtmlClose(ctx: ParseContext, from: number): boolean {
+  for (let i = from; i < ctx.tokens.length; i++) {
+    const t = ctx.tokens[i];
+    if (!t || t.type === "EOF") return false;
+    if (t.type !== "BLOCK_END_OPEN") continue;
+    const closeName = parseBlockName(ctx, i + 1);
+    if (closeName?.name.toLowerCase() !== "html") continue;
+    let cp = i + 1 + closeName.consumed;
+    while (ctx.tokens[cp]?.type === "WHITESPACE") cp++;
+    if (ctx.tokens[cp]?.type === "BLOCK_CLOSE") return true;
+  }
+  return false;
+}
+
+/**
  * Block rule for `[[html]]...[[/html]]`.
  *
  * Body content is stored as raw text. The optional `style` attribute is
@@ -65,7 +87,21 @@ export const htmlBlockRule: BlockRule = {
     pos++;
     consumed++;
 
-    // Collect HTML content until [[/html]]
+    // Settings-level gate: when `[[html]]` is disabled, still consume the
+    // entire block so the raw body cannot leak as text, but produce no
+    // AST element and skip the `ctx.htmlBlocks` push. The malformed
+    // opener path above (missing `]]`) is intentionally not affected —
+    // it falls through to text rendering as before.
+    const disabled = ctx.settings.allowHtmlBlocks === false;
+
+    // When disabled, the blank-line stop must only kick in if no real
+    // `[[/html]]` exists later in the stream. A closed block legitimately
+    // contains blank lines between paragraphs.
+    const hasCloseAhead = disabled && lookaheadHasHtmlClose(ctx, pos);
+
+    // Collect HTML content until [[/html]]. When disabled, the body is
+    // discarded so accumulation is skipped entirely to avoid building a
+    // large string only to drop it.
     let contents = "";
     let foundClose = false;
 
@@ -73,21 +109,43 @@ export const htmlBlockRule: BlockRule = {
       const token = ctx.tokens[pos];
       if (!token || token.type === "EOF") break;
 
-      // Check for closing [[/html]]
+      // When disabled with no close ahead, stop at a blank line so the
+      // rule does not swallow subsequent paragraphs.
+      if (
+        disabled &&
+        !hasCloseAhead &&
+        token.type === "NEWLINE" &&
+        ctx.tokens[pos + 1]?.type === "NEWLINE"
+      ) {
+        break;
+      }
+
+      // Check for closing [[/html]] — require the trailing `]]` so a
+      // malformed `[[/html` without its close does not falsely terminate
+      // the body and leak the rest as text.
       if (token.type === "BLOCK_END_OPEN") {
         const closeNameResult = parseBlockName(ctx, pos + 1);
         if (closeNameResult?.name.toLowerCase() === "html") {
-          foundClose = true;
-          break;
+          let checkPos = pos + 1 + closeNameResult.consumed;
+          while (ctx.tokens[checkPos]?.type === "WHITESPACE") checkPos++;
+          if (ctx.tokens[checkPos]?.type === "BLOCK_CLOSE") {
+            foundClose = true;
+            break;
+          }
         }
       }
 
-      contents += token.value;
+      if (!disabled) {
+        contents += token.value;
+      }
       pos++;
       consumed++;
     }
 
-    // If no closing tag found, fail (Wikidot treats unclosed [[html]] as text)
+    // If no closing tag found:
+    //  - enabled: fail (matches Wikidot fallback to text)
+    //  - disabled: still consume to EOF so the body cannot leak, but emit
+    //    both the unclosed warning and the disabled-info diagnostics.
     if (!foundClose) {
       ctx.diagnostics.push({
         severity: "warning",
@@ -95,10 +153,20 @@ export const htmlBlockRule: BlockRule = {
         message: "Missing closing tag [[/html]] for [[html]]",
         position: openToken.position,
       });
-      return { success: false };
+      if (!disabled) {
+        return { success: false };
+      }
+      ctx.diagnostics.push({
+        severity: "info",
+        code: "html-block-disabled",
+        message: "[[html]] block ignored: disabled by settings",
+        position: openToken.position,
+      });
+      return { success: true, elements: [], consumed };
     }
 
-    // Consume [[/html]]
+    // Consume [[/html]] (skipping any whitespace between name and `]]`
+    // to match the close-detection above).
     if (ctx.tokens[pos]?.type === "BLOCK_END_OPEN") {
       pos++;
       consumed++;
@@ -106,6 +174,10 @@ export const htmlBlockRule: BlockRule = {
       if (closeNameResult) {
         pos += closeNameResult.consumed;
         consumed += closeNameResult.consumed;
+      }
+      while (ctx.tokens[pos]?.type === "WHITESPACE") {
+        pos++;
+        consumed++;
       }
       if (ctx.tokens[pos]?.type === "BLOCK_CLOSE") {
         pos++;
@@ -115,6 +187,16 @@ export const htmlBlockRule: BlockRule = {
         pos++;
         consumed++;
       }
+    }
+
+    if (disabled) {
+      ctx.diagnostics.push({
+        severity: "info",
+        code: "html-block-disabled",
+        message: "[[html]] block ignored: disabled by settings",
+        position: openToken.position,
+      });
+      return { success: true, elements: [], consumed };
     }
 
     // Trim the contents

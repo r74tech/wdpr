@@ -488,13 +488,136 @@ function normalizeCssValue(value: string): string {
 }
 
 /**
+ * Allowlist check for a raw URL string extracted from a `url(...)` token.
+ *
+ * Wikidot itself allows arbitrary URLs (including `javascript:` and
+ * `expression()`) in `style` attributes, but we cannot match that
+ * exactly without re-introducing XSS. The schemes permitted below are
+ * the ones a CSS-side `url(...)` needs to actually fetch an image or
+ * background — anything else either has no visual effect or carries
+ * code-execution risk:
+ *
+ * - `http://`, `https://`, `//host/...` — load over the network.
+ * - `/path`, `./path`, `../path` — load relative to the document.
+ * - `#fragment` — same-document SVG / gradient reference.
+ * - `data:image/{png,jpeg,jpg,gif,webp}` — inline raster image.
+ *   SVG is excluded because SVG documents can embed `<script>` and
+ *   event handlers; treating an inline SVG as a `url()` payload is
+ *   indistinguishable from running attacker-supplied JavaScript.
+ *
+ * Everything else (`javascript:`, `vbscript:`, `data:text/...`,
+ * `data:application/...`, `data:image/svg+xml`) is rejected — those
+ * payloads either execute scripts directly or are interpreted as
+ * markup that can host them.
+ *
+ * The input is assumed to come from a normalised CSS value (escapes,
+ * comments, whitespace, control chars stripped and lowercased), so this
+ * function only needs to handle surrounding `"` / `'` quotes.
+ */
+function isUrlAllowed(rawUrl: string): boolean {
+  let url = rawUrl;
+
+  // Strip a single layer of matched surrounding quotes if present
+  if (url.length >= 2) {
+    const first = url[0];
+    const last = url[url.length - 1];
+    if ((first === '"' && last === '"') || (first === "'" && last === "'")) {
+      url = url.slice(1, -1);
+    }
+  }
+
+  // Empty url() is treated as harmless (Wikidot pass-through)
+  if (url === "") return true;
+
+  // Fragment
+  if (url.startsWith("#")) return true;
+
+  // Path-relative
+  if (url.startsWith("./") || url.startsWith("../")) return true;
+
+  // Protocol-relative `//host/...`
+  if (url.startsWith("//")) return true;
+
+  // Root-relative `/path`. Does not match `//` (handled above).
+  if (url.startsWith("/")) return true;
+
+  if (url.startsWith("http://") || url.startsWith("https://")) return true;
+
+  // data: URLs — only raster image MIME types.
+  // Match `data:image/<mime>` followed by `;` (params) or `,` (start of data),
+  // so `data:image/png+xml` or `data:image/pngsomething` cannot sneak through
+  // the allowlist with a misleading prefix.
+  if (url.startsWith("data:image/")) {
+    const after = url.slice("data:image/".length);
+    const sep = Math.min(
+      after.indexOf(";") === -1 ? after.length : after.indexOf(";"),
+      after.indexOf(",") === -1 ? after.length : after.indexOf(","),
+    );
+    const mime = after.slice(0, sep);
+    if (mime === "png" || mime === "jpeg" || mime === "jpg" || mime === "gif" || mime === "webp") {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Extract every `url(...)` invocation from a normalised CSS value and
+ * yield each raw inner string (parentheses excluded).
+ *
+ * The walker tracks `"` and `'` quoted regions so that `)` inside a
+ * quoted URL string (e.g. `url("https://example.com/a)b.png")`) does
+ * not close the `url(` prematurely. Within a quoted region paren
+ * tracking is suspended.
+ *
+ * Returns an iterator of `{ inner, malformed }` records. `malformed`
+ * is `true` when a `url(` had no matching closing `)`, which the
+ * caller should treat as dangerous (fail-closed).
+ */
+function* iterateUrls(normalized: string): Generator<{ inner: string; malformed: boolean }> {
+  let searchPos = 0;
+  while (searchPos < normalized.length) {
+    const idx = normalized.indexOf("url(", searchPos);
+    if (idx === -1) return;
+
+    let depth = 1;
+    let quoteChar: string | null = null;
+    let i = idx + 4;
+    while (i < normalized.length && depth > 0) {
+      const ch = normalized[i];
+      if (quoteChar !== null) {
+        if (ch === quoteChar) quoteChar = null;
+      } else if (ch === '"' || ch === "'") {
+        quoteChar = ch;
+      } else if (ch === "(") {
+        depth++;
+      } else if (ch === ")") {
+        depth--;
+      }
+      i++;
+    }
+
+    if (depth > 0) {
+      // Unclosed url(
+      yield { inner: normalized.slice(idx + 4), malformed: true };
+      return;
+    }
+
+    yield { inner: normalized.slice(idx + 4, i - 1), malformed: false };
+    searchPos = i;
+  }
+}
+
+/**
  * Check whether a CSS property value contains dangerous patterns that
  * could enable script execution or external resource loading.
  *
  * The value is first normalized via `normalizeCssValue()` to resolve
  * CSS escapes and comments, then checked against a blocklist:
- * - `url()` -- blocks all URL-based loading (images, fonts, cursors)
- *   because even image URLs can leak data or trigger requests
+ * - `url(...)` -- only allowed when the inner URL passes
+ *   {@link isUrlAllowed} (raster images, http(s), relative paths).
+ *   Malformed `url(` (no closing paren) is treated as dangerous.
  * - `expression()` -- blocks IE's CSS expression evaluation
  * - `-moz-binding` -- blocks Firefox XBL binding injection
  * - `behavior:` -- blocks IE behavior attachment
@@ -506,8 +629,10 @@ function normalizeCssValue(value: string): string {
 export function isDangerousCssValue(value: string): boolean {
   const normalized = normalizeCssValue(value);
 
-  // Block ALL url() - prevents all URL-based attacks
-  if (normalized.includes("url(")) return true;
+  for (const { inner, malformed } of iterateUrls(normalized)) {
+    if (malformed) return true;
+    if (!isUrlAllowed(inner)) return true;
+  }
 
   // Block expression() (IE)
   if (normalized.includes("expression(")) return true;
@@ -541,13 +666,65 @@ export function isDangerousCssValue(value: string): boolean {
  * @returns The sanitized style string with dangerous declarations removed,
  *   or an empty string if nothing is safe.
  */
+/**
+ * Split a CSS style attribute value into individual declarations,
+ * respecting parentheses and quoted strings.
+ *
+ * A simple `split(";")` would corrupt declarations whose value
+ * contains `;` inside a `url(...)` invocation, e.g. a base64 data URL
+ * passed via a CSS custom property:
+ *
+ * ```css
+ * --logo: url(data:image/png;base64,iVBORw0KGgo...)
+ * ```
+ *
+ * This walker only splits on `;` when not inside `(...)` and not inside
+ * a `"..."` / `'...'` string.
+ */
+function splitDeclarations(style: string): string[] {
+  const out: string[] = [];
+  let buf = "";
+  let parenDepth = 0;
+  let quoteChar: string | null = null;
+
+  for (const ch of style) {
+    if (quoteChar !== null) {
+      buf += ch;
+      if (ch === quoteChar) quoteChar = null;
+      continue;
+    }
+    if (ch === '"' || ch === "'") {
+      quoteChar = ch;
+      buf += ch;
+      continue;
+    }
+    if (ch === "(") {
+      parenDepth++;
+      buf += ch;
+      continue;
+    }
+    if (ch === ")") {
+      if (parenDepth > 0) parenDepth--;
+      buf += ch;
+      continue;
+    }
+    if (ch === ";" && parenDepth === 0) {
+      out.push(buf);
+      buf = "";
+      continue;
+    }
+    buf += ch;
+  }
+  if (buf.length > 0) out.push(buf);
+  return out;
+}
+
 export function sanitizeStyleValue(style: string): string {
   // Remember if original ends with semicolon (Wikidot preserves this)
   const endsWithSemicolon = style.trimEnd().endsWith(";");
 
-  // Split by semicolon into individual declarations
-  const declarations = style
-    .split(";")
+  // Split by semicolon (respecting parens/quotes) into individual declarations
+  const declarations = splitDeclarations(style)
     .map((d) => d.trim())
     .filter(Boolean);
   const safe: string[] = [];
@@ -556,15 +733,18 @@ export function sanitizeStyleValue(style: string): string {
     const colonIdx = decl.indexOf(":");
     if (colonIdx === -1) continue;
 
-    const property = decl.slice(0, colonIdx).trim().toLowerCase();
+    const property = decl.slice(0, colonIdx).trim();
     const value = decl.slice(colonIdx + 1).trim();
 
     // Skip if value contains dangerous patterns
     if (isDangerousCssValue(value)) continue;
 
-    // Skip dangerous properties
-    if (property.startsWith("-moz-binding")) continue;
-    if (property === "behavior") continue;
+    // Skip dangerous properties. CSS allows escape sequences inside
+    // property names too (e.g. `-mo\7a-binding` → `-moz-binding`), so we
+    // run them through the same normaliser as values before matching.
+    const normalisedProperty = normalizeCssValue(property);
+    if (normalisedProperty.startsWith("-moz-binding")) continue;
+    if (normalisedProperty === "behavior") continue;
 
     // Keep original format (Wikidot outputs input as is)
     safe.push(decl);

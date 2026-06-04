@@ -12,6 +12,7 @@ import {
 } from "./postprocess";
 import { buildTableOfContents } from "./toc";
 import { walkElements } from "./rules/block/module/walk";
+import { preprocessIftags } from "./rules/block/module/iftags/preprocess";
 
 /**
  * Configuration for the {@link Parser} and the {@link parse} function.
@@ -34,6 +35,25 @@ export interface ParserOptions {
    * Defaults to {@link DEFAULT_SETTINGS} (full page mode).
    */
   settings?: WikitextSettings;
+  /**
+   * Page tags consulted when expanding `[[iftags]]` directives that are
+   * embedded inside another block's opener — e.g.
+   * `[[div_ class="x" [[iftags +foo]]style="..."[[/iftags]]]]`. Such
+   * iftags must be collapsed at text level *before* tokenization;
+   * otherwise the outer opener loses its well-formed structure and the
+   * whole `[[div_ ... ]]` line is emitted as raw text.
+   *
+   * Values:
+   * - omitted / `undefined`: no preprocess pass. Existing behaviour;
+   *   opener-embedded iftags will still break the surrounding opener.
+   * - `null`: opener-embedded iftags only, evaluated as if the page has
+   *   no tags (lossy fallback that keeps tokenization working when real
+   *   tags are unknown). Block-level iftags remain in the AST for
+   *   `resolveModules` to evaluate later via `getPageTags`.
+   * - `string[]`: every iftags block is evaluated against the given
+   *   tags eagerly; no `if-tags` nodes survive in the AST.
+   */
+  pageTags?: string[] | null;
 }
 
 /**
@@ -253,7 +273,13 @@ export class Parser {
  * @since 2.0.0
  */
 export function parse(source: string, options?: ParserOptions): ParseResult {
-  const preprocessed = preprocess(source);
+  // Collapse opener-embedded [[iftags]] before tokenization. Only run when
+  // the caller explicitly opted in via the `pageTags` option (key present).
+  // `undefined` is treated as "key not given" to keep backward compat for
+  // callers that destructure or build options dynamically.
+  const iftagsProcessed =
+    options?.pageTags !== undefined ? preprocessIftags(source, options.pageTags) : source;
+  const preprocessed = preprocess(iftagsProcessed);
   const tokens = tokenize(preprocessed, { trackPositions: options?.trackPositions });
   return new Parser(tokens, options).parse();
 }

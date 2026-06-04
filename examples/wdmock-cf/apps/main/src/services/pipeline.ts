@@ -3,13 +3,7 @@
  *
  * Handles source parsing, module resolution, and HTML rendering.
  */
-import {
-  parse,
-  extractDataRequirements,
-  resolveModules,
-  resolveIncludes,
-  preprocessIftags,
-} from "@wdprlib/parser";
+import { parse, extractDataRequirements, resolveModules, resolveIncludes } from "@wdprlib/parser";
 import type {
   NormalizedListPagesQuery,
   ListPagesExternalData,
@@ -54,18 +48,17 @@ export async function renderPage(
     return pageSourceMap.get(pageRef.page) ?? null;
   });
 
-  // Fetch the page's tags before parsing so source-level [[iftags]]
-  // (e.g. inside a [[div_]] opener attribute, which the AST resolver
-  // cannot reach because it would be eaten as garbage by the block
-  // tokenizer) can be expanded against them.
+  // Fetch the page's tags so source-level [[iftags]] inside block openers
+  // (e.g. `[[div_ class="x" [[iftags +foo]]...[[/iftags]]]]`) can be
+  // collapsed text-level by parse() — otherwise the block-level tokenizer
+  // would emit the whole opener as raw text.
   const pageTags = await getTagsByFullname(
     db,
     parseFullname(pageName).category,
     parseFullname(pageName).name,
   );
 
-  const preprocessed = preprocessIftags(expanded, pageTags);
-  const { ast: resolved, diagnostics: _diagnostics = [] } = parse(preprocessed);
+  const { ast: resolved, diagnostics: _diagnostics = [] } = parse(expanded, { pageTags });
 
   const { requirements, compiledListPagesTemplates } = extractDataRequirements(resolved);
 
@@ -78,7 +71,7 @@ export async function renderPage(
       getPageTags: () => pageTags,
     },
     {
-      parse: (input: string) => parse(input).ast,
+      parse: (input: string) => parse(input, { pageTags }).ast,
       compiledListPagesTemplates,
       requirements,
       urlPath: options?.urlPath,

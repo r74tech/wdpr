@@ -445,4 +445,73 @@ describe("Parser", () => {
       expect(img.data.attributes).toEqual({ alt: "Description", width: "100" });
     });
   });
+
+  describe("pageTags option (opener-embedded [[iftags]])", () => {
+    const OPENER_EMBEDDED = `[[div_ class="rateBox" [[iftags +highlight]]style="display:none;"[[/iftags]]]]
+inside
+[[/div_]]`;
+
+    function findDivContainer(
+      elements: readonly Element[],
+    ): (Element & { element: "container" }) | undefined {
+      return elements.find(
+        (el): el is Element & { element: "container" } =>
+          el.element === "container" && (el.data as { type: string }).type === "div",
+      );
+    }
+
+    function hasIfTags(els: readonly Element[]): boolean {
+      return els.some((el) => {
+        if (el.element === "if-tags") return true;
+        const data = (el as { data?: unknown }).data;
+        if (data && typeof data === "object" && "elements" in data) {
+          const children = (data as { elements?: unknown }).elements;
+          if (Array.isArray(children)) return hasIfTags(children as Element[]);
+        }
+        return false;
+      });
+    }
+
+    it("without pageTags option, opener-embedded iftags break the surrounding opener", () => {
+      // Backward-compat: parse(src) is unchanged. The opener fails to
+      // tokenize, so no `div`-type container is produced — the line falls
+      // through to the paragraph fallback rule instead.
+      const doc = parseAst(OPENER_EMBEDDED);
+      const content = getContentElements(doc);
+      expect(findDivContainer(content)).toBeUndefined();
+    });
+
+    it("pageTags: [] collapses opener-embedded iftags with empty tags (+tag fails)", () => {
+      const doc = parseAst(OPENER_EMBEDDED, { pageTags: [] });
+      const content = getContentElements(doc);
+      const container = findDivContainer(content);
+      expect(container).toBeDefined();
+      // style="display:none;" is dropped because +highlight fails against [].
+      const attrs = (container!.data as { attributes?: Record<string, string> }).attributes ?? {};
+      expect(attrs.class).toBe("rateBox");
+      expect(attrs.style).toBeUndefined();
+    });
+
+    it("pageTags: ['highlight'] keeps the conditional style attribute", () => {
+      const doc = parseAst(OPENER_EMBEDDED, { pageTags: ["highlight"] });
+      const content = getContentElements(doc);
+      const container = findDivContainer(content);
+      expect(container).toBeDefined();
+      const attrs = (container!.data as { attributes?: Record<string, string> }).attributes ?? {};
+      expect(attrs.class).toBe("rateBox");
+      expect(attrs.style).toBe("display:none;");
+    });
+
+    it("pageTags: null collapses opener-embedded with empty-tag fallback but keeps block-level iftags", () => {
+      const src = `${OPENER_EMBEDDED}
+
+[[iftags +foo]]conditional[[/iftags]]`;
+      const doc = parseAst(src, { pageTags: null });
+      const content = getContentElements(doc);
+      // Opener-embedded one becomes a valid div container.
+      expect(findDivContainer(content)).toBeDefined();
+      // Block-level iftags survives in the AST for the resolver.
+      expect(hasIfTags(content)).toBe(true);
+    });
+  });
 });

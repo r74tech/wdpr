@@ -15,14 +15,27 @@
  * The block-level tokenizer cannot recover a well-formed opener from
  * that input — the inner `[[iftags ...]]X[[/iftags]]` has to collapse
  * to either `X` or the empty string *before* the parser sees the outer
- * tag, so the attribute string becomes plain text again. The AST-level
- * `[[iftags]]` block rule still exists and handles cases where the
- * preprocess pass is skipped (`pageTags === null`).
+ * tag, so the attribute string becomes plain text again.
  *
- * Pipeline order:
+ * `pageTags` semantics:
+ *
+ * - `string[]`: full pass. Every `[[iftags]]` is evaluated against the
+ *   given tag set and collapses to either its body or the empty string.
+ *   The AST will contain no `if-tags` nodes after parsing.
+ * - `null`: tags are unknown (e.g. draft preview, fixture test).
+ *   The pass still runs but only collapses `[[iftags]]` blocks that are
+ *   embedded inside another block's opener (`[[name ... [[iftags ...]]X[[/iftags]] ... ]]`).
+ *   Block-level `[[iftags]]` are left alone for {@link resolveIfTags}
+ *   to evaluate later when real tags are supplied via `getPageTags`.
+ *   Opener-embedded iftags are collapsed using an empty-tag assumption
+ *   (i.e. `+tag` conditions fail, `-tag` conditions pass). This is a
+ *   lossy fallback that keeps the outer block parseable; callers that
+ *   need accurate rendering should pass the real tags as `string[]`.
+ *
+ * Pipeline order (when invoked via `parse()`):
  *
  * ```
- * getPageTags → resolveIncludes → preprocessIftags(source, pageTags) → parse → resolveModules
+ * getPageTags → resolveIncludes → parse({ pageTags }) → resolveModules
  * ```
  *
  * Running this after include expansion is intentional: an included
@@ -73,24 +86,23 @@ const RAW_BLOCK_OPEN_PATTERN = /\[\[\s*(code|html)\b[^\]]*\]\]/iy;
  * Expand `[[iftags ...]]X[[/iftags]]` directives in `source` against the
  * current page's tags.
  *
- * Returns `source` unchanged when `pageTags` is `null`, which signals
- * that the caller could not resolve tag membership (e.g. rendering a
- * draft preview without a real page). In that case the AST-level
- * resolver remains responsible for evaluation later.
- *
  * Behaviour:
  * - Raw regions (`[[code]]`, `[[html]]`, `@@...@@`, `@<...>@`) are
  *   protected: literal `[[iftags]]` tokens inside them are not expanded.
  * - Nested `[[iftags]]` are processed innermost-first, so an outer
  *   block can re-process the now-flattened inner body uniformly.
+ * - `pageTags === null`: only `[[iftags]]` blocks embedded inside
+ *   another block's opener are collapsed (using an empty-tag fallback
+ *   so `+tag` conditions fail and `-tag` conditions pass). Block-level
+ *   iftags are left intact for the AST-level resolver.
  *
  * @param source   Raw wikitext (typically after include expansion).
- * @param pageTags Tags of the page being rendered, or `null` to skip.
+ * @param pageTags Tags of the page being rendered, or `null` for the
+ *                 opener-embedded-only fallback mode.
  * @returns Source with matching iftags replaced by their bodies and
  *          unmatched iftags removed entirely.
  */
 export function preprocessIftags(source: string, pageTags: string[] | null): string {
-  if (pageTags === null) return source;
   if (!source.includes("[[")) return source; // fast path
 
   const sentinels = makeUniqueSentinels(source);
@@ -124,31 +136,184 @@ function makeUniqueSentinels(source: string): { open: string; close: string } {
 
 /**
  * Replace `[[iftags ...]]X[[/iftags]]` blocks innermost-first until no
- * iftags pair remains. The pattern is global, so each pass rewrites all
- * innermost blocks at once and thus eliminates one nesting level;
- * matched blocks become their body (if the condition holds) or the empty
- * string (otherwise).
+ * iftags pair remains.
  *
- * The loop terminates because every pass that changes the string removes
- * at least one nesting level. If the regex fails to match (no more
- * pairs, or unbalanced leftovers), the loop exits with the partially
- * reduced source.
+ * Behaviour by `pageTags`:
+ * - `string[]`: every match collapses to body / empty based on tag membership.
+ * - `null`: only matches whose start offset has `bracketDepth > 0`
+ *   (i.e. embedded inside an outer block opener) are collapsed, using
+ *   an empty-tag assumption. Block-level matches are returned verbatim
+ *   so {@link resolveIfTags} can evaluate them later.
+ *
+ * The loop terminates when a pass changes nothing.
  */
-function reduceIftags(source: string, pageTags: string[]): string {
+function reduceIftags(source: string, pageTags: string[] | null): string {
   let current = source;
   // Worst-case bound: one pass eliminates at least one nesting level, and
   // nesting depth is at most `source.length`. The explicit cap stops a
   // runaway regex (e.g. pathological zero-width match) from looping forever.
   const maxIterations = source.length + 1;
+  const tagSet: string[] = pageTags ?? [];
   for (let i = 0; i < maxIterations; i++) {
-    const next = current.replace(INNERMOST_IFTAGS_PATTERN, (_, cond: string, body: string) => {
-      const condition = parseTagCondition(cond);
-      return evaluateTagCondition(condition, pageTags) ? body : "";
-    });
-    if (next === current) return current;
+    const depths = pageTags === null ? computeBracketDepths(current) : null;
+    let changed = false;
+    const next = current.replace(
+      INNERMOST_IFTAGS_PATTERN,
+      (match, cond: string, body: string, offset: number) => {
+        if (depths !== null && depths[offset] === 0) {
+          // block-level iftags in `null` mode → leave for AST resolver
+          return match;
+        }
+        changed = true;
+        const condition = parseTagCondition(cond);
+        return evaluateTagCondition(condition, tagSet) ? body : "";
+      },
+    );
+    if (!changed) return current;
     current = next;
   }
   return current;
+}
+
+/**
+ * Compute the unmatched-`[[` depth at each character offset of `masked`.
+ *
+ * Approximates the lexer's `blockOpenerDepth` (see `lexer.ts`):
+ * - `[[` increments, `]]` decrements (clamped at 0).
+ * - `[[[ ... ]]]` triple-bracket links are LINK_OPEN/LINK_CLOSE in the
+ *   lexer and do **not** participate in block-opener depth — skipped
+ *   here so that an `[[iftags]]` inside a link text is not misclassified
+ *   as opener-embedded.
+ * - Inside an opener context (`depth > 0`) a `"` preceded by `=` (with
+ *   only whitespace in between) opens a quoted attribute value; its
+ *   contents are skipped until the next `"` or `\n`, mirroring
+ *   `lexer.ts` `QUOTED_STRING` recognition. This protects opener-internal
+ *   `]]` inside attribute strings from being counted as block closers.
+ *
+ * The returned array has length `masked.length + 1` and `depths[k]`
+ * represents the depth **immediately before** the character at offset
+ * `k` is consumed. `INNERMOST_IFTAGS_PATTERN` returns offsets at the
+ * leading `[` of `[[iftags`, so `depths[offset]` is the depth of the
+ * surrounding context.
+ */
+function computeBracketDepths(masked: string): Int32Array {
+  const n = masked.length;
+  const depths = new Int32Array(n + 1);
+  let depth = 0;
+  let i = 0;
+  while (i < n) {
+    depths[i] = depth;
+    const c = masked.charCodeAt(i);
+    const c1 = i + 1 < n ? masked.charCodeAt(i + 1) : -1;
+    const c2 = i + 2 < n ? masked.charCodeAt(i + 2) : -1;
+
+    // Quoted attribute value inside an opener context.
+    if (depth > 0 && c === 0x22 /* " */ && precededByEqualsAttr(masked, i)) {
+      const end = findQuoteEnd(masked, i + 1);
+      for (let k = i; k <= end; k++) depths[k] = depth;
+      i = end + 1;
+      continue;
+    }
+
+    // Triple-bracket link: [[[ ... ]]] does not change opener depth.
+    if (c === 0x5b /* [ */ && c1 === 0x5b && c2 === 0x5b) {
+      const end = findTripleLinkEnd(masked, i + 3);
+      for (let k = i; k <= end; k++) depths[k] = depth;
+      i = end + 1;
+      continue;
+    }
+
+    if (c === 0x5b && c1 === 0x5b) {
+      depth++;
+      depths[i + 1] = depth;
+      i += 2;
+      continue;
+    }
+
+    if (c === 0x5d /* ] */ && c1 === 0x5d) {
+      depth = Math.max(0, depth - 1);
+      depths[i + 1] = depth;
+      i += 2;
+      continue;
+    }
+
+    if (c === 0x0a /* \n */) {
+      // Reset depth at line boundaries: Wikidot block openers are
+      // single-line constructs, so an unterminated `[[xxx` that spills
+      // past a newline should not keep subsequent block-level iftags
+      // inside its (imaginary) opener context. Without this reset,
+      // `[[broken\n[[iftags +foo]]body[[/iftags]]` would misclassify
+      // the iftags as opener-embedded and collapse it instead of
+      // deferring evaluation to the AST resolver.
+      depth = 0;
+    }
+
+    i++;
+  }
+  depths[n] = depth;
+  return depths;
+}
+
+/**
+ * Return `true` when position `i` of `s` is preceded (after skipping
+ * spaces/tabs) by a literal `=` character — the lexer's condition for
+ * promoting a following `"` to a `QUOTED_STRING` token. Newlines are
+ * treated as non-equals so an unterminated `=` on a previous line does
+ * not arm quote recognition for arbitrary `"` later on.
+ */
+function precededByEqualsAttr(s: string, i: number): boolean {
+  let j = i - 1;
+  while (j >= 0) {
+    const ch = s.charCodeAt(j);
+    if (ch === 0x20 /* space */ || ch === 0x09 /* tab */) {
+      j--;
+      continue;
+    }
+    return ch === 0x3d; /* = */
+  }
+  return false;
+}
+
+/**
+ * Find the offset of the closing `"` (or terminating `\n`) for a quoted
+ * attribute value that opens at `from`. Returns the offset of the
+ * terminator. Mirrors the lexer's behaviour of stopping at newline.
+ */
+function findQuoteEnd(s: string, from: number): number {
+  for (let i = from; i < s.length; i++) {
+    const ch = s.charCodeAt(i);
+    if (ch === 0x22 /* " */ || ch === 0x0a /* \n */) return i;
+  }
+  return s.length - 1;
+}
+
+/**
+ * Find the end offset of a `[[[ ... ]]]` triple-bracket link starting
+ * at `from` (the position immediately after the opening `[[[`).
+ *
+ * Conservative termination: stops at the first `]]]`, at a blank line
+ * (two consecutive `\n`), or at EOF. Wikidot's link parser also bails
+ * out on multi-line link bodies, so a `[[[` with no matching `]]]`
+ * inside a paragraph is treated as a one-paragraph region for depth
+ * purposes. The exact semantics of inner content do not matter here —
+ * we only need to ensure block-opener depth is not inflated by `[[` /
+ * `]]` that the lexer would never see as block markers.
+ */
+function findTripleLinkEnd(s: string, from: number): number {
+  for (let i = from; i < s.length; i++) {
+    if (
+      s.charCodeAt(i) === 0x5d &&
+      i + 2 < s.length &&
+      s.charCodeAt(i + 1) === 0x5d &&
+      s.charCodeAt(i + 2) === 0x5d
+    ) {
+      return i + 2;
+    }
+    if (s.charCodeAt(i) === 0x0a && i + 1 < s.length && s.charCodeAt(i + 1) === 0x0a) {
+      return i;
+    }
+  }
+  return s.length - 1;
 }
 
 /**

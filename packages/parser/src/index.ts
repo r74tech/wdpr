@@ -145,6 +145,8 @@ export {
   // Include resolution
   resolveIncludes,
   resolveIncludesAsync,
+  // IfTags source-level preprocessing (run between include expansion and parse)
+  preprocessIftags,
   // Query normalization (for advanced use cases)
   normalizeQuery,
   parseTags,

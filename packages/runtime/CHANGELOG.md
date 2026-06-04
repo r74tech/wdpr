@@ -1,3 +1,13 @@
+## 1.0.3 (2026-06-04)
+
+### 🩹 Fixes
+
+- **runtime:** 狭い viewport で footnote tooltip がはみ出る問題を修正 ([#39](https://github.com/r74tech/wdpr/pull/39))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 1.0.2 (2026-02-17)
 
 ### 🚀 Features

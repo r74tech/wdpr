@@ -37,21 +37,31 @@ export function showTooltipEl(anchor: HTMLElement, tip: HTMLElement): void {
   hideTooltip();
 
   const doc = anchor.ownerDocument;
+  const win = doc.defaultView ?? window;
+  const margin = 8;
 
   tip.style.position = "absolute";
   tip.style.zIndex = "10000";
+  // Cap width to the viewport before measuring so wide content cannot
+  // overflow on narrow (mobile) screens — the horizontal clamps below
+  // cannot place an over-wide box without it bleeding past an edge.
+  tip.style.maxWidth = `${Math.max(0, win.innerWidth - margin * 2)}px`;
   doc.body.appendChild(tip);
 
   const anchorRect = anchor.getBoundingClientRect();
   const tipRect = tip.getBoundingClientRect();
-  const win = doc.defaultView ?? window;
 
   let left = anchorRect.left + win.scrollX;
   let top = anchorRect.bottom + win.scrollY + 4;
 
-  // Keep within viewport
+  // Keep right edge within viewport...
   if (left + tipRect.width > win.innerWidth + win.scrollX) {
-    left = win.innerWidth + win.scrollX - tipRect.width - 8;
+    left = win.innerWidth + win.scrollX - tipRect.width - margin;
+  }
+  // ...but never past the left margin (right-edge clamp can push `left`
+  // negative when the tooltip is nearly viewport-wide).
+  if (left < win.scrollX + margin) {
+    left = win.scrollX + margin;
   }
   if (top + tipRect.height > win.innerHeight + win.scrollY) {
     top = anchorRect.top + win.scrollY - tipRect.height - 4;

@@ -54,11 +54,10 @@ describe("preprocessIftags + parse + render integration", () => {
     expect(html).toContain("[[iftags +foo]]X[[/iftags]]");
   });
 
-  it("falls back to AST-level handling when pageTags is null", () => {
-    // null pageTags → preprocess is a no-op. The AST-level [[iftags]]
-    // block rule still parses the construct (and resolveModules would
-    // evaluate it later). At this layer (no resolveModules call) the
-    // if-tags element ends up in the AST with its body preserved.
+  it("block-level [[iftags]] under pageTags=null is left for the AST resolver", () => {
+    // null pageTags only collapses opener-embedded iftags as a fallback.
+    // Block-level iftags survives in the AST so resolveModules can later
+    // evaluate it against the real tag set.
     const src = `[[iftags +foo]]body[[/iftags]]`;
     const preprocessed = preprocessIftags(src, null);
     expect(preprocessed).toBe(src);

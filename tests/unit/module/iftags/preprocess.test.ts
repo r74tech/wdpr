@@ -3,7 +3,8 @@ import { preprocessIftags } from "../../../../packages/parser/src/parser/rules/b
 
 describe("preprocessIftags", () => {
   describe("pass-through", () => {
-    test("returns source unchanged when pageTags is null", () => {
+    test("block-level [[iftags]] is left intact when pageTags is null", () => {
+      // null mode defers block-level evaluation to the AST resolver.
       const src = "before [[iftags +foo]]inside[[/iftags]] after";
       expect(preprocessIftags(src, null)).toBe(src);
     });
@@ -14,6 +15,60 @@ describe("preprocessIftags", () => {
 
     test("fast-path when source contains no [[ at all", () => {
       expect(preprocessIftags("no brackets here", ["foo"])).toBe("no brackets here");
+    });
+  });
+
+  describe("null mode: opener-embedded fallback", () => {
+    // When pageTags is null the caller could not resolve tag membership.
+    // Opener-embedded iftags still have to collapse text-level (otherwise
+    // the surrounding block opener fails to tokenize). They are evaluated
+    // with an empty-tag assumption: `+tag` fails, `-tag` passes.
+    test("collapses opener-embedded iftags with empty-tag fallback (+tag fails)", () => {
+      const src = `[[div_ class="x" [[iftags +foo]]style="display:none;"[[/iftags]]]]`;
+      expect(preprocessIftags(src, null)).toBe(`[[div_ class="x" ]]`);
+    });
+
+    test("collapses opener-embedded iftags with empty-tag fallback (-tag passes)", () => {
+      const src = `[[div_ class="x" [[iftags -foo]]style="display:none;"[[/iftags]]]]`;
+      expect(preprocessIftags(src, null)).toBe(`[[div_ class="x" style="display:none;"]]`);
+    });
+
+    test("leaves opener-embedded iftags inside a [[code]] raw region intact", () => {
+      const src = `[[code]][[div_ class="x" [[iftags +foo]]X[[/iftags]]]][[/code]]`;
+      expect(preprocessIftags(src, null)).toBe(src);
+    });
+
+    test("quoted attribute containing literal ]] does not break depth tracking", () => {
+      // The `]]` inside a quoted attribute value must not count as a
+      // block-close; otherwise the trailing iftags would be misclassified
+      // as block-level and slip through unchanged.
+      const src = `[[div_ title="hello ]]" [[iftags +foo]]bad[[/iftags]]]]`;
+      expect(preprocessIftags(src, null)).toBe(`[[div_ title="hello ]]" ]]`);
+    });
+
+    test("triple-link [[[ ... ]]] does not inflate bracket depth", () => {
+      // An iftags appearing AFTER a triple-link must remain block-level.
+      const src = `[[[somepage]]]\n[[iftags +foo]]body[[/iftags]]`;
+      expect(preprocessIftags(src, null)).toBe(src);
+    });
+
+    test("handles nested opener-embedded iftags (innermost first)", () => {
+      const src = `[[div_ [[iftags -a]]outer[[iftags +b]]inner[[/iftags]][[/iftags]] ]]`;
+      // With pageTags=null, evaluate against []:
+      //   inner: +b fails -> ""
+      //   then outer: -a passes -> "outer" + "" = "outer"
+      expect(preprocessIftags(src, null)).toBe(`[[div_ outer ]]`);
+    });
+
+    test("malformed unterminated [[ on a preceding line does not swallow later block-level iftags", () => {
+      // Without a depth reset at newline boundaries, the leading
+      // `[[broken` would keep depth > 0 across the newline and the
+      // second line's iftags would be misclassified as opener-embedded.
+      // The depth must reset at `\n` so that block-level iftags after
+      // a malformed line are still left for the AST resolver.
+      const src = `[[broken
+[[iftags +foo]]body[[/iftags]]`;
+      expect(preprocessIftags(src, null)).toBe(src);
     });
   });
 

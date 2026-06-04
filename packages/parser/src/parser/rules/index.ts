@@ -18,7 +18,7 @@
  */
 
 // Types
-export type { ParseContext, RuleResult, BlockRule, InlineRule } from "./types";
+export type { ParseContext, ScopeContext, RuleResult, BlockRule, InlineRule } from "./types";
 export {
   currentToken,
   peekToken,

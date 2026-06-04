@@ -13,11 +13,12 @@ import { parseBlockName } from "../utils";
  * names a block in the excluded set.
  */
 function isExcludedBlockToken(ctx: ParseContext, tokenPos: number): boolean {
-  if (!ctx.excludedBlockNames?.size) return false;
+  const excluded = ctx.scope.excludedBlockNames;
+  if (!excluded?.size) return false;
   const token = ctx.tokens[tokenPos];
   if (token?.type !== "BLOCK_OPEN" && token?.type !== "BLOCK_END_OPEN") return false;
   const nameResult = parseBlockName(ctx, tokenPos + 1);
-  return nameResult !== null && ctx.excludedBlockNames.has(nameResult.name);
+  return nameResult !== null && excluded.has(nameResult.name);
 }
 
 /**
@@ -106,9 +107,9 @@ export function parseInlineUntil(ctx: ParseContext, endType: TokenType): InlineP
 
     // Stop at block close condition if set in context
     // This allows paragraph parser to respect parent block's close condition
-    if (paragraphMode && ctx.blockCloseCondition) {
+    if (paragraphMode && ctx.scope.blockCloseCondition) {
       const checkCtx: ParseContext = { ...ctx, pos };
-      if (ctx.blockCloseCondition(checkCtx)) {
+      if (ctx.scope.blockCloseCondition(checkCtx)) {
         break;
       }
     }
@@ -178,7 +179,7 @@ export function parseInlineUntil(ctx: ParseContext, endType: TokenType): InlineP
           blockNameToken &&
           (blockNameToken.type === "TEXT" || blockNameToken.type === "IDENTIFIER") &&
           blockNameToken.value.toLowerCase() === "footnoteblock" &&
-          ctx.footnoteBlockParsed
+          ctx.scope.footnoteBlockParsed
         ) {
           isInvalidBlockOpen = true;
         }

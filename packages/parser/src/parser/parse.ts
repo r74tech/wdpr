@@ -71,8 +71,6 @@ export class Parser {
       tocEntries: [],
       codeBlocks: [],
       htmlBlocks: [],
-      // State flags
-      footnoteBlockParsed: false,
       bibcites: [],
       // Diagnostics
       diagnostics: [],
@@ -80,6 +78,11 @@ export class Parser {
       blockRules,
       blockFallbackRule,
       inlineRules,
+      // Per-scope state — defaults; child contexts replace the whole
+      // `scope` object when they want to override a field.
+      scope: {
+        footnoteBlockParsed: false,
+      },
     };
   }
 

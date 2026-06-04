@@ -49,7 +49,7 @@ function isNonBoundaryBlockToken(ctx: ParseContext, pos: number): boolean {
     // `[[` followed by no recognizable identifier -- treat as inline.
     return true;
   }
-  if (ctx.excludedBlockNames?.has(nameResult.name)) {
+  if (ctx.scope.excludedBlockNames?.has(nameResult.name)) {
     return true;
   }
   return !KNOWN_BLOCK_NAMES.has(nameResult.name);
@@ -167,8 +167,11 @@ export function parseBlocksUntil(
       ...ctx,
       pos,
       blockRules,
-      blockCloseCondition: closeCondition,
-      excludedBlockNames: excluded,
+      scope: {
+        ...ctx.scope,
+        blockCloseCondition: closeCondition,
+        excludedBlockNames: excluded,
+      },
     };
 
     for (const rule of blockRules) {

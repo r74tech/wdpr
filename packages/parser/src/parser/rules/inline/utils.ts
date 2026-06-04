@@ -1,7 +1,11 @@
 import type { TokenType, Token } from "../../../lexer";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext, InlineRule } from "../types";
-import { BLOCK_START_TOKENS, KNOWN_BLOCK_NAMES } from "../../constants";
+import {
+  BLOCK_START_TOKENS,
+  INDENT_ACCEPTING_BLOCK_NAMES,
+  KNOWN_BLOCK_NAMES,
+} from "../../constants";
 import { parseBlockName } from "../utils";
 
 /**
@@ -38,6 +42,24 @@ function isUnknownBlockToken(ctx: ParseContext, tokenPos: number): boolean {
     return true;
   }
   return !KNOWN_BLOCK_NAMES.has(nameResult.name);
+}
+
+/**
+ * Checks whether the block token at `tokenPos` names a block whose rule
+ * accepts leading whitespace before the opener (`requiresLineStart: false`).
+ *
+ * Used to decide whether a `\n<indent>[[name]]` sequence should end a
+ * paragraph: only when the matching block rule would actually consume
+ * the indented token. Otherwise the boundary check would split the
+ * paragraph for tokens that the block dispatcher then refuses, leaving
+ * literal `[[toc]]` text in a fresh paragraph.
+ */
+function isIndentAcceptingBlock(ctx: ParseContext, tokenPos: number): boolean {
+  const token = ctx.tokens[tokenPos];
+  if (token?.type !== "BLOCK_OPEN" && token?.type !== "BLOCK_END_OPEN") return false;
+  const nameResult = parseBlockName(ctx, tokenPos + 1);
+  if (nameResult === null) return false;
+  return INDENT_ACCEPTING_BLOCK_NAMES.has(nameResult.name);
 }
 
 /**
@@ -198,11 +220,34 @@ export function parseInlineUntil(ctx: ParseContext, endType: TokenType): InlineP
 
       // Stop at double NEWLINE, EOF, or block start token (at line start)
       // But don't stop at [[/span]], [[# name]], [[>/[[<, invalid headings,
-      // excluded block names, or unrecognized block names
+      // excluded block names, or unrecognized block names.
+      //
+      // Most block-start tokens require the strict `lineStart` flag (no
+      // leading whitespace at all): `   # one` is NOT a list item in
+      // Wikidot, `  + Heading` is NOT a heading, etc. We preserve that.
+      //
+      // A subset of `[[...]]` block constructs is the exception:
+      // their rules declare `requiresLineStart: false`, so Wikidot
+      // accepts leading whitespace before them and `[[/<name>]]` at
+      // arbitrary indentation also has to close such a block. The
+      // `lookAhead` walk above already consumed the NEWLINE and any
+      // leading WHITESPACE, so we know `nextMeaningfulToken` sits at
+      // the semantic start of the next line. We relax the `lineStart`
+      // check only when the block name's rule will actually accept the
+      // indented opener ({@link INDENT_ACCEPTING_BLOCK_NAMES});
+      // otherwise (e.g. `[[toc]]`, `[[footnoteblock]]`, align markers)
+      // the dispatcher would reject the indented token anyway and we
+      // would end up splitting the paragraph only to leave literal
+      // `[[…]]` text behind.
+      const isIndentedBlockOpener =
+        nextMeaningfulToken &&
+        (nextMeaningfulToken.type === "BLOCK_OPEN" ||
+          nextMeaningfulToken.type === "BLOCK_END_OPEN") &&
+        isIndentAcceptingBlock(ctx, pos + lookAhead);
       const isBlockStart =
         nextMeaningfulToken &&
         BLOCK_START_TOKENS.includes(nextMeaningfulToken.type) &&
-        nextMeaningfulToken.lineStart &&
+        (nextMeaningfulToken.lineStart || isIndentedBlockOpener) &&
         !isOrphanCloseSpan &&
         !isAnchorName &&
         !isInvalidBlockOpen &&

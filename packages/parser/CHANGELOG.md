@@ -1,3 +1,13 @@
+## 3.1.0 (2026-06-04)
+
+### 🚀 Features
+
+- **parser:** opener-embedded [[iftags]]をparse()で解決 ([#47](https://github.com/r74tech/wdpr/pull/47))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 # 3.0.0 (2026-06-04)
 
 ### 🚀 Features

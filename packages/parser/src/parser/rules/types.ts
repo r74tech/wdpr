@@ -16,7 +16,32 @@ export interface ParseContext {
   tocEntries: TocEntry[];
   codeBlocks: CodeBlockData[];
   htmlBlocks: string[];
-  // State flags
+  /**
+   * Used by the footnote-block rule to reject duplicate occurrences.
+   *
+   * **Scope is per spread copy of `ParseContext`, not document-global.**
+   * `parseBlocksUntil` creates a fresh `{ ...ctx, pos, ... }` on every
+   * iteration, so the flag does not propagate between sibling rules in
+   * a body, between sibling bodies, or up to the top-level parser.
+   *
+   * Practical effect today:
+   * - Two `[[footnoteblock]]` at the top level: the second one fails
+   *   (the top-level dispatch hands the parser's own `ctx` to rules,
+   *   so mutations are visible to the next top-level iteration).
+   * - Two `[[footnoteblock]]` inside the same body, or across nested
+   *   bodies: both currently succeed, even though Wikidot's
+   *   "first-only" rule should reject the duplicate.
+   *
+   * Fixing the cross-scope case requires either an AST-level dedup pass
+   * after parsing (similar to the auto-append walk) or a shared-state
+   * design with proper rollback for speculative parses. Tracked
+   * separately; this flag intentionally keeps the original primitive
+   * semantics to avoid regressing the top-level duplicate-rejection
+   * test fixtures.
+   *
+   * The auto-append decision in `Parser.parse` deliberately ignores
+   * this flag and walks the final AST instead — see `containsFootnoteBlock`.
+   */
   footnoteBlockParsed: boolean;
   // Bibliography citation labels collected during parsing
   bibcites: string[];

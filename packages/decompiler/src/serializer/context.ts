@@ -84,12 +84,22 @@ export class SerializeContext {
    *
    * A block-tier pending blank line is flushed; a paragraph-tier pending
    * blank line is cleared (paragraph → block needs no separator).
+   *
+   * If the previous push left the cursor mid-line (e.g. bare inline
+   * content emitted without a trailing newline, as happens when the
+   * parser's `suppressDivAdjacentParagraphs` strips the `<p>` wrapper
+   * before a `[[div]]`), prepend a newline so the block syntax begins
+   * at column 0 — otherwise the re-parser sees `text.[[div]]` and
+   * downgrades the div to inline text.
    */
   pushBlockLine(text: string): void {
     if (this._pendingBlankLine === "block") {
       this.flushPendingBlankLine();
     } else {
       this.clearPendingBlankLine();
+    }
+    if (!this.atLineStart) {
+      this.buffer.push(this.newline);
     }
     this.buffer.push(text + this.newline);
     this.atLineStart = true;

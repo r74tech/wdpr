@@ -1,0 +1,5 @@
+Body[[footnote]]Foot 1[[/footnote]] text.
+
+[[div class="notes"]]
+[[footnoteblock]]
+[[/div]]

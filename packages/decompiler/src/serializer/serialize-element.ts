@@ -156,14 +156,24 @@ export function serializeElement(ctx: SerializeContext, element: Element): void 
 /**
  * Serialize an array of AST elements in order.
  *
- * The last footnote-block element is annotated with `_isLastElement` so the
- * serializer can suppress the implicit default footnote block.
+ * `topLevel` controls whether the trailing implicit-default footnote
+ * block is allowed to be suppressed. The top-level `serialize()` entry
+ * point passes `true` (default suppression matches the parser's
+ * auto-append). Every nested caller — collapsible bodies, list items,
+ * table cells, tab panels, definition-list entries, etc. — defaults to
+ * `false` so that an explicit `[[footnoteblock]]` inside a container is
+ * always preserved on serialization; otherwise it would round-trip into
+ * a silent removal.
  */
-export function serializeElements(ctx: SerializeContext, elements: Element[]): void {
+export function serializeElements(
+  ctx: SerializeContext,
+  elements: Element[],
+  topLevel = false,
+): void {
   for (let i = 0; i < elements.length; i++) {
     const el = elements[i]!;
     // Tag the last footnote-block so it can be omitted if implicit
-    if (el.element === "footnote-block" && i === elements.length - 1) {
+    if (topLevel && el.element === "footnote-block" && i === elements.length - 1) {
       (el as Record<string, unknown>)._isLastElement = true;
     }
     serializeElement(ctx, el);

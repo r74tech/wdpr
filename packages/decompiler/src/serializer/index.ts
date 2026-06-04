@@ -16,7 +16,7 @@ import { serializeElements, setCurrentTree } from "./serialize-element";
 export function serialize(tree: SyntaxTree, options?: SerializeOptions): string {
   const ctx = new SerializeContext(options);
   setCurrentTree(tree);
-  serializeElements(ctx, tree.elements);
+  serializeElements(ctx, tree.elements, /* topLevel */ true);
 
   let output = ctx.getOutput();
   // Collapse runs of 3+ newlines down to 2 (one blank line)

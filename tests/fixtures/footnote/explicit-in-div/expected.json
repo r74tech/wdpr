@@ -1,0 +1,57 @@
+{
+  "elements": [
+    {
+      "element": "text",
+      "data": "Body"
+    },
+    {
+      "element": "footnote"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "text",
+      "data": "text"
+    },
+    {
+      "element": "text",
+      "data": "."
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {
+          "class": "notes"
+        },
+        "elements": [
+          {
+            "element": "footnote-block",
+            "data": {
+              "title": null,
+              "hide": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "footnotes": [
+    [
+      {
+        "element": "text",
+        "data": "Foot"
+      },
+      {
+        "element": "text",
+        "data": " "
+      },
+      {
+        "element": "text",
+        "data": "1"
+      }
+    ]
+  ]
+}

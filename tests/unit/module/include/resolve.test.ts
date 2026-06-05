@@ -300,6 +300,29 @@ describe("resolveIncludes", () => {
       const source = "[[include tmpl |cap=[[[a]]]]]\n[[include tmpl |cap=[[[b]]]]]";
       expect(resolveIncludes(source, fetcher)).toBe("<<[[[a]]]>>\n<<[[[b]]]>>");
     });
+
+    test("multi-line directive closes when the terminating ]] is trailed by stray ]", () => {
+      // When a final attribute value ends in `]` and the directive's
+      // closing `]]` follows without a separator (`--]]]`), the first
+      // `]]` terminates the directive (capturing `--` as the value);
+      // the trailing `]` outside the directive is preserved as raw text.
+      const source = "[[include tmpl\n|cap= --]]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<-->>]");
+    });
+
+    test("multi-line directive with stray ]] tail and following content", () => {
+      // The trailing `]` after the directive close must remain in the
+      // output (not be swallowed by the directive).
+      const source = "[[include tmpl\n|cap= --]]]\n\nafter";
+      expect(resolveIncludes(source, fetcher)).toBe("<<-->>]\n\nafter");
+    });
+
+    test("multi-line directive with multiple stray ] characters", () => {
+      // `]]]]]` at the end: the first `]]` drives depth to zero; the
+      // remaining `]]]` is plain text outside the directive.
+      const source = "[[include tmpl\n|cap= x]]]]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<x>>]]]");
+    });
   });
 
   describe("default-value idiom (duplicate key)", () => {

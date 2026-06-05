@@ -172,15 +172,26 @@ interface IncludeDirectiveMatch {
 
 /**
  * Returns `true` when everything between `pos` and the next newline (or
- * end of string) is whitespace — i.e. `pos` sits at the end of its line.
+ * end of string) is whitespace or stray `]` characters — i.e. `pos` sits
+ * at the end of its line, optionally trailed by extra `]` that spilled
+ * over from the directive's last attribute value.
+ *
+ * Wikidot wikitext occasionally contains directives whose final attribute
+ * value ends in `]`, e.g. `[[include foo |key=--]|]]`. When the closing
+ * `]]` is written without a separator (`[[include foo |key=--]]]`), the
+ * first `]]` after the value is the directive terminator and the
+ * remaining `]` belongs outside the directive. Without tolerating those
+ * trailing `]`, the scanner would fail to close the directive at line
+ * end and drop the whole include to raw text.
  */
 function isRestOfLineBlank(source: string, pos: number): boolean {
   for (let i = pos; i < source.length; i++) {
     const ch = source[i];
     if (ch === "\n") return true;
-    if (ch !== " " && ch !== "\t" && ch !== "\r") return false;
+    if (ch === " " || ch === "\t" || ch === "\r" || ch === "]") continue;
+    return false;
   }
-  return true; // reached EOF with only whitespace
+  return true; // reached EOF with only whitespace / trailing `]`
 }
 
 /**

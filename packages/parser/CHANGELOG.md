@@ -1,3 +1,13 @@
+## 3.1.1 (2026-06-05)
+
+### 🩹 Fixes
+
+- **parser:** [[include]] ディレクティブの終端 ]] 直後の余分な ] を許容 ([#48](https://github.com/r74tech/wdpr/pull/48))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 3.1.0 (2026-06-04)
 
 ### 🚀 Features

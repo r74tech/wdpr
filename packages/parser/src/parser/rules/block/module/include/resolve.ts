@@ -171,27 +171,34 @@ interface IncludeDirectiveMatch {
 }
 
 /**
+ * Returns `true` when the directive's inner content (the text between
+ * `[[include ` and the closing `]]`) carries an attribute section —
+ * either pipe-delimited (`|key=value`) or space-separated after the
+ * page name (`tmpl key=value`). A bare page name with no following
+ * argument is reported as having no attributes so that a stray `]`
+ * after the closing `]]` is not absorbed into the page reference.
+ */
+function hasAttributes(innerSoFar: string): boolean {
+  if (innerSoFar.includes("|")) return true;
+  const trimmed = innerSoFar.trimStart();
+  // Match the first whitespace run; anything non-whitespace after it
+  // counts as a space-separated parameter segment.
+  const ws = trimmed.search(/\s/);
+  if (ws === -1) return false;
+  return trimmed.slice(ws).trim().length > 0;
+}
+
+/**
  * Returns `true` when everything between `pos` and the next newline (or
- * end of string) is whitespace or stray `]` characters — i.e. `pos` sits
- * at the end of its line, optionally trailed by extra `]` that spilled
- * over from the directive's last attribute value.
- *
- * Wikidot wikitext occasionally contains directives whose final attribute
- * value ends in `]`, e.g. `[[include foo |key=--]|]]`. When the closing
- * `]]` is written without a separator (`[[include foo |key=--]]]`), the
- * first `]]` after the value is the directive terminator and the
- * remaining `]` belongs outside the directive. Without tolerating those
- * trailing `]`, the scanner would fail to close the directive at line
- * end and drop the whole include to raw text.
+ * end of string) is whitespace — i.e. `pos` sits at the end of its line.
  */
 function isRestOfLineBlank(source: string, pos: number): boolean {
   for (let i = pos; i < source.length; i++) {
     const ch = source[i];
     if (ch === "\n") return true;
-    if (ch === " " || ch === "\t" || ch === "\r" || ch === "]") continue;
-    return false;
+    if (ch !== " " && ch !== "\t" && ch !== "\r") return false;
   }
-  return true; // reached EOF with only whitespace / trailing `]`
+  return true; // reached EOF with only whitespace
 }
 
 /**
@@ -263,6 +270,28 @@ function scanIncludeDirectives(source: string): IncludeDirectiveMatch[] {
         depth--;
         i += 2;
         if (depth <= 0) {
+          // Wikidot is greedy *within an attribute value*: any `]`
+          // that immediately follows the `]]` driving depth to zero
+          // belongs to the directive's final attribute value (e.g.
+          // `[[include foo |k=--]]]` keeps `--]` as the value).
+          // Only extend the close when the directive actually has an
+          // attribute section — a plain `[[include my-page]]]` must
+          // resolve `my-page` and leave the trailing `]` outside,
+          // otherwise the page name would absorb the bracket and the
+          // fetch would fail.
+          //
+          // A directive has attributes when it contains a `|` segment
+          // separator, OR when the page-name token is followed by
+          // additional non-whitespace content (space-separated
+          // parameters like `[[include foo bar=baz]]`). Using `=`
+          // alone is unsafe because page names may legitimately
+          // contain `=` (`[[include foo=bar]]`).
+          const innerSoFar = source.slice(contentStart, closeStart);
+          if (hasAttributes(innerSoFar)) {
+            while (i < source.length && source[i] === "]") {
+              i++;
+            }
+          }
           const onOpenerLine = firstNewline === -1 || closeStart < firstNewline;
           if (onOpenerLine || isRestOfLineBlank(source, i)) {
             closeEnd = i;

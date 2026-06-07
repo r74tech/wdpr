@@ -301,27 +301,61 @@ describe("resolveIncludes", () => {
       expect(resolveIncludes(source, fetcher)).toBe("<<[[[a]]]>>\n<<[[[b]]]>>");
     });
 
-    test("multi-line directive closes when the terminating ]] is trailed by stray ]", () => {
+    test("multi-line directive captures trailing ] into the final attribute value", () => {
       // When a final attribute value ends in `]` and the directive's
-      // closing `]]` follows without a separator (`--]]]`), the first
-      // `]]` terminates the directive (capturing `--` as the value);
-      // the trailing `]` outside the directive is preserved as raw text.
+      // closing `]]` follows without a separator (`--]]]`), Wikidot
+      // greedily consumes the trailing `]` into the value — so the
+      // attribute is `--]` and the close lands on the last `]]`.
       const source = "[[include tmpl\n|cap= --]]]";
-      expect(resolveIncludes(source, fetcher)).toBe("<<-->>]");
+      expect(resolveIncludes(source, fetcher)).toBe("<<--]>>");
     });
 
-    test("multi-line directive with stray ]] tail and following content", () => {
-      // The trailing `]` after the directive close must remain in the
-      // output (not be swallowed by the directive).
+    test("multi-line directive with trailing ] followed by other content", () => {
+      // After the greedy close, source past the directive is preserved
+      // intact (no stray `]` left outside).
       const source = "[[include tmpl\n|cap= --]]]\n\nafter";
-      expect(resolveIncludes(source, fetcher)).toBe("<<-->>]\n\nafter");
+      expect(resolveIncludes(source, fetcher)).toBe("<<--]>>\n\nafter");
     });
 
-    test("multi-line directive with multiple stray ] characters", () => {
-      // `]]]]]` at the end: the first `]]` drives depth to zero; the
-      // remaining `]]]` is plain text outside the directive.
+    test("multi-line directive collapses an entire ]]]+ run into the close", () => {
+      // `]]]]]`: the close consumes all trailing `]`, so the value
+      // captures `x]]]` and nothing is left outside the directive.
       const source = "[[include tmpl\n|cap= x]]]]]";
-      expect(resolveIncludes(source, fetcher)).toBe("<<x>>]]]");
+      expect(resolveIncludes(source, fetcher)).toBe("<<x]]]>>");
+    });
+
+    test("inline directive captures trailing ] before whitespace into the value", () => {
+      // Same greedy behaviour on a single-line directive: the `]` after
+      // `]]` is consumed into the value, not left outside.
+      const source = "[[include tmpl |cap=x]]] rest";
+      expect(resolveIncludes(source, fetcher)).toBe("<<x]>> rest");
+    });
+
+    test("plain include (no attributes) keeps a trailing ] outside the directive", () => {
+      // Without an attribute section the page name must not absorb a
+      // stray `]`; otherwise the fetcher would look up `tmpl]`.
+      // (`{$cap}` stays literal because no `cap=` was supplied.)
+      const source = "[[include tmpl]]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<{$cap}>>]");
+    });
+
+    test("plain include whose page name contains = keeps a trailing ] outside", () => {
+      // `=` may legitimately occur inside a page name; presence of `=`
+      // alone must not enable greedy absorption.
+      const custom = (ref: { site: string | null; page: string }) =>
+        ref.page === "foo=bar" ? "OK" : `MISS:${ref.page}`;
+      const source = "[[include foo=bar]]]";
+      expect(resolveIncludes(source, custom)).toBe("OK]");
+    });
+
+    test("space-separated parameters do trigger greedy absorption", () => {
+      // `[[include foo bar=--]]]`: the space after the page name marks
+      // an attribute section, so greedy absorption applies and the
+      // attribute captures `--]`.
+      const custom = (ref: { site: string | null; page: string }) =>
+        ref.page === "foo" ? `<<${"{$bar}"}>>` : null;
+      const source = "[[include foo bar=--]]]";
+      expect(resolveIncludes(source, custom)).toBe("<<--]>>");
     });
   });
 

@@ -13,6 +13,7 @@ import {
 import { buildTableOfContents } from "./toc";
 import { walkElements } from "./rules/block/module/walk";
 import { preprocessIftags } from "./rules/block/module/iftags/preprocess";
+import { preprocessExpr } from "./preprocess/expr";
 
 /**
  * Configuration for the {@link Parser} and the {@link parse} function.
@@ -273,12 +274,18 @@ export class Parser {
  * @since 2.0.0
  */
 export function parse(source: string, options?: ParserOptions): ParseResult {
+  // Collapse opener-embedded `[[#if cond | then | else ]]` text-level so
+  // the embedded conditional does not break an outer block's opener.
+  // Runs unconditionally — the condition is part of the source itself,
+  // no external context is needed. Unresolvable directives are left as-is.
+  const ifProcessed = preprocessExpr(source);
+
   // Collapse opener-embedded [[iftags]] before tokenization. Only run when
   // the caller explicitly opted in via the `pageTags` option (key present).
   // `undefined` is treated as "key not given" to keep backward compat for
   // callers that destructure or build options dynamically.
   const iftagsProcessed =
-    options?.pageTags !== undefined ? preprocessIftags(source, options.pageTags) : source;
+    options?.pageTags !== undefined ? preprocessIftags(ifProcessed, options.pageTags) : ifProcessed;
   const preprocessed = preprocess(iftagsProcessed);
   const tokens = tokenize(preprocessed, { trackPositions: options?.trackPositions });
   return new Parser(tokens, options).parse();

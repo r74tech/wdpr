@@ -34,6 +34,22 @@ export interface TagCondition {
 
   /** Tags where at least one must be present (bare `tag` syntax, OR logic) */
   optional: string[];
+
+  /**
+   * `true` when the condition contained a bare `+` token (a `+` prefix with
+   * no tag name). Wikidot treats `+` alone as "require an unnamed tag",
+   * which can never be satisfied, so a `+`-only condition evaluates to
+   * `false` (Hide Always).
+   */
+  hasEmptyRequired?: boolean;
+
+  /**
+   * `true` when the condition contained a bare `-` token (a `-` prefix with
+   * no tag name). Wikidot treats `-` alone as "forbid nothing", which is
+   * trivially satisfied — so a `-`-only condition evaluates to `true`
+   * (Show Always).
+   */
+  hasEmptyForbidden?: boolean;
 }
 
 /**

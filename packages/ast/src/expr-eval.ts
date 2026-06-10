@@ -53,6 +53,20 @@ function isTruthyNum(n: number): boolean {
 export type ExprResult = { success: true; value: number } | { success: false; error: string };
 
 /**
+ * Format a numeric expression result for display.
+ *
+ * Uses JavaScript's default `String(n)` so the full precision of the
+ * computed value is preserved (e.g. `1/3` becomes `"0.3333333333333333"`,
+ * matching the `Number` → `String` conversion rather than truncating to
+ * a fixed number of decimals). Used by both the inline renderer and the
+ * opener preprocess so the same expression produces the same string
+ * regardless of where it appears in the source.
+ */
+export function formatExprValue(n: number): string {
+  return String(n);
+}
+
+/**
  * Evaluate a mathematical expression string and return the result.
  *
  * The expression is tokenized, parsed with a recursive descent parser,
@@ -110,6 +124,7 @@ type TokenKind =
   | "GE"
   | "EQ"
   | "NE"
+  | "BANG"
   | "EOF";
 
 /** A single token produced by the expression tokenizer. */
@@ -200,6 +215,15 @@ function tokenize(expr: string): ExprToken[] {
     if (ch === "<" && expr[i + 1] === ">") {
       tokens.push({ kind: "NE", value: "<>" });
       i += 2;
+      continue;
+    }
+
+    // Unary logical NOT (Wikidot's `!` operator). The two-character `!=`
+    // has already been handled above, so a bare `!` here is always
+    // unary not.
+    if (ch === "!") {
+      tokens.push({ kind: "BANG", value: "!" });
+      i++;
       continue;
     }
 
@@ -316,7 +340,8 @@ class ExprParser {
   }
 
   private parseNot(): number {
-    if (this.current().kind === "IDENTIFIER" && this.current().value === "not") {
+    const cur = this.current();
+    if ((cur.kind === "IDENTIFIER" && cur.value === "not") || cur.kind === "BANG") {
       this.advance();
       const value = this.parseNot();
       // Treat 0 and NaN as falsy
@@ -424,6 +449,13 @@ class ExprParser {
       this.advance();
       return +this.parseUnary();
     }
+    // `!` here applies when the parser descends past the top-level
+    // `parseNot` (e.g. on the RHS of a comparison: `a != !(b)`).
+    if (kind === "BANG") {
+      this.advance();
+      const value = this.parseUnary();
+      return isTruthyNum(value) ? 0 : 1;
+    }
 
     return this.parsePrimary();
   }
@@ -455,7 +487,11 @@ class ExprParser {
         return this.parseFunctionCall(name);
       }
 
-      // Constants (not supported in Wikidot, but could be added)
+      // Wikidot accepts `true` / `false` as boolean literals inside
+      // `[[#expr]]` / `[[#ifexpr]]` (lowercased above by the tokenizer).
+      if (name === "true") return 1;
+      if (name === "false") return 0;
+
       throw new Error(`undefined constant "${name}"`);
     }
 

@@ -1,3 +1,13 @@
+## 3.1.2 (2026-06-10)
+
+### 🩹 Fixes
+
+- **parser:** [[include]] の終端 ]] 直後の余分な ] を value 側に吸収 ([#49](https://github.com/r74tech/wdpr/pull/49))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 3.1.1 (2026-06-05)
 
 ### 🩹 Fixes

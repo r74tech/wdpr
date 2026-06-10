@@ -112,4 +112,8 @@ export { STYLE_SLOT_PREFIX } from "./constants";
 
 // Wikitext settings
 export type { WikitextMode, WikitextSettings } from "./settings";
+
+// Expression evaluator (shared by parser preprocess and render).
+export { evaluateExpression, isTruthy, formatExprValue } from "./expr-eval";
+export type { ExprResult } from "./expr-eval";
 export { createSettings, DEFAULT_SETTINGS } from "./settings";

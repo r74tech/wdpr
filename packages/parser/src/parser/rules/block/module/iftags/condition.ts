@@ -26,6 +26,8 @@ export function parseTagCondition(condition: string): TagCondition {
   const required: string[] = [];
   const forbidden: string[] = [];
   const optional: string[] = [];
+  let hasEmptyRequired = false;
+  let hasEmptyForbidden = false;
 
   const parts = condition.trim().split(/\s+/);
 
@@ -35,15 +37,17 @@ export function parseTagCondition(condition: string): TagCondition {
     if (part.startsWith("+")) {
       const tag = part.slice(1);
       if (tag) required.push(tag);
+      else hasEmptyRequired = true;
     } else if (part.startsWith("-")) {
       const tag = part.slice(1);
       if (tag) forbidden.push(tag);
+      else hasEmptyForbidden = true;
     } else {
       optional.push(part);
     }
   }
 
-  return { required, forbidden, optional };
+  return { required, forbidden, optional, hasEmptyRequired, hasEmptyForbidden };
 }
 
 /**
@@ -54,13 +58,28 @@ export function parseTagCondition(condition: string): TagCondition {
  * @returns true if condition is satisfied
  */
 export function evaluateTagCondition(condition: TagCondition, pageTags: string[]): boolean {
-  // Empty condition = never match (supercommentout)
-  if (
+  const noNamedTokens =
     condition.required.length === 0 &&
     condition.forbidden.length === 0 &&
-    condition.optional.length === 0
-  ) {
+    condition.optional.length === 0;
+
+  // No tokens at all = supercommentout (`[[iftags]]`) → never match.
+  if (noNamedTokens && !condition.hasEmptyRequired && !condition.hasEmptyForbidden) {
     return false;
+  }
+
+  // A bare `+` (with or without other tokens) means "require an unnamed
+  // tag", which can never be satisfied — the whole condition is Hide.
+  if (condition.hasEmptyRequired) {
+    return false;
+  }
+
+  // `[[iftags - ]]` — bare `-` token alone means "forbid nothing", which
+  // is trivially true, so this is Show Always. When combined with other
+  // tokens the bare `-` adds no constraint, so we fall through to the
+  // standard evaluation below.
+  if (condition.hasEmptyForbidden && noNamedTokens) {
+    return true;
   }
 
   const tagSet = new Set(pageTags);

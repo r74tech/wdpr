@@ -16,7 +16,7 @@
 import type { Element, ExprData, IfCondData, IfExprData } from "@wdprlib/ast";
 import type { RenderContext } from "../context";
 import { renderElements } from "../render";
-import { evaluateExpression, isTruthy } from "../utils/expr-eval";
+import { evaluateExpression, formatExprValue, isTruthy } from "@wdprlib/ast";
 
 /**
  * Render a `[[#expr]]` element.
@@ -31,7 +31,7 @@ import { evaluateExpression, isTruthy } from "../utils/expr-eval";
 export function renderExpr(ctx: RenderContext, data: ExprData): void {
   const result = evaluateExpression(data.expression);
   if (result.success) {
-    ctx.pushEscaped(formatNumber(result.value));
+    ctx.pushEscaped(formatExprValue(result.value));
   } else if (result.error !== "empty expression") {
     ctx.pushEscaped(`run-time error: ${result.error}`);
   }
@@ -99,22 +99,4 @@ function renderBranchElements(ctx: RenderContext, elements: Element[]): void {
   }
   // Render only up to the last non-whitespace element
   renderElements(ctx, elements.slice(0, lastIdx + 1));
-}
-
-/**
- * Format a numeric result for display, matching Wikidot behavior.
- *
- * Integers are displayed without a decimal point. Floating-point values
- * are shown with up to 6 decimal places, with trailing zeros stripped.
- *
- * @param n - The number to format.
- * @returns Formatted string representation.
- */
-function formatNumber(n: number): string {
-  // Wikidot displays integers without decimal point
-  if (Number.isInteger(n)) {
-    return String(n);
-  }
-  // For decimals, show up to 6 decimal places without trailing zeros
-  return n.toFixed(6).replace(/\.?0+$/, "");
 }

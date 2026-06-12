@@ -89,7 +89,13 @@ export function renderImage(ctx: RenderContext, data: ImageData): void {
   // Wrap in alignment container if needed
   if (data.alignment) {
     const alignClass = getAlignmentClass(data.alignment.align, data.alignment.float);
-    ctx.push(`<div class="image-container ${alignClass}">`);
+    if (alignClass) {
+      ctx.push(`<div class="image-container ${alignClass}">`);
+    } else {
+      // `[[f=image]]` (float + center) has no dedicated class in Wikidot;
+      // the container is emitted with the base class only.
+      ctx.push(`<div class="image-container">`);
+    }
     ctx.push(output);
     ctx.push("</div>");
   } else {
@@ -112,7 +118,9 @@ function getAlignmentClass(align: string, isFloat: boolean): string {
       case "right":
         return "floatright";
       case "center":
-        return "floatcenter";
+        // Wikidot does not emit a `floatcenter` class; `[[f=image]]`
+        // renders the bare `<div class="image-container">` instead.
+        return "";
       default:
         return `float${align}`;
     }

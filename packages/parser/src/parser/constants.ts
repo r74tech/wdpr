@@ -101,7 +101,13 @@ export const KNOWN_BLOCK_NAMES: ReadonlySet<string> = new Set<string>([
   "footnote",
   "eref",
   "$",
-  "image",
+  // `image` is intentionally absent. Wikidot's Paragraph rule skips lines
+  // that contain an `<img>` token (see the `$skip` list in
+  // `Text/Wiki/Parse/Default/Paragraph.php`), so an `[[image]]` at line
+  // start does not terminate the current paragraph. The resulting
+  // paragraph is then unwrapped by `unwrapImageParagraphs` in postprocess
+  // so the `<img>` ends up as a direct child of its enclosing container
+  // without an interposing `<p>`.
   "gallery",
   "file",
 ]);

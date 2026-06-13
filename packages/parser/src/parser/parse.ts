@@ -9,6 +9,8 @@ import {
   mergeSpanStripParagraphs,
   cleanInternalFlags,
   suppressDivAdjacentParagraphs,
+  splitAlignedImageParagraphs,
+  unwrapImageParagraphs,
 } from "./postprocess";
 import { buildTableOfContents } from "./toc";
 import { walkElements } from "./rules/block/module/walk";
@@ -127,8 +129,17 @@ export class Parser {
     // Wikidot: paragraphs directly adjacent to div blocks lose <p> wrapping
     const divProcessed = suppressDivAdjacentParagraphs(mergedChildren);
 
+    // Wikidot's Paragraph rule skips image-bearing lines. Aligned images
+    // render as block-level `<div class="image-container">…</div>` so the
+    // surrounding paragraph is split first (text segments stay wrapped,
+    // the `<div>` becomes a sibling), then the remaining plain-image
+    // paragraphs have their `<p>` removed so the `<img>` lands directly
+    // inside its enclosing container.
+    const alignedSplit = splitAlignedImageParagraphs(divProcessed);
+    const imageProcessed = unwrapImageParagraphs(alignedSplit);
+
     // Clean internal flags from AST
-    const cleanedChildren = cleanInternalFlags(divProcessed);
+    const cleanedChildren = cleanInternalFlags(imageProcessed);
 
     // Add a default footnote-block at the document end if no explicit
     // `[[footnoteblock]]` exists anywhere in the final AST.

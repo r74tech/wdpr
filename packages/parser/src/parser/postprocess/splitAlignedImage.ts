@@ -139,9 +139,7 @@ function splitOneParagraph(elements: readonly Element[]): Element[] {
 export function splitAlignedImageParagraphs(elements: readonly Element[]): Element[] {
   const out: Element[] = [];
   for (const el of elements) {
-    const processed = mapElementChildren(el, (children) =>
-      splitAlignedImageParagraphs(children),
-    );
+    const processed = mapElementChildren(el, (children) => splitAlignedImageParagraphs(children));
     if (isParagraphContainer(processed)) {
       const containsAligned = processed.data.elements.some(isAlignedImage);
       if (containsAligned) {

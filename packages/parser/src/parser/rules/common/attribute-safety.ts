@@ -1,14 +1,4 @@
-/**
- * Common utilities shared between block and inline rules
- */
-
-import type { ParseContext } from "./types";
-
-// =============================================================================
-// Attribute Safety
-// =============================================================================
-
-// Event handler attributes (on*) are blocked entirely
+// Event handler attributes (on*) are blocked entirely.
 const SAFE_ATTRIBUTES = new Set([
   "accept",
   "align",
@@ -96,7 +86,7 @@ const SAFE_ATTRIBUTES = new Set([
 ]);
 
 /**
- * Filter unsafe HTML attributes (blocks event handlers, allows safe attributes + aria-* / data-*)
+ * Filter unsafe HTML attributes (blocks event handlers, allows safe attributes + aria-* / data-*).
  */
 export function filterUnsafeAttributes(attrs: Record<string, string>): Record<string, string> {
   const result: Record<string, string> = {};
@@ -108,7 +98,7 @@ export function filterUnsafeAttributes(attrs: Record<string, string>): Record<st
       continue;
     }
     if (!SAFE_ATTRIBUTES.has(lower)) continue;
-    // Wikidot prefixes user-set IDs with "u-"
+    // Wikidot prefixes user-set IDs with "u-".
     if (lower === "id") {
       result[key] = value.startsWith("u-") ? value : `u-${value}`;
       continue;
@@ -116,40 +106,4 @@ export function filterUnsafeAttributes(attrs: Record<string, string>): Record<st
     result[key] = value;
   }
   return result;
-}
-
-// =============================================================================
-// Block Name Parsing
-// =============================================================================
-
-/**
- * Parse block name from tokens (handles [[name or [[/name)
- * Handles underscore suffix like "div_" which may be tokenized as [IDENTIFIER "div"] [UNDERSCORE "_"]
- */
-export function parseBlockName(
-  ctx: ParseContext,
-  startPos: number,
-): { name: string; consumed: number } | null {
-  let pos = startPos;
-  let consumed = 0;
-
-  // Wikidot does NOT allow whitespace between [[ and block name
-  // e.g. [[ code ]] is treated as plain text, not a code block
-  const token = ctx.tokens[pos];
-  if (!token || (token.type !== "TEXT" && token.type !== "IDENTIFIER")) {
-    return null;
-  }
-
-  // Base name
-  let name = token.value.toLowerCase();
-  consumed++;
-  pos++;
-
-  // Check for underscore suffix (e.g., "div_" -> "div" + "_")
-  if (ctx.tokens[pos]?.type === "UNDERSCORE") {
-    name += "_";
-    consumed++;
-  }
-
-  return { name, consumed };
 }

@@ -19,8 +19,8 @@
  * @module
  */
 import type { Element } from "@wdprlib/ast";
-import type { BlockRule, ParseContext, RuleResult } from "../types";
-import { currentToken } from "../types";
+import type { BlockRule, ParseContext, RuleResult } from "../../types";
+import { parseContentSeparatorSyntax } from "./syntax";
 
 /**
  * Block rule for the content separator (`====`).
@@ -33,38 +33,8 @@ export const contentSeparatorRule: BlockRule = {
   requiresLineStart: true,
 
   parse(ctx: ParseContext): RuleResult<Element> {
-    const first = currentToken(ctx);
-
-    if (!first.lineStart) {
-      return { success: false };
-    }
-
-    // Count consecutive = tokens at line start
-    let pos = ctx.pos;
-    let equalsCount = 0;
-
-    while (ctx.tokens[pos]?.type === "EQUALS") {
-      equalsCount++;
-      pos++;
-    }
-
-    // Need at least 4 equals signs for content separator
-    if (equalsCount < 4) {
-      return { success: false };
-    }
-
-    // Must be followed by newline or EOF
-    const nextToken = ctx.tokens[pos];
-    if (nextToken && nextToken.type !== "NEWLINE" && nextToken.type !== "EOF") {
-      return { success: false };
-    }
-
-    let consumed = equalsCount;
-
-    // Consume newline if present
-    if (ctx.tokens[pos]?.type === "NEWLINE") {
-      consumed++;
-    }
+    const syntax = parseContentSeparatorSyntax(ctx);
+    if (!syntax) return { success: false };
 
     return {
       success: true,
@@ -73,7 +43,7 @@ export const contentSeparatorRule: BlockRule = {
           element: "content-separator",
         },
       ],
-      consumed,
+      consumed: syntax.consumed,
     };
   },
 };

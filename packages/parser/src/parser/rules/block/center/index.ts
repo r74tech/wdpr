@@ -20,9 +20,9 @@
  * @module
  */
 import type { Element } from "@wdprlib/ast";
-import type { BlockRule, ParseContext, RuleResult } from "../types";
-import { currentToken } from "../types";
-import { parseInlineUntil } from "../inline/utils";
+import type { BlockRule, ParseContext, RuleResult } from "../../types";
+import { parseInlineUntil } from "../../inline/utils";
+import { parseCenterOpen } from "./open";
 
 /**
  * Block rule for single-line center alignment (`= text`).
@@ -35,27 +35,12 @@ export const centerRule: BlockRule = {
   requiresLineStart: true,
 
   parse(ctx: ParseContext): RuleResult<Element> {
-    const marker = currentToken(ctx);
-
-    if (!marker.lineStart) {
-      return { success: false };
-    }
-
-    // Wikidot requires whitespace after = for center alignment
-    let pos = ctx.pos + 1;
-    let consumed = 1;
-
-    if (ctx.tokens[pos]?.type !== "WHITESPACE") {
-      return { success: false };
-    }
-
-    // Skip whitespace
-    while (ctx.tokens[pos]?.type === "WHITESPACE") {
-      pos++;
-      consumed++;
-    }
+    const openResult = parseCenterOpen(ctx);
+    if (!openResult) return { success: false };
 
     // Parse inline content until newline
+    let pos = openResult.bodyStart;
+    let consumed = openResult.consumed;
     const inlineCtx: ParseContext = { ...ctx, pos };
     const inlineResult = parseInlineUntil(inlineCtx, "NEWLINE");
     const children: Element[] = inlineResult.elements;

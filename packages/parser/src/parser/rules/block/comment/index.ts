@@ -16,7 +16,8 @@
  * @module
  */
 import type { Element } from "@wdprlib/ast";
-import type { BlockRule, ParseContext, RuleResult } from "../types";
+import type { BlockRule, ParseContext, RuleResult } from "../../types";
+import { consumeBlockComment } from "./consume";
 
 /**
  * Block rule for line-start comments (`[!-- ... --]`).
@@ -29,45 +30,18 @@ export const blockCommentRule: BlockRule = {
   requiresLineStart: true,
 
   parse(ctx: ParseContext): RuleResult<Element> {
-    let pos = ctx.pos + 1; // skip [!--
-    let consumed = 1;
-
-    // Consume all tokens until we find --]
-    while (pos < ctx.tokens.length) {
-      const token = ctx.tokens[pos];
-      if (!token) {
-        break;
-      }
-
-      if (token.type === "COMMENT_CLOSE") {
-        consumed++;
-        pos++;
-
-        // Consume trailing newline if present
-        if (ctx.tokens[pos]?.type === "NEWLINE") {
-          consumed++;
-        }
-
-        // Return empty elements - comment is discarded
-        return {
-          success: true,
-          elements: [],
-          consumed,
-        };
-      }
-
-      if (token.type === "EOF") {
-        // Unterminated comment — let the inline comment rule emit the diagnostic
-        // to avoid duplication when the paragraph fallback retries this token.
-        return { success: false };
-      }
-
-      pos++;
-      consumed++;
-    }
+    const result = consumeBlockComment(ctx);
 
     // Unterminated comment — let the inline comment rule emit the diagnostic
     // to avoid duplication when the paragraph fallback retries this token.
-    return { success: false };
+    if (!result) {
+      return { success: false };
+    }
+
+    return {
+      success: true,
+      elements: [],
+      consumed: result.consumed,
+    };
   },
 };

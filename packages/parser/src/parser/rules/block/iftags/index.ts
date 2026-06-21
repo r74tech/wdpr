@@ -21,9 +21,11 @@
  * @module
  */
 import type { Element } from "@wdprlib/ast";
-import type { BlockRule, ParseContext, RuleResult } from "../types";
-import { currentToken } from "../types";
-import { parseBlockName, parseBlocksUntil } from "./utils";
+import type { BlockRule, ParseContext, RuleResult } from "../../types";
+import { currentToken } from "../../types";
+import { parseBlockName } from "../utils";
+import { collectIftagsCondition } from "./condition";
+import { consumeIftagsClose, isIftagsClose, parseIftagsBody } from "./body";
 
 /**
  * Block rule for `[[iftags condition]]...[[/iftags]]`.
@@ -45,7 +47,6 @@ export const iftagsRule: BlockRule = {
     let pos = ctx.pos + 1;
     let consumed = 1;
 
-    // Parse block name
     const nameResult = parseBlockName(ctx, pos);
     if (!nameResult || nameResult.name.toLowerCase() !== "iftags") {
       return { success: false };
@@ -53,85 +54,42 @@ export const iftagsRule: BlockRule = {
     pos += nameResult.consumed;
     consumed += nameResult.consumed;
 
-    // Skip whitespace
     while (ctx.tokens[pos]?.type === "WHITESPACE") {
       pos++;
       consumed++;
     }
 
-    // Parse condition (tag expressions)
-    let condition = "";
-    while (pos < ctx.tokens.length) {
-      const token = ctx.tokens[pos];
-      if (!token || token.type === "BLOCK_CLOSE" || token.type === "NEWLINE") {
-        break;
-      }
-      condition += token.value;
-      pos++;
-      consumed++;
-    }
+    const conditionResult = collectIftagsCondition(ctx, pos);
+    pos += conditionResult.consumed;
+    consumed += conditionResult.consumed;
 
-    // Expect ]]
     if (ctx.tokens[pos]?.type !== "BLOCK_CLOSE") {
       return { success: false };
     }
     pos++;
     consumed++;
 
-    // Skip newline after opening tag
     if (ctx.tokens[pos]?.type === "NEWLINE") {
       pos++;
       consumed++;
     }
 
-    // Close condition for [[/iftags]]
-    const closeCondition = (checkCtx: ParseContext): boolean => {
-      const token = checkCtx.tokens[checkCtx.pos];
-      if (token?.type === "BLOCK_END_OPEN") {
-        const closeNameResult = parseBlockName(checkCtx, checkCtx.pos + 1);
-        if (closeNameResult?.name.toLowerCase() === "iftags") {
-          return true;
-        }
-      }
-      return false;
-    };
-
-    // Parse body
-    const bodyCtx: ParseContext = { ...ctx, pos };
-    const bodyResult = parseBlocksUntil(bodyCtx, closeCondition);
-    consumed += bodyResult.consumed;
+    const bodyResult = parseIftagsBody(ctx, pos);
     pos += bodyResult.consumed;
+    consumed += bodyResult.consumed;
 
-    // Check for missing close tag
-    if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") {
+    if (!isIftagsClose(ctx, pos)) {
       ctx.diagnostics.push({
         severity: "warning",
         code: "unclosed-block",
         message: "Missing closing tag [[/iftags]] for [[iftags]]",
         position: openToken.position,
       });
+    } else {
+      const closeConsumed = consumeIftagsClose(ctx, pos);
+      pos += closeConsumed;
+      consumed += closeConsumed;
     }
-
-    // Consume [[/iftags]]
-    if (ctx.tokens[pos]?.type === "BLOCK_END_OPEN") {
-      pos++;
-      consumed++;
-      const closeNameResult = parseBlockName(ctx, pos);
-      if (closeNameResult) {
-        pos += closeNameResult.consumed;
-        consumed += closeNameResult.consumed;
-      }
-      if (ctx.tokens[pos]?.type === "BLOCK_CLOSE") {
-        pos++;
-        consumed++;
-      }
-      if (ctx.tokens[pos]?.type === "NEWLINE") {
-        pos++;
-        consumed++;
-      }
-    }
-
-    condition = condition.trim();
 
     return {
       success: true,
@@ -139,7 +97,7 @@ export const iftagsRule: BlockRule = {
         {
           element: "if-tags",
           data: {
-            condition,
+            condition: conditionResult.condition.trim(),
             elements: bodyResult.elements,
           },
         },

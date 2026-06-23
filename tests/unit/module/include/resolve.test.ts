@@ -1,15 +1,106 @@
 import { test, expect, describe } from "bun:test";
-import { parse, resolveIncludes, type ParserOptions } from "@wdprlib/parser";
+import {
+  extractIncludeReferences,
+  parse,
+  resolveIncludes,
+  resolveIncludesWithTrace,
+  type ParserOptions,
+} from "@wdprlib/parser";
 import type { SyntaxTree } from "@wdprlib/ast";
 import { getAllText } from "../../../helpers";
+import { createFixturePageFetcher } from "./fixture-pages";
 
 function parseAst(input: string, options?: ParserOptions): SyntaxTree {
   return parse(input, options).ast;
 }
 
 describe("resolveIncludes", () => {
+  test("extracts include references using resolver recognition rules", () => {
+    const source = [
+      "prefix [[include ignored]]",
+      "[[include :www:view | name=Page | raw=OK]]",
+      "[[include local-page]]",
+    ].join("\n");
+
+    const references = extractIncludeReferences(source);
+
+    expect(references).toHaveLength(2);
+    expect(references[0]?.location).toEqual({ site: "www", page: "view" });
+    expect(references[0]?.assignments).toEqual([
+      { key: "name", value: "Page" },
+      { key: "raw", value: "OK" },
+    ]);
+    expect(references[0]?.inner).toBe(":www:view | name=Page | raw=OK");
+    expect(references[1]?.location).toEqual({ site: null, page: "local-page" });
+  });
+
+  test("extracts includes by source-phase rules before comments are processed", () => {
+    const source = [
+      "[!--",
+      "[[include inside-comment-block]]",
+      "--]",
+      "[[in[!-- --]clude repaired-after-comment]]",
+    ].join("\n");
+
+    const references = extractIncludeReferences(source);
+
+    expect(references.map((reference) => reference.location.page)).toEqual([
+      "inside-comment-block",
+    ]);
+  });
+
+  test("returns include dependency trace while preserving expansion behavior", () => {
+    const source = "[[include page-a]]";
+    const fetcher = (pageRef: { site: string | null; page: string }) => {
+      if (pageRef.page === "page-a") return "A\n[[include page-b | x=1]]";
+      if (pageRef.page === "page-b") return "B={$x}";
+      return null;
+    };
+
+    const traced = resolveIncludesWithTrace(source, fetcher);
+
+    expect(traced.source).toBe(resolveIncludes(source, fetcher));
+    expect(traced.source).toBe("A\nB=1");
+    expect(traced.reachedMaxIterations).toBe(false);
+    expect(traced.iterations).toHaveLength(2);
+    expect(traced.iterations.map((iteration) => iteration.directives.length)).toEqual([1, 1]);
+    expect(traced.dependencies.map((dependency) => dependency.location.page)).toEqual([
+      "page-a",
+      "page-b",
+    ]);
+    expect(traced.dependencies.map((dependency) => dependency.iteration)).toEqual([0, 1]);
+    expect(traced.dependencies[1]?.assignments).toEqual([{ key: "x", value: "1" }]);
+  });
+
+  test("marks trace as reaching max iterations when include directives remain", () => {
+    const source = "[[include page-a]]";
+    const fetcher = (pageRef: { site: string | null; page: string }) => {
+      if (pageRef.page === "page-a") return "[[include page-b]]";
+      if (pageRef.page === "page-b") return "[[include page-c]]";
+      return "done";
+    };
+
+    const traced = resolveIncludesWithTrace(source, fetcher, { maxIterations: 1 });
+
+    expect(traced.source).toBe("[[include page-b]]");
+    expect(traced.reachedMaxIterations).toBe(true);
+    expect(traced.iterations).toHaveLength(1);
+    expect(traced.dependencies.map((dependency) => dependency.location.page)).toEqual(["page-a"]);
+  });
+
   test("resolves a simple include", () => {
     const source = "[[include my-page]]";
+    const fetcher = (pageRef: { site: string | null; page: string }) => {
+      if (pageRef.page === "my-page") return "Hello from included page";
+      return null;
+    };
+
+    const expanded = resolveIncludes(source, fetcher);
+    expect(expanded).toBe("Hello from included page");
+  });
+
+  test("resolves include opener case-insensitively", () => {
+    const source = "[[INCLUDE my-page]]";
     const fetcher = (pageRef: { site: string | null; page: string }) => {
       if (pageRef.page === "my-page") return "Hello from included page";
       return null;
@@ -229,6 +320,31 @@ describe("resolveIncludes", () => {
     expect(expanded).toContain("{$site}");
   });
 
+  test("substitutes variables in assignment order", () => {
+    const source = "[[include :www:subst l=_|_={$|p=TARGET|g=G]]";
+    const fetcher = createFixturePageFetcher("include-pages");
+
+    expect(resolveIncludes(source, fetcher)).toBe("X=TARGET\nY=G\n");
+  });
+
+  test("inc-loop reaches its target when a second include pass is available", () => {
+    const source = [
+      "[[include :www:loop c=__________|p=:www:target]]",
+      "|name=TITLE",
+      "|raw=OK]]",
+    ].join("\n");
+    const fetcher = createFixturePageFetcher("include-pages");
+
+    const firstPass = resolveIncludes(source, fetcher);
+    expect(firstPass).toContain("[[include :www:target");
+    expect(firstPass).toContain("|raw=OK]]");
+    expect(firstPass).not.toContain("TARGET raw=OK");
+
+    expect(resolveIncludes(source, fetcher, { maxIterations: 11 })).toBe(
+      "TARGET name=TITLE\nTARGET raw=OK\n",
+    );
+  });
+
   describe("bracket-balanced directive extent", () => {
     // The closing `]]` is chosen so that nested `[[ ... ]]` (or a stray
     // `]]`) inside a parameter value does not end the directive early.
@@ -353,7 +469,7 @@ describe("resolveIncludes", () => {
       // an attribute section, so greedy absorption applies and the
       // attribute captures `--]`.
       const custom = (ref: { site: string | null; page: string }) =>
-        ref.page === "foo" ? `<<${"{$bar}"}>>` : null;
+        ref.page === "foo" ? "<<{$bar}>>" : null;
       const source = "[[include foo bar=--]]]";
       expect(resolveIncludes(source, custom)).toBe("<<--]>>");
     });

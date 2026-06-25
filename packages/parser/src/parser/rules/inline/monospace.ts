@@ -21,8 +21,7 @@
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
-import { currentToken, hasClosingMarkerBeforeNewline } from "../types";
-import { parseInlineUntil } from "./utils";
+import { parseSameLineDelimitedContainer } from "./formatting/container";
 
 /**
  * Inline rule for parsing `{{monospace}}` formatting.
@@ -46,33 +45,6 @@ export const monospaceRule: InlineRule = {
    *          with `type: "monospace"`, or a text fallback for unmatched markers
    */
   parse(ctx: ParseContext): RuleResult<Element> {
-    const startToken = currentToken(ctx);
-
-    // Check if closing marker exists
-    if (!hasClosingMarkerBeforeNewline({ ...ctx, pos: ctx.pos + 1 }, "MONO_CLOSE")) {
-      return {
-        success: true,
-        elements: [{ element: "text", data: startToken.value }],
-        consumed: 1,
-      };
-    }
-
-    // Parse content between markers
-    const result = parseInlineUntil({ ...ctx, pos: ctx.pos + 1 }, "MONO_CLOSE");
-
-    return {
-      success: true,
-      elements: [
-        {
-          element: "container",
-          data: {
-            type: "monospace",
-            attributes: {},
-            elements: result.elements,
-          },
-        },
-      ],
-      consumed: 1 + result.consumed + 1, // open + content + close
-    };
+    return parseSameLineDelimitedContainer(ctx, "MONO_CLOSE", "monospace");
   },
 };

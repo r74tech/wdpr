@@ -22,7 +22,7 @@
  */
 import type { Element, LinkLabel } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
-import { hasClosingMarkerBeforeNewline } from "../types";
+import { parseAnchorBracketLink } from "./link-bracket/parsed";
 
 /**
  * Inline rule for parsing `[#anchor Label]` anchor links.
@@ -47,72 +47,10 @@ export const linkAnchorRule: InlineRule = {
    *          or `{ success: false }`
    */
   parse(ctx: ParseContext): RuleResult<Element> {
-    // Check if closing bracket exists
-    if (!hasClosingMarkerBeforeNewline({ ...ctx, pos: ctx.pos + 1 }, "BRACKET_CLOSE")) {
-      return { success: false };
-    }
+    const parsed = parseAnchorBracketLink(ctx);
+    if (!parsed) return { success: false };
 
-    let pos = ctx.pos + 1;
-    let consumed = 1; // [#
-
-    // Collect anchor name (until whitespace)
-    let anchor = "";
-    while (pos < ctx.tokens.length) {
-      const token = ctx.tokens[pos];
-      if (
-        !token ||
-        token.type === "WHITESPACE" ||
-        token.type === "BRACKET_CLOSE" ||
-        token.type === "NEWLINE" ||
-        token.type === "EOF"
-      ) {
-        break;
-      }
-      anchor += token.value;
-      pos++;
-      consumed++;
-    }
-
-    // Skip whitespace between anchor and label
-    while (ctx.tokens[pos]?.type === "WHITESPACE") {
-      pos++;
-      consumed++;
-    }
-
-    // Collect label (until closing bracket)
-    let label = "";
-    while (pos < ctx.tokens.length) {
-      const token = ctx.tokens[pos];
-      if (
-        !token ||
-        token.type === "BRACKET_CLOSE" ||
-        token.type === "NEWLINE" ||
-        token.type === "EOF"
-      ) {
-        break;
-      }
-      label += token.value;
-      pos++;
-      consumed++;
-    }
-
-    // Consume closing bracket
-    if (ctx.tokens[pos]?.type === "BRACKET_CLOSE") {
-      pos++;
-      consumed++;
-    } else {
-      return { success: false };
-    }
-
-    const trimmedLabel = label.trim();
-    if (!trimmedLabel) {
-      return { success: false };
-    }
-
-    // Determine target: if anchor is empty, use javascript:; (fake link)
-    // Otherwise, normalize and prepend #
-    const target = anchor.trim() ? `#${normalizeAnchor(anchor.trim())}` : "javascript:;";
-    const linkLabel: LinkLabel = { text: trimmedLabel };
+    const linkLabel: LinkLabel = { text: parsed.labelText };
 
     return {
       success: true,
@@ -121,27 +59,14 @@ export const linkAnchorRule: InlineRule = {
           element: "link",
           data: {
             type: "anchor",
-            link: target,
+            link: parsed.link,
             extra: null,
             label: linkLabel,
             target: null,
           },
         },
       ],
-      consumed,
+      consumed: parsed.consumed,
     };
   },
 };
-
-/**
- * Normalizes an anchor name for use in a URL fragment.
- *
- * Converts to lowercase and replaces whitespace sequences with single
- * hyphens, matching Wikidot's anchor normalization behavior.
- *
- * @param anchor - The raw anchor name from the markup
- * @returns The normalized anchor name suitable for a URL fragment
- */
-function normalizeAnchor(anchor: string): string {
-  return anchor.toLowerCase().replace(/\s+/g, "-");
-}

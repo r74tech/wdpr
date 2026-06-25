@@ -23,7 +23,7 @@
  */
 import type { Element, LinkLabel } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
-import { hasClosingMarkerBeforeNewline } from "../types";
+import { parseStarBracketLink } from "./link-bracket/parsed";
 
 /**
  * Inline rule for parsing `[*url label]` star links.
@@ -47,72 +47,10 @@ export const linkStarRule: InlineRule = {
    * @returns A successful result with a `"link"` element, or `{ success: false }`
    */
   parse(ctx: ParseContext): RuleResult<Element> {
-    // Check if closing bracket exists
-    if (!hasClosingMarkerBeforeNewline({ ...ctx, pos: ctx.pos + 1 }, "BRACKET_CLOSE")) {
-      return { success: false };
-    }
+    const parsed = parseStarBracketLink(ctx);
+    if (!parsed) return { success: false };
 
-    let pos = ctx.pos + 1;
-    let consumed = 1; // [*
-
-    // Collect URL (until whitespace)
-    let url = "";
-    while (pos < ctx.tokens.length) {
-      const token = ctx.tokens[pos];
-      if (
-        !token ||
-        token.type === "WHITESPACE" ||
-        token.type === "BRACKET_CLOSE" ||
-        token.type === "NEWLINE" ||
-        token.type === "EOF"
-      ) {
-        break;
-      }
-      url += token.value;
-      pos++;
-      consumed++;
-    }
-
-    const trimmedUrl = url.trim();
-    if (!trimmedUrl) {
-      return { success: false };
-    }
-
-    // Skip whitespace between URL and label
-    while (ctx.tokens[pos]?.type === "WHITESPACE") {
-      pos++;
-      consumed++;
-    }
-
-    // Collect label (until closing bracket)
-    let label = "";
-    while (pos < ctx.tokens.length) {
-      const token = ctx.tokens[pos];
-      if (
-        !token ||
-        token.type === "BRACKET_CLOSE" ||
-        token.type === "NEWLINE" ||
-        token.type === "EOF"
-      ) {
-        break;
-      }
-      label += token.value;
-      pos++;
-      consumed++;
-    }
-
-    // Consume closing bracket
-    if (ctx.tokens[pos]?.type === "BRACKET_CLOSE") {
-      pos++;
-      consumed++;
-    } else {
-      return { success: false };
-    }
-
-    const trimmedLabel = label.trim();
-    // If no label, use URL as label
-    const displayLabel = trimmedLabel || trimmedUrl;
-    const linkLabel: LinkLabel = { text: displayLabel };
+    const linkLabel: LinkLabel = { text: parsed.labelText };
 
     return {
       success: true,
@@ -121,14 +59,14 @@ export const linkStarRule: InlineRule = {
           element: "link",
           data: {
             type: "direct",
-            link: trimmedUrl,
+            link: parsed.link,
             extra: null,
             label: linkLabel,
-            target: "new-tab",
+            target: parsed.target,
           },
         },
       ],
-      consumed,
+      consumed: parsed.consumed,
     };
   },
 };

@@ -24,9 +24,10 @@
  * @module
  */
 import type { Element } from "@wdprlib/ast";
-import type { InlineRule, ParseContext, RuleResult } from "../types";
-import { currentToken, hasClosingMarkerBeforeParagraphBreak } from "../types";
-import { parseInlineUntil } from "./utils";
+import type { InlineRule, ParseContext, RuleResult } from "../../types";
+import { currentToken, hasClosingMarkerBeforeParagraphBreak } from "../../types";
+import { createInlineContainer } from "../formatting/container";
+import { parseUnderlineContent } from "./content";
 
 /**
  * Inline rule for parsing `__underline__` formatting.
@@ -63,42 +64,7 @@ export const underlineRule: InlineRule = {
       };
     }
 
-    // Parse content between markers, handling newlines as line-breaks
-    const children: Element[] = [];
-    let pos = ctx.pos + 1;
-    let consumed = 1; // opening marker
-
-    while (pos < ctx.tokens.length) {
-      const token = ctx.tokens[pos];
-      if (!token || token.type === "EOF") break;
-
-      // Found closing marker
-      if (token.type === "UNDERLINE_MARKER") {
-        consumed++;
-        break;
-      }
-
-      // Handle newlines as line-breaks
-      if (token.type === "NEWLINE") {
-        children.push({ element: "line-break" });
-        pos++;
-        consumed++;
-        continue;
-      }
-
-      // Parse inline content until NEWLINE or closing marker
-      const inlineCtx = { ...ctx, pos };
-      const result = parseInlineUntil(inlineCtx, "UNDERLINE_MARKER");
-      if (result.elements.length > 0) {
-        children.push(...result.elements);
-        pos += result.consumed;
-        consumed += result.consumed;
-      } else {
-        children.push({ element: "text", data: token.value });
-        pos++;
-        consumed++;
-      }
-    }
+    const { children, consumed } = parseUnderlineContent(ctx, ctx.pos + 1);
 
     // Empty underline (____) is discarded entirely in Wikidot
     if (children.length === 0) {
@@ -111,16 +77,7 @@ export const underlineRule: InlineRule = {
 
     return {
       success: true,
-      elements: [
-        {
-          element: "container",
-          data: {
-            type: "underline",
-            attributes: {},
-            elements: children,
-          },
-        },
-      ],
+      elements: [createInlineContainer("underline", children)],
       consumed,
     };
   },

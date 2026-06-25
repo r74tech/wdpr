@@ -27,10 +27,10 @@
  */
 
 import type { Element } from "@wdprlib/ast";
-import type { InlineRule, ParseContext, RuleResult } from "../types";
-import { currentToken } from "../types";
-import { parseBlockName, parseAttributesRaw } from "../block/utils";
-import { lookaheadHasHtmlClose } from "../block/html";
+import type { InlineRule, ParseContext, RuleResult } from "../../types";
+import { currentToken } from "../../types";
+import { consumeDisabledHtmlBody } from "./gate";
+import { parseHtmlInlineOpen } from "./open";
 
 /**
  * Inline rule that gates `[[html]]` when the setting disallows it.
@@ -45,25 +45,10 @@ export const htmlInlineRule: InlineRule = {
       return { success: false };
     }
 
-    let pos = ctx.pos + 1;
-    let consumed = 1;
-
-    const nameResult = parseBlockName(ctx, pos);
-    if (!nameResult || nameResult.name.toLowerCase() !== "html") {
+    const openResult = parseHtmlInlineOpen(ctx);
+    if (!openResult) {
       return { success: false };
     }
-    pos += nameResult.consumed;
-    consumed += nameResult.consumed;
-
-    const attrResult = parseAttributesRaw(ctx, pos);
-    pos += attrResult.consumed;
-    consumed += attrResult.consumed;
-
-    if (ctx.tokens[pos]?.type !== "BLOCK_CLOSE") {
-      return { success: false };
-    }
-    pos++;
-    consumed++;
 
     // Enabled: leave inline `[[html]]` alone — it falls through to text
     // rendering, matching the historical behaviour for stray block-named
@@ -72,46 +57,10 @@ export const htmlInlineRule: InlineRule = {
       return { success: false };
     }
 
-    // Disabled path: consume the body until a real `[[/html]]` (BLOCK_END_OPEN
-    // + name + BLOCK_CLOSE, allowing whitespace inside the close tag).
-    // Only allow the blank-line stop when no real close exists ahead, so
-    // a closed body that spans paragraphs is still consumed correctly.
-    const hasCloseAhead = lookaheadHasHtmlClose(ctx, pos);
-    let foundClose = false;
-    while (pos < ctx.tokens.length) {
-      const token = ctx.tokens[pos];
-      if (!token || token.type === "EOF") break;
+    const bodyResult = consumeDisabledHtmlBody(ctx, openResult.bodyStart);
+    const consumed = openResult.consumed + bodyResult.consumed;
 
-      // Stop at a blank line so an unclosed inline `[[html]]` does not
-      // swallow subsequent paragraphs.
-      if (!hasCloseAhead && token.type === "NEWLINE" && ctx.tokens[pos + 1]?.type === "NEWLINE") {
-        break;
-      }
-
-      if (token.type === "BLOCK_END_OPEN") {
-        const closeNameResult = parseBlockName(ctx, pos + 1);
-        if (closeNameResult?.name.toLowerCase() === "html") {
-          let checkPos = pos + 1 + closeNameResult.consumed;
-          while (ctx.tokens[checkPos]?.type === "WHITESPACE") checkPos++;
-          if (ctx.tokens[checkPos]?.type === "BLOCK_CLOSE") {
-            foundClose = true;
-            // Consume `[[/html]]` (and optional trailing newline) too.
-            consumed += checkPos - pos + 1;
-            pos = checkPos + 1;
-            if (ctx.tokens[pos]?.type === "NEWLINE") {
-              pos++;
-              consumed++;
-            }
-            break;
-          }
-        }
-      }
-
-      pos++;
-      consumed++;
-    }
-
-    if (!foundClose) {
+    if (!bodyResult.foundClose) {
       ctx.diagnostics.push({
         severity: "warning",
         code: "unclosed-block",

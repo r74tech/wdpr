@@ -19,8 +19,9 @@
  * @module
  */
 import type { Element } from "@wdprlib/ast";
-import type { InlineRule, ParseContext, RuleResult } from "../types";
-import { currentToken } from "../types";
+import type { InlineRule, ParseContext, RuleResult } from "../../types";
+import { currentToken } from "../../types";
+import { textElement } from "./element";
 
 /**
  * Inline rule for plain text and whitespace tokens.
@@ -46,7 +47,7 @@ export const textRule: InlineRule = {
 
     return {
       success: true,
-      elements: [{ element: "text", data: token.value }],
+      elements: [textElement(token.value)],
       consumed: 1,
     };
   },
@@ -77,7 +78,7 @@ export const fallbackRule: InlineRule = {
 
     return {
       success: true,
-      elements: [{ element: "text", data: token.value }],
+      elements: [textElement(token.value)],
       consumed: 1,
     };
   },

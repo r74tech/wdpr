@@ -17,7 +17,8 @@
  * @module
  */
 import type { Element } from "@wdprlib/ast";
-import type { InlineRule, ParseContext, RuleResult } from "../types";
+import type { InlineRule, ParseContext, RuleResult } from "../../types";
+import { guillemetText } from "./text";
 
 /**
  * Inline rule for converting `<<` and `>>` to typographic guillemets.
@@ -40,21 +41,12 @@ export const guillemetRule: InlineRule = {
    */
   parse(ctx: ParseContext): RuleResult<Element> {
     const token = ctx.tokens[ctx.pos];
+    const text = guillemetText(token?.type);
 
-    // << → «
-    if (token?.type === "LEFT_DOUBLE_ANGLE") {
+    if (text) {
       return {
         success: true,
-        elements: [{ element: "text", data: "\u00AB" }],
-        consumed: 1,
-      };
-    }
-
-    // >> → »
-    if (token?.type === "RIGHT_DOUBLE_ANGLE") {
-      return {
-        success: true,
-        elements: [{ element: "text", data: "\u00BB" }],
+        elements: [{ element: "text", data: text }],
         consumed: 1,
       };
     }

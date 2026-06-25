@@ -17,8 +17,9 @@
  * @module
  */
 import type { Element } from "@wdprlib/ast";
-import type { InlineRule, ParseContext, RuleResult } from "../types";
-import { currentToken } from "../types";
+import type { InlineRule, ParseContext, RuleResult } from "../../types";
+import { currentToken } from "../../types";
+import { consumeInlineComment } from "./consume";
 
 /**
  * Inline rule for parsing `[!-- comment --]` syntax.
@@ -43,40 +44,13 @@ export const commentRule: InlineRule = {
    */
   parse(ctx: ParseContext): RuleResult<Element> {
     const openToken = currentToken(ctx);
-    let pos = ctx.pos + 1; // skip [!--
-    let consumed = 1;
-
-    // Consume all tokens until we find --]
-    while (pos < ctx.tokens.length) {
-      const token = ctx.tokens[pos];
-      if (!token) {
-        break;
-      }
-
-      if (token.type === "COMMENT_CLOSE") {
-        consumed++;
-        pos++;
-        // Return empty result - comment is discarded
-        return {
-          success: true,
-          elements: [],
-          consumed,
-        };
-      }
-
-      if (token.type === "EOF") {
-        // Unterminated comment - fail
-        ctx.diagnostics.push({
-          severity: "warning",
-          code: "unclosed-comment",
-          message: "Unterminated comment: missing closing --]",
-          position: openToken.position,
-        });
-        return { success: false };
-      }
-
-      pos++;
-      consumed++;
+    const comment = consumeInlineComment(ctx, ctx.pos);
+    if (comment.foundClose) {
+      return {
+        success: true,
+        elements: [],
+        consumed: comment.consumed,
+      };
     }
 
     ctx.diagnostics.push({

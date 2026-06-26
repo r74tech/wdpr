@@ -17,33 +17,31 @@
           {
             "element": "text",
             "data": "CENTER"
-          }
-        ]
-      }
-    },
-    {
-      "element": "image",
-      "data": {
-        "source": {
-          "type": "file1",
-          "data": {
-            "file": "landscape.jpg"
-          }
-        },
-        "link": null,
-        "alignment": {
-          "align": "center",
-          "float": true
-        },
-        "attributes": {}
-      }
-    },
-    {
-      "element": "container",
-      "data": {
-        "type": "paragraph",
-        "attributes": {},
-        "elements": [
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "image",
+            "data": {
+              "source": {
+                "type": "file1",
+                "data": {
+                  "file": "landscape.jpg"
+                }
+              },
+              "link": null,
+              "alignment": {
+                "align": "center",
+                "float": true
+              },
+              "attributes": {}
+            }
+          },
+          {
+            "element": "line-break"
+          },
           {
             "element": "text",
             "data": "FLOAT"

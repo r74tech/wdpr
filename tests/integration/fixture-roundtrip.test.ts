@@ -68,11 +68,6 @@ const SKIP_ROUNDTRIP = new Set<string>([
   "list/block",
   // lossy変換: 複数@やアングルブラケットrawの複雑なエスケープ
   "raw/basic",
-  // lossy変換: paragraph 外に置かれた image / aligned image を serialize
-  // して再 parse すると decompiler 側で paragraph 構造を 1:1 で復元できず、
-  // <br /> 結合や aligned image 分割の有無で diff が出る。 parser 側の
-  // postprocess に追従した decompiler 対応は別 PR で扱う。
-  "image/basic",
 ]);
 
 interface TestCase {

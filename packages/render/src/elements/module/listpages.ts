@@ -11,6 +11,7 @@
 
 import type { Module } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
+import { renderEmptyModuleContainer } from "./empty-container";
 
 /**
  * Render a `[[module ListPages]]` element as an empty container.
@@ -22,6 +23,5 @@ export function renderListPages(
   ctx: RenderContext,
   _data: Extract<Module, { module: "list-pages" }>,
 ): void {
-  ctx.push(`<div class="list-pages-box">`);
-  ctx.push("</div>");
+  renderEmptyModuleContainer(ctx, "list-pages-box");
 }

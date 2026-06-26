@@ -12,6 +12,7 @@
 
 import type { Module } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
+import { renderIndentedEmptyModuleContainer } from "./empty-container";
 
 /**
  * Render a `[[module Backlinks]]` element as an empty container.
@@ -24,5 +25,5 @@ export function renderBacklinks(
   _data: Extract<Module, { module: "backlinks" }>,
 ): void {
   // Wikidot outputs just the container div (backlinks are populated at runtime)
-  ctx.push(`<div class="backlinks-module-box">\n\t</div>`);
+  renderIndentedEmptyModuleContainer(ctx, "backlinks-module-box");
 }

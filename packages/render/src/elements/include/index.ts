@@ -11,9 +11,9 @@
  */
 
 import type { IncludeData } from "@wdprlib/ast";
-import type { RenderContext } from "../context";
-import { escapeAttr, escapeHtml } from "../escape";
-import { renderElements } from "../render";
+import type { RenderContext } from "../../context";
+import { renderElements } from "../../render";
+import { renderMissingInclude } from "./missing";
 
 /**
  * Render an `[[include]]` element.
@@ -26,18 +26,10 @@ import { renderElements } from "../render";
  * @param data - Include data with the target page location and resolved elements.
  */
 export function renderInclude(ctx: RenderContext, data: IncludeData): void {
-  // If elements is empty, the include was not resolved - show error
   if (data.elements.length === 0) {
-    // Wikidot normalizes page names to lowercase
-    const pageName = data.location.page.toLowerCase();
-    // Encode page name for URL path (/ should not be encoded, but special chars should)
-    const encodedPageName = pageName.replace(/[^a-z0-9\-_:/]/g, (c) => encodeURIComponent(c));
-    // Prevent protocol-relative URLs
-    const safePath = encodedPageName.startsWith("/") ? encodedPageName.slice(1) : encodedPageName;
-    ctx.push(
-      `<div class="error-block"><p>Included page "${escapeHtml(pageName)}" does not exist (<a href="/${escapeAttr(safePath)}/edit/true">create it now</a>)</p></div>`,
-    );
+    renderMissingInclude(ctx, data.location.page);
     return;
   }
+
   renderElements(ctx, data.elements);
 }

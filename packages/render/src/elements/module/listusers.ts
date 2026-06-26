@@ -11,6 +11,7 @@
 
 import type { Module } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
+import { renderEmptyModuleContainer } from "./empty-container";
 
 /**
  * Render a `[[module ListUsers]]` element as an empty container.
@@ -22,6 +23,5 @@ export function renderListUsers(
   ctx: RenderContext,
   _data: Extract<Module, { module: "list-users" }>,
 ): void {
-  ctx.push(`<div class="list-users-module-box">`);
-  ctx.push("</div>");
+  renderEmptyModuleContainer(ctx, "list-users-module-box");
 }

@@ -22,6 +22,7 @@ import { renderPageTree } from "./page-tree";
 import { renderRate } from "./rate";
 import { renderListUsers } from "./listusers";
 import { renderListPages } from "./listpages";
+import { renderUnknownModule } from "./unknown";
 
 /**
  * Render a `[[module]]` element by dispatching on the module name.
@@ -37,10 +38,7 @@ import { renderListPages } from "./listpages";
 export function renderModule(ctx: RenderContext, data: Module): void {
   switch (data.module) {
     case "unknown":
-      // Render error block for unknown modules
-      ctx.push(
-        `<div class="error-block">[[module <em>${data.name}</em>]] No such module, please <a href="https://www.wikidot.com/doc:modules" target="_blank" rel="noopener noreferrer">check available modules</a> and fix this page.</div>`,
-      );
+      renderUnknownModule(ctx, data);
       break;
     case "backlinks":
       renderBacklinks(ctx, data);

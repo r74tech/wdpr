@@ -4,9 +4,10 @@ This was a version bump only for @wdprlib/render to align it with other projects
 
 # 3.0.0 (2026-06-27)
 
-### 🩹 Fixes
+### ♻️ Refactors
 
-- **parser/render:** [[image]] が含まれる paragraph の <p> wrap を Wikidot 本家挙動に合わせる ([#51](https://github.com/r74tech/wdpr/pull/51))
+- **parser/render:** parser/renderを機能単位のfolder layoutに整理 ([#52](https://github.com/r74tech/wdpr/pull/52))
+- **render:** context、escape、elements、module renderer、highlighter engineを責務ごとのfolderに分割 ([#52](https://github.com/r74tech/wdpr/pull/52))
 
 ### ❤️ Thank You
 

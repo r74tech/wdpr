@@ -1,8 +1,14 @@
 # 4.0.0 (2026-06-27)
 
-### 🩹 Fixes
+### 🚀 Features
 
-- **parser/render:** [[image]] が含まれる paragraph の <p> wrap を Wikidot 本家挙動に合わせる ([#51](https://github.com/r74tech/wdpr/pull/51))
+- **parser:** `[[include]]`の参照抽出・依存トレースAPIを追加 ([#52](https://github.com/r74tech/wdpr/pull/52))
+- **parser:** async include resolverで同一iteration内のincludeを並列fetchし、in-flight fetchを共有 ([#52](https://github.com/r74tech/wdpr/pull/52))
+
+### ♻️ Refactors
+
+- **parser/render:** parser/renderを機能単位のfolder layoutに整理 ([#52](https://github.com/r74tech/wdpr/pull/52))
+- **parser:** lexer、preprocess/postprocess、block/inline rule、module/ListPages/ListUsersまわりを責務ごとに分割 ([#52](https://github.com/r74tech/wdpr/pull/52))
 
 ### ❤️ Thank You
 

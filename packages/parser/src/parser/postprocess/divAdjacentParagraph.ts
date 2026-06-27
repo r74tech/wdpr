@@ -35,7 +35,7 @@ function isDivContainer(el: Element | undefined): boolean {
 function suppressAtLevel(elements: Element[]): Element[] {
   if (elements.length <= 1) return elements;
 
-  const unwrap = new Array<boolean>(elements.length).fill(false);
+  const unwrap = Array.from({ length: elements.length }, () => false);
 
   for (let i = 0; i < elements.length; i++) {
     if (!isParagraphContainer(elements[i])) continue;

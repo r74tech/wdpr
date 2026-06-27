@@ -70,6 +70,10 @@ export class Parser {
   }
 
   private parseBlock(): Element[] {
-    return parseNextBlock(this.ctx, () => this.skipWhitespace(), () => this.isAtEnd());
+    return parseNextBlock(
+      this.ctx,
+      () => this.skipWhitespace(),
+      () => this.isAtEnd(),
+    );
   }
 }

@@ -14,10 +14,7 @@
  * @module
  */
 
-import type {
-  ListPagesQuery,
-  NormalizedListPagesQuery,
-} from "./types";
+import type { ListPagesQuery, NormalizedListPagesQuery } from "./types";
 import { parseCategory, parseTags } from "./normalization/tags-category";
 import { parseOrder, parseParent } from "./normalization/order-parent";
 import { parseDateSelector, parseNumericSelector } from "./normalization/selectors";

@@ -1,5 +1,12 @@
 import type { Token } from "../../../lexer";
-import type { CodeBlockData, Diagnostic, Element, TocEntry, Version, WikitextSettings } from "@wdprlib/ast";
+import type {
+  CodeBlockData,
+  Diagnostic,
+  Element,
+  TocEntry,
+  Version,
+  WikitextSettings,
+} from "@wdprlib/ast";
 import type { BlockRule, InlineRule } from "./rule";
 import type { ScopeContext } from "./scope";
 

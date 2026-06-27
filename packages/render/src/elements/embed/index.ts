@@ -8,12 +8,7 @@
 
 import type { Embed } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
-import {
-  renderGithubGist,
-  renderGitlabSnippet,
-  renderVimeo,
-  renderYoutube,
-} from "./providers";
+import { renderGithubGist, renderGitlabSnippet, renderVimeo, renderYoutube } from "./providers";
 
 export function renderEmbed(ctx: RenderContext, data: Embed): void {
   switch (data.embed) {

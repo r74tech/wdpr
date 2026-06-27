@@ -6,9 +6,7 @@ export interface ParsedTableCellAttributes {
   attributes: Record<string, string>;
 }
 
-export function parseTableCellAttributes(
-  attrs: Record<string, string>,
-): ParsedTableCellAttributes {
+export function parseTableCellAttributes(attrs: Record<string, string>): ParsedTableCellAttributes {
   const cellAttrs = { ...attrs };
   const colspan = cellAttrs.colspan ? parseInt(cellAttrs.colspan, 10) : 1;
   const align = parseCellAlignment(cellAttrs.style);

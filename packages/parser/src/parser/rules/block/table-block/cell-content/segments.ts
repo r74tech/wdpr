@@ -111,7 +111,9 @@ function trimSegmentStart(elements: Element[]): void {
 }
 
 function isBlankText(element: Element | undefined): boolean {
-  return element?.element === "text" && typeof element.data === "string" && element.data.trim() === "";
+  return (
+    element?.element === "text" && typeof element.data === "string" && element.data.trim() === ""
+  );
 }
 
 function isBlockElement(element: Element): boolean {

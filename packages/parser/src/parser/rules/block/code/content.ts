@@ -41,11 +41,7 @@ export function collectCodeContent(
   return { contents: contentParts.join(""), consumed, foundClose };
 }
 
-function consumeCodeClose(
-  ctx: ParseContext,
-  startPos: number,
-  closeNameConsumed: number,
-): number {
+function consumeCodeClose(ctx: ParseContext, startPos: number, closeNameConsumed: number): number {
   let pos = startPos + 1 + closeNameConsumed;
   let consumed = 1 + closeNameConsumed;
 

@@ -7,10 +7,7 @@ export interface TableRowOpenResult {
   consumed: number;
 }
 
-export function parseTableRowOpen(
-  ctx: ParseContext,
-  startPos: number,
-): TableRowOpenResult | null {
+export function parseTableRowOpen(ctx: ParseContext, startPos: number): TableRowOpenResult | null {
   let pos = startPos;
   let consumed = 0;
 

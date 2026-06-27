@@ -18,8 +18,7 @@ export function isParagraphBreakingBlockStart(
   }
 
   const isIndentedBlockOpener =
-    (nextMeaningfulToken.type === "BLOCK_OPEN" ||
-      nextMeaningfulToken.type === "BLOCK_END_OPEN") &&
+    (nextMeaningfulToken.type === "BLOCK_OPEN" || nextMeaningfulToken.type === "BLOCK_END_OPEN") &&
     isIndentAcceptingBlock(ctx, nextPos);
 
   if (!nextMeaningfulToken.lineStart && !isIndentedBlockOpener) {

@@ -177,7 +177,10 @@ function emitMatchedPattern(
   }
 
   if (groupStart > args.pos) {
-    args.tokenStack.push({ class: args.lastinner, content: args.str.substring(args.pos, groupStart) });
+    args.tokenStack.push({
+      class: args.lastinner,
+      content: args.str.substring(args.pos, groupStart),
+    });
   }
 
   args.setPosition(groupStart + matchStr.length);
@@ -220,7 +223,9 @@ function pushPartTokens(
   inner: string,
 ): void {
   const parts: HighlightToken[] = [];
-  parts.push(...buildPartTokens(args.str, match, partDef, captureIndex, count, groupStart, matchStr, inner));
+  parts.push(
+    ...buildPartTokens(args.str, match, partDef, captureIndex, count, groupStart, matchStr, inner),
+  );
   args.tokenStack.push(...parts);
 }
 
@@ -248,6 +253,14 @@ function enterState(
     state: nextState,
     lastinner: innerArr[patternIndex]!,
     lastdelim: delimArr[patternIndex]!,
-    endpattern: buildEndPattern(args.def, prevState, patternIndex, count, captureIndex, match, endRe ?? undefined),
+    endpattern: buildEndPattern(
+      args.def,
+      prevState,
+      patternIndex,
+      count,
+      captureIndex,
+      match,
+      endRe ?? undefined,
+    ),
   });
 }

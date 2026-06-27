@@ -3,12 +3,7 @@ import type { ParseContext } from "../../types";
 import { parseAttributes } from "../utils";
 import { collectPostLiTrailingContent } from "./item-content";
 import { collectLiItemContent, type NestedListParser } from "./li-content";
-import {
-  consumeCloseTag,
-  isLiClose,
-  isLiOpen,
-  type ListBlockType,
-} from "./tags";
+import { consumeCloseTag, isLiClose, isLiOpen, type ListBlockType } from "./tags";
 
 /**
  * Parses a single `[[li]]...[[/li]]` list item, including its attributes

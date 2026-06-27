@@ -23,5 +23,7 @@ function findBranchRenderLength(elements: Element[]): number {
 }
 
 function isWhitespaceText(element: Element): boolean {
-  return element.element === "text" && typeof element.data === "string" && element.data.trim() === "";
+  return (
+    element.element === "text" && typeof element.data === "string" && element.data.trim() === ""
+  );
 }

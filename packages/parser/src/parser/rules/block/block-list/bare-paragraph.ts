@@ -12,10 +12,7 @@ export function createBareParagraphState(): BareParagraphState {
   };
 }
 
-export function appendBareParagraphElements(
-  state: BareParagraphState,
-  elements: Element[],
-): void {
+export function appendBareParagraphElements(state: BareParagraphState, elements: Element[]): void {
   state.current.push(...elements);
 }
 

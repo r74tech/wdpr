@@ -32,4 +32,3 @@ export function getCandidateInlineRules(
   byType.set(tokenType, candidates);
   return candidates;
 }
-

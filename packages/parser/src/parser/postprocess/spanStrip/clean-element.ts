@@ -101,7 +101,10 @@ function cleanLineBreak(el: Element): Element {
   return el;
 }
 
-function cleanContainer(el: Extract<Element, { element: "container" }>, cleanElements: CleanElements): Element {
+function cleanContainer(
+  el: Extract<Element, { element: "container" }>,
+  cleanElements: CleanElements,
+): Element {
   const data = el.data as InternalContainerData;
   const elements = cleanElements(data.elements);
   const hasInternalFlags =

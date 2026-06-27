@@ -1,6 +1,10 @@
 import type { Token, TokenType } from "./tokens";
 import type { LexerOptions } from "./options";
-import { createLexerToken, nextBlockOpenerDepth, updateLastNonWhitespaceType } from "./token-factory";
+import {
+  createLexerToken,
+  nextBlockOpenerDepth,
+  updateLastNonWhitespaceType,
+} from "./token-factory";
 import {
   advance,
   advanceByToken,

@@ -6,10 +6,7 @@ export interface AnchorBlockName {
   consumed: number;
 }
 
-export function parseAnchorBlockName(
-  ctx: ParseContext,
-  startPos: number,
-): AnchorBlockName | null {
+export function parseAnchorBlockName(ctx: ParseContext, startPos: number): AnchorBlockName | null {
   let pos = startPos;
   let consumed = 0;
 

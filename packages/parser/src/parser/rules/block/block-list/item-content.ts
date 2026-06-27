@@ -10,7 +10,10 @@ interface ListItemContentResult {
   consumed: number;
 }
 
-const blockListExcludedRulesCache = new WeakMap<ParseContext["blockRules"], ParseContext["blockRules"]>();
+const blockListExcludedRulesCache = new WeakMap<
+  ParseContext["blockRules"],
+  ParseContext["blockRules"]
+>();
 
 export function parseListItemBlockContent(
   ctx: ParseContext,
@@ -30,7 +33,9 @@ export function parseListItemBlockContent(
   return { matched: false, elements: [], consumed: 0 };
 }
 
-function getBlockListExcludedRules(blockRules: ParseContext["blockRules"]): ParseContext["blockRules"] {
+function getBlockListExcludedRules(
+  blockRules: ParseContext["blockRules"],
+): ParseContext["blockRules"] {
   const cached = blockListExcludedRulesCache.get(blockRules);
   if (cached) {
     return cached;

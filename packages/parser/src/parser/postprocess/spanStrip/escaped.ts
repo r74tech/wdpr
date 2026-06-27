@@ -1,6 +1,11 @@
 import type { Element } from "@wdprlib/ast";
 import { spanElement } from "./factory";
-import { getContainerData, isEscapedSpan, isSpanStripMarker, type InternalContainerData } from "./predicates";
+import {
+  getContainerData,
+  isEscapedSpan,
+  isSpanStripMarker,
+  type InternalContainerData,
+} from "./predicates";
 
 export function extractEscapedSpans(children: Element[]): Element[] {
   const escaped: Element[] = [];

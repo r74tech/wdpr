@@ -97,5 +97,9 @@ export function parseBareListContent(
 }
 
 function isListBoundary(ctx: ParseContext, pos: number, listType: ListBlockType): boolean {
-  return isListClose(ctx, pos, listType) || isLiOpen(ctx, pos) !== null || isNestedListOpen(ctx, pos) !== null;
+  return (
+    isListClose(ctx, pos, listType) ||
+    isLiOpen(ctx, pos) !== null ||
+    isNestedListOpen(ctx, pos) !== null
+  );
 }

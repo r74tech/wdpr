@@ -7,11 +7,7 @@ export function isListBlockType(name: string): name is ListBlockType {
   return name === "ul" || name === "ol";
 }
 
-export function isListClose(
-  ctx: ParseContext,
-  pos: number,
-  expectedType?: ListBlockType,
-): boolean {
+export function isListClose(ctx: ParseContext, pos: number, expectedType?: ListBlockType): boolean {
   if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") return false;
   const nameResult = parseBlockName(ctx, pos + 1);
   if (!nameResult) return false;

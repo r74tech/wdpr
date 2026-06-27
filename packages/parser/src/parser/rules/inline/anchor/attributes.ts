@@ -27,7 +27,7 @@ function parseAnchorTarget(targetAttr: string | undefined): AnchorTarget | null 
 }
 
 function sanitizeUrl(url: string): string {
-  const normalizedForCheck = url.replace(/[\s\u0000-\u001f]/g, "").toLowerCase();
+  const normalizedForCheck = stripControlAndWhitespace(url).toLowerCase();
   const dangerousSchemes = ["javascript:", "data:", "vbscript:"];
   for (const scheme of dangerousSchemes) {
     if (normalizedForCheck.startsWith(scheme)) {
@@ -37,4 +37,18 @@ function sanitizeUrl(url: string): string {
 
   const sanitized = braintreeSanitizeUrl(url);
   return sanitized === "about:blank" ? "#invalid-url" : url;
+}
+
+const WHITESPACE = /\s/;
+
+function stripControlAndWhitespace(value: string): string {
+  let result = "";
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    if (WHITESPACE.test(char) || code <= 0x1f) {
+      continue;
+    }
+    result += char;
+  }
+  return result;
 }

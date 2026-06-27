@@ -8,8 +8,12 @@ export interface CollapsibleLabels {
 
 export function getCollapsibleLabels(data: CollapsibleData): CollapsibleLabels {
   return {
-    show: data["show-text"] ? formatLabelText(data["show-text"]) : formatCollapsibleText("+", "show block"),
-    hide: data["hide-text"] ? formatLabelText(data["hide-text"]) : formatCollapsibleText("\u2013", "hide block"),
+    show: data["show-text"]
+      ? formatLabelText(data["show-text"])
+      : formatCollapsibleText("+", "show block"),
+    hide: data["hide-text"]
+      ? formatLabelText(data["hide-text"])
+      : formatCollapsibleText("\u2013", "hide block"),
   };
 }
 

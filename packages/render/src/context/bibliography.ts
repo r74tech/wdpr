@@ -1,10 +1,4 @@
-import type {
-  BibliographyBlockData,
-  Element,
-  ListData,
-  TableData,
-  TabData,
-} from "@wdprlib/ast";
+import type { BibliographyBlockData, Element, ListData, TableData, TabData } from "@wdprlib/ast";
 
 interface BibliographyState {
   map: Map<string, number>;
@@ -103,9 +97,13 @@ function collectFromTabs(tabs: TabData[], state: BibliographyState): void {
   }
 }
 
-function hasElementChildren(element: Element): element is Element & { data: { elements: Element[] } } {
+function hasElementChildren(
+  element: Element,
+): element is Element & { data: { elements: Element[] } } {
   if (!("data" in element)) return false;
 
   const data: unknown = element.data;
-  return data !== null && typeof data === "object" && "elements" in data && Array.isArray(data.elements);
+  return (
+    data !== null && typeof data === "object" && "elements" in data && Array.isArray(data.elements)
+  );
 }

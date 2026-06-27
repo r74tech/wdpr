@@ -1,9 +1,4 @@
-import {
-  formatDate,
-  formatUserLinked,
-  getFirstParagraph,
-  getSummary,
-} from "../format";
+import { formatDate, formatUserLinked, getFirstParagraph, getSummary } from "../format";
 import type { VariableGetter } from "./types";
 
 /** Default character count for `%%preview%%` when no length is specified (Wikidot default). */

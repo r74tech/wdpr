@@ -17,10 +17,7 @@ export function getImageAttributes(
   return imgAttrs;
 }
 
-function appendPassedImageAttributes(
-  imgAttrs: string[],
-  safeAttrs: Record<string, string>,
-): void {
+function appendPassedImageAttributes(imgAttrs: string[], safeAttrs: Record<string, string>): void {
   for (const key in safeAttrs) {
     if (key === "alt" || key === "class" || key === "src" || key === "srcset") continue;
     const value = safeAttrs[key]!;

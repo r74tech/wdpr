@@ -47,7 +47,9 @@ export const moduleRule: BlockRule = {
 
     return {
       success: true,
-      elements: [createUnknownModuleElement(openResult.moduleName, openResult.attrs, bodyResult.body)],
+      elements: [
+        createUnknownModuleElement(openResult.moduleName, openResult.attrs, bodyResult.body),
+      ],
       consumed,
     };
   },

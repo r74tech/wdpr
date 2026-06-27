@@ -12,7 +12,21 @@ export function normalizeCssValue(value: string): string {
     return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : "";
   });
   result = result.replace(/\\(.)/g, "$1");
-  result = result.replace(/[\s\u0000-\u001f\u007f-\u009f]/g, "");
+  result = stripControlAndWhitespace(result);
 
   return result.toLowerCase();
+}
+
+const WHITESPACE = /\s/;
+
+function stripControlAndWhitespace(value: string): string {
+  let result = "";
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    if (WHITESPACE.test(char) || code <= 0x1f || (code >= 0x7f && code <= 0x9f)) {
+      continue;
+    }
+    result += char;
+  }
+  return result;
 }

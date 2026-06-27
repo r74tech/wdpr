@@ -18,7 +18,9 @@ export function resolveImageSource(
     }
     case "file1":
       if (!settings.allowLocalPaths) return null;
-      return pageName ? `/local--files/${pageName}/${source.data.file}` : `/local--files/${source.data.file}`;
+      return pageName
+        ? `/local--files/${pageName}/${source.data.file}`
+        : `/local--files/${source.data.file}`;
     case "file2":
       if (!settings.allowLocalPaths) return null;
       return `/local--files/${source.data.page}/${source.data.file}`;

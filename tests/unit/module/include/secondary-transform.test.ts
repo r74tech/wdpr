@@ -44,11 +44,9 @@ function createSite(): SiteContext {
 
 describe("include secondary transformation", () => {
   test("resolveModules can transform module-generated source before re-parsing", async () => {
-    const source = [
-      '[[module ListUsers users="."]]',
-      "before MARKER %%name%%",
-      "[[/module]]",
-    ].join("\n");
+    const source = ['[[module ListUsers users="."]]', "before MARKER %%name%%", "[[/module]]"].join(
+      "\n",
+    );
     const ast = parse(source).ast;
     const extraction = extractDataRequirements(ast);
     const seenSources: string[] = [];

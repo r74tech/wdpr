@@ -30,7 +30,9 @@ export function parseClearFloatSyntax(ctx: ParseContext): ClearFloatSyntax | nul
   };
 }
 
-function clearFloatDirection(tokenType: "CLEAR_FLOAT" | "CLEAR_FLOAT_LEFT" | "CLEAR_FLOAT_RIGHT"): ClearFloatDirection {
+function clearFloatDirection(
+  tokenType: "CLEAR_FLOAT" | "CLEAR_FLOAT_LEFT" | "CLEAR_FLOAT_RIGHT",
+): ClearFloatDirection {
   if (tokenType === "CLEAR_FLOAT_LEFT") {
     return "left";
   }

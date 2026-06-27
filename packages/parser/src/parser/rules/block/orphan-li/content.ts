@@ -8,10 +8,7 @@ export interface OrphanLiContentResult {
   foundClose: boolean;
 }
 
-export function collectOrphanLiContent(
-  ctx: ParseContext,
-  startPos: number,
-): OrphanLiContentResult {
+export function collectOrphanLiContent(ctx: ParseContext, startPos: number): OrphanLiContentResult {
   const elements: Element[] = [
     { element: "text", data: "[[" },
     { element: "text", data: "li" },

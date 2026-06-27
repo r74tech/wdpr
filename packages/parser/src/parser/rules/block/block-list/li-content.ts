@@ -1,15 +1,7 @@
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
-import {
-  parseListItemBlockContent,
-  parseListItemInlineContent,
-} from "./item-content";
-import {
-  isLiClose,
-  isListClose,
-  isNestedListOpen,
-  type ListBlockType,
-} from "./tags";
+import { parseListItemBlockContent, parseListItemInlineContent } from "./item-content";
+import { isLiClose, isListClose, isNestedListOpen, type ListBlockType } from "./tags";
 
 export type NestedListParser = (
   ctx: ParseContext,

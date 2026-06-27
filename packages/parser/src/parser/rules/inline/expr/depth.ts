@@ -6,7 +6,11 @@ export interface ExprDepthStep {
 }
 
 export function advanceExprDepth(token: Token, depth: number): ExprDepthStep {
-  if (token.type === "BLOCK_OPEN" || token.type === "BLOCK_END_OPEN" || token.type === "LINK_OPEN") {
+  if (
+    token.type === "BLOCK_OPEN" ||
+    token.type === "BLOCK_END_OPEN" ||
+    token.type === "LINK_OPEN"
+  ) {
     return { depth: depth + 1, shouldBreak: false };
   }
 

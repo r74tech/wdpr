@@ -3,12 +3,7 @@ import type { ParseContext } from "../../types";
 import { parseBareListContent } from "./bare-content";
 import { parseLiItem } from "./li-item";
 import { parseListBlockOpen } from "./open";
-import {
-  consumeCloseTag,
-  isListClose,
-  isNestedListOpen,
-  type ListBlockType,
-} from "./tags";
+import { consumeCloseTag, isListClose, isNestedListOpen, type ListBlockType } from "./tags";
 
 /**
  * Parses a complete `[[ul]]...[[/ul]]` or `[[ol]]...[[/ol]]` block.

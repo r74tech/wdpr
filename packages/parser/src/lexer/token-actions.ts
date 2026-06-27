@@ -90,11 +90,7 @@ export function scanDashToken(src: string, pos: number, isLineStart: boolean): T
   return token("TEXT", "-");
 }
 
-export function scanTildeToken(
-  src: string,
-  pos: number,
-  isLineStart: boolean,
-): TokenAction | null {
+export function scanTildeToken(src: string, pos: number, isLineStart: boolean): TokenAction | null {
   if (!isLineStart || src[pos + 1] !== "~" || src[pos + 2] !== "~" || src[pos + 3] !== "~") {
     return null;
   }

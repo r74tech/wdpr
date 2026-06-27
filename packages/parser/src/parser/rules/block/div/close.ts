@@ -9,7 +9,10 @@ export function isDivClose(ctx: ParseContext): boolean {
   return closeNameResult?.name === "div";
 }
 
-export function consumeDivClose(ctx: ParseContext, startPos: number): { pos: number; consumed: number } {
+export function consumeDivClose(
+  ctx: ParseContext,
+  startPos: number,
+): { pos: number; consumed: number } {
   let pos = startPos;
   let consumed = 0;
 

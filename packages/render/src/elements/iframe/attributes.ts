@@ -1,7 +1,15 @@
 import type { IframeData } from "@wdprlib/ast";
 import { escapeAttr, isDangerousUrl, sanitizeStyleValue } from "../../escape";
 
-const IFRAME_ATTRIBUTES = ["align", "frameborder", "height", "scrolling", "width", "class", "style"];
+const IFRAME_ATTRIBUTES = [
+  "align",
+  "frameborder",
+  "height",
+  "scrolling",
+  "width",
+  "class",
+  "style",
+];
 
 export function getIframeAttributes(data: IframeData): string[] {
   const url = isDangerousUrl(data.url) ? "#invalid-url" : data.url;

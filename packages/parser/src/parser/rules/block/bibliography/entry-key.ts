@@ -7,7 +7,10 @@ export interface BibliographyKeyResult {
   consumed: number;
 }
 
-export function parseBibliographyKey(ctx: ParseContext, startPos: number): BibliographyKeyResult | null {
+export function parseBibliographyKey(
+  ctx: ParseContext,
+  startPos: number,
+): BibliographyKeyResult | null {
   let pos = startPos;
   let consumed = 0;
 

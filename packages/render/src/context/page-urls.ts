@@ -1,7 +1,10 @@
 import type { LinkLocation } from "@wdprlib/ast";
 import type { PageContext } from "../types";
 
-export function resolvePageLink(location: LinkLocation, pageContext: PageContext | undefined): string {
+export function resolvePageLink(
+  location: LinkLocation,
+  pageContext: PageContext | undefined,
+): string {
   if (typeof location === "string") {
     return location;
   }

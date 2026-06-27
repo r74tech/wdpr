@@ -1,7 +1,12 @@
 import type { Element } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
 import { renderElement, renderElements } from "../../render";
-import { getParagraphIndices, isLiCloseTextParagraph, isParagraphElement, type ParagraphElement } from "./paragraphs";
+import {
+  getParagraphIndices,
+  isLiCloseTextParagraph,
+  isParagraphElement,
+  type ParagraphElement,
+} from "./paragraphs";
 import { trimTextElements } from "./trim";
 
 export function renderNoMarkerElements(ctx: RenderContext, elements: Element[]): void {
@@ -34,7 +39,10 @@ function renderNoMarkerParagraph(
   firstParagraphIdx: number,
   lastParagraphIdx: number,
 ): void {
-  if (index === firstParagraphIdx || (index === lastParagraphIdx && isLiCloseTextParagraph(element))) {
+  if (
+    index === firstParagraphIdx ||
+    (index === lastParagraphIdx && isLiCloseTextParagraph(element))
+  ) {
     renderElements(ctx, element.data.elements);
     return;
   }

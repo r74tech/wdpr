@@ -26,4 +26,4 @@ export const CONCAT_LINES: RegExp = /\\\n/g;
 export const TABS: RegExp = /\t/g;
 
 /** Matches null (NUL) characters (replaced with spaces). */
-export const NULL_CHARS: RegExp = /\0/g;
+export const NULL_CHARS: RegExp = new RegExp(String.fromCharCode(0), "g");

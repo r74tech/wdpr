@@ -1,8 +1,5 @@
 import type { ParseContext } from "../../types";
-import {
-  INDENT_ACCEPTING_BLOCK_NAMES,
-  KNOWN_BLOCK_NAMES,
-} from "../../../constants";
+import { INDENT_ACCEPTING_BLOCK_NAMES, KNOWN_BLOCK_NAMES } from "../../../constants";
 import { parseBlockName } from "../../common";
 
 /**

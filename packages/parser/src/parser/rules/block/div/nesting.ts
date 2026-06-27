@@ -30,9 +30,7 @@ function isDivCloseToken(ctx: ParseContext, pos: number): boolean {
   const d = name.value.charCodeAt(0);
   const i = name.value.charCodeAt(1);
   const v = name.value.charCodeAt(2);
-  if (
-    !((d === 100 || d === 68) && (i === 105 || i === 73) && (v === 118 || v === 86))
-  ) {
+  if (!((d === 100 || d === 68) && (i === 105 || i === 73) && (v === 118 || v === 86))) {
     return false;
   }
   return ctx.tokens[pos + 2]?.type !== "UNDERSCORE";

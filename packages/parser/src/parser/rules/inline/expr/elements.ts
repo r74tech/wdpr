@@ -13,6 +13,8 @@ export function createIfElement(
     element: "if",
     data: {
       condition,
+      // AST shape is fixed by @wdprlib/ast; this is not a Promise-like API.
+      // oxlint-disable-next-line unicorn/no-thenable
       then: thenElements,
       else: elseElements,
     },
@@ -28,6 +30,8 @@ export function createIfExprElement(
     element: "ifexpr",
     data: {
       expression,
+      // AST shape is fixed by @wdprlib/ast; this is not a Promise-like API.
+      // oxlint-disable-next-line unicorn/no-thenable
       then: thenElements,
       else: elseElements,
     },

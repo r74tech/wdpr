@@ -14,7 +14,10 @@ export type BlockquoteLineParseResult =
   | { kind: "skipped"; consumed: number }
   | { kind: "stop" };
 
-export function parseBlockquoteLine(ctx: ParseContext, startPos: number): BlockquoteLineParseResult {
+export function parseBlockquoteLine(
+  ctx: ParseContext,
+  startPos: number,
+): BlockquoteLineParseResult {
   const markerToken = ctx.tokens[startPos];
   if (!markerToken || !markerToken.lineStart || markerToken.type !== "BLOCKQUOTE_MARKER") {
     return { kind: "stop" };

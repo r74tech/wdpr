@@ -5,10 +5,7 @@ export interface IftagsConditionResult {
   consumed: number;
 }
 
-export function collectIftagsCondition(
-  ctx: ParseContext,
-  startPos: number,
-): IftagsConditionResult {
+export function collectIftagsCondition(ctx: ParseContext, startPos: number): IftagsConditionResult {
   let condition = "";
   let pos = startPos;
   let consumed = 0;

@@ -8,7 +8,10 @@ export interface DefinitionItemKeyResult {
   consumed: number;
 }
 
-export function parseDefinitionItemKey(ctx: ParseContext, startPos: number): DefinitionItemKeyResult | null {
+export function parseDefinitionItemKey(
+  ctx: ParseContext,
+  startPos: number,
+): DefinitionItemKeyResult | null {
   let pos = startPos;
   let consumed = 0;
 

@@ -10,7 +10,10 @@ export interface ConditionalBranchResult {
   endedWithPipe: boolean;
 }
 
-export function parseConditionalBranch(ctx: ParseContext, startPos: number): ConditionalBranchResult {
+export function parseConditionalBranch(
+  ctx: ParseContext,
+  startPos: number,
+): ConditionalBranchResult {
   const branchStart = skipWhitespace(ctx, startPos);
   const leadingWhitespaceConsumed = branchStart - startPos;
   const branchResult = parseInlineBranch(ctx, branchStart);

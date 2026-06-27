@@ -17,7 +17,9 @@ export function renderAvatarUser(ctx: RenderContext, username: string, user: Res
   const displayName = user.name ?? username;
   const hrefAttr = user.url ? ` href="${escapeAttr(user.url)}"` : "";
   const avatarUrl = user.avatarUrl ?? "";
-  const styleAttr = user.karmaUrl ? ` style="background-image:url(${escapeAttr(user.karmaUrl)})"` : "";
+  const styleAttr = user.karmaUrl
+    ? ` style="background-image:url(${escapeAttr(user.karmaUrl)})"`
+    : "";
 
   ctx.push(`<span class="printuser avatarhover">`);
   ctx.push(`<a${hrefAttr}>`);

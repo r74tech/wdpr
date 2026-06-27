@@ -4,7 +4,21 @@
  * lowercasing the result.
  */
 export function normalizeIframeUrl(url: string): string {
-  return url.replace(/[\s\u0000-\u001f\u007f-\u009f]/g, "").toLowerCase();
+  return stripControlAndWhitespace(url).toLowerCase();
+}
+
+const WHITESPACE = /\s/;
+
+function stripControlAndWhitespace(value: string): string {
+  let result = "";
+  for (const char of value) {
+    const code = char.charCodeAt(0);
+    if (WHITESPACE.test(char) || code <= 0x1f || (code >= 0x7f && code <= 0x9f)) {
+      continue;
+    }
+    result += char;
+  }
+  return result;
 }
 
 /**

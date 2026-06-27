@@ -103,35 +103,17 @@ export function substitute(text: string): string {
 
   // Double quotes: ``...'' -> "..."
   if (result.includes("``") && result.includes("''")) {
-    result = replaceDelimitedTypography(
-      result,
-      "``",
-      "''",
-      LEFT_DOUBLE_QUOTE,
-      RIGHT_DOUBLE_QUOTE,
-    );
+    result = replaceDelimitedTypography(result, "``", "''", LEFT_DOUBLE_QUOTE, RIGHT_DOUBLE_QUOTE);
   }
 
   // Low double quotes: ,,..'' -> „..."
   if (result.includes(",,") && result.includes("''")) {
-    result = replaceDelimitedTypography(
-      result,
-      ",,",
-      "''",
-      LOW_DOUBLE_QUOTE,
-      RIGHT_DOUBLE_QUOTE,
-    );
+    result = replaceDelimitedTypography(result, ",,", "''", LOW_DOUBLE_QUOTE, RIGHT_DOUBLE_QUOTE);
   }
 
   // Single quotes: `...' -> '...'
   if (result.includes("`") && result.includes("'")) {
-    result = replaceDelimitedTypography(
-      result,
-      "`",
-      "'",
-      LEFT_SINGLE_QUOTE,
-      RIGHT_SINGLE_QUOTE,
-    );
+    result = replaceDelimitedTypography(result, "`", "'", LEFT_SINGLE_QUOTE, RIGHT_SINGLE_QUOTE);
   }
 
   // Ellipsis: ... or . . . -> …

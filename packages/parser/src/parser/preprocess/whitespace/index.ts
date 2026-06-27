@@ -12,13 +12,7 @@
 
 import { needsWhitespaceSubstitution, mayContainWhitespaceOnlyLine } from "./detection";
 import { replaceLeadingSpaces } from "./leading-spaces";
-import {
-  CONCAT_LINES,
-  DOS_MAC_NEWLINES,
-  NULL_CHARS,
-  TABS,
-  WHITESPACE_ONLY_LINE,
-} from "./patterns";
+import { CONCAT_LINES, DOS_MAC_NEWLINES, NULL_CHARS, TABS, WHITESPACE_ONLY_LINE } from "./patterns";
 
 /**
  * Apply all whitespace normalization substitutions to the given text.

@@ -11,6 +11,7 @@
 
 import type { Module } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
+import { renderEmptyModuleContainer } from "./empty-container";
 
 /**
  * Render a `[[module Categories]]` element as an empty container.
@@ -22,6 +23,5 @@ export function renderCategories(
   ctx: RenderContext,
   _data: Extract<Module, { module: "categories" }>,
 ): void {
-  ctx.push(`<div class="categories-module-box">`);
-  ctx.push("</div>");
+  renderEmptyModuleContainer(ctx, "categories-module-box");
 }

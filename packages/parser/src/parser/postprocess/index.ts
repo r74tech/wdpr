@@ -13,5 +13,3 @@
 
 export { mergeSpanStripParagraphs, cleanInternalFlags } from "./spanStrip";
 export { suppressDivAdjacentParagraphs } from "./divAdjacentParagraph";
-export { splitAlignedImageParagraphs } from "./splitAlignedImage";
-export { unwrapImageParagraphs } from "./imageParagraphUnwrap";

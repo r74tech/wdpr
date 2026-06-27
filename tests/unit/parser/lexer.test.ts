@@ -30,6 +30,43 @@ describe("Lexer", () => {
       const types = getTokenTypes("  \t  ");
       expect(types).toContain("WHITESPACE");
     });
+
+    it("should coalesce long non-ASCII plain text", () => {
+      const source = "あ".repeat(64);
+      const tokens = tokenize(source);
+
+      expect(tokens).toHaveLength(2);
+      expect(tokens[0]?.type).toBe("TEXT");
+      expect(tokens[0]?.value).toBe(source);
+      expect(tokens[0]?.position.start.offset).toBe(0);
+      expect(tokens[0]?.position.end.offset).toBe(source.length);
+      expect(tokens[1]?.type).toBe("EOF");
+    });
+
+    it("should compact ordinary text only when requested", () => {
+      const source = "hello world; plain text.";
+      expect(tokenize(source).some((token) => token.type === "IDENTIFIER")).toBe(true);
+
+      const tokens = tokenize(source, { compactTextRuns: true });
+      expect(tokens[0]?.type).toBe("TEXT");
+      expect(tokens[0]?.value).toBe(source);
+      expect(tokens[1]?.type).toBe("EOF");
+    });
+
+    it("should keep block openers tokenized while compacting text", () => {
+      const tokens = tokenize('before [[div class="x"]]inside[[/div]] after', {
+        compactTextRuns: true,
+      });
+
+      expect(tokens.map((token) => token.type)).toContain("BLOCK_OPEN");
+      expect(tokens.map((token) => token.type)).toContain("BLOCK_END_OPEN");
+      expect(tokens.some((token) => token.type === "IDENTIFIER" && token.value === "div")).toBe(
+        true,
+      );
+      expect(tokens.some((token) => token.type === "QUOTED_STRING" && token.value === '"x"')).toBe(
+        true,
+      );
+    });
   });
 
   describe("block syntax", () => {

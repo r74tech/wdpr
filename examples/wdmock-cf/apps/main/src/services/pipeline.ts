@@ -12,7 +12,7 @@ import type {
 } from "@wdprlib/parser";
 import { renderToHtml } from "@wdprlib/render";
 import type { PageContext } from "@wdprlib/render";
-import { SITE, getUserInfo, parseFullname, buildFullname } from "@wdmock/shared";
+import { SITE, parseFullname } from "@wdmock/shared";
 import { getTagsByFullname, rowToPageData, getAllPageSources } from "@wdmock/db";
 
 // Normalized order field -> DB column mapping

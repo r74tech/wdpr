@@ -11,12 +11,7 @@
 
 import type { ListUsersVariable } from "./types";
 import { compileListUsersTemplate } from "./compiler";
-
-/** Regex for matching `%%variable%%` patterns in ListUsers templates. */
-const VARIABLE_REGEX = /%%([a-z_]+)%%/gi;
-
-/** The complete list of recognized ListUsers template variables. */
-const KNOWN_VARIABLES: ListUsersVariable[] = ["number", "title", "name"];
+import { isListUsersVariable, LIST_USERS_VARIABLE_REGEX } from "./variables";
 
 /**
  * Extract the set of template variables referenced in a ListUsers template string.
@@ -30,12 +25,12 @@ const KNOWN_VARIABLES: ListUsersVariable[] = ["number", "title", "name"];
 export function extractListUsersVariables(template: string): ListUsersVariable[] {
   const variables = new Set<ListUsersVariable>();
 
-  for (const match of template.matchAll(VARIABLE_REGEX)) {
+  for (const match of template.matchAll(LIST_USERS_VARIABLE_REGEX)) {
     const [, varName] = match;
     if (!varName) continue;
     const normalized = varName.toLowerCase();
-    if (KNOWN_VARIABLES.includes(normalized as ListUsersVariable)) {
-      variables.add(normalized as ListUsersVariable);
+    if (isListUsersVariable(normalized)) {
+      variables.add(normalized);
     }
   }
 

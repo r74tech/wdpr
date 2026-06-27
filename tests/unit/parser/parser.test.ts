@@ -380,13 +380,7 @@ describe("Parser", () => {
     type ContainerData = { elements: { element: string; data: ImageData }[] };
 
     function getImageFromParagraph(content: Element[]): { element: string; data: ImageData } {
-      const first = content[0] as { element: string; data: ImageData | ContainerData };
-      // After the `unwrapImageParagraphs` postprocess, a top-level `[[image]]`
-      // surfaces directly as an `image` element. We keep the helper backwards
-      // compatible: if the first element is still a paragraph container,
-      // dig into it; otherwise treat it as the image itself.
-      if (first.element === "image") return first as { element: string; data: ImageData };
-      const para = first as { element: string; data: ContainerData };
+      const para = content[0] as { element: string; data: ContainerData };
       expect(para.element).toBe("container");
       expect(para.data.elements.length).toBeGreaterThan(0);
       return para.data.elements[0] as { element: string; data: ImageData };

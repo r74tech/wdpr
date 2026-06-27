@@ -172,7 +172,19 @@ describe("RenderContext", () => {
       const ctx = new RenderContext(createEmptyTree());
       const link: LinkLocation = { page: "test-page", site: "other-site" };
 
-      expect(ctx.resolvePageLink(link)).toBe("https://other-site.wikidot.com/test-page");
+      expect(ctx.resolvePageLink(link)).toBe("/other-site/test-page");
+    });
+
+    it("should resolve PageRef with configured site domain", () => {
+      const ctx = new RenderContext(createEmptyTree(), {
+        page: {
+          pageName: "test-page",
+          siteDomains: { "other-site": "other-site.example.com" },
+        },
+      });
+      const link: LinkLocation = { page: "test-page", site: "other-site" };
+
+      expect(ctx.resolvePageLink(link)).toBe("https://other-site.example.com/test-page");
     });
   });
 

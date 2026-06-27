@@ -22,6 +22,7 @@
 // Module rule types and registry
 export type { ModuleRule } from "./types";
 export { MODULE_RULES, getModuleRuleByName } from "./mapping";
+export { moduleRule } from "./rule";
 
 // Module parsers
 export { rateModuleRule } from "./rate/index";
@@ -95,7 +96,18 @@ export {
 
 // Include module
 export type { IncludeFetcher, AsyncIncludeFetcher, ResolveIncludesOptions } from "./include";
-export { resolveIncludes, resolveIncludesAsync } from "./include";
+export type {
+  IncludeReference,
+  IncludeDependency,
+  IncludeIterationTrace,
+  ResolveIncludesTraceResult,
+} from "./include";
+export {
+  extractIncludeReferences,
+  resolveIncludes,
+  resolveIncludesAsync,
+  resolveIncludesWithTrace,
+} from "./include";
 
 // ListUsers module
 export type {
@@ -117,6 +129,6 @@ export {
 } from "./listusers";
 
 // Module resolver
-export type { ResolveOptions } from "./resolve";
+export type { ModuleSourceTransform, ResolveOptions } from "./resolve";
 export { resolveModules } from "./resolve";
 export { STYLE_SLOT_PREFIX } from "@wdprlib/ast";

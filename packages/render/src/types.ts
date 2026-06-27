@@ -13,10 +13,14 @@ import type { EmbedAllowlistEntry } from "./elements/embed-block";
 export interface PageContext {
   /** Full page name including category prefix (e.g. `"secret:test2"`) */
   pageName: string;
-  /** Site slug used to build inter-site URLs (e.g. `"scp-wiki"`) */
+  /** Site slug for the current page (e.g. `"scp-wiki"`) */
   site?: string;
-  /** Site domain used for absolute URL generation (e.g. `"scp-wiki.wikidot.com"`) */
+  /** Current site domain used for absolute URL generation (e.g. `"scp-wiki.example.org"`) */
   domain?: string;
+  /** Known domains for cross-site page references keyed by site slug. */
+  siteDomains?: Record<string, string>;
+  /** Resolve a cross-site page reference site slug to a domain. */
+  resolveSiteDomain?: (site: string) => string | null | undefined;
   /**
    * Returns whether a page exists on the site.
    * When a target page does not exist, the renderer adds `class="newpage"`

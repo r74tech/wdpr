@@ -15,6 +15,7 @@
 import type { ListPagesDataFetcher } from "./listpages/types";
 import type { ListUsersDataFetcher } from "./listusers/types";
 import type { IfTagsResolver } from "./iftags/types";
+import type { IncludeFetcher } from "./include/resolve/types";
 
 /**
  * Callback bag for supplying external data during module resolution.
@@ -47,6 +48,16 @@ export interface DataProvider {
    * Called once per ListUsers instance with the parsed query parameters.
    */
   fetchListUsers?: ListUsersDataFetcher;
+
+  /**
+   * Fetch raw wikitext for `[[include]]` directives that are created during
+   * module secondary transformations such as ListPages/ListUsers item rendering.
+   *
+   * Top-level include expansion still uses `resolveIncludes()` directly before
+   * parsing. This callback is only for module-rendered wikitext that needs its
+   * own include pass before being parsed again.
+   */
+  fetchInclude?: IncludeFetcher;
 
   /**
    * Return the current page's tags for `[[iftags]]` evaluation.

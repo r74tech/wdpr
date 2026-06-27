@@ -19,6 +19,17 @@ describe("resolveIncludesAsync", () => {
     expect(expanded).toBe("Hello from included page");
   });
 
+  test("resolves include opener case-insensitively", async () => {
+    const source = "[[INCLUDE my-page]]";
+    const fetcher = async (pageRef: { site: string | null; page: string }) => {
+      if (pageRef.page === "my-page") return "Hello from included page";
+      return null;
+    };
+
+    const expanded = await resolveIncludesAsync(source, fetcher);
+    expect(expanded).toBe("Hello from included page");
+  });
+
   test("returns error block for page not found", async () => {
     const source = "[[include missing-page]]";
     const fetcher = async () => null;
@@ -117,6 +128,50 @@ describe("resolveIncludesAsync", () => {
 
     await resolveIncludesAsync(source, fetcher);
     expect(fetchCount).toBe(1);
+  });
+
+  test("fetches sibling includes concurrently while preserving output order", async () => {
+    const source = "[[include page-a]]\n[[include page-b]]";
+    const started: string[] = [];
+    const pending = new Map<string, (value: string) => void>();
+
+    const fetcher = async (pageRef: { site: string | null; page: string }) => {
+      started.push(pageRef.page);
+      return new Promise<string>((resolve) => {
+        pending.set(pageRef.page, resolve);
+      });
+    };
+
+    const expandedPromise = resolveIncludesAsync(source, fetcher);
+    await Promise.resolve();
+
+    expect(started).toEqual(["page-a", "page-b"]);
+
+    pending.get("page-b")!("B content");
+    pending.get("page-a")!("A content");
+
+    await expect(expandedPromise).resolves.toBe("A content\nB content");
+  });
+
+  test("shares in-flight fetches for repeated sibling includes", async () => {
+    const source = "[[include tmpl | x=1]]\n[[include tmpl | x=2]]";
+    let fetchCount = 0;
+    let resolveTemplate!: (value: string) => void;
+
+    const fetcher = async () => {
+      fetchCount++;
+      return new Promise<string>((resolve) => {
+        resolveTemplate = resolve;
+      });
+    };
+
+    const expandedPromise = resolveIncludesAsync(source, fetcher);
+    await Promise.resolve();
+
+    expect(fetchCount).toBe(1);
+
+    resolveTemplate("val={$x}");
+    await expect(expandedPromise).resolves.toBe("val=1\nval=2");
   });
 
   test("same page with different variables uses cache but substitutes differently", async () => {

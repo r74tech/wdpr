@@ -13,9 +13,8 @@
  */
 
 import type { ListUsersCompiledTemplate, ListUsersVariableContext } from "./types";
-
-/** Regex for matching `%%variable%%` patterns in the template. */
-const VARIABLE_REGEX = /%%([a-z_]+)%%/gi;
+import { createListUsersVariableGetter } from "./getters";
+import { LIST_USERS_VARIABLE_REGEX } from "./variables";
 
 /**
  * Compile a ListUsers template string into an executable function.
@@ -30,14 +29,14 @@ export function compileListUsersTemplate(template: string): ListUsersCompiledTem
   const parts: (string | ((ctx: ListUsersVariableContext) => string))[] = [];
   let lastIndex = 0;
 
-  for (const match of template.matchAll(VARIABLE_REGEX)) {
+  for (const match of template.matchAll(LIST_USERS_VARIABLE_REGEX)) {
     if (match.index !== undefined && match.index > lastIndex) {
       parts.push(template.slice(lastIndex, match.index));
     }
 
     const [, varName] = match;
     if (!varName) continue;
-    const getter = createVariableGetter(varName.toLowerCase());
+    const getter = createListUsersVariableGetter(varName.toLowerCase());
     parts.push(getter);
 
     lastIndex = match.index !== undefined ? match.index + match[0].length : lastIndex;
@@ -54,24 +53,4 @@ export function compileListUsersTemplate(template: string): ListUsersCompiledTem
     }
     return result;
   };
-}
-
-/**
- * Create a getter function for a specific ListUsers variable.
- *
- * @param name - Lowercase variable name
- * @returns A function that extracts the variable's value from a ListUsersVariableContext.
- *          Unknown names return a function that always returns an empty string.
- */
-function createVariableGetter(name: string): (ctx: ListUsersVariableContext) => string {
-  switch (name) {
-    case "number":
-      return (ctx) => String(ctx.user.number);
-    case "title":
-      return (ctx) => ctx.user.title;
-    case "name":
-      return (ctx) => ctx.user.name;
-    default:
-      return () => "";
-  }
 }

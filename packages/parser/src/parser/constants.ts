@@ -37,6 +37,8 @@ export const BLOCK_START_TOKENS: TokenType[] = [
   "CLEAR_FLOAT_RIGHT", // ~~~~>
 ];
 
+export const BLOCK_START_TOKEN_SET: ReadonlySet<TokenType> = new Set(BLOCK_START_TOKENS);
+
 /**
  * Set of block names recognized by the parser at `[[name]]` / `[[/name]]`.
  *
@@ -101,13 +103,7 @@ export const KNOWN_BLOCK_NAMES: ReadonlySet<string> = new Set<string>([
   "footnote",
   "eref",
   "$",
-  // `image` is intentionally absent. Wikidot's Paragraph rule skips lines
-  // that contain an `<img>` token (see the `$skip` list in
-  // `Text/Wiki/Parse/Default/Paragraph.php`), so an `[[image]]` at line
-  // start does not terminate the current paragraph. The resulting
-  // paragraph is then unwrapped by `unwrapImageParagraphs` in postprocess
-  // so the `<img>` ends up as a direct child of its enclosing container
-  // without an interposing `<p>`.
+  "image",
   "gallery",
   "file",
 ]);

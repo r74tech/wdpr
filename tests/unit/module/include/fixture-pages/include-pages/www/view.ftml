@@ -1,0 +1,4 @@
+[[div class="target-render"]]
+TARGET name={$name}
+TARGET raw={$raw}
+[[/div]]

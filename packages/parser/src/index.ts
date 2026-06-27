@@ -115,11 +115,16 @@ export type {
   ExtractionResult,
   // Resolution types
   ParseFunction,
+  ModuleSourceTransform,
   ResolveOptions,
   // Include resolution
   IncludeFetcher,
   AsyncIncludeFetcher,
   ResolveIncludesOptions,
+  IncludeReference,
+  IncludeDependency,
+  IncludeIterationTrace,
+  ResolveIncludesTraceResult,
   // ListUsers types
   ListUsersVariable,
   ListUsersUserData,
@@ -143,8 +148,10 @@ export {
   STYLE_SLOT_PREFIX,
   compileTemplate,
   // Include resolution
+  extractIncludeReferences,
   resolveIncludes,
   resolveIncludesAsync,
+  resolveIncludesWithTrace,
   // IfTags source-level preprocessing (run between include expansion and parse)
   preprocessIftags,
   // Query normalization (for advanced use cases)

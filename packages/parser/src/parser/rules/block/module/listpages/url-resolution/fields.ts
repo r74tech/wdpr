@@ -1,9 +1,9 @@
 import type { ListPagesQuery } from "../types";
 
 export type UrlResolvableField =
-  | { attr: string; queryKey: StringUrlQueryKey; type: "string" }
-  | { attr: string; queryKey: NumberUrlQueryKey; type: "number" }
-  | { attr: string; queryKey: BooleanUrlQueryKey; type: "boolean" };
+  | { attr: string; queryKey: StringUrlQueryKey; type: "string"; urlAttrs?: readonly string[] }
+  | { attr: string; queryKey: NumberUrlQueryKey; type: "number"; urlAttrs?: readonly string[] }
+  | { attr: string; queryKey: BooleanUrlQueryKey; type: "boolean"; urlAttrs?: readonly string[] };
 
 type StringUrlQueryKey = Extract<
   keyof ListPagesQuery,
@@ -33,7 +33,7 @@ export const URL_RESOLVABLE_FIELDS: readonly UrlResolvableField[] = [
   { attr: "limit", queryKey: "limit", type: "number" },
   { attr: "per-page", queryKey: "perPage", type: "number" },
   { attr: "order", queryKey: "order", type: "string" },
-  { attr: "tags", queryKey: "tags", type: "string" },
+  { attr: "tags", queryKey: "tags", type: "string", urlAttrs: ["tag"] },
   { attr: "category", queryKey: "category", type: "string" },
   { attr: "parent", queryKey: "parent", type: "string" },
   { attr: "range", queryKey: "range", type: "string" },

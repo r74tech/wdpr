@@ -25,13 +25,22 @@ export function resolveQuery(
     const rawValue = rawAttributes[field.attr];
     if (!rawValue) continue;
 
-    const resolvedValue = resolveUrlValue(rawValue, field.attr, urlParams, urlAttrPrefix);
+    const resolvedValue = resolveUrlValue(
+      rawValue,
+      getUrlParamNames(field),
+      urlParams,
+      urlAttrPrefix,
+    );
     if (resolvedValue === undefined) continue;
 
     assignResolvedUrlField(resolved, field, resolvedValue);
   }
 
   return resolved;
+}
+
+function getUrlParamNames(field: (typeof URL_RESOLVABLE_FIELDS)[number]): readonly string[] {
+  return field.urlAttrs ? [field.attr, ...field.urlAttrs] : [field.attr];
 }
 
 /**

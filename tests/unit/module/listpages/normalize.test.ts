@@ -529,6 +529,15 @@ describe("resolveQuery", () => {
     expect(result.order).toBe("titleAsc");
   });
 
+  test("resolves tags @URL from tag listing path", () => {
+    const req = createRequirement({ tags: "@URL|+fruit", limit: "@URL|10" });
+    const urlParams = parseUrlParams("/tag/vegetable/limit/5");
+    const result = resolveQuery(req, urlParams);
+
+    expect(result.tags).toBe("vegetable");
+    expect(result.limit).toBe(5);
+  });
+
   test("resolves boolean fields", () => {
     const req = createRequirement({ reverse: "@URL|false" });
     const urlParams = parseUrlParams("/scp-001/reverse/true");

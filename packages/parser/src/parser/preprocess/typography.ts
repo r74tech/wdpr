@@ -56,6 +56,37 @@ function replaceExactEllipsisPattern(text: string, pattern: string): string {
   return lastCopied === 0 ? text : result + text.slice(lastCopied);
 }
 
+function replaceDelimitedTypography(
+  text: string,
+  opener: string,
+  closer: string,
+  leftQuote: string,
+  rightQuote: string,
+): string {
+  let searchFrom = 0;
+  let result = "";
+  let lastCopied = 0;
+
+  while (searchFrom < text.length) {
+    const openIndex = text.indexOf(opener, searchFrom);
+    if (openIndex === -1) break;
+
+    const contentStart = openIndex + opener.length;
+    const closeIndex = text.indexOf(closer, contentStart);
+    if (closeIndex === -1) break;
+
+    result += text.slice(lastCopied, openIndex);
+    result += leftQuote;
+    result += text.slice(contentStart, closeIndex);
+    result += rightQuote;
+
+    lastCopied = closeIndex + closer.length;
+    searchFrom = lastCopied;
+  }
+
+  return lastCopied === 0 ? text : result + text.slice(lastCopied);
+}
+
 /**
  * Apply all typographic substitutions to the given text.
  *
@@ -72,17 +103,35 @@ export function substitute(text: string): string {
 
   // Double quotes: ``...'' -> "..."
   if (result.includes("``") && result.includes("''")) {
-    result = result.replace(/``(.*?)''/g, `${LEFT_DOUBLE_QUOTE}$1${RIGHT_DOUBLE_QUOTE}`);
+    result = replaceDelimitedTypography(
+      result,
+      "``",
+      "''",
+      LEFT_DOUBLE_QUOTE,
+      RIGHT_DOUBLE_QUOTE,
+    );
   }
 
   // Low double quotes: ,,..'' -> „..."
   if (result.includes(",,") && result.includes("''")) {
-    result = result.replace(/,,(.*?)''/g, `${LOW_DOUBLE_QUOTE}$1${RIGHT_DOUBLE_QUOTE}`);
+    result = replaceDelimitedTypography(
+      result,
+      ",,",
+      "''",
+      LOW_DOUBLE_QUOTE,
+      RIGHT_DOUBLE_QUOTE,
+    );
   }
 
   // Single quotes: `...' -> '...'
   if (result.includes("`") && result.includes("'")) {
-    result = result.replace(/`(.*?)'/g, `${LEFT_SINGLE_QUOTE}$1${RIGHT_SINGLE_QUOTE}`);
+    result = replaceDelimitedTypography(
+      result,
+      "`",
+      "'",
+      LEFT_SINGLE_QUOTE,
+      RIGHT_SINGLE_QUOTE,
+    );
   }
 
   // Ellipsis: ... or . . . -> …

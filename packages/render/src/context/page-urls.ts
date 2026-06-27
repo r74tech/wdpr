@@ -51,7 +51,19 @@ function resolveSiteDomain(site: string, pageContext: PageContext | undefined): 
 }
 
 function normalizeDomain(domain: string): string {
-  return domain.replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+  let normalized = domain;
+  const lower = normalized.toLowerCase();
+  if (lower.startsWith("https://")) {
+    normalized = normalized.slice("https://".length);
+  } else if (lower.startsWith("http://")) {
+    normalized = normalized.slice("http://".length);
+  }
+
+  let end = normalized.length;
+  while (end > 0 && normalized[end - 1] === "/") {
+    end--;
+  }
+  return end === normalized.length ? normalized : normalized.slice(0, end);
 }
 
 function normalizePageName(page: string): string {

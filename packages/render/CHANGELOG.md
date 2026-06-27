@@ -1,3 +1,13 @@
+# 3.0.0 (2026-06-27)
+
+### 🩹 Fixes
+
+- **parser/render:** [[image]] が含まれる paragraph の <p> wrap を Wikidot 本家挙動に合わせる ([#51](https://github.com/r74tech/wdpr/pull/51))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 2.1.0 (2026-06-10)
 
 ### 🚀 Features

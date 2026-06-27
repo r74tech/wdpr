@@ -5,7 +5,7 @@
 export function normalizeCssValue(value: string): string {
   let result = value;
 
-  result = result.replace(/\/\*[\s\S]*?\*\//g, "");
+  result = stripCssComments(result);
   result = result.replace(/\\(?:\r\n|[\n\r\f])/g, "");
   result = result.replace(/\\([0-9a-f]{1,6})\s?/gi, (_, hex) => {
     const code = Number.parseInt(hex, 16);
@@ -18,6 +18,28 @@ export function normalizeCssValue(value: string): string {
 }
 
 const WHITESPACE = /\s/;
+
+function stripCssComments(value: string): string {
+  let result = "";
+  let cursor = 0;
+
+  while (cursor < value.length) {
+    const start = value.indexOf("/*", cursor);
+    if (start === -1) {
+      result += value.slice(cursor);
+      break;
+    }
+
+    result += value.slice(cursor, start);
+    const end = value.indexOf("*/", start + 2);
+    if (end === -1) {
+      break;
+    }
+    cursor = end + 2;
+  }
+
+  return result;
+}
 
 function stripControlAndWhitespace(value: string): string {
   let result = "";

@@ -22,7 +22,7 @@
 
 import type { CompiledTemplate, VariableContext } from "./types";
 import { createVariableGetter } from "./template/getters";
-import { createTemplateVariableRegex } from "./template/syntax";
+import { scanTemplateVariables } from "./template/syntax";
 
 /**
  * Compile a ListPages template string into an executable function.
@@ -39,19 +39,22 @@ export function compileTemplate(template: string): CompiledTemplate {
   let lastIndex = 0;
 
   // Split template into static and dynamic parts
-  for (const match of template.matchAll(createTemplateVariableRegex())) {
+  for (const match of scanTemplateVariables(template)) {
     // Add static part before this match
-    if (match.index !== undefined && match.index > lastIndex) {
+    if (match.index > lastIndex) {
       parts.push(template.slice(lastIndex, match.index));
     }
 
     // Convert variable to getter function
-    const [, varName, braceParam, parenParam, format] = match;
-    if (!varName) continue;
-    const getter = createVariableGetter(varName.toLowerCase(), braceParam, parenParam, format);
+    const getter = createVariableGetter(
+      match.name.toLowerCase(),
+      match.braceParam,
+      match.parenParam,
+      match.format,
+    );
     parts.push(getter);
 
-    lastIndex = match.index !== undefined ? match.index + match[0].length : lastIndex;
+    lastIndex = match.index + match.raw.length;
   }
 
   // Add remaining static part

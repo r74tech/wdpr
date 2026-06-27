@@ -1,5 +1,5 @@
 import type { ListPagesVariable } from "../types";
-import { createTemplateVariableRegex } from "../template/syntax";
+import { scanTemplateVariables } from "../template/syntax";
 import { normalizeVariableName } from "./variables";
 
 /**
@@ -34,49 +34,47 @@ export function extractVariablesFromTemplate(template: string): TemplateExtracti
   let tagsLinkPrefix: string | undefined;
   let hiddenTagsLinkPrefix: string | undefined;
 
-  for (const match of template.matchAll(createTemplateVariableRegex())) {
-    const [, name, braceParam, parenParam, format] = match;
-    if (!name) continue;
-    const varName = name.toLowerCase();
+  for (const match of scanTemplateVariables(template)) {
+    const varName = match.name.toLowerCase();
 
-    if (braceParam !== undefined) {
+    if (match.braceParam !== undefined) {
       switch (varName) {
         case "content":
-          contentIndices.add(Number(braceParam));
+          contentIndices.add(Number(match.braceParam));
           variables.add("content_n");
           continue;
         case "form_data":
-          formFields.add(braceParam);
+          formFields.add(match.braceParam);
           variables.add("form_data");
           continue;
         case "form_raw":
-          formFields.add(braceParam);
+          formFields.add(match.braceParam);
           variables.add("form_raw");
           continue;
         case "form_label":
-          formFields.add(braceParam);
+          formFields.add(match.braceParam);
           variables.add("form_label");
           continue;
         case "form_hint":
-          formFields.add(braceParam);
+          formFields.add(match.braceParam);
           variables.add("form_hint");
           continue;
       }
     }
 
-    if (parenParam !== undefined && varName === "preview") {
-      previewLengths.add(Number(parenParam));
+    if (match.parenParam !== undefined && varName === "preview") {
+      previewLengths.add(Number(match.parenParam));
       variables.add("preview_n");
       continue;
     }
 
     if (varName === "tags_linked") {
-      if (format) tagsLinkPrefix = format;
+      if (match.format) tagsLinkPrefix = match.format;
       variables.add("tags_linked");
       continue;
     }
     if (varName === "_tags_linked") {
-      if (format) hiddenTagsLinkPrefix = format;
+      if (match.format) hiddenTagsLinkPrefix = match.format;
       variables.add("_tags_linked");
       continue;
     }

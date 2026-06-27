@@ -1,3 +1,13 @@
+## 4.1.0 (2026-06-27)
+
+### 🩹 Fixes
+
+- **parser:** ListPagesのtags@URLで/tag URLを解決する ([ecd482e](https://github.com/r74tech/wdpr/commit/ecd482e))
+
+### ❤️ Thank You
+
+- r74tech
+
 # 4.0.0 (2026-06-27)
 
 ### 🚀 Features

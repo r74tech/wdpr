@@ -15,10 +15,8 @@ import { replaceLeadingSpaces } from "./leading-spaces";
 import {
   CONCAT_LINES,
   DOS_MAC_NEWLINES,
-  LEADING_NEWLINES,
   NULL_CHARS,
   TABS,
-  TRAILING_NEWLINES,
   WHITESPACE_ONLY_LINE,
 } from "./patterns";
 
@@ -61,11 +59,27 @@ export function substitute(text: string): string {
   }
 
   if (result[0] === "\n") {
-    result = result.replace(LEADING_NEWLINES, "");
+    result = trimLeadingNewlines(result);
   }
   if (result[result.length - 1] === "\n") {
-    result = result.replace(TRAILING_NEWLINES, "");
+    result = trimTrailingNewlines(result);
   }
 
   return result;
+}
+
+function trimLeadingNewlines(text: string): string {
+  let index = 0;
+  while (text[index] === "\n") {
+    index++;
+  }
+  return index === 0 ? text : text.slice(index);
+}
+
+function trimTrailingNewlines(text: string): string {
+  let end = text.length;
+  while (end > 0 && text[end - 1] === "\n") {
+    end--;
+  }
+  return end === text.length ? text : text.slice(0, end);
 }

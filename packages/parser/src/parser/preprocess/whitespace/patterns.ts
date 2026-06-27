@@ -7,12 +7,6 @@ export const LEADING_NONSTANDARD_WHITESPACE: RegExp = /^[\u00a0\u2007]+/gm;
 /** Matches lines containing only whitespace (collapsed to empty lines). */
 export const WHITESPACE_ONLY_LINE: RegExp = /^\s+$/gm;
 
-/** Matches one or more newlines at the very start of the text. */
-export const LEADING_NEWLINES: RegExp = /^\n+/;
-
-/** Matches one or more newlines at the very end of the text. */
-export const TRAILING_NEWLINES: RegExp = /\n+$/;
-
 /** Matches DOS (`\r\n`) and legacy Mac (`\r`) line endings. */
 export const DOS_MAC_NEWLINES: RegExp = /\r\n?/g;
 

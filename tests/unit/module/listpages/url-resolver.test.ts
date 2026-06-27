@@ -27,6 +27,18 @@ describe("parseUrlParams", () => {
     expect(params.get("page2_limit")).toBe("5");
     expect(params.get("page3_limit")).toBe("0");
   });
+
+  it("should parse tag listing URLs from the leading parameter", () => {
+    const params = parseUrlParams("/tag/fruit");
+    expect(params.get("tag")).toBe("fruit");
+  });
+
+  it("should parse tag listing URLs with trailing parameters", () => {
+    const params = parseUrlParams("/tag/fruit/offset/20/limit/5");
+    expect(params.get("tag")).toBe("fruit");
+    expect(params.get("offset")).toBe("20");
+    expect(params.get("limit")).toBe("5");
+  });
 });
 
 describe("resolveUrlValue", () => {

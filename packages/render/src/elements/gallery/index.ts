@@ -1,0 +1,162 @@
+/**
+ *
+ * Renderer for Wikidot `[[gallery]]` elements.
+ *
+ * Emits a rationalized, theme-compatible markup: the Wikidot class names
+ * `gallery-box` / `gallery-item <size>` / `with-lb` are kept, but the
+ * legacy table wrapper is replaced with a plain `<figure>` per item.
+ *
+ * ```html
+ * <div class="gallery-box">
+ *   <figure class="gallery-item thumbnail">
+ *     <a href="/local--files/page/a.jpg" class="with-lb"><img src="..." alt=""/></a>
+ *   </figure>
+ * </div>
+ * ```
+ *
+ * - `with-lb` marks lightbox targets (see `initGallery` in
+ *   `@wdprlib/runtime`): anchors whose href is the image itself, i.e.
+ *   items without an explicit `link` and without a `*` new-window prefix.
+ * - `data-viewer="false"` on the box disables the lightbox
+ *   (`viewer="no"`).
+ * - Items whose source is a dangerous URL are skipped; a dangerous link
+ *   is ignored (the item then links to its own image).
+ *
+ * @module
+ */
+import type { GalleryData, GalleryItem, GallerySize } from "@wdprlib/ast";
+import type { RenderContext } from "../../context";
+import { escapeAttr, isDangerousUrl } from "../../escape";
+import { sortGalleryFiles } from "./sort";
+
+export { sortGalleryFiles } from "./sort";
+
+/** Wikidot's message for an auto gallery on a page without image attachments. */
+const NO_IMAGES_MESSAGE = "Sorry, we couldn't find any images attached to this page.";
+
+/** Render a gallery element (explicit items or auto-collected page files). */
+export function renderGallery(ctx: RenderContext, data: GalleryData): void {
+  const items = collectGalleryItems(ctx, data);
+  if (items === null) {
+    // Auto form on a page that provided files but has no images: Wikidot
+    // replaces the whole gallery with an error block.
+    ctx.push(`<div class="error-block">${NO_IMAGES_MESSAGE}</div>`);
+    return;
+  }
+
+  const viewerAttr = data.viewer ? "" : ' data-viewer="false"';
+  ctx.push(`<div class="gallery-box"${viewerAttr}>`);
+  for (const item of items) {
+    renderGalleryItem(ctx, item, data.size);
+  }
+  ctx.push("</div>");
+}
+
+/**
+ * Determine the items to render. The auto form takes filenames from
+ * `content.files` when a resolver pre-filled them, otherwise from the
+ * page context's attachment list sorted by the gallery's `order`
+ * (an unknown attachment list renders as an empty gallery box).
+ * Returns null for the "no images attached" error case.
+ */
+function collectGalleryItems(ctx: RenderContext, data: GalleryData): GalleryItem[] | null {
+  if (data.content.type === "items") {
+    return data.content.items;
+  }
+
+  let files: string[];
+  if (data.content.files !== null) {
+    files = data.content.files;
+  } else {
+    const pageFiles = ctx.page?.files;
+    if (pageFiles === undefined) return [];
+    files = sortGalleryFiles(pageFiles, data.order).map((f) => f.name);
+  }
+
+  if (files.length === 0) return null;
+  return files.map(
+    (file): GalleryItem => ({ source: file, link: null, alt: null, newWindow: false }),
+  );
+}
+
+function renderGalleryItem(ctx: RenderContext, item: GalleryItem, size: GallerySize): void {
+  const urls = resolveItemUrls(ctx, item.source, size);
+  if (!urls) return;
+
+  let href: string | null = null;
+  if (item.link !== null) {
+    const resolved = resolveGalleryLink(item.link);
+    if (!isDangerousUrl(resolved)) {
+      href = resolved;
+    }
+  }
+
+  // Without a usable explicit link the anchor targets the image itself and
+  // becomes a lightbox target (unless it opens in a new window).
+  const withLb = href === null && !item.newWindow;
+  if (href === null) {
+    href = urls.imageHref;
+  }
+
+  const anchorAttrs = [`href="${escapeAttr(href)}"`];
+  if (withLb) anchorAttrs.push('class="with-lb"');
+  if (item.newWindow) anchorAttrs.push('target="_blank"', 'rel="noopener"');
+
+  ctx.push(`<figure class="gallery-item ${size}">`);
+  ctx.push(`<a ${anchorAttrs.join(" ")}>`);
+  ctx.push(`<img src="${escapeAttr(urls.src)}" alt="${escapeAttr(item.alt ?? "")}"/>`);
+  ctx.push("</a></figure>");
+}
+
+/**
+ * Resolve an explicit item link: URLs (containing `://`), root-relative
+ * paths and fragments pass through unchanged; anything else is a wiki page
+ * name and gets a `/` prefix.
+ */
+function resolveGalleryLink(link: string): string {
+  if (link.includes("://") || link.startsWith("/") || link.startsWith("#")) {
+    return link;
+  }
+  return `/${link}`;
+}
+
+interface GalleryItemUrls {
+  /** The `<img src>` (size variant for local files) */
+  src: string;
+  /** URL of the full image (link target when the item has no explicit link) */
+  imageHref: string;
+}
+
+/**
+ * Resolve a raw gallery source to image URLs, following the Wikidot
+ * classification: `://` anywhere means an external URL, a `/` means a
+ * `page/file` reference (one leading slash stripped), anything else is a
+ * file attached to the current page.
+ *
+ * Returns null when the item cannot be rendered (dangerous external URL,
+ * or local paths disabled by settings).
+ */
+function resolveItemUrls(
+  ctx: RenderContext,
+  source: string,
+  size: GallerySize,
+): GalleryItemUrls | null {
+  if (source.includes("://")) {
+    if (isDangerousUrl(source)) return null;
+    return { src: source, imageHref: source };
+  }
+
+  if (!ctx.settings.allowLocalPaths) return null;
+
+  let path: string;
+  if (source.includes("/")) {
+    path = source.replace(/^\//, "");
+  } else {
+    const pageName = ctx.page?.pageName;
+    path = pageName ? `${pageName}/${source}` : source;
+  }
+
+  const imageHref = `/local--files/${path}`;
+  const src = size === "original" ? imageHref : `/local--resized-images/${path}/${size}.jpg`;
+  return { src, imageHref };
+}

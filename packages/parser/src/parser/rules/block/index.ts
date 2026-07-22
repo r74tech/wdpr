@@ -49,6 +49,7 @@ import { iftagsRule } from "./iftags";
 import { tocRule } from "./toc";
 import { orphanLiRule } from "./orphan-li";
 import { bibliographyRule } from "./bibliography";
+import { galleryRule } from "./gallery";
 
 export { headingRule } from "./heading";
 export { horizontalRuleRule } from "./horizontal-rule";
@@ -79,6 +80,7 @@ export { iftagsRule } from "./iftags";
 export { tocRule } from "./toc";
 export { orphanLiRule } from "./orphan-li";
 export { bibliographyRule } from "./bibliography";
+export { galleryRule } from "./gallery";
 
 /**
  * All block rules in priority order.
@@ -120,6 +122,7 @@ export const blockRules: BlockRule[] = [
   iframeRule,
   iftagsRule,
   bibliographyRule,
+  galleryRule,
   divRule,
   // paragraphRule is not included - used as fallback
 ];

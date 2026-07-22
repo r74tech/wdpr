@@ -14,6 +14,7 @@ import { renderFootnoteBlock, renderFootnoteRef } from "../elements/footnote";
 import { renderHtmlBlock } from "../elements/html";
 import { renderIframe } from "../elements/iframe";
 import { renderIfTags } from "../elements/iftags";
+import { renderGallery } from "../elements/gallery";
 import { renderImage } from "../elements/image";
 import { renderInclude } from "../elements/include";
 import { renderLineBreaks } from "../elements/line-break";
@@ -74,6 +75,9 @@ export function renderElement(ctx: RenderContext, element: Element): void {
       break;
     case "image":
       renderImage(ctx, element.data);
+      break;
+    case "gallery":
+      renderGallery(ctx, element.data);
       break;
     case "list":
       renderList(ctx, element.data);

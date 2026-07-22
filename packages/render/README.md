@@ -26,6 +26,9 @@ const pageContext: PageContext = {
   site: "mysite",
   domain: "mysite.example.com",
   pageExists: (name) => checkPageExists(name),
+  // Image attachments of the page, shown by the content-less [[gallery]]
+  // form (image/* with resized variants; createdAt enables order="created_at")
+  files: [{ name: "photo.jpg", createdAt: 1700000000 }],
 };
 
 const html = renderToHtml(ast, {

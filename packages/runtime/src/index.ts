@@ -22,6 +22,7 @@ import { initCollapsible } from "./collapsible";
 import { initEmail } from "./email";
 import { initFoldableList } from "./foldable-list";
 import { initFootnote } from "./footnote";
+import { initGallery } from "./gallery";
 import { initHtmlBlockResize } from "./html-block";
 import { initMath } from "./math";
 import { initJoin } from "./modules/join";
@@ -60,6 +61,7 @@ export function initWdprRuntime(options?: RuntimeOptions): WdprRuntime {
   cleanups.push(initRate(root, options));
   cleanups.push(initJoin(root, options));
   cleanups.push(initHtmlBlockResize(root));
+  cleanups.push(initGallery(root));
 
   cleanups.push(initMath(root));
 

@@ -29,6 +29,31 @@ export interface PageContext {
   pageExists?: (page: string) => boolean;
   /** Page tags used for client-side `[[iftags]]` evaluation during rendering */
   tags?: string[];
+  /**
+   * Image attachments of the current page, used by the content-less
+   * `[[gallery]]` form. Provide attachments whose mimetype is `image/*`
+   * and that have resized variants (matching what Wikidot's gallery
+   * shows); order does not matter — each gallery sorts by its own
+   * `order` attribute. When omitted, auto galleries render as an empty
+   * gallery box; an empty array renders the Wikidot "no images" error.
+   */
+  files?: PageFileData[];
+}
+
+/**
+ * A single page attachment, as provided via {@link PageContext.files}.
+ *
+ * @group Render Options
+ */
+export interface PageFileData {
+  /** Attachment filename (unique within a page) */
+  name: string;
+  /**
+   * Upload time as a comparable number (e.g. UNIX seconds). Enables
+   * `order="created_at"` sorting; files without it sort last, keeping
+   * their given order.
+   */
+  createdAt?: number;
 }
 
 /**

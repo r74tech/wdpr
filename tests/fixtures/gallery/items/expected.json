@@ -1,0 +1,48 @@
+{
+  "elements": [
+    {
+      "element": "gallery",
+      "data": {
+        "size": "thumbnail",
+        "order": "name",
+        "viewer": true,
+        "content": {
+          "type": "items",
+          "items": [
+            {
+              "source": "first.jpg",
+              "link": null,
+              "alt": null,
+              "newWindow": false
+            },
+            {
+              "source": "second.jpg",
+              "link": "some-page",
+              "alt": "Second image",
+              "newWindow": true
+            },
+            {
+              "source": "other-page/third.jpg",
+              "link": null,
+              "alt": null,
+              "newWindow": false
+            },
+            {
+              "source": "http://example.com/fourth.png",
+              "link": null,
+              "alt": null,
+              "newWindow": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

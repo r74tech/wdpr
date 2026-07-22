@@ -1,0 +1,35 @@
+{
+  "elements": [
+    {
+      "element": "gallery",
+      "data": {
+        "size": "thumbnail",
+        "order": "name",
+        "viewer": true,
+        "content": {
+          "type": "auto",
+          "files": null
+        }
+      }
+    },
+    {
+      "element": "gallery",
+      "data": {
+        "size": "medium",
+        "order": "created_at desc",
+        "viewer": true,
+        "content": {
+          "type": "auto",
+          "files": null
+        }
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

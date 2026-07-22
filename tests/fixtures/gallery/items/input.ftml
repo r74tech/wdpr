@@ -1,0 +1,6 @@
+[[gallery]]
+: first.jpg
+: *second.jpg link="some-page" alt="Second image"
+: other-page/third.jpg
+: http://example.com/fourth.png
+[[/gallery]]

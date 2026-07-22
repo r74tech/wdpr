@@ -1,0 +1,30 @@
+{
+  "elements": [
+    {
+      "element": "gallery",
+      "data": {
+        "size": "small",
+        "order": "name",
+        "viewer": false,
+        "content": {
+          "type": "items",
+          "items": [
+            {
+              "source": "only.jpg",
+              "link": null,
+              "alt": "Only",
+              "newWindow": false
+            }
+          ]
+        }
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

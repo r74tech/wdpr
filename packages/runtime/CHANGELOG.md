@@ -1,3 +1,14 @@
+## 1.1.0 (2026-07-22)
+
+### 🚀 Features
+
+- add [[gallery]] syntax support ([#55](https://github.com/r74tech/wdpr/pull/55))
+- **parser/ast:** opener-embedded [[#if]] / [[#expr]] / [[#ifexpr]] と [[iftags]] bare prefix 対応 ([#50](https://github.com/r74tech/wdpr/pull/50))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 1.0.3 (2026-06-04)
 
 ### 🩹 Fixes

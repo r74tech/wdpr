@@ -1,0 +1,1 @@
+[[module TagCloud maxFontSize="200%" minFontSize="80%" maxColor="0,0,0" minColor="200,200,200" target="tags" limit="10" category="blog"]]

@@ -1,0 +1,25 @@
+{
+  "elements": [
+    {
+      "element": "module",
+      "data": {
+        "module": "tag-cloud",
+        "min-font-size": 80,
+        "max-font-size": 200,
+        "font-size-unit": "%",
+        "min-color": [200, 200, 200],
+        "max-color": [0, 0, 0],
+        "target": "/tags/tag/",
+        "limit": 10,
+        "category": "blog"
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

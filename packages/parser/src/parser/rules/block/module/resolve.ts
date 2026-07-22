@@ -21,8 +21,13 @@ import type { DataProvider } from "./types-common";
 import { resolveIncludes } from "./include";
 import type { ListPagesDataRequirement, CompiledTemplate } from "./listpages/types";
 import type { ListUsersDataRequirement, ListUsersCompiledTemplate } from "./listusers/types";
+import type { TagCloudDataRequirement } from "./tagcloud/types";
 import type { ParseFunction } from "./listpages/resolve";
-import { buildListPagesContext, buildListUsersContext } from "./resolution/contexts";
+import {
+  buildListPagesContext,
+  buildListUsersContext,
+  buildTagCloudContext,
+} from "./resolution/contexts";
 import { walkAndResolve } from "./resolution/walk-resolve";
 import { collectStyles } from "./resolution/styles";
 
@@ -71,6 +76,7 @@ export interface ResolveOptions {
   requirements: {
     listPages?: ListPagesDataRequirement[];
     listUsers?: ListUsersDataRequirement[];
+    tagCloud?: TagCloudDataRequirement[];
   };
 
   /**
@@ -139,17 +145,21 @@ export async function resolveModules(
     options.compiledListUsersTemplates,
     parse,
   );
+  const tagCloudCtx = await buildTagCloudContext(dataProvider, options.requirements.tagCloud ?? []);
   const pageTags = dataProvider.getPageTags?.() ?? null;
 
   // Resolve AST
   const resolvedElements = walkAndResolve(ast.elements, {
     listPages: listPagesCtx,
     listUsers: listUsersCtx,
+    tagCloud: tagCloudCtx,
     fetchListPagesProvided: dataProvider.fetchListPages !== undefined,
     fetchListUsersProvided: dataProvider.fetchListUsers !== undefined,
+    fetchTagCloudProvided: dataProvider.fetchTagCloud !== undefined,
     pageTags,
     listPagesIdCounter: 0,
     listUsersIdCounter: 0,
+    tagCloudIdCounter: 0,
   });
 
   // Collect style elements from resolved AST

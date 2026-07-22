@@ -9,8 +9,9 @@ import type {
   ListUsersDataRequirement,
   ListUsersExternalData,
 } from "../listusers/types";
+import type { TagCloudDataRequirement, TagCloudExternalData } from "../tagcloud/types";
 import type { ParseFunction } from "../listpages/resolve";
-import { buildListPagesDataMap, buildListUsersDataMap } from "./data-maps";
+import { buildListPagesDataMap, buildListUsersDataMap, buildTagCloudDataMap } from "./data-maps";
 
 /**
  * Context for ListPages resolution.
@@ -52,6 +53,33 @@ export async function buildListPagesContext(
     compiledTemplates,
     parse,
   };
+}
+
+/**
+ * Context for TagCloud resolution.
+ *
+ * TagCloud has no template body, so unlike ListPages/ListUsers the context
+ * carries only the fetched data.
+ */
+export interface TagCloudContext {
+  dataMap: Map<number, TagCloudExternalData>;
+}
+
+export async function buildTagCloudContext(
+  dataProvider: DataProvider,
+  requirements: TagCloudDataRequirement[],
+): Promise<TagCloudContext | null> {
+  if (requirements.length === 0 || !dataProvider.fetchTagCloud) {
+    return null;
+  }
+
+  const dataMap = await buildTagCloudDataMap(dataProvider, requirements);
+
+  if (dataMap.size === 0) {
+    return null;
+  }
+
+  return { dataMap };
 }
 
 export async function buildListUsersContext(

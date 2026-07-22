@@ -1,0 +1,5 @@
+[[module TagCloud maxFontSize="12banana" minFontSize="100%"]]
+
+[[module TagCloud maxFontSize="200%" minFontSize="10px"]]
+
+[[module TagCloud maxColor="red" minColor="0,0,0"]]

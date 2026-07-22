@@ -1,0 +1,39 @@
+{
+  "elements": [
+    {
+      "element": "module",
+      "data": {
+        "module": "tag-cloud",
+        "min-font-size": 100,
+        "max-font-size": 300,
+        "font-size-unit": "%",
+        "min-color": [128, 128, 192],
+        "max-color": [64, 64, 128],
+        "target": "/system:page-tags/tag/",
+        "limit": 50,
+        "category": null
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "tag-cloud",
+        "min-font-size": 100,
+        "max-font-size": 300,
+        "font-size-unit": "%",
+        "min-color": [128, 128, 192],
+        "max-color": [64, 64, 128],
+        "target": "/system:page-tags/tag/",
+        "limit": 50,
+        "category": null
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

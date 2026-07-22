@@ -1,7 +1,7 @@
 import type { Element } from "@wdprlib/ast";
 import { mapElementChildrenWithState } from "../walk";
 import { isIfTagsElement, resolveIfTags, type IfTagsData } from "../iftags/resolve";
-import type { ListPagesContext, ListUsersContext } from "./contexts";
+import type { ListPagesContext, ListUsersContext, TagCloudContext } from "./contexts";
 import { countDynamicModules, resolveDynamicModuleElement } from "./dynamic-modules";
 
 /**
@@ -10,19 +10,24 @@ import { countDynamicModules, resolveDynamicModuleElement } from "./dynamic-modu
 export interface WalkContext {
   listPages: ListPagesContext | null;
   listUsers: ListUsersContext | null;
+  tagCloud: TagCloudContext | null;
   /** Whether fetchListPages callback was provided, even if no data returned. */
   fetchListPagesProvided: boolean;
   /** Whether fetchListUsers callback was provided, even if no data returned. */
   fetchListUsersProvided: boolean;
+  /** Whether fetchTagCloud callback was provided, even if no data returned. */
+  fetchTagCloudProvided: boolean;
   pageTags: string[] | null;
   listPagesIdCounter: number;
   listUsersIdCounter: number;
+  tagCloudIdCounter: number;
 }
 
 export interface WalkResult {
   elements: Element[];
   nextListPagesId: number;
   nextListUsersId: number;
+  nextTagCloudId: number;
 }
 
 /**
@@ -32,13 +37,19 @@ export function walkAndResolve(elements: Element[], ctx: WalkContext): WalkResul
   const result: Element[] = [];
   let listPagesId = ctx.listPagesIdCounter;
   let listUsersId = ctx.listUsersIdCounter;
+  let tagCloudId = ctx.tagCloudIdCounter;
 
   for (const element of elements) {
-    const dynamicModule = resolveDynamicModuleElement(element, ctx, { listPagesId, listUsersId });
+    const dynamicModule = resolveDynamicModuleElement(element, ctx, {
+      listPagesId,
+      listUsersId,
+      tagCloudId,
+    });
     if (dynamicModule.handled) {
       result.push(...dynamicModule.elements);
       listPagesId = dynamicModule.ids.listPagesId;
       listUsersId = dynamicModule.ids.listUsersId;
+      tagCloudId = dynamicModule.ids.tagCloudId;
       continue;
     }
 
@@ -52,20 +63,24 @@ export function walkAndResolve(elements: Element[], ctx: WalkContext): WalkResul
             ...ctx,
             listPagesIdCounter: listPagesId,
             listUsersIdCounter: listUsersId,
+            tagCloudIdCounter: tagCloudId,
           });
           result.push(...childResult.elements);
           listPagesId = childResult.nextListPagesId;
           listUsersId = childResult.nextListUsersId;
+          tagCloudId = childResult.nextTagCloudId;
         } else {
           const counts = countDynamicModules(ifTagsData.elements);
           listPagesId += counts.listPagesId;
           listUsersId += counts.listUsersId;
+          tagCloudId += counts.tagCloudId;
         }
       } else {
         const childResult = walkAndResolve(ifTagsData.elements, {
           ...ctx,
           listPagesIdCounter: listPagesId,
           listUsersIdCounter: listUsersId,
+          tagCloudIdCounter: tagCloudId,
         });
         result.push({
           element: "if-tags",
@@ -76,24 +91,27 @@ export function walkAndResolve(elements: Element[], ctx: WalkContext): WalkResul
         });
         listPagesId = childResult.nextListPagesId;
         listUsersId = childResult.nextListUsersId;
+        tagCloudId = childResult.nextTagCloudId;
       }
       continue;
     }
 
     const mapped = mapElementChildrenWithState(
       element,
-      { listPagesId, listUsersId },
+      { listPagesId, listUsersId, tagCloudId },
       (children, state) => {
         const childResult = walkAndResolve(children, {
           ...ctx,
           listPagesIdCounter: state.listPagesId,
           listUsersIdCounter: state.listUsersId,
+          tagCloudIdCounter: state.tagCloudId,
         });
         return {
           elements: childResult.elements,
           state: {
             listPagesId: childResult.nextListPagesId,
             listUsersId: childResult.nextListUsersId,
+            tagCloudId: childResult.nextTagCloudId,
           },
         };
       },
@@ -101,7 +119,13 @@ export function walkAndResolve(elements: Element[], ctx: WalkContext): WalkResul
     result.push(mapped.element);
     listPagesId = mapped.state.listPagesId;
     listUsersId = mapped.state.listUsersId;
+    tagCloudId = mapped.state.tagCloudId;
   }
 
-  return { elements: result, nextListPagesId: listPagesId, nextListUsersId: listUsersId };
+  return {
+    elements: result,
+    nextListPagesId: listPagesId,
+    nextListUsersId: listUsersId,
+    nextTagCloudId: tagCloudId,
+  };
 }

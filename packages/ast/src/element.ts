@@ -16,6 +16,8 @@
  * @module
  */
 
+import type { CssLengthUnit } from "./css";
+
 // ---------------------------------------------------------------------------
 // Primitive types
 // ---------------------------------------------------------------------------
@@ -499,6 +501,26 @@ export type Module =
   | {
       /** `[[module Rate]]` — page rating widget */
       module: "rate";
+    }
+  | {
+      /** `[[module TagCloud]]` — weighted cloud of page tags */
+      module: "tag-cloud";
+      /** Numeric part of the font size for the lightest-weighted tag */
+      "min-font-size": number;
+      /** Numeric part of the font size for the heaviest-weighted tag */
+      "max-font-size": number;
+      /** Unit shared by both font sizes (lowercase) */
+      "font-size-unit": CssLengthUnit;
+      /** RGB components for the lightest-weighted tag */
+      "min-color": [number, number, number];
+      /** RGB components for the heaviest-weighted tag */
+      "max-color": [number, number, number];
+      /** Normalized link target prefix, always ending with `/tag/` */
+      target: string;
+      /** Maximum number of tags to display */
+      limit: number;
+      /** Category filter, or null for all categories */
+      category: string | null;
     }
   | {
       /** `[[module ListUsers]]` — user listing with template body */

@@ -1,6 +1,7 @@
 import type { DataProvider } from "../types-common";
 import type { ListPagesDataRequirement, ListPagesExternalData } from "../listpages/types";
 import type { ListUsersDataRequirement, ListUsersExternalData } from "../listusers/types";
+import type { TagCloudDataRequirement, TagCloudExternalData } from "../tagcloud/types";
 import { parseUrlParams, resolveAndNormalizeQuery } from "../listpages/url-resolver";
 
 export async function buildListPagesDataMap(
@@ -30,6 +31,22 @@ export async function buildListUsersDataMap(
 
   for (const req of requirements) {
     const data = await dataProvider.fetchListUsers?.(req);
+    if (data) {
+      dataMap.set(req.id, data);
+    }
+  }
+
+  return dataMap;
+}
+
+export async function buildTagCloudDataMap(
+  dataProvider: DataProvider,
+  requirements: TagCloudDataRequirement[],
+): Promise<Map<number, TagCloudExternalData>> {
+  const dataMap = new Map<number, TagCloudExternalData>();
+
+  for (const req of requirements) {
+    const data = await dataProvider.fetchTagCloud?.(req);
     if (data) {
       dataMap.set(req.id, data);
     }

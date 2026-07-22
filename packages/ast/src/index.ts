@@ -110,6 +110,10 @@ export type { Diagnostic, DiagnosticSeverity, ParseResult } from "./diagnostic";
 // Constants
 export { STYLE_SLOT_PREFIX } from "./constants";
 
+// CSS value definitions
+export type { CssLengthUnit } from "./css";
+export { CSS_LENGTH_UNITS } from "./css";
+
 // Wikitext settings
 export type { WikitextMode, WikitextSettings } from "./settings";
 

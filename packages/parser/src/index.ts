@@ -133,6 +133,12 @@ export type {
   ListUsersDataFetcher,
   ListUsersVariableContext,
   ListUsersCompiledTemplate,
+  // TagCloud types
+  TagCloudDataRequirement,
+  TagCloudTagData,
+  TagCloudExternalData,
+  TagCloudDataFetcher,
+  TagCloudModuleData,
   // Normalized query types
   NormalizedListPagesQuery,
   NormalizedTags,
@@ -167,4 +173,7 @@ export {
   compileListUsersTemplate,
   isListUsersModule,
   resolveListUsers,
+  // TagCloud
+  isTagCloudModule,
+  resolveTagCloud,
 } from "./parser/rules/block/module/index";

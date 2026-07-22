@@ -1,3 +1,17 @@
+## 4.2.0 (2026-07-22)
+
+### 🚀 Features
+
+- **parser:** add TagCloud module support ([#54](https://github.com/r74tech/wdpr/pull/54))
+
+### 🩹 Fixes
+
+- **parser:** ListPagesのtags@URLで/tag URLを解決する ([#53](https://github.com/r74tech/wdpr/pull/53))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 4.1.1 (2026-07-22)
 
 ### 🚀 Features

@@ -659,6 +659,79 @@ export interface ImageData {
 }
 
 /**
+ * Image size keyword accepted by `[[gallery]]`.
+ * Invalid or missing values fall back to `"thumbnail"` at parse time,
+ * matching the Wikidot renderer.
+ *
+ * @group Element Data
+ */
+export type GallerySize = "small" | "medium" | "thumbnail" | "square" | "original";
+
+/**
+ * Sort order for auto-collected gallery files, normalized at parse time.
+ * Deprecated Wikidot aliases (`nameDesc`, `dateAdded`, `dateAddedDesc`) and
+ * the ListPages-style `"... desc desc"` forms are folded into these four
+ * values. Only meaningful for the content-less (auto) form.
+ *
+ * @group Element Data
+ */
+export type GalleryOrder = "name" | "name desc" | "created_at" | "created_at desc";
+
+/**
+ * A single `: source link="..." alt="..."` entry inside `[[gallery]]`.
+ *
+ * @group Element Data
+ */
+export interface GalleryItem {
+  /**
+   * Raw image source string with any leading `*` removed.
+   * Classification follows the Wikidot rules and happens at render time:
+   * a source containing `://` is external, one containing `/` refers to
+   * another page's file, anything else is a file on the current page.
+   */
+  source: string;
+  /**
+   * Link target with any leading `*` removed, or null when the item has no
+   * `link` attribute.
+   */
+  link: string | null;
+  /** Alternative text for the image, or null when no `alt` attribute is given */
+  alt: string | null;
+  /** true if the link opens in a new window (`*` prefix on source or link) */
+  newWindow: boolean;
+}
+
+/**
+ * Body of a `[[gallery]]` element.
+ *
+ * - `"items"` — the content form with explicit `: source` lines.
+ *   `items` is always non-empty: the content form requires at least one
+ *   line to parse.
+ * - `"auto"` — the content-less form, which shows the current page's image
+ *   attachments. `files` is null until data resolution fills it with the
+ *   attachment filenames (already sorted by the gallery's `order`).
+ *
+ * @group Element Data
+ */
+export type GalleryContent =
+  | { type: "items"; items: GalleryItem[] }
+  | { type: "auto"; files: string[] | null };
+
+/**
+ * Data for `[[gallery]]` elements.
+ *
+ * @group Element Data
+ */
+export interface GalleryData {
+  size: GallerySize;
+  /** Sort order for auto-collected files (parse-time normalized) */
+  order: GalleryOrder;
+  /** false when `viewer="no"`/`"false"` disables the lightbox */
+  viewer: boolean;
+  content: GalleryContent;
+}
+
+/**
  * Data for `[[toc]]` (table of contents) elements.
  *
  * @group Element Data
@@ -890,6 +963,7 @@ export type ElementDataMap = {
   "anchor-name": string;
   link: LinkData;
   image: ImageData;
+  gallery: GalleryData;
   list: ListData;
   "definition-list": DefinitionListItem[];
   collapsible: CollapsibleData;

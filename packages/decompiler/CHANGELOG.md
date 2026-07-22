@@ -1,3 +1,17 @@
+## 1.0.5 (2026-07-22)
+
+### 🚀 Features
+
+- **parser/ast:** opener-embedded [[#if]] / [[#expr]] / [[#ifexpr]] と [[iftags]] bare prefix 対応 ([#50](https://github.com/r74tech/wdpr/pull/50))
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/ast to 2.2.0
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 1.0.4 (2026-06-10)
 
 ### 🚀 Features

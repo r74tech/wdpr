@@ -43,7 +43,7 @@ const resolved = await resolveModules(ast, {
     // value — look it up with a parameterized query and return the normalized name
     const found = category ? await findCategory(category) : null // your lookup
     if (category && !found) return { status: 'category-not-found', category }
-    return { status: 'ok', tags: [{ tag: 'scp', weight: 42 }], category: found?.unixName ?? null }
+    return { status: 'ok', tags: [{ tag: 'apple', weight: 42 }], category: found?.unixName ?? null }
   },
   getPageTags: () => ['tag1', 'tag2'],
 }, {
@@ -59,6 +59,7 @@ const resolved = await resolveModules(ast, {
 - Include resolution (`[[include page]]`)
 - Module support (ListPages, ListUsers, TagCloud, IfTags, etc.)
 - `[[gallery]]` (auto-collection uses the page's attachments passed to `@wdprlib/render` as `page.files`; lightbox via `@wdprlib/runtime`)
+
 - Data extraction for server-side rendering
 
 ## Related Packages

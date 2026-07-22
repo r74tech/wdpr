@@ -1,3 +1,17 @@
+## 3.0.2 (2026-07-22)
+
+### 🚀 Features
+
+- **parser:** add TagCloud module support ([#54](https://github.com/r74tech/wdpr/pull/54))
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/ast to 2.2.0
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 3.0.1 (2026-06-27)
 
 This was a version bump only for @wdprlib/render to align it with other projects, there were no code changes.

@@ -312,6 +312,7 @@ function isBlockLevelElement(el: Element): boolean {
     case "content-separator":
     case "math":
     case "bibliography-block":
+    case "gallery":
       return true;
     default:
       return false;

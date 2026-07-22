@@ -15,6 +15,7 @@ import { serializeList, serializeDefinitionList } from "./list";
 import { serializeTable } from "./table";
 import { serializeCode } from "./code";
 import { serializeCollapsible } from "./collapsible";
+import { serializeGallery } from "./gallery";
 import { serializeTabView } from "./tab-view";
 import { serializeFootnoteInline, serializeFootnoteRef, serializeFootnoteBlock } from "./footnote";
 import { serializeMath, serializeMathInline } from "./math";
@@ -84,6 +85,9 @@ export function serializeElement(ctx: SerializeContext, element: Element): void 
       break;
     case "image":
       serializeImage(ctx, element.data);
+      break;
+    case "gallery":
+      serializeGallery(ctx, element.data);
       break;
     case "list":
       serializeList(ctx, element.data);

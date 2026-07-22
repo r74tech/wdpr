@@ -1,3 +1,13 @@
+## 3.2.0 (2026-07-22)
+
+### 🚀 Features
+
+- add [[gallery]] syntax support ([#55](https://github.com/r74tech/wdpr/pull/55))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 3.1.1 (2026-07-22)
 
 ### 🚀 Features

@@ -1,3 +1,13 @@
+## 3.1.0 (2026-07-22)
+
+### 🚀 Features
+
+- **parser:** add TagCloud module support ([#54](https://github.com/r74tech/wdpr/pull/54))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 3.0.2 (2026-07-22)
 
 ### 🚀 Features

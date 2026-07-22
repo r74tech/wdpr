@@ -58,6 +58,12 @@ export type {
   DateItem,
   Embed,
   TocEntry,
+  // Gallery
+  GallerySize,
+  GalleryOrder,
+  GalleryItem,
+  GalleryContent,
+  GalleryData,
   // Diagnostics
   Diagnostic,
   DiagnosticSeverity,

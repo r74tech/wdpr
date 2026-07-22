@@ -58,6 +58,7 @@ const resolved = await resolveModules(ast, {
 - Wikidot markup parsing (bold, italic, links, images, tables, etc.)
 - Include resolution (`[[include page]]`)
 - Module support (ListPages, ListUsers, TagCloud, IfTags, etc.)
+- `[[gallery]]` (auto-collection uses the page's attachments passed to `@wdprlib/render` as `page.files`; lightbox via `@wdprlib/runtime`)
 - Data extraction for server-side rendering
 
 ## Related Packages

@@ -32,6 +32,11 @@ import {
   isListUsersModule,
   type ListUsersExtractionState,
 } from "./extraction/listusers";
+import {
+  extractTagCloudModule,
+  isTagCloudModule,
+  type TagCloudExtractionState,
+} from "./extraction/tagcloud";
 import type { ExtractionResult } from "./extraction/result";
 export type { ExtractionResult } from "./extraction/result";
 
@@ -54,6 +59,7 @@ export function extractDataRequirements(ast: SyntaxTree): ExtractionResult {
     requirements: {
       listPages: [],
       listUsers: [],
+      tagCloud: [],
     },
     compiledListPagesTemplates: new Map(),
     compiledListUsersTemplates: new Map(),
@@ -61,6 +67,7 @@ export function extractDataRequirements(ast: SyntaxTree): ExtractionResult {
 
   const listPagesState: ListPagesExtractionState = { nextId: 0 };
   const listUsersState: ListUsersExtractionState = { nextId: 0 };
+  const tagCloudState: TagCloudExtractionState = { nextId: 0 };
 
   walkElements(ast.elements, (element) => {
     if (element.element !== "module") return;
@@ -69,6 +76,8 @@ export function extractDataRequirements(ast: SyntaxTree): ExtractionResult {
       extractListPagesModule(element.data, listPagesState, result);
     } else if (isListUsersModule(element.data)) {
       extractListUsersModule(element.data, listUsersState, result);
+    } else if (isTagCloudModule(element.data)) {
+      extractTagCloudModule(element.data, tagCloudState, result);
     }
   });
 

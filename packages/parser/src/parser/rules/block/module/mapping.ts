@@ -19,6 +19,7 @@ import { joinModuleRule } from "./join/index";
 import { pageTreeModuleRule } from "./page-tree/index";
 import { listPagesModuleRule } from "./listpages/parser";
 import { listUsersModuleRule } from "./listusers/parser";
+import { tagCloudModuleRule } from "./tagcloud/parser";
 
 /**
  * Complete list of all registered module rules.
@@ -35,6 +36,7 @@ export const MODULE_RULES: ModuleRule[] = [
   pageTreeModuleRule,
   listPagesModuleRule,
   listUsersModuleRule,
+  tagCloudModuleRule,
 ];
 
 /**

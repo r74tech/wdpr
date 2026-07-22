@@ -1,0 +1,56 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {
+          "class": "error-block"
+        },
+        "elements": [
+          {
+            "element": "text",
+            "data": "Unsupported format for font size. Use a number followed by a CSS length unit such as px, em or %."
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {
+          "class": "error-block"
+        },
+        "elements": [
+          {
+            "element": "text",
+            "data": "Format for minFontSize and maxFontSize must use the same unit."
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {
+          "class": "error-block"
+        },
+        "elements": [
+          {
+            "element": "text",
+            "data": "Unsupported color format. Use \"RRR,GGG,BBB\" for Red,Green,Blue each within 0-255 range."
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

@@ -14,6 +14,7 @@
 
 import type { ListPagesDataFetcher } from "./listpages/types";
 import type { ListUsersDataFetcher } from "./listusers/types";
+import type { TagCloudDataFetcher } from "./tagcloud/types";
 import type { IfTagsResolver } from "./iftags/types";
 import type { IncludeFetcher } from "./include/resolve/types";
 
@@ -58,6 +59,20 @@ export interface DataProvider {
    * own include pass before being parsed again.
    */
   fetchInclude?: IncludeFetcher;
+
+  /**
+   * Fetch tag weights for `[[module TagCloud]]` expansion.
+   *
+   * Called once per TagCloud instance with its category filter and limit.
+   * Unlike {@link DataProvider.getPageTags} (which returns the current
+   * page's own tags for `[[iftags]]`), this callback returns site-wide
+   * tag statistics: each tag with the number of pages carrying it.
+   *
+   * @security `requirement.category` originates from **untrusted user
+   * input**. Never interpolate it into SQL — always use parameterised
+   * queries or prepared statements.
+   */
+  fetchTagCloud?: TagCloudDataFetcher;
 
   /**
    * Return the current page's tags for `[[iftags]]` evaluation.

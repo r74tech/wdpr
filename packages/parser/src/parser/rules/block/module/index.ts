@@ -128,6 +128,16 @@ export {
   resolveListUsers,
 } from "./listusers";
 
+// TagCloud module
+export type {
+  TagCloudDataRequirement,
+  TagCloudTagData,
+  TagCloudExternalData,
+  TagCloudDataFetcher,
+  TagCloudModuleData,
+} from "./tagcloud";
+export { tagCloudModuleRule as tagCloudRule, isTagCloudModule, resolveTagCloud } from "./tagcloud";
+
 // Module resolver
 export type { ModuleSourceTransform, ResolveOptions } from "./resolve";
 export { resolveModules } from "./resolve";

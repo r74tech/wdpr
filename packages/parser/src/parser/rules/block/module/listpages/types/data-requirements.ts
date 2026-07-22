@@ -1,4 +1,5 @@
 import type { ListUsersDataRequirement } from "../../listusers/types";
+import type { TagCloudDataRequirement } from "../../tagcloud/types";
 import type { ListPagesQuery } from "./query";
 import type { ListPagesVariable } from "./variables";
 
@@ -49,4 +50,5 @@ export interface ListPagesDataRequirement {
 export interface DataRequirements {
   listPages: ListPagesDataRequirement[];
   listUsers: ListUsersDataRequirement[];
+  tagCloud: TagCloudDataRequirement[];
 }

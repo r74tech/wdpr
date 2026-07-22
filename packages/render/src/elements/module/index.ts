@@ -22,6 +22,7 @@ import { renderPageTree } from "./page-tree";
 import { renderRate } from "./rate";
 import { renderListUsers } from "./listusers";
 import { renderListPages } from "./listpages";
+import { renderTagCloud } from "./tagcloud";
 import { renderUnknownModule } from "./unknown";
 
 /**
@@ -60,6 +61,9 @@ export function renderModule(ctx: RenderContext, data: Module): void {
       break;
     case "list-pages":
       renderListPages(ctx, data);
+      break;
+    case "tag-cloud":
+      renderTagCloud(ctx, data);
       break;
   }
 }

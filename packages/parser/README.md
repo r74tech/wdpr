@@ -37,6 +37,14 @@ const resolved = await resolveModules(ast, {
     // Fetch pages matching query from your database
     return { pages: [...], totalCount: 100, site: { name: 'mysite' } }
   },
+  fetchTagCloud: async ({ category, limit }) => {
+    // Fetch up to `limit` tags (weight = page count) for `[[module TagCloud]]`,
+    // ordered by weight descending. `category` is the raw, untrusted attribute
+    // value — look it up with a parameterized query and return the normalized name
+    const found = category ? await findCategory(category) : null // your lookup
+    if (category && !found) return { status: 'category-not-found', category }
+    return { status: 'ok', tags: [{ tag: 'scp', weight: 42 }], category: found?.unixName ?? null }
+  },
   getPageTags: () => ['tag1', 'tag2'],
 }, {
   parse,
@@ -49,7 +57,7 @@ const resolved = await resolveModules(ast, {
 
 - Wikidot markup parsing (bold, italic, links, images, tables, etc.)
 - Include resolution (`[[include page]]`)
-- Module support (ListPages, ListUsers, IfTags, etc.)
+- Module support (ListPages, ListUsers, TagCloud, IfTags, etc.)
 - Data extraction for server-side rendering
 
 ## Related Packages

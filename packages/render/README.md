@@ -11,11 +11,11 @@ bun add @wdprlib/render
 ## Usage
 
 ```ts
-import { parse } from "@wdprlib/parser";
-import { renderToHtml } from "@wdprlib/render";
-import type { PageContext, RenderOptions } from "@wdprlib/render";
+import { parse, processWikitext } from "@wdprlib/parser";
+import { renderToHtml, renderWikitext } from "@wdprlib/render";
+import type { PageContext } from "@wdprlib/render";
 
-const ast = parse("**Hello** world");
+const { ast } = parse("**Hello** world");
 
 // Basic rendering
 const html = renderToHtml(ast);
@@ -39,6 +39,38 @@ const html = renderToHtml(ast, {
     htmlBlockUrl: (index) => `/local--html/page/${index}`,
   },
 });
+```
+
+For an asynchronous application pipeline, parse first and render second. `@wdprlib/render`
+does not import or depend on `@wdprlib/parser`:
+
+```ts
+const document = await processWikitext(source, {
+  page: {
+    fullName: "docs:start",
+    unixName: "start",
+    tags: ["docs"],
+    urlPath: "/docs:start",
+  },
+  dataProvider,
+});
+
+const result = await renderWikitext(document, {
+  styleMode: "separate",
+  resolvers: {
+    resolvePageExistence: async (pages) => findExistingPages(pages),
+    resolveHtmlBlockUrl: async ({ index, content, page }) => {
+      const hash = await storeHtmlBlock(content);
+      return `/local--html/${page.fullName}/${index}/${hash}`;
+    },
+  },
+});
+
+result.html; // contains no <style> tags in separate mode
+result.styles;
+result.htmlBlocks;
+result.diagnostics;
+result.dependencies;
 ```
 
 ## Features

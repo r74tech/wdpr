@@ -11,47 +11,35 @@ bun add @wdprlib/parser
 ## Usage
 
 ```ts
-import { parse, resolveIncludes, extractDataRequirements, resolveModules } from '@wdprlib/parser'
-import type { SyntaxTree, PageRef } from '@wdprlib/parser'
+import { parse, processWikitext } from "@wdprlib/parser";
 
-// Basic parsing
-const tree: SyntaxTree = parse('**Hello** world')
+// Basic parsing keeps the AST-oriented low-level API available.
+const { ast, diagnostics } = parse("**Hello** world");
 
-// Full pipeline with includes and modules
-const source = '[[include component:box]]\n[[module ListPages]]\n%%title%%\n[[/module]]'
-
-// 1. Resolve includes
-const expanded = resolveIncludes(source, (ref: PageRef) => {
-  return getPageSource(ref.page) // your function to fetch page source
-})
-
-// 2. Parse
-const ast = parse(expanded)
-
-// 3. Extract data requirements for modules
-const { requirements, compiledListPagesTemplates } = extractDataRequirements(ast)
-
-// 4. Resolve modules with external data
-const resolved = await resolveModules(ast, {
-  fetchListPages: async (query) => {
-    // Fetch pages matching query from your database
-    return { pages: [...], totalCount: 100, site: { name: 'mysite' } }
+// The high-level API expands includes, parses modules, and merges all
+// side channels and diagnostics into one document.
+const document = await processWikitext(source, {
+  page: {
+    fullName: "docs:start", // category-qualified Wikidot fullname
+    unixName: "start", // separately named URL-safe page identifier
+    tags: ["docs"],
+    urlPath: "/docs:start/offset/0",
   },
-  fetchTagCloud: async ({ category, limit }) => {
-    // Fetch up to `limit` tags (weight = page count) for `[[module TagCloud]]`,
-    // ordered by weight descending. `category` is the raw, untrusted attribute
-    // value — look it up with a parameterized query and return the normalized name
-    const found = category ? await findCategory(category) : null // your lookup
-    if (category && !found) return { status: 'category-not-found', category }
-    return { status: 'ok', tags: [{ tag: 'apple', weight: 42 }], category: found?.unixName ?? null }
+  dataProvider: {
+    fetchInclude: async (pageRef, { page }) => getPageSource(pageRef, page),
+    fetchListPages: async (query, requirement, { page }) => queryPages(query, requirement, page),
+    fetchListUsers: async (requirement, { page }) => queryUsers(requirement, page),
+    fetchTagCloud: async (requirement, { page }) => queryTags(requirement, page),
   },
-  getPageTags: () => ['tag1', 'tag2'],
-}, {
-  parse,
-  compiledListPagesTemplates,
-  requirements,
-})
+});
+
+document.ast;
+document.diagnostics;
+document.dependencies; // direct and transitive includes, including module output
 ```
+
+Pass `document` to `renderWikitext()` from `@wdprlib/render` for HTML generation.
+The parser and renderer remain separate packages and both depend only on the shared AST contract.
 
 ## Features
 

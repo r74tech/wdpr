@@ -98,6 +98,15 @@ export { Lexer, tokenize, createToken } from "./lexer";
 export type { ParserOptions } from "./parser";
 export { Parser, parse } from "./parser";
 
+// High-level parser pipeline
+export { processWikitext } from "./pipeline";
+export type {
+  ProcessedWikitextDocument,
+  ProcessWikitextCallbackContext,
+  ProcessWikitextDataProvider,
+  ProcessWikitextOptions,
+} from "./pipeline";
+
 // Modules (ListPages, ListUsers, IfTags, Include, etc.)
 export type {
   // ListPages query types
@@ -121,6 +130,7 @@ export type {
   ExtractionResult,
   // Resolution types
   ParseFunction,
+  ModuleParseResult,
   ModuleSourceTransform,
   ResolveOptions,
   // Include resolution
@@ -163,6 +173,7 @@ export {
   extractIncludeReferences,
   resolveIncludes,
   resolveIncludesAsync,
+  resolveIncludesAsyncWithTrace,
   resolveIncludesWithTrace,
   // IfTags source-level preprocessing (run between include expansion and parse)
   preprocessIftags,

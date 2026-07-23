@@ -1,6 +1,6 @@
 import type { Element } from "@wdprlib/ast";
 import type { CompiledTemplate, ListPagesExternalData, VariableContext } from "../types";
-import type { ParseFunction } from "../../types";
+import { getModuleParseAst, type ParseFunction } from "../../types";
 import type { ListPagesModuleData } from "../resolve";
 
 export function renderListPagesItems(
@@ -23,7 +23,7 @@ export function renderListPagesItems(
       site: data.site,
     };
 
-    const itemAst = parse(compiledTemplate(ctx));
+    const itemAst = getModuleParseAst(parse(compiledTemplate(ctx)));
 
     if (module.separate) {
       items.push({

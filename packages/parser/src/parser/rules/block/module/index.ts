@@ -20,7 +20,7 @@
  */
 
 // Module rule types and registry
-export type { ModuleRule } from "./types";
+export type { ModuleParseResult, ModuleRule } from "./types";
 export { MODULE_RULES, getModuleRuleByName } from "./mapping";
 export { moduleRule } from "./rule";
 
@@ -106,6 +106,7 @@ export {
   extractIncludeReferences,
   resolveIncludes,
   resolveIncludesAsync,
+  resolveIncludesAsyncWithTrace,
   resolveIncludesWithTrace,
 } from "./include";
 

@@ -10,3 +10,11 @@
  * A null-byte prefix ensures no collision with valid CSS content.
  */
 export const STYLE_SLOT_PREFIX = "\0__IFTAGS_SLOT__";
+
+/**
+ * Sentinel prefix for invisible style-position anchors retained in the AST.
+ *
+ * The suffix is the previously collected CSS text. Renderers must not emit
+ * these synthetic style elements.
+ */
+export const STYLE_ANCHOR_PREFIX = "\0__STYLE_ANCHOR__";

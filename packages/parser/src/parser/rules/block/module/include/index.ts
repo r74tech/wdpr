@@ -16,7 +16,12 @@
  * @module
  */
 
-export { resolveIncludes, resolveIncludesAsync, resolveIncludesWithTrace } from "./resolve";
+export {
+  resolveIncludes,
+  resolveIncludesAsync,
+  resolveIncludesAsyncWithTrace,
+  resolveIncludesWithTrace,
+} from "./resolve";
 export { extractIncludeReferences } from "./references";
 export type {
   IncludeFetcher,

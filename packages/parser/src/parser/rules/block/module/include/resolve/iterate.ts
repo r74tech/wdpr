@@ -102,6 +102,41 @@ export async function expandIterativeAsync(
   return current;
 }
 
+/** Async counterpart of {@link expandIterativeWithTrace}. */
+export async function expandIterativeAsyncWithTrace(
+  source: string,
+  fetcher: AsyncIncludeFetcher,
+  maxIterations: number,
+): Promise<ResolveIncludesTraceResult> {
+  let current = source;
+  const replacementCache = new Map<string, Promise<string>>();
+  const dependencies: IncludeDependency[] = [];
+  const iterations: ResolveIncludesTraceResult["iterations"] = [];
+
+  for (let i = 0; i < maxIterations; i++) {
+    const expanded = await expandOneIterationAsyncWithTrace(current, fetcher, replacementCache, i);
+    if (expanded === null) break;
+
+    dependencies.push(...expanded.dependencies);
+    iterations.push({
+      iteration: i,
+      directives: expanded.references,
+      changed: expanded.source !== current,
+    });
+
+    if (expanded.source === current) break;
+    current = expanded.source;
+  }
+
+  return {
+    source: current,
+    dependencies,
+    iterations,
+    reachedMaxIterations:
+      iterations.length === maxIterations && scanIncludeDirectives(current).length > 0,
+  };
+}
+
 function expandOneIteration(
   source: string,
   fetcher: IncludeFetcher,
@@ -177,6 +212,42 @@ async function expandOneIterationAsync(
   }
   parts.push(source.slice(lastPos));
   return parts.join("");
+}
+
+async function expandOneIterationAsyncWithTrace(
+  source: string,
+  fetcher: AsyncIncludeFetcher,
+  replacementCache: Map<string, Promise<string>>,
+  iteration: number,
+): Promise<{
+  source: string;
+  references: IncludeReference[];
+  dependencies: IncludeDependency[];
+} | null> {
+  if (!MAYBE_INCLUDE_PATTERN.test(source)) return null;
+
+  const directives = scanIncludeDirectives(source);
+  if (directives.length === 0) return null;
+
+  const references = directives.map(createIncludeReference);
+  const replacements = await Promise.all(
+    directives.map(({ inner }) => replaceCachedAsync(inner, fetcher, replacementCache)),
+  );
+  const parts: string[] = [];
+  let lastPos = 0;
+
+  for (let i = 0; i < directives.length; i++) {
+    const { start, end } = directives[i]!;
+    parts.push(source.slice(lastPos, start), replacements[i]!);
+    lastPos = end;
+  }
+  parts.push(source.slice(lastPos));
+
+  return {
+    source: parts.join(""),
+    references,
+    dependencies: references.map((reference) => ({ ...reference, iteration })),
+  };
 }
 
 function replaceCached(inner: string, fetcher: IncludeFetcher, cache: Map<string, string>): string {

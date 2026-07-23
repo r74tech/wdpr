@@ -1,5 +1,5 @@
 import type { Element } from "@wdprlib/ast";
-import type { ParseFunction } from "../../types";
+import { getModuleParseAst, type ParseFunction } from "../../types";
 import type { ListPagesModuleData } from "../resolve";
 
 export function wrapListPagesResult(
@@ -14,14 +14,14 @@ export function wrapListPagesResult(
   const result: Element[] = [];
 
   if (module["prepend-line"] && !module.separate) {
-    const prependAst = parse(module["prepend-line"]);
+    const prependAst = getModuleParseAst(parse(module["prepend-line"]));
     result.push(...prependAst.elements);
   }
 
   result.push(...items);
 
   if (module["append-line"] && !module.separate) {
-    const appendAst = parse(module["append-line"]);
+    const appendAst = getModuleParseAst(parse(module["append-line"]));
     result.push(...appendAst.elements);
   }
 

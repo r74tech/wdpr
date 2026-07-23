@@ -4,6 +4,7 @@ import { compileListUsersTemplate } from "../../../../packages/parser/src/parser
 import type { SyntaxTree, Element } from "@wdprlib/ast";
 import type { DataProvider } from "../../../../packages/parser/src/parser/rules/block/module/types-common";
 import type { ListUsersCompiledTemplate } from "../../../../packages/parser/src/parser/rules/block/module/listusers/types";
+import { parse } from "@wdprlib/parser";
 
 function getTextData(el: Element): string {
   if (el.element === "text") return el.data;
@@ -31,6 +32,43 @@ function simpleParse(input: string): { elements: Element[] } {
 }
 
 describe("resolveModules - ListUsers", () => {
+  it("merges ListUsers parse side channels", async () => {
+    const body = [
+      "+ %%title%%",
+      "[[html]]<p>user</p>[[/html]]",
+      "[[footnote]]User note[[/footnote]]",
+      "[[code]]user-code[[/code]]",
+      "[[module CSS]]",
+      ".user { color: blue; }",
+      "[[/module]]",
+    ].join("\n");
+    const ast = createSyntaxTree([createListUsersModule(".", body)]);
+    const template = compileListUsersTemplate(body);
+
+    const result = await resolveModules(
+      ast,
+      {
+        fetchListUsers: () => ({
+          user: { number: 1, title: "Alice", name: "alice" },
+        }),
+      },
+      {
+        parse: (source) => parse(source, { appendImplicitFootnoteBlock: false, pageTags: [] }),
+        compiledListPagesTemplates: new Map(),
+        compiledListUsersTemplates: new Map([[0, template]]),
+        requirements: {
+          listUsers: [{ id: 0, users: ".", neededVariables: ["title"] }],
+        },
+      },
+    );
+
+    expect(result.styles).toEqual([".user { color: blue; }"]);
+    expect(result["html-blocks"]).toEqual(["<p>user</p>"]);
+    expect(result.footnotes).toHaveLength(1);
+    expect(result["code-blocks"]?.[0]?.contents).toBe("user-code");
+    expect(result["table-of-contents"]).toHaveLength(1);
+  });
+
   it("resolves single ListUsers module with one user", async () => {
     const ast = createSyntaxTree([createListUsersModule(".", "Hello %%title%%!")]);
     const template = compileListUsersTemplate("Hello %%title%%!");

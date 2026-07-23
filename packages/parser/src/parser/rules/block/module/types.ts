@@ -10,7 +10,7 @@
  * @module
  */
 
-import type { Element, Module } from "@wdprlib/ast";
+import type { Element, Module, ParseResult, SyntaxTree } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 
 /**
@@ -23,7 +23,12 @@ import type { ParseContext } from "../../types";
  * @param input - Wikitext string to parse
  * @returns Object containing the parsed elements
  */
-export type ParseFunction = (input: string) => { elements: Element[] };
+export type ModuleParseResult = SyntaxTree | ParseResult;
+export type ParseFunction = (input: string) => ModuleParseResult;
+
+export function getModuleParseAst(result: ModuleParseResult): SyntaxTree {
+  return "ast" in result ? result.ast : result;
+}
 
 /**
  * Definition of a module rule that handles a specific Wikidot module type.

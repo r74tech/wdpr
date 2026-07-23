@@ -113,7 +113,7 @@ export {
 export type { Diagnostic, DiagnosticSeverity, ParseResult } from "./diagnostic";
 
 // Constants
-export { STYLE_SLOT_PREFIX } from "./constants";
+export { STYLE_ANCHOR_PREFIX, STYLE_SLOT_PREFIX } from "./constants";
 
 // CSS value definitions
 export type { CssLengthUnit } from "./css";
@@ -126,3 +126,6 @@ export type { WikitextMode, WikitextSettings } from "./settings";
 export { evaluateExpression, isTruthy, formatExprValue } from "./expr-eval";
 export type { ExprResult } from "./expr-eval";
 export { createSettings, DEFAULT_SETTINGS } from "./settings";
+
+// Shared high-level pipeline page context
+export type { WikitextPageContext, WikitextPageFile } from "./page-context";

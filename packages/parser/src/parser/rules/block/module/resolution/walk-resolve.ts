@@ -3,6 +3,7 @@ import { mapElementChildrenWithState } from "../walk";
 import { isIfTagsElement, resolveIfTags, type IfTagsData } from "../iftags/resolve";
 import type { ListPagesContext, ListUsersContext, TagCloudContext } from "./contexts";
 import { countDynamicModules, resolveDynamicModuleElement } from "./dynamic-modules";
+import { collectStyles, createStyleSlotMarker, getStyleSlotId } from "./styles";
 
 /**
  * Resolution context passed through AST traversal.
@@ -21,6 +22,8 @@ export interface WalkContext {
   listPagesIdCounter: number;
   listUsersIdCounter: number;
   tagCloudIdCounter: number;
+  resolvedStyleSlots: Map<number, string[]>;
+  routedStyleAnchors: WeakSet<Element>;
 }
 
 export interface WalkResult {
@@ -56,6 +59,7 @@ export function walkAndResolve(elements: Element[], ctx: WalkContext): WalkResul
     if (isIfTagsElement(element)) {
       const ifTagsData = element.data as IfTagsData;
       const resolveResult = resolveIfTags(ifTagsData, ctx.pageTags);
+      const styleSlotId = getStyleSlotId(ifTagsData);
 
       if (resolveResult.evaluated) {
         if (resolveResult.matched) {
@@ -65,11 +69,25 @@ export function walkAndResolve(elements: Element[], ctx: WalkContext): WalkResul
             listUsersIdCounter: listUsersId,
             tagCloudIdCounter: tagCloudId,
           });
-          result.push(...childResult.elements);
+          if (styleSlotId === undefined) {
+            result.push(...childResult.elements);
+          } else {
+            const collected = collectStyles(childResult.elements);
+            ctx.resolvedStyleSlots.set(styleSlotId, collected.styles);
+            for (const anchor of collected.anchors) ctx.routedStyleAnchors.add(anchor);
+            result.push(
+              { element: "style", data: createStyleSlotMarker(styleSlotId) },
+              ...collected.elements,
+            );
+          }
           listPagesId = childResult.nextListPagesId;
           listUsersId = childResult.nextListUsersId;
           tagCloudId = childResult.nextTagCloudId;
         } else {
+          if (styleSlotId !== undefined) {
+            ctx.resolvedStyleSlots.set(styleSlotId, []);
+            result.push({ element: "style", data: createStyleSlotMarker(styleSlotId) });
+          }
           const counts = countDynamicModules(ifTagsData.elements);
           listPagesId += counts.listPagesId;
           listUsersId += counts.listUsersId;

@@ -34,6 +34,10 @@ function shouldAddNewPageClass(ctx: RenderContext, data: LinkData): boolean {
     return false;
   }
 
+  if (data.link.site) {
+    return false;
+  }
+
   const page = data.link.page;
   const isSpecialPage = page.startsWith("//") || page.includes("#/");
   if (isSpecialPage) {

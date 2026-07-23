@@ -18,6 +18,15 @@
  */
 
 export { renderToHtml } from "./render";
+export { renderWikitext } from "./pipeline";
+export type {
+  RenderableWikitextDocument,
+  RenderedHtmlBlock,
+  RenderWikitextOptions,
+  RenderWikitextResolvers,
+  WikitextRenderArtifacts,
+  WikitextRenderResult,
+} from "./pipeline";
 export type {
   RenderOptions,
   RenderResolvers,

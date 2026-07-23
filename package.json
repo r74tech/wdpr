@@ -22,7 +22,7 @@
     "lint:fix": "oxlint --fix packages/ tests/ examples/",
     "format": "oxfmt --check packages/ tests/ examples/",
     "format:fix": "oxfmt packages/ tests/ examples/",
-    "typecheck": "tsc --noEmit && tsc --noEmit -p packages/runtime/tsconfig.json",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p packages/runtime/tsconfig.json && tsc --noEmit -p tests/types/tsconfig.json",
     "release": "nx release",
     "release:dry-run": "nx release --dry-run",
     "docs": "typedoc",

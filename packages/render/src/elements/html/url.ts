@@ -2,7 +2,7 @@ import type { RenderContext } from "../../context";
 import { syncHashSha1 } from "../../hash";
 
 export function resolveHtmlBlockUrl(ctx: RenderContext, contents: string, index: number): string {
-  const callbackUrl = ctx.options.resolvers?.htmlBlockUrl?.(index);
+  const callbackUrl = ctx.options.resolvers?.htmlBlockUrl?.(index, contents);
   return callbackUrl || generateDefaultHtmlBlockUrl(ctx.page?.pageName ?? "", contents);
 }
 

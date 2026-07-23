@@ -19,6 +19,15 @@ function pageLinkTree(page: string): SyntaxTree {
   };
 }
 
+function crossSitePageLinkTree(site: string, page: string): SyntaxTree {
+  const tree = pageLinkTree(page);
+  const link = tree.elements[0];
+  if (link?.element === "link" && typeof link.data.link === "object") {
+    link.data.link.site = site;
+  }
+  return tree;
+}
+
 describe("renderLink - newpage class for category-prefixed pages", () => {
   it("does not add newpage class when pageExists returns true for category page", () => {
     const tree = pageLinkTree("main:start");
@@ -122,5 +131,21 @@ describe("renderLink - newpage class for category-prefixed pages", () => {
     };
     renderToHtml(tree, options);
     expect(calls).toEqual(["share:01j0sampe0share0page0000xx"]);
+  });
+
+  it("does not check or mark cross-site page links as new pages", () => {
+    let called = false;
+    const html = renderToHtml(crossSitePageLinkTree("other", "same-name"), {
+      page: {
+        pageName: "current",
+        pageExists: () => {
+          called = true;
+          return false;
+        },
+      },
+    });
+
+    expect(called).toBe(false);
+    expect(html).not.toContain("newpage");
   });
 });

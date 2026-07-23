@@ -10,6 +10,7 @@ export function createParseContext(tokens: Token[], options: ParserOptions = {})
     version: options.version ?? "wikidot",
     trackPositions: options.trackPositions ?? true,
     settings: options.settings ?? DEFAULT_SETTINGS,
+    appendImplicitFootnoteBlock: options.appendImplicitFootnoteBlock ?? true,
     footnotes: [],
     tocEntries: [],
     codeBlocks: [],

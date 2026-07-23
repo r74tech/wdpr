@@ -1,5 +1,10 @@
 import { test, expect, describe } from "bun:test";
-import { parse, resolveIncludesAsync, type ParserOptions } from "@wdprlib/parser";
+import {
+  parse,
+  resolveIncludesAsync,
+  resolveIncludesAsyncWithTrace,
+  type ParserOptions,
+} from "@wdprlib/parser";
 import type { SyntaxTree } from "@wdprlib/ast";
 import { getAllText } from "../../../helpers";
 
@@ -8,6 +13,64 @@ function parseAst(input: string, options?: ParserOptions): SyntaxTree {
 }
 
 describe("resolveIncludesAsync", () => {
+  test("returns direct and transitive dependencies in observation order", async () => {
+    const pages: Record<string, string> = {
+      root: "[[include child]]",
+      child: "done",
+    };
+
+    const traced = await resolveIncludesAsyncWithTrace(
+      "[[include root]]\n[[include sibling]]",
+      async ({ page }) => pages[page] ?? page,
+    );
+
+    expect(traced.source).toBe("done\nsibling");
+    expect(
+      traced.dependencies.map(({ location, iteration }) => [location.page, iteration]),
+    ).toEqual([
+      ["root", 0],
+      ["sibling", 0],
+      ["child", 1],
+    ]);
+    expect(traced.iterations.map(({ iteration, changed }) => [iteration, changed])).toEqual([
+      [0, true],
+      [1, true],
+    ]);
+    expect(traced.reachedMaxIterations).toBe(false);
+  });
+
+  test("trace preserves sibling fetch concurrency and source order", async () => {
+    const started: string[] = [];
+    const pending = new Map<string, (value: string) => void>();
+    const tracedPromise = resolveIncludesAsyncWithTrace(
+      "[[include a]]\n[[include b]]",
+      async ({ page }) => {
+        started.push(page);
+        return new Promise<string>((resolve) => pending.set(page, resolve));
+      },
+    );
+
+    await Promise.resolve();
+    expect(started).toEqual(["a", "b"]);
+    pending.get("b")!("B");
+    pending.get("a")!("A");
+
+    const traced = await tracedPromise;
+    expect(traced.source).toBe("A\nB");
+    expect(traced.dependencies.map((dependency) => dependency.location.page)).toEqual(["a", "b"]);
+  });
+
+  test("trace reports a reached iteration cap", async () => {
+    const traced = await resolveIncludesAsyncWithTrace(
+      "[[include a]]",
+      async ({ page }) => (page === "a" ? "[[include b]]" : "done"),
+      { maxIterations: 1 },
+    );
+
+    expect(traced.source).toBe("[[include b]]");
+    expect(traced.reachedMaxIterations).toBe(true);
+  });
+
   test("resolves a simple include", async () => {
     const source = "[[include my-page]]";
     const fetcher = async (pageRef: { site: string | null; page: string }) => {

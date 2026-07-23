@@ -60,6 +60,8 @@ export class RenderContext {
   private _styleSlots = new StyleSlotState();
   /** Sequential counters and ID suffix state for this render pass. */
   private counters: RenderCounters;
+  private readonly collectedStyles: string[] | null;
+  private readonly emitStyleTags: boolean;
 
   /** Merged wikitext settings (page-mode defaults when omitted). */
   readonly settings: WikitextSettings;
@@ -85,10 +87,16 @@ export class RenderContext {
    * @param options - Caller-supplied render configuration. Missing fields
    *   fall back to safe defaults.
    */
-  constructor(tree: SyntaxTree, options: RenderOptions = {}) {
+  constructor(
+    tree: SyntaxTree,
+    options: RenderOptions = {},
+    execution: { collectedStyles?: string[]; emitStyleTags?: boolean } = {},
+  ) {
     this.settings = options.settings ?? DEFAULT_SETTINGS;
     this.counters = new RenderCounters(this.settings.useTrueIds);
     this.options = options;
+    this.collectedStyles = execution.collectedStyles ?? null;
+    this.emitStyleTags = execution.emitStyleTags ?? true;
     this.footnotes = options.footnotes ?? tree.footnotes ?? [];
     this.styles = tree.styles ?? [];
     this.htmlBlocks = tree["html-blocks"] ?? [];
@@ -147,6 +155,12 @@ export class RenderContext {
   /** Push a CSS string into the active style slot. */
   pushToStyleSlot(css: string): void {
     this._styleSlots.push(css);
+  }
+
+  /** Record a rendered style and report whether its tag should be emitted. */
+  recordStyle(css: string): boolean {
+    this.collectedStyles?.push(css);
+    return this.emitStyleTags;
   }
 
   /** Retrieve collected CSS strings for a given style slot. */

@@ -7,7 +7,11 @@
 
 import type { PageRef } from "@wdprlib/ast";
 import { createCachedAsyncIncludeFetcher, createCachedIncludeFetcher } from "./cache";
-import { expandIterative, expandIterativeAsync, expandIterativeWithTrace } from "./iterate";
+import {
+  expandIterative,
+  expandIterativeAsyncWithTrace,
+  expandIterativeWithTrace,
+} from "./iterate";
 import type {
   AsyncIncludeFetcher,
   IncludeFetcher,
@@ -84,13 +88,29 @@ export async function resolveIncludesAsync(
   fetcher: AsyncIncludeFetcher,
   options?: ResolveIncludesOptions,
 ): Promise<string> {
+  return (await resolveIncludesAsyncWithTrace(source, fetcher, options)).source;
+}
+
+/**
+ * Async include expansion with dependency and iteration trace data.
+ */
+export async function resolveIncludesAsyncWithTrace(
+  source: string,
+  fetcher: AsyncIncludeFetcher,
+  options?: ResolveIncludesOptions,
+): Promise<ResolveIncludesTraceResult> {
   if (options?.settings && !options.settings.enablePageSyntax) {
-    return source;
+    return {
+      source,
+      dependencies: [],
+      iterations: [],
+      reachedMaxIterations: false,
+    };
   }
 
   const maxIterations = options?.maxIterations ?? 10;
   const cachedFetcher = createCachedAsyncIncludeFetcher(fetcher, normalizePageKey);
-  return expandIterativeAsync(source, cachedFetcher, maxIterations);
+  return expandIterativeAsyncWithTrace(source, cachedFetcher, maxIterations);
 }
 
 /**

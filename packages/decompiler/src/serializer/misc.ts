@@ -1,3 +1,4 @@
+import { STYLE_ANCHOR_PREFIX } from "@wdprlib/ast";
 import type {
   ColorData,
   ClearFloat,
@@ -79,6 +80,8 @@ export function serializeIframe(ctx: SerializeContext, data: IframeData): void {
 
 /** Serialize a style element to `[[module CSS]]...[[/module]]` syntax. */
 export function serializeStyle(ctx: SerializeContext, data: string): void {
+  if (data.startsWith(STYLE_ANCHOR_PREFIX)) return;
+
   ctx.pushBlockLine("[[module CSS]]");
   ctx.push(data);
   if (!data.endsWith("\n")) {

@@ -31,4 +31,10 @@ export interface ParserOptions {
    * - `string[]`: every iftags block is evaluated against the given tags eagerly.
    */
   pageTags?: string[] | null;
+  /**
+   * Append the implicit document-level footnote block when no explicit block
+   * exists. Defaults to true. Fragment pipelines can disable this and add one
+   * block after all fragments have been merged.
+   */
+  appendImplicitFootnoteBlock?: boolean;
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { resolveModules } from "../../../../packages/parser/src/parser/rules/block/module/resolve";
 import { compileTemplate } from "../../../../packages/parser/src/parser/rules/block/module/listpages/compiler";
-import type { SyntaxTree, Module } from "@wdprlib/ast";
+import { STYLE_SLOT_PREFIX, type Element, type SyntaxTree, type Module } from "@wdprlib/ast";
 import type { DataProvider } from "../../../../packages/parser/src/parser/rules/block/module/types-common";
 import type {
   ListPagesDataRequirement,
@@ -12,6 +12,7 @@ import type {
   NormalizedListPagesQuery,
 } from "../../../../packages/parser/src/parser/rules/block/module/listpages/types";
 import { getContainerType, getChildren, getTextValue, isContainer } from "../../../helpers";
+import { parse } from "@wdprlib/parser";
 
 /**
  * Type alias for list-pages module
@@ -134,6 +135,184 @@ function createRequirements(count: number): { listPages: ListPagesDataRequiremen
 }
 
 describe("resolveModules", () => {
+  it("preserves side channels inside unresolved IfTags", async () => {
+    const initial = parse(
+      [
+        "[[iftags +component]]",
+        "+ Conditional heading",
+        "[[footnote]]Conditional note[[/footnote]]",
+        "[[/iftags]]",
+      ].join("\n"),
+      { pageTags: null },
+    ).ast;
+
+    const result = await resolveModules(
+      initial,
+      {},
+      {
+        parse: (source) => parse(source, { pageTags: null }),
+        compiledListPagesTemplates: new Map(),
+        requirements: {},
+      },
+    );
+
+    expect(result.footnotes).toEqual(initial.footnotes);
+    expect(result["table-of-contents"]).toEqual(initial["table-of-contents"]);
+  });
+
+  it("excludes side channels from non-rendered expression branches when IfTags is unresolved", async () => {
+    const visibleFootnote: Element = { element: "footnote" };
+    const hiddenFootnote: Element = { element: "footnote" };
+    const ast: SyntaxTree = {
+      elements: [
+        {
+          element: "ifexpr",
+          data: {
+            expression: "1",
+            // oxlint-disable-next-line unicorn/no-thenable -- `then` is part of the public AST schema
+            then: [visibleFootnote],
+            else: [hiddenFootnote],
+          },
+        },
+        { element: "footnote-block", data: { title: null, hide: false } },
+      ],
+      footnotes: [[{ element: "text", data: "visible" }], [{ element: "text", data: "hidden" }]],
+    };
+
+    const result = await resolveModules(
+      ast,
+      {},
+      {
+        parse: (source) => parse(source, { pageTags: null }),
+        compiledListPagesTemplates: new Map(),
+        requirements: {},
+      },
+    );
+
+    expect(result.footnotes).toEqual([[{ element: "text", data: "visible" }]]);
+  });
+
+  it("preserves styles collected by an earlier resolution pass", async () => {
+    const ast: SyntaxTree = { elements: [], styles: [".existing { color: red; }"] };
+
+    const result = await resolveModules(
+      ast,
+      {},
+      {
+        parse: (source) => parse(source),
+        compiledListPagesTemplates: new Map(),
+        requirements: {},
+      },
+    );
+
+    expect(result.styles).toEqual(ast.styles);
+  });
+
+  it("does not duplicate unresolved IfTags style slots across repeated resolution", async () => {
+    const ast = parse(
+      [
+        "[[iftags +component]]",
+        "[[module CSS]]",
+        ".conditional { color: red; }",
+        "[[/module]]",
+        "[[/iftags]]",
+      ].join("\n"),
+      { pageTags: null },
+    ).ast;
+    const options = {
+      parse: (source: string) => parse(source, { pageTags: null }),
+      compiledListPagesTemplates: new Map<number, CompiledTemplate>(),
+      requirements: {},
+    };
+
+    const first = await resolveModules(ast, {}, options);
+    const second = await resolveModules(first, {}, options);
+
+    expect(second.styles).toEqual(first.styles);
+  });
+
+  it("keeps later-resolved ListPages CSS before existing CSS in the same slot interval", async () => {
+    const body = "[[module CSS]]\n.dynamic { color: blue; }\n[[/module]]";
+    const parsed = parse(
+      [
+        "[[module CSS]]",
+        ".static { color: green; }",
+        "[[/module]]",
+        "[[iftags +component]]",
+        "[[module CSS]]",
+        ".conditional { color: red; }",
+        "[[/module]]",
+        "[[/iftags]]",
+      ].join("\n"),
+      { pageTags: null },
+    ).ast;
+    const ast: SyntaxTree = {
+      ...parsed,
+      elements: [createListPagesModule({}, body), ...parsed.elements],
+    };
+    const options = {
+      parse: (source: string) => parse(source, { pageTags: null }),
+      compiledListPagesTemplates: new Map([[0, compileTemplate(body)]]),
+      requirements: createRequirements(1),
+    };
+
+    const first = await resolveModules(ast, {}, options);
+    const second = await resolveModules(
+      first,
+      createDataProvider(
+        new Map([[0, { pages: [createPage()], totalCount: 1, site: createSite() }]]),
+      ),
+      options,
+    );
+
+    expect(second.styles).toEqual([
+      ".dynamic { color: blue; }",
+      ".static { color: green; }",
+      `${STYLE_SLOT_PREFIX}0`,
+    ]);
+  });
+
+  it("merges ListPages parse side channels and diagnostics", async () => {
+    const body = [
+      "+ Generated heading",
+      "[[html]]<p>generated</p>[[/html]]",
+      "[[footnote]]Generated note[[/footnote]]",
+      '[[code type="ts"]]const generated = true;[[/code]]',
+      "[[module CSS]]",
+      ".generated { color: red; }",
+      "[[/module]]",
+      "[[code]]unclosed",
+    ].join("\n");
+    const doc = createSyntaxTree([createListPagesModule({}, body)]);
+    const dataProvider = createDataProvider(
+      new Map([
+        [
+          0,
+          {
+            pages: [createPage()],
+            totalCount: 1,
+            site: createSite(),
+          },
+        ],
+      ]),
+    );
+    const diagnostics: string[] = [];
+
+    const result = await resolveModules(doc, dataProvider, {
+      compiledListPagesTemplates: new Map([[0, compileTemplate(body)]]),
+      parse: (source) => parse(source, { appendImplicitFootnoteBlock: false, pageTags: [] }),
+      requirements: createRequirements(1),
+      onDiagnostics: (items) => diagnostics.push(...items.map((item) => item.code)),
+    });
+
+    expect(result.styles).toEqual([".generated { color: red; }"]);
+    expect(result["html-blocks"]).toEqual(["<p>generated</p>"]);
+    expect(result.footnotes).toHaveLength(1);
+    expect(result["code-blocks"]?.[0]?.contents).toBe("const generated = true;");
+    expect(result["table-of-contents"]).toHaveLength(1);
+    expect(diagnostics).toContain("unclosed-block");
+  });
+
   describe("basic resolution", () => {
     it("should return document unchanged when no ListPages modules", async () => {
       const doc = createSyntaxTree([createParagraph("Hello")]);

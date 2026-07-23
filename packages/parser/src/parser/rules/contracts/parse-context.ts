@@ -25,6 +25,7 @@ export interface ParseContext {
   version: Version;
   trackPositions: boolean;
   settings: WikitextSettings;
+  appendImplicitFootnoteBlock: boolean;
   footnotes: Element[][];
   tocEntries: TocEntry[];
   codeBlocks: CodeBlockData[];

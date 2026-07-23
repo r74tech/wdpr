@@ -90,4 +90,23 @@ describe("htmlBlockUrl callback", () => {
 
     expect(receivedIndexes).toEqual([0, 1, 2]);
   });
+
+  it("passes block content as a backward-compatible second argument", () => {
+    const tree = createTreeWithHtmlBlocks(["<p>one</p>", "<p>two</p>"]);
+    const received: Array<[number, string]> = [];
+
+    renderToHtml(tree, {
+      resolvers: {
+        htmlBlockUrl: (index, content) => {
+          received.push([index, content]);
+          return `https://example.com/${index}`;
+        },
+      },
+    });
+
+    expect(received).toEqual([
+      [0, "<p>one</p>"],
+      [1, "<p>two</p>"],
+    ]);
+  });
 });

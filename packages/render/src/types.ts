@@ -107,7 +107,7 @@ export interface RenderResolvers {
    * attribute. The caller must validate the scheme to reject `javascript:`,
    * `data:`, and other dangerous protocols.
    */
-  htmlBlockUrl?: (index: number) => string;
+  htmlBlockUrl?: (index: number, content: string) => string;
 }
 
 /**

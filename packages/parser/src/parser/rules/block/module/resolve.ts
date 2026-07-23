@@ -16,7 +16,7 @@
  * @module
  */
 
-import type { SyntaxTree } from "@wdprlib/ast";
+import type { Diagnostic, Element, SyntaxTree } from "@wdprlib/ast";
 import type { DataProvider } from "./types-common";
 import { resolveIncludes } from "./include";
 import type { ListPagesDataRequirement, CompiledTemplate } from "./listpages/types";
@@ -29,7 +29,8 @@ import {
   buildTagCloudContext,
 } from "./resolution/contexts";
 import { walkAndResolve } from "./resolution/walk-resolve";
-import { collectStyles } from "./resolution/styles";
+import { collectStyles, mergeCollectedStyles } from "./resolution/styles";
+import { containsSyntaxFootnoteBlock, ModuleDocumentRegistry } from "./resolution/document";
 
 const MODULE_SECONDARY_INCLUDE_MAX_ITERATIONS = 5;
 
@@ -110,6 +111,9 @@ export interface ResolveOptions {
    * state outside wdpr.
    */
   transformModuleSource?: ModuleSourceTransform;
+
+  /** Receives diagnostics emitted by ListPages/ListUsers secondary parses. */
+  onDiagnostics?: (diagnostics: Diagnostic[]) => void;
 }
 
 /**
@@ -131,7 +135,9 @@ export async function resolveModules(
   dataProvider: DataProvider,
   options: ResolveOptions,
 ): Promise<SyntaxTree> {
-  const parse = createModuleParseFunction(options, dataProvider);
+  const registry = new ModuleDocumentRegistry();
+  registry.register(ast);
+  const parse = createModuleParseFunction(options, dataProvider, registry);
   const listPagesCtx = await buildListPagesContext(
     dataProvider,
     options.requirements.listPages ?? [],
@@ -147,6 +153,8 @@ export async function resolveModules(
   );
   const tagCloudCtx = await buildTagCloudContext(dataProvider, options.requirements.tagCloud ?? []);
   const pageTags = dataProvider.getPageTags?.() ?? null;
+  const resolvedStyleSlots = new Map<number, string[]>();
+  const routedStyleAnchors = new WeakSet<Element>();
 
   // Resolve AST
   const resolvedElements = walkAndResolve(ast.elements, {
@@ -160,33 +168,44 @@ export async function resolveModules(
     listPagesIdCounter: 0,
     listUsersIdCounter: 0,
     tagCloudIdCounter: 0,
+    resolvedStyleSlots,
+    routedStyleAnchors,
   });
 
   // Collect style elements from resolved AST
-  const { elements: finalElements, styles } = collectStyles(resolvedElements.elements);
+  const {
+    elements: finalElements,
+    styles,
+    anchoredStyles,
+  } = collectStyles(resolvedElements.elements, routedStyleAnchors);
 
   const result: SyntaxTree = {
     ...ast,
     elements: finalElements,
   };
 
-  if (styles.length > 0) {
-    result.styles = styles;
-  }
+  const mergedStyles = mergeCollectedStyles(ast.styles, styles, resolvedStyleSlots, anchoredStyles);
+  if (mergedStyles.length > 0) result.styles = mergedStyles;
 
-  return result;
+  options.onDiagnostics?.(registry.diagnostics);
+  return registry.finalize(
+    result,
+    finalElements,
+    pageTags,
+    containsSyntaxFootnoteBlock(ast.elements),
+  );
 }
 
 function createModuleParseFunction(
   options: ResolveOptions,
   dataProvider: DataProvider,
+  registry: ModuleDocumentRegistry,
 ): ParseFunction {
   const transform = createModuleSourceTransform(options, dataProvider);
-  if (!transform) {
-    return options.parse;
-  }
-
-  return (source: string) => options.parse(transform(source));
+  return (source: string) =>
+    registry.register(options.parse(transform ? transform(source) : source), {
+      stripLegacyImplicitFootnoteBlock: true,
+    });
 }
 
 function createModuleSourceTransform(

@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "isolatedDeclarations": false,
+    "noEmit": true,
+    "paths": {
+      "@wdprlib/ast": ["packages/ast/src/index.ts"],
+      "@wdprlib/parser": ["packages/parser/src/index.ts"],
+      "@wdprlib/render": ["packages/render/src/index.ts"]
+    }
+  },
+  "include": ["./**/*.ts"]
+}

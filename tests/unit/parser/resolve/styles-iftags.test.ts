@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { parse, resolveModules, resolveIncludes, type ParserOptions } from "@wdprlib/parser";
-import type { SyntaxTree, Element } from "@wdprlib/ast";
+import { STYLE_ANCHOR_PREFIX, type SyntaxTree, type Element } from "@wdprlib/ast";
 import type { DataProvider } from "../../../../packages/parser/src/parser/rules/block/module/types-common";
 import type { ResolveOptions } from "../../../../packages/parser/src/parser/rules/block/module/resolve";
 
@@ -43,7 +43,7 @@ async function resolveWithoutTags(ast: SyntaxTree): Promise<SyntaxTree> {
  */
 function hasStyleElements(elements: Element[]): boolean {
   for (const el of elements) {
-    if (el.element === "style") return true;
+    if (el.element === "style" && !el.data.startsWith(STYLE_ANCHOR_PREFIX)) return true;
     if ("data" in el && el.data && typeof el.data === "object") {
       const data = el.data as Record<string, unknown>;
       if ("elements" in data && Array.isArray(data.elements)) {
@@ -327,6 +327,38 @@ describe("resolve: include with styles", () => {
 });
 
 describe("resolve → render: CSS order consistency", () => {
+  it("preserves CSS order when unresolved IfTags is resolved by a later pass", async () => {
+    const { renderToHtml } = await import("@wdprlib/render");
+    const input = [
+      "[[module CSS]]",
+      ".before { color: blue; }",
+      "[[/module]]",
+      "[[iftags +x]]",
+      "[[module CSS]]",
+      ".conditional { color: red; }",
+      "[[/module]]",
+      "[[/iftags]]",
+      "[[module CSS]]",
+      ".after { color: green; }",
+      "[[/module]]",
+    ].join("\n");
+
+    const first = await resolveWithoutTags(parseAst(input));
+    const second = await resolveWithTags(first, ["x"]);
+    const html = renderToHtml(second, { page: { pageName: "p", tags: ["x"] } });
+
+    expect(second.styles).toEqual([
+      ".before { color: blue; }",
+      ".conditional { color: red; }",
+      ".after { color: green; }",
+    ]);
+    expect(html.indexOf(".before")).toBeLessThan(html.indexOf(".conditional"));
+    expect(html.indexOf(".conditional")).toBeLessThan(html.indexOf(".after"));
+    expect(html.match(/\.before/g)).toHaveLength(1);
+    expect(html.match(/\.conditional/g)).toHaveLength(1);
+    expect(html.match(/\.after/g)).toHaveLength(1);
+  });
+
   it("produces same CSS order regardless of resolve path", async () => {
     const { renderToHtml } = await import("@wdprlib/render");
 

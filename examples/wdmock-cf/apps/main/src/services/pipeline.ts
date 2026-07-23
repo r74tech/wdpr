@@ -3,17 +3,11 @@
  *
  * Handles source parsing, module resolution, and HTML rendering.
  */
-import { parse, extractDataRequirements, resolveModules, resolveIncludes } from "@wdprlib/parser";
-import type {
-  NormalizedListPagesQuery,
-  ListPagesExternalData,
-  PageData,
-  PageRef,
-} from "@wdprlib/parser";
-import { renderToHtml } from "@wdprlib/render";
-import type { PageContext } from "@wdprlib/render";
+import { processWikitext } from "@wdprlib/parser";
+import type { NormalizedListPagesQuery, ListPagesExternalData, PageData } from "@wdprlib/parser";
+import { renderWikitext } from "@wdprlib/render";
 import { SITE, parseFullname } from "@wdmock/shared";
-import { getTagsByFullname, rowToPageData, getAllPageSources } from "@wdmock/db";
+import { findPage, getTagsByFullname, rowToPageData } from "@wdmock/db";
 
 // Normalized order field -> DB column mapping
 const ORDER_COLUMN_MAP: Record<string, string> = {
@@ -42,75 +36,93 @@ export async function renderPage(
   db: D1Database,
   options?: RenderPageOptions,
 ): Promise<RenderResult> {
-  const pageSourceMap = await getAllPageSources(db);
+  const identity = parseFullname(pageName);
+  const pageTags = await getTagsByFullname(db, identity.category, identity.name);
 
-  const expanded = resolveIncludes(source, (pageRef: PageRef) => {
-    return pageSourceMap.get(pageRef.page) ?? null;
-  });
-
-  // Fetch the page's tags so source-level [[iftags]] inside block openers
-  // (e.g. `[[div_ class="x" [[iftags +foo]]...[[/iftags]]]]`) can be
-  // collapsed text-level by parse() — otherwise the block-level tokenizer
-  // would emit the whole opener as raw text.
-  const pageTags = await getTagsByFullname(
-    db,
-    parseFullname(pageName).category,
-    parseFullname(pageName).name,
-  );
-
-  const { ast: resolved, diagnostics: _diagnostics = [] } = parse(expanded, { pageTags });
-
-  const { requirements, compiledListPagesTemplates } = extractDataRequirements(resolved);
-
-  const modulesResolved = await resolveModules(
-    resolved,
-    {
-      fetchListPages: async (query) => {
-        return await queryListPages(db, query, pageName);
-      },
-      getPageTags: () => pageTags,
-    },
-    {
-      parse: (input: string) => parse(input, { pageTags }).ast,
-      compiledListPagesTemplates,
-      requirements,
+  const document = await processWikitext(source, {
+    page: {
+      fullName: pageName,
+      unixName: identity.name,
+      tags: pageTags,
       urlPath: options?.urlPath,
+      site: SITE.name,
+      domain: SITE.domain,
     },
-  );
-
-  const styles = modulesResolved.styles ?? [];
-  const treeWithoutStyles = { ...modulesResolved, styles: [] };
-
-  const htmlBlocks = modulesResolved["html-blocks"] ?? [];
-  const htmlBlockUrls: string[] = [];
-
-  if (options?.files && htmlBlocks.length > 0) {
-    const baseUrl = options.filesBaseUrl ?? "";
-    for (const content of htmlBlocks) {
-      const hash = await storeHtmlBlock(options.files, pageName, content);
-      htmlBlockUrls.push(`${baseUrl}/local--html/${pageName}/${hash}`);
-    }
-  }
-
-  const pageContext: PageContext = {
-    pageName,
-    site: SITE.name,
-    domain: SITE.domain,
-    pageExists: () => true,
-  };
-
-  const html = renderToHtml(treeWithoutStyles, {
-    page: pageContext,
-    footnotes: modulesResolved.footnotes,
+    dataProvider: {
+      fetchInclude: async (pageRef) => {
+        if (pageRef.site) return null;
+        const included = parseFullname(pageRef.page);
+        return (await findPage(db, included.category, included.name))?.source ?? null;
+      },
+      fetchListPages: async (query) => queryListPages(db, query, pageName),
+    },
+  });
+  const rendered = await renderWikitext(document, {
+    styleMode: "separate",
     resolvers: {
-      htmlBlockUrl: (index) => htmlBlockUrls[index] ?? "",
       user: (username) => ({ name: username }),
+      resolvePageExistence: (pages) => findExistingPages(db, pages),
+      resolveHtmlBlockUrl: options?.files
+        ? async ({ content }) => {
+            const hash = await storeHtmlBlock(options.files!, pageName, content);
+            return `${options.filesBaseUrl ?? ""}/local--html/${pageName}/${hash}`;
+          }
+        : undefined,
     },
     htmlBlockSandbox: null,
     embedAllowlist: null,
   });
 
-  return { html, styles };
+  return { html: rendered.html, styles: rendered.styles };
+}
+
+async function findExistingPages(db: D1Database, pages: string[]): Promise<ReadonlySet<string>> {
+  if (pages.length === 0) return new Set();
+  const requestedByCanonical = new Map<string, string[]>();
+  for (const page of pages) {
+    const canonical = normalizePageLookupName(page);
+    requestedByCanonical.set(canonical, [...(requestedByCanonical.get(canonical) ?? []), page]);
+  }
+
+  const canonicalPages = [...requestedByCanonical.keys()];
+  const batches: string[][] = [];
+  for (let i = 0; i < canonicalPages.length; i += D1_PAGE_EXISTENCE_BATCH_SIZE) {
+    batches.push(canonicalPages.slice(i, i + D1_PAGE_EXISTENCE_BATCH_SIZE));
+  }
+  const results = await Promise.all(
+    batches.map((batch) => {
+      const placeholders = batch.map(() => "?").join(", ");
+      return db
+        .prepare(
+          `SELECT LOWER(CASE WHEN category = '_default' THEN unix_name ELSE category || ':' || unix_name END) AS fullname
+           FROM pages
+           WHERE LOWER(CASE WHEN category = '_default' THEN unix_name ELSE category || ':' || unix_name END)
+             IN (${placeholders})`,
+        )
+        .bind(...batch)
+        .all<{ fullname: string }>();
+    }),
+  );
+
+  const existing = new Set<string>();
+  for (const result of results) {
+    for (const row of result.results) {
+      for (const requested of requestedByCanonical.get(row.fullname) ?? []) existing.add(requested);
+    }
+  }
+  return existing;
+}
+
+const D1_PAGE_EXISTENCE_BATCH_SIZE = 90;
+
+function normalizePageLookupName(page: string): string {
+  let normalized = page.toLowerCase();
+  if (normalized.includes(":")) normalized = normalized.replace(/:\s+/g, ":");
+  if (/\s/.test(normalized)) normalized = normalized.replace(/\s+/g, "-").trim();
+  if (!normalized.startsWith("/") && normalized.includes("/")) {
+    normalized = normalized.replace(/\//g, "-");
+  }
+  return normalized.startsWith("/") ? normalized.slice(1) : normalized;
 }
 
 async function queryListPages(

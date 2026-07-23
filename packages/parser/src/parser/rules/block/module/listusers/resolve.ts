@@ -15,7 +15,7 @@ import type {
   ListUsersCompiledTemplate,
   ListUsersVariableContext,
 } from "./types";
-import type { ParseFunction } from "../types";
+import { getModuleParseAst, type ParseFunction } from "../types";
 
 /**
  * Narrowed type for the list-users variant of the Module discriminated union.
@@ -53,6 +53,6 @@ export function resolveListUsers(
 ): Element[] {
   const ctx: ListUsersVariableContext = { user: data.user };
   const substituted = compiledTemplate(ctx);
-  const itemAst = parse(substituted);
+  const itemAst = getModuleParseAst(parse(substituted));
   return itemAst.elements;
 }

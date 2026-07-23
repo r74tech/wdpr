@@ -26,3 +26,15 @@ export function renderToHtml(tree: SyntaxTree, options: RenderOptions = {}): str
   renderCollectedStyles(ctx, tree.styles);
   return ctx.getOutput();
 }
+
+export function renderToHtmlWithStyles(
+  tree: SyntaxTree,
+  options: RenderOptions,
+  emitStyleTags: boolean,
+): { html: string; styles: string[] } {
+  const styles: string[] = [];
+  const ctx = new RenderContext(tree, options, { collectedStyles: styles, emitStyleTags });
+  renderElements(ctx, tree.elements);
+  renderCollectedStyles(ctx, tree.styles);
+  return { html: ctx.getOutput(), styles };
+}

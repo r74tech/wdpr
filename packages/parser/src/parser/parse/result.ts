@@ -10,7 +10,9 @@ import { containsFootnoteBlock } from "./footnotes";
 
 export function finalizeParseResult(ctx: ParseContext, children: Element[]): ParseResult {
   const cleanedChildren = postprocessChildren(children);
-  appendImplicitFootnoteBlock(cleanedChildren);
+  if (ctx.appendImplicitFootnoteBlock) {
+    appendImplicitFootnoteBlock(cleanedChildren);
+  }
 
   return {
     ast: buildSyntaxTree(ctx, cleanedChildren),

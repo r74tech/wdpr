@@ -1,3 +1,13 @@
+## 3.3.0 (2026-07-24)
+
+### 🚀 Features
+
+- add high-level wikitext processing and rendering pipeline APIs ([#56](https://github.com/r74tech/wdpr/pull/56))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 3.2.1 (2026-07-24)
 
 ### 🚀 Features

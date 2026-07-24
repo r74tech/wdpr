@@ -1,3 +1,17 @@
+## 3.2.1 (2026-07-24)
+
+### 🚀 Features
+
+- add high-level wikitext processing and rendering pipeline APIs ([#56](https://github.com/r74tech/wdpr/pull/56))
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/ast to 2.4.0
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 3.2.0 (2026-07-22)
 
 ### 🚀 Features

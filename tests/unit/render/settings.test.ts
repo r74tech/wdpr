@@ -1,10 +1,14 @@
 import { describe, expect, it } from "bun:test";
-import { renderToHtml, createSettings } from "@wdprlib/render";
 import type { SyntaxTree, WikitextSettings } from "@wdprlib/ast";
+import { DEFAULT_SETTINGS, createSettings, renderToHtml } from "@wdprlib/render";
 
 const forumSettings: WikitextSettings = createSettings("forum-post");
 const pageSettings: WikitextSettings = createSettings("page");
 const draftSettings: WikitextSettings = createSettings("draft");
+const trustedStyleSettings: WikitextSettings = {
+  ...pageSettings,
+  allowStyleElements: true,
+};
 
 describe("WikitextSettings - Renderer", () => {
   describe("allowLocalPaths = false (forum-post mode)", () => {
@@ -36,7 +40,10 @@ describe("WikitextSettings - Renderer", () => {
           {
             element: "image",
             data: {
-              source: { type: "file2", data: { page: "other", file: "test.png" } },
+              source: {
+                type: "file2",
+                data: { page: "other", file: "test.png" },
+              },
               attributes: {},
               link: null,
               alignment: null,
@@ -62,6 +69,44 @@ describe("WikitextSettings - Renderer", () => {
           },
         ],
       };
+      const html = renderToHtml(tree, { settings: forumSettings });
+      expect(html).not.toContain("<img");
+    });
+
+    it("skips control-prefixed local path URLs", () => {
+      const tree: SyntaxTree = {
+        elements: [
+          {
+            element: "image",
+            data: {
+              source: { type: "url", data: "\t/../../admin.png" },
+              attributes: {},
+              link: null,
+              alignment: null,
+            },
+          },
+        ],
+      };
+
+      const html = renderToHtml(tree, { settings: forumSettings });
+      expect(html).not.toContain("<img");
+    });
+
+    it("skips relative URL images", () => {
+      const tree: SyntaxTree = {
+        elements: [
+          {
+            element: "image",
+            data: {
+              source: { type: "url", data: "../admin.png" },
+              attributes: {},
+              link: null,
+              alignment: null,
+            },
+          },
+        ],
+      };
+
       const html = renderToHtml(tree, { settings: forumSettings });
       expect(html).not.toContain("<img");
     });
@@ -224,13 +269,13 @@ describe("WikitextSettings - Renderer", () => {
     });
   });
 
-  describe("allowStyleElements = true (page mode)", () => {
+  describe("allowStyleElements = true (explicit trusted CSS opt-in)", () => {
     it("outputs style elements", () => {
       const tree: SyntaxTree = {
         elements: [],
         styles: ["body { color: red; }"],
       };
-      const html = renderToHtml(tree, { settings: pageSettings });
+      const html = renderToHtml(tree, { settings: trustedStyleSettings });
       expect(html).toContain("<style>");
       expect(html).toContain("body { color: red; }");
     });
@@ -248,7 +293,7 @@ describe("WikitextSettings - Renderer", () => {
         ],
       };
       const html = renderToHtml(tree, {
-        settings: pageSettings,
+        settings: trustedStyleSettings,
         page: { pageName: "test", tags: ["component"] },
       });
       expect(html).toContain("<style>.theme { color: red; }</style>");
@@ -276,7 +321,7 @@ describe("WikitextSettings - Renderer", () => {
         ],
       };
       const html = renderToHtml(tree, {
-        settings: pageSettings,
+        settings: trustedStyleSettings,
         page: { pageName: "test", tags: ["component"] },
       });
       expect(html).toContain("<style>.nested { margin: 0; }</style>");
@@ -295,7 +340,7 @@ describe("WikitextSettings - Renderer", () => {
         ],
       };
       const html = renderToHtml(tree, {
-        settings: pageSettings,
+        settings: trustedStyleSettings,
         page: { pageName: "test", tags: ["component"] },
       });
       expect(html).not.toContain("<style>");
@@ -322,14 +367,15 @@ describe("WikitextSettings - Renderer", () => {
       expect(html).toContain("/local--files/test-page/test.png");
     });
 
-    it("outputs style elements by default (page mode)", () => {
+    it("suppresses style elements by default (page mode)", () => {
       const tree: SyntaxTree = {
         elements: [],
         styles: ["body { color: red; }"],
       };
       const html = renderToHtml(tree);
-      expect(html).toContain("<style>");
-      expect(html).toContain("body { color: red; }");
+      expect(DEFAULT_SETTINGS.allowStyleElements).toBeFalse();
+      expect(html).not.toContain("<style>");
+      expect(html).not.toContain("body { color: red; }");
     });
 
     it("generates sequential heading IDs by default", () => {

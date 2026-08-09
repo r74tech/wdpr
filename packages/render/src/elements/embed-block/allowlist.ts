@@ -11,7 +11,7 @@ export interface EmbedAllowlistEntry {
 /**
  * Default allowlist for embed content.
  *
- * Set the render option to `null` to allow any HTTP(S) iframe while still using
+ * Set the render option to `null` to allow any HTTPS iframe while still using
  * sanitizer and scheme validation.
  */
 export const DEFAULT_EMBED_ALLOWLIST: EmbedAllowlistEntry[] | null = [

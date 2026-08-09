@@ -33,7 +33,7 @@ export function validateAndSanitizeEmbed(
   if (url === null) {
     return null;
   }
-  if (url.protocol !== "https:" && url.protocol !== "http:") {
+  if (url.protocol !== "https:") {
     return null;
   }
   if (allowlist !== null && !allowlist.some((entry) => matchesAllowlistEntry(url, entry))) {

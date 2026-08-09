@@ -149,13 +149,17 @@ export interface RenderOptions {
   resolvers?: RenderResolvers;
   /**
    * Sandbox attribute value for htmlBlock iframes.
-   * - undefined/null: No sandbox attribute (Wikidot compatible, scripts can run)
+   * - undefined: Empty sandbox attribute (all sandbox restrictions enabled)
+   * - null: No sandbox attribute (explicit compatibility opt-out; scripts can run)
    * - string: Use as sandbox attribute value (e.g., "allow-scripts allow-same-origin")
    *
    * Examples:
    * - No sandbox (Wikidot compatible): htmlBlockSandbox: null
    * - Block scripts: htmlBlockSandbox: "allow-same-origin"
    * - Allow scripts: htmlBlockSandbox: "allow-scripts allow-same-origin"
+   *
+   * @security Combining `allow-scripts` and `allow-same-origin` for same-origin
+   * content can let the embedded document remove its own sandbox attribute.
    */
   htmlBlockSandbox?: string | null;
   /**

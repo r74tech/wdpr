@@ -69,6 +69,16 @@ describe("preprocessIf (opener-embedded only)", () => {
       const src = `[[div [[#if [[#if 1 | x | y ]] | A | B ]] ]]`;
       expect(preprocessIf(src)).toBe(`[[div A ]]`);
     });
+
+    test("64 nested expressions are fully resolved", () => {
+      const src = nestedIfSource(64);
+      expect(preprocessIf(src)).toBe("[[div A ]]");
+    });
+
+    test("65 nested expressions are left entirely unchanged", () => {
+      const src = nestedIfSource(65);
+      expect(preprocessIf(src)).toBe(src);
+    });
   });
 
   describe("safety / no-op cases", () => {
@@ -91,5 +101,23 @@ describe("preprocessIf (opener-embedded only)", () => {
       const src = `[[#expr 1+1]] and [[span]]hi[[/span]]`;
       expect(preprocessIf(src)).toBe(src);
     });
+
+    test("long sentinel collisions are handled without quadratic growth", () => {
+      const src = `[[div ${"\uE000".repeat(50_000)} [[#if 1 | A | B ]] ]]`;
+      const startedAt = performance.now();
+
+      const result = preprocessIf(src);
+
+      expect(result).toBe(`[[div ${"\uE000".repeat(50_000)} A ]]`);
+      expect(performance.now() - startedAt).toBeLessThan(250);
+    });
   });
 });
+
+function nestedIfSource(depth: number): string {
+  let expression = "1";
+  for (let i = 0; i < depth; i++) {
+    expression = `[[#if ${expression} | A | B ]]`;
+  }
+  return `[[div ${expression} ]]`;
+}

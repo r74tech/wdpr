@@ -75,6 +75,31 @@ describe("htmlBlockUrl callback", () => {
     expect(html).toContain('frameborder="0"');
   });
 
+  it.each([
+    { name: "omitted", options: {}, expected: ' sandbox=""' },
+    {
+      name: "explicit undefined",
+      options: { htmlBlockSandbox: undefined },
+      expected: ' sandbox=""',
+    },
+    { name: "empty string", options: { htmlBlockSandbox: "" }, expected: ' sandbox=""' },
+    { name: "explicit null opt-out", options: { htmlBlockSandbox: null }, expected: null },
+    {
+      name: "permission tokens",
+      options: { htmlBlockSandbox: "allow-scripts" },
+      expected: ' sandbox="allow-scripts"',
+    },
+  ])("uses the safe sandbox behavior for $name", ({ options, expected }) => {
+    const tree = createTreeWithHtmlBlocks(["<p>Test</p>"]);
+    const html = renderToHtml(tree, options);
+
+    if (expected === null) {
+      expect(html).not.toContain(" sandbox=");
+    } else {
+      expect(html).toContain(expected);
+    }
+  });
+
   it("should increment index for each htmlBlock", () => {
     const tree = createTreeWithHtmlBlocks(["<p>1</p>", "<p>2</p>", "<p>3</p>"]);
     const receivedIndexes: number[] = [];

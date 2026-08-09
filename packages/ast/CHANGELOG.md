@@ -1,3 +1,10 @@
+## Unreleased
+
+### ⚠️ Breaking Changes
+
+- `createSettings("page")` and `DEFAULT_SETTINGS` now set `allowStyleElements: false`. Callers that
+  render trusted `[[module CSS]]` content must explicitly opt in with `allowStyleElements: true`.
+
 ## 2.4.0 (2026-07-24)
 
 ### 🚀 Features

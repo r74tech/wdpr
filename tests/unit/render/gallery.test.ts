@@ -204,6 +204,39 @@ describe("renderGallery: skips and safety", () => {
     ).toBe('<div class="gallery-box"></div>');
   });
 
+  it.each([
+    "../admin.png",
+    "/../../admin.png",
+    "%2e%2e/admin.png",
+    "%2E./admin.png",
+    "%252e%252e/admin.png",
+    "safe\\../admin.png",
+    "safe/..\\admin.png",
+    "safe/evil\0.png",
+    "safe/\t../admin.png",
+    "safe/\n../admin.png",
+    "safe/\r../admin.png",
+  ])("skips unsafe local source %s", (source) => {
+    expect(render(gallery({ content: { type: "items", items: [item(source)] } }))).toBe(
+      '<div class="gallery-box"></div>',
+    );
+  });
+
+  it("skips local items when the current page name is unsafe", () => {
+    const tree: SyntaxTree = {
+      elements: [
+        {
+          element: "gallery",
+          data: gallery({ content: { type: "items", items: [item("a.jpg")] } }),
+        },
+      ],
+    };
+
+    expect(renderToHtml(tree, { page: { pageName: "../admin" } })).toBe(
+      '<div class="gallery-box"></div>',
+    );
+  });
+
   it("ignores a dangerous link but keeps the item with its image href", () => {
     expect(
       render(
@@ -244,6 +277,17 @@ describe("renderGallery: skips and safety", () => {
         '<img src="http://example.com/x.png" alt=""/>' +
         "</a></figure></div>",
     );
+  });
+
+  it("does not treat a local query containing :// as an external URL", () => {
+    const html = render(
+      gallery({
+        content: { type: "items", items: [item("/../../admin.png?x://y")] },
+      }),
+      { settings: createSettings("forum-post") },
+    );
+
+    expect(html).toBe('<div class="gallery-box"></div>');
   });
 });
 

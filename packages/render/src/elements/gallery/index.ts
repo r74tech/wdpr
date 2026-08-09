@@ -26,6 +26,7 @@
  */
 import type { GalleryData, GalleryItem, GallerySize } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
+import { joinSafeLocalPath, normalizeSafeLocalPath } from "../../context/local-path";
 import { escapeAttr, isDangerousUrl } from "../../escape";
 import { sortGalleryFiles } from "./sort";
 
@@ -33,6 +34,7 @@ export { sortGalleryFiles } from "./sort";
 
 /** Wikidot's message for an auto gallery on a page without image attachments. */
 const NO_IMAGES_MESSAGE = "Sorry, we couldn't find any images attached to this page.";
+const ABSOLUTE_URL_WITH_AUTHORITY = /^[A-Za-z][A-Za-z0-9+.-]*:\/\//;
 
 /** Render a gallery element (explicit items or auto-collected page files). */
 export function renderGallery(ctx: RenderContext, data: GalleryData): void {
@@ -128,10 +130,9 @@ interface GalleryItemUrls {
 }
 
 /**
- * Resolve a raw gallery source to image URLs, following the Wikidot
- * classification: `://` anywhere means an external URL, a `/` means a
- * `page/file` reference (one leading slash stripped), anything else is a
- * file attached to the current page.
+ * Resolve a raw gallery source to image URLs. A leading authority-bearing
+ * scheme marks an external URL; every other source is validated as a local
+ * path before it is joined to a local file endpoint.
  *
  * Returns null when the item cannot be rendered (dangerous external URL,
  * or local paths disabled by settings).
@@ -141,20 +142,21 @@ function resolveItemUrls(
   source: string,
   size: GallerySize,
 ): GalleryItemUrls | null {
-  if (source.includes("://")) {
+  if (ABSOLUTE_URL_WITH_AUTHORITY.test(source)) {
     if (isDangerousUrl(source)) return null;
     return { src: source, imageHref: source };
   }
 
   if (!ctx.settings.allowLocalPaths) return null;
 
-  let path: string;
+  let path: string | null;
   if (source.includes("/")) {
-    path = source.replace(/^\//, "");
+    path = normalizeSafeLocalPath(source);
   } else {
     const pageName = ctx.page?.pageName;
-    path = pageName ? `${pageName}/${source}` : source;
+    path = joinSafeLocalPath(pageName ? [pageName, source] : [source]);
   }
+  if (path === null) return null;
 
   const imageHref = `/local--files/${path}`;
   const src = size === "original" ? imageHref : `/local--resized-images/${path}/${size}.jpg`;

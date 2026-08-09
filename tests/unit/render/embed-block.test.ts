@@ -159,13 +159,13 @@ describe("embed-block security", () => {
   });
 
   describe("blocked content", () => {
-    test("HTTP iframe is allowed for allowlisted host", () => {
+    test("HTTP iframe is blocked for allowlisted host", () => {
       const ctx = createMockContext();
       const data = {
         contents: '<iframe src="http://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>',
       };
       renderEmbedBlock(ctx, data);
-      expect(ctx.getOutput()).not.toContain("error-block");
+      expect(ctx.getOutput()).toContain("error-block");
     });
 
     test("Unknown host is blocked", () => {
@@ -235,13 +235,13 @@ describe("embed-block security", () => {
       expect(ctx.getOutput()).not.toContain("error-block");
     });
 
-    test("HTTP is allowed when allowlist is null", () => {
+    test("HTTP is blocked when allowlist is null", () => {
       const ctx = createMockContext({ embedAllowlist: null });
       const data = {
         contents: '<iframe src="http://any-site.example.com/embed"></iframe>',
       };
       renderEmbedBlock(ctx, data);
-      expect(ctx.getOutput()).not.toContain("error-block");
+      expect(ctx.getOutput()).toContain("error-block");
     });
 
     test("Multiple iframes are still blocked when allowlist is null", () => {
@@ -267,13 +267,13 @@ describe("embed-block security", () => {
       expect(ctx.getOutput()).not.toContain("error-block");
     });
 
-    test("protocol-relative URL is resolved with HTTP baseUrl", () => {
+    test("protocol-relative URL resolved with HTTP baseUrl is blocked", () => {
       const ctx = createMockContext({ embedAllowlist: null, baseUrl: "http://scp-jp.wikidot.com" });
       const data = {
         contents: '<iframe src="//interwiki.scp-jp.org/interwikiFrame.html"></iframe>',
       };
       renderEmbedBlock(ctx, data);
-      expect(ctx.getOutput()).not.toContain("error-block");
+      expect(ctx.getOutput()).toContain("error-block");
     });
 
     test("protocol-relative URL defaults to HTTPS when baseUrl is not provided", () => {
@@ -303,6 +303,21 @@ describe("embed-block security", () => {
       renderEmbedBlock(ctx, data);
       expect(ctx.getOutput()).not.toContain("error-block");
     });
+  });
+
+  test("iframe style is removed while safe size attributes remain", () => {
+    const ctx = createMockContext();
+    const data = {
+      contents:
+        '<iframe src="https://www.youtube.com/embed/abc" width="640" height="360" style="position:fixed;inset:0;z-index:99999"></iframe>',
+    };
+
+    renderEmbedBlock(ctx, data);
+
+    expect(ctx.getOutput()).not.toContain("error-block");
+    expect(ctx.getOutput()).not.toContain("style=");
+    expect(ctx.getOutput()).toContain('width="640"');
+    expect(ctx.getOutput()).toContain('height="360"');
   });
 
   describe("ReDoS resistance", () => {
@@ -339,7 +354,7 @@ describe("embed-block security", () => {
   });
 
   describe("iframe attributes preservation", () => {
-    test("style attribute is preserved on iframe", () => {
+    test("style attribute is removed from iframe", () => {
       const ctx = createMockContext({ embedAllowlist: null });
       const data = {
         contents: '<iframe src="https://example.com/frame.html" style="display: none"></iframe>',
@@ -347,7 +362,7 @@ describe("embed-block security", () => {
       renderEmbedBlock(ctx, data);
       const output = ctx.getOutput();
       expect(output).not.toContain("error-block");
-      expect(output).toMatch(/style="display:\s*none"/);
+      expect(output).not.toContain("style=");
     });
 
     test("class attribute is preserved on iframe", () => {

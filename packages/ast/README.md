@@ -20,6 +20,21 @@ const tree: SyntaxTree = {
 };
 ```
 
+## Security-sensitive settings
+
+`createSettings(mode)` supplies safe defaults for parser and renderer capabilities. In every mode,
+including `"page"`, `allowStyleElements` defaults to `false` because `[[module CSS]]` affects the
+entire host page. Callers may override it to `true` only for trusted CSS:
+
+```ts
+import { createSettings } from "@wdprlib/ast";
+
+const settings = {
+  ...createSettings("page"),
+  allowStyleElements: true,
+};
+```
+
 ## Exports
 
 Types: `SyntaxTree`, `Element`, `ElementName`, `ContainerType`, `AttributeMap`, `LinkType`, `ListType`, `Module`, etc.

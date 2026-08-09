@@ -126,16 +126,35 @@ describe("renderWikitext", () => {
       styles: [".module { color: red; }"],
     };
 
+    const trustedStyleSettings = { ...DEFAULT_SETTINGS, allowStyleElements: true };
     const separate = await renderWikitext(
-      { ast, page, settings: DEFAULT_SETTINGS },
+      { ast, page, settings: trustedStyleSettings },
       { styleMode: "separate" },
     );
-    const inline = await renderWikitext({ ast, page, settings: DEFAULT_SETTINGS });
+    const inline = await renderWikitext({ ast, page, settings: trustedStyleSettings });
 
     expect(separate.styles).toEqual([".conditional { color: blue; }", ".module { color: red; }"]);
     expect(separate.html).not.toContain("<style");
     expect(inline.styles).toEqual(separate.styles);
     expect(inline.html).toContain("<style>");
+  });
+
+  it("suppresses untrusted styles in inline and separate modes by default", async () => {
+    const ast: SyntaxTree = {
+      elements: [{ element: "style", data: ".inline { color: red; }" }],
+      styles: [".module { color: blue; }"],
+    };
+
+    const inline = await renderWikitext({ ast, page, settings: DEFAULT_SETTINGS });
+    const separate = await renderWikitext(
+      { ast, page, settings: DEFAULT_SETTINGS },
+      { styleMode: "separate" },
+    );
+
+    expect(inline.html).not.toContain("<style");
+    expect(inline.styles).toEqual([]);
+    expect(separate.html).not.toContain("<style");
+    expect(separate.styles).toEqual([]);
   });
 
   it("preserves extra document fields while replacing artifact collisions", async () => {

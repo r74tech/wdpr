@@ -1,9 +1,11 @@
 import type { TabData } from "@wdprlib/ast";
 import { SerializeContext } from "./context";
+import { isSafeInlineLabel } from "./directive-safety";
 import { serializeElements } from "./serialize-element";
 
 /** Serialize a tab-view element to `[[tabview]]...[[/tabview]]` syntax. */
 export function serializeTabView(ctx: SerializeContext, tabs: TabData[]): void {
+  if (tabs.some((tab) => !isSafeInlineLabel(tab.label))) return;
   ctx.pushBlockLine("[[tabview]]");
   for (const tab of tabs) {
     ctx.pushBlockLine(`[[tab ${tab.label}]]`);

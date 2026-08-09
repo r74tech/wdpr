@@ -6,7 +6,6 @@ export const SANITIZE_CONFIG: sanitizeHtml.IOptions = {
     iframe: [
       "class",
       "src",
-      "style",
       "allow",
       "allowfullscreen",
       "frameborder",
@@ -18,5 +17,5 @@ export const SANITIZE_CONFIG: sanitizeHtml.IOptions = {
       "width",
     ],
   },
-  allowedSchemes: ["https", "http"],
+  allowedSchemes: ["https"],
 };

@@ -1,5 +1,6 @@
 import type { FootnoteBlockData, Element } from "@wdprlib/ast";
 import { SerializeContext } from "./context";
+import { formatDirectiveAttributes } from "./directive-safety";
 import { serializeElement, serializeElements } from "./serialize-element";
 
 /**
@@ -121,10 +122,10 @@ export function serializeFootnoteBlock(
   // indistinguishable from implicit ones — lossy)
   if (!data.title && !data.hide && isLastElement) return;
 
-  const attrs: string[] = [];
-  if (data.hide) attrs.push('hide="true"');
-  if (data.title) attrs.push(`title="${data.title}"`);
-  const attrStr = attrs.length > 0 ? " " + attrs.join(" ") : "";
+  const attributes: Record<string, string> = {};
+  if (data.hide) attributes.hide = "true";
+  if (data.title) attributes.title = data.title;
+  const attrStr = formatDirectiveAttributes(attributes);
   // Insert a blank line before non-default footnoteblocks
   if (data.hide || data.title) {
     ctx.flushPendingBlankLine();

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
+import type { ImageSource, LinkLocation, SyntaxTree } from "@wdprlib/ast";
 import { RenderContext } from "../../../packages/render/src/context";
-import type { SyntaxTree, ImageSource, LinkLocation } from "@wdprlib/ast";
 
 describe("RenderContext", () => {
   function createEmptyTree(): SyntaxTree {
@@ -23,7 +23,10 @@ describe("RenderContext", () => {
         styles: ["body { color: red; }"],
         "html-blocks": ["<p>html</p>"],
         "table-of-contents": [
-          { element: "list", data: { type: "bullet", attributes: {}, items: [] } },
+          {
+            element: "list",
+            data: { type: "bullet", attributes: {}, items: [] },
+          },
         ],
       };
       const ctx = new RenderContext(tree);
@@ -120,14 +123,30 @@ describe("RenderContext", () => {
   describe("resolveImageSource", () => {
     it("should resolve URL type", () => {
       const ctx = new RenderContext(createEmptyTree());
-      const source: ImageSource = { type: "url", data: "https://example.com/img.png" };
+      const source: ImageSource = {
+        type: "url",
+        data: "https://example.com/img.png",
+      };
 
       expect(ctx.resolveImageSource(source)).toBe("https://example.com/img.png");
     });
 
+    it("should resolve protocol-relative URL type", () => {
+      const ctx = new RenderContext(createEmptyTree());
+      const source: ImageSource = {
+        type: "url",
+        data: "//example.com/img.png",
+      };
+
+      expect(ctx.resolveImageSource(source)).toBe("//example.com/img.png");
+    });
+
     it("should resolve file1 type", () => {
       const ctx = new RenderContext(createEmptyTree());
-      const source: ImageSource = { type: "file1", data: { file: "image.png" } };
+      const source: ImageSource = {
+        type: "file1",
+        data: { file: "image.png" },
+      };
 
       expect(ctx.resolveImageSource(source)).toBe("/local--files/image.png");
     });
@@ -150,6 +169,144 @@ describe("RenderContext", () => {
       };
 
       expect(ctx.resolveImageSource(source)).toBe("/local--files/my-site/test-page/image.png");
+    });
+
+    it.each([
+      {
+        name: "raw parent segment",
+        source: {
+          type: "file2",
+          data: { page: "..", file: "admin.png" },
+        } satisfies ImageSource,
+      },
+      {
+        name: "encoded parent segment",
+        source: {
+          type: "file2",
+          data: { page: "%2e%2e", file: "admin.png" },
+        } satisfies ImageSource,
+      },
+      {
+        name: "mixed-case encoded parent segment",
+        source: {
+          type: "file2",
+          data: { page: "%2E.", file: "admin.png" },
+        } satisfies ImageSource,
+      },
+      {
+        name: "double-encoded parent segment",
+        source: {
+          type: "file2",
+          data: { page: "%252e%252e", file: "admin.png" },
+        } satisfies ImageSource,
+      },
+      {
+        name: "slash in component",
+        source: {
+          type: "file2",
+          data: { page: "safe/..", file: "admin.png" },
+        } satisfies ImageSource,
+      },
+      {
+        name: "backslash in component",
+        source: {
+          type: "file2",
+          data: { page: "safe\\..", file: "admin.png" },
+        } satisfies ImageSource,
+      },
+      {
+        name: "NUL in component",
+        source: {
+          type: "file2",
+          data: { page: "safe\0evil", file: "admin.png" },
+        } satisfies ImageSource,
+      },
+      {
+        name: "tab-hidden parent segment",
+        source: {
+          type: "file2",
+          data: { page: "\t..", file: "admin.png" },
+        } satisfies ImageSource,
+      },
+      {
+        name: "LF-hidden parent segment",
+        source: {
+          type: "file2",
+          data: { page: "\n..", file: "admin.png" },
+        } satisfies ImageSource,
+      },
+      {
+        name: "CR-hidden parent segment",
+        source: {
+          type: "file2",
+          data: { page: "\r..", file: "admin.png" },
+        } satisfies ImageSource,
+      },
+      {
+        name: "space-suffixed parent segment",
+        source: {
+          type: "file2",
+          data: { page: ".. ", file: "admin.png" },
+        } satisfies ImageSource,
+      },
+      {
+        name: "space-suffixed parent filename",
+        source: { type: "file1", data: { file: ".. " } } satisfies ImageSource,
+      },
+      {
+        name: "relative direct URL",
+        source: { type: "url", data: "../admin.png" } satisfies ImageSource,
+      },
+      {
+        name: "absolute local traversal",
+        source: { type: "url", data: "/../../admin.png" } satisfies ImageSource,
+      },
+      {
+        name: "encoded absolute local traversal",
+        source: {
+          type: "url",
+          data: "/%2e%2e/admin.png",
+        } satisfies ImageSource,
+      },
+      {
+        name: "control-prefixed absolute local traversal",
+        source: {
+          type: "url",
+          data: "\t/../../admin.png",
+        } satisfies ImageSource,
+      },
+      {
+        name: "space-prefixed absolute local traversal",
+        source: {
+          type: "url",
+          data: " /../../admin.png",
+        } satisfies ImageSource,
+      },
+      {
+        name: "backslash absolute local traversal",
+        source: {
+          type: "url",
+          data: "\\..\\..\\admin.png",
+        } satisfies ImageSource,
+      },
+    ])("rejects $name", ({ source }) => {
+      const ctx = new RenderContext(createEmptyTree(), {
+        page: { pageName: "safe-page" },
+      });
+
+      expect(ctx.resolveImageSource(source)).toBeNull();
+    });
+
+    it("rejects an unsafe current page name", () => {
+      const ctx = new RenderContext(createEmptyTree(), {
+        page: { pageName: "../admin" },
+      });
+      const source: ImageSource = {
+        type: "file1",
+        data: { file: "image.png" },
+      };
+
+      expect(ctx.resolveImageSource(source)).toBeNull();
     });
   });
 
@@ -199,7 +356,10 @@ describe("RenderContext", () => {
 
     it("should remove dangerous attributes", () => {
       const ctx = new RenderContext(createEmptyTree());
-      const result = ctx.renderAttributes({ onclick: "alert(1)", class: "safe" });
+      const result = ctx.renderAttributes({
+        onclick: "alert(1)",
+        class: "safe",
+      });
 
       expect(result).not.toContain("onclick");
       expect(result).toContain('class="safe"');

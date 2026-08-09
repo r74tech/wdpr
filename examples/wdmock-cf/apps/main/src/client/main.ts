@@ -1,4 +1,5 @@
 import { initWdprRuntime, type WdprRuntime } from "@wdprlib/runtime";
+import { classifyNavigation } from "./navigation";
 
 let runtime: WdprRuntime | null = null;
 let currentPageId: number | null = null;
@@ -428,13 +429,31 @@ document.addEventListener("click", (e) => {
   if (!anchor) return;
 
   const href = anchor.getAttribute("href");
-  if (!href || href.startsWith("http") || href.startsWith("#") || href.startsWith("javascript:"))
+  if (!href) return;
+
+  const navigation = classifyNavigation(href, window.location.href);
+  if (navigation.kind === "blocked") {
+    e.preventDefault();
     return;
+  }
+  if (navigation.kind === "browser") return;
+
+  if (
+    e.defaultPrevented ||
+    e.button !== 0 ||
+    e.metaKey ||
+    e.ctrlKey ||
+    e.shiftKey ||
+    e.altKey ||
+    anchor.hasAttribute("download") ||
+    (anchor.target !== "" && anchor.target !== "_self")
+  ) {
+    return;
+  }
 
   e.preventDefault();
-  const pagePath = href.replace(/^\/+/, "") || "main";
-  history.pushState(null, "", `/${pagePath}`);
-  loadPage(pagePath);
+  history.pushState(null, "", navigation.historyHref);
+  void loadPage(navigation.pagePath);
 });
 
 window.addEventListener("popstate", () => {

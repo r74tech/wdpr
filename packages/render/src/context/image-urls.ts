@@ -1,5 +1,8 @@
 import type { ImageSource, WikitextSettings } from "@wdprlib/ast";
 import type { PageContext } from "../types";
+import { hasAsciiControl, joinSafeLocalPath, normalizeSafeLocalPath } from "./local-path";
+
+const ABSOLUTE_URL_WITH_AUTHORITY = /^[A-Za-z][A-Za-z0-9+.-]*:\/\//;
 
 export function resolveImageSource(
   source: ImageSource,
@@ -10,22 +13,28 @@ export function resolveImageSource(
   switch (source.type) {
     case "url": {
       const url = source.data;
+      if (url.trim() !== url || hasAsciiControl(url) || url.includes("\\")) return null;
       if (url.startsWith("/") && !url.startsWith("//")) {
         if (!settings.allowLocalPaths) return null;
-        return `/local--files${url}`;
+        const path = normalizeSafeLocalPath(url);
+        return path === null ? null : `/local--files/${path}`;
       }
-      return url;
+      return url.startsWith("//") || ABSOLUTE_URL_WITH_AUTHORITY.test(url) ? url : null;
     }
-    case "file1":
+    case "file1": {
       if (!settings.allowLocalPaths) return null;
-      return pageName
-        ? `/local--files/${pageName}/${source.data.file}`
-        : `/local--files/${source.data.file}`;
-    case "file2":
+      const path = joinSafeLocalPath(pageName ? [pageName, source.data.file] : [source.data.file]);
+      return path === null ? null : `/local--files/${path}`;
+    }
+    case "file2": {
       if (!settings.allowLocalPaths) return null;
-      return `/local--files/${source.data.page}/${source.data.file}`;
-    case "file3":
+      const path = joinSafeLocalPath([source.data.page, source.data.file]);
+      return path === null ? null : `/local--files/${path}`;
+    }
+    case "file3": {
       if (!settings.allowLocalPaths) return null;
-      return `/local--files/${source.data.site}/${source.data.page}/${source.data.file}`;
+      const path = joinSafeLocalPath([source.data.site, source.data.page, source.data.file]);
+      return path === null ? null : `/local--files/${path}`;
+    }
   }
 }

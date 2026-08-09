@@ -1,3 +1,15 @@
+## Unreleased
+
+### ⚠️ Breaking Changes
+
+- `[[embed]]` iframe URLs are HTTPS-only and iframe `style` attributes are removed.
+- Unsafe local image and gallery path components are rejected before `/local--files/` URL
+  construction.
+- `DEFAULT_SETTINGS` no longer renders `[[module CSS]]`. Trusted callers must explicitly set
+  `allowStyleElements: true`.
+- HTML block iframes now use an empty `sandbox` attribute by default. Set
+  `htmlBlockSandbox: null` to explicitly opt out.
+
 ## 3.3.0 (2026-07-24)
 
 ### 🚀 Features

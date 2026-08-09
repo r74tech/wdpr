@@ -16,7 +16,7 @@ export function getHtmlBlockAttributes(ctx: RenderContext, data: HtmlData): Html
 
 function getSandboxAttribute(ctx: RenderContext): string {
   const sandbox = ctx.options.htmlBlockSandbox;
-  return sandbox ? ` sandbox="${escapeAttr(sandbox)}"` : "";
+  return sandbox === null ? "" : ` sandbox="${escapeAttr(sandbox ?? "")}"`;
 }
 
 function getStyleAttribute(data: HtmlData): string {

@@ -7,7 +7,10 @@
  */
 
 import { makeUniqueSentinels, maskRawRegions, restorePlaceholders } from "../utils";
+import { matchDirectiveKind } from "./kind";
 import { expandInnermost } from "./scan";
+
+const MAX_EXPR_NESTING = 64;
 
 /**
  * Resolve every `[[#if]]` / `[[#ifexpr]]` / `[[#expr]]` that sits inside
@@ -21,6 +24,7 @@ export function preprocessExpr(source: string): string {
 
   const sentinels = makeUniqueSentinels(source);
   const { masked, placeholders } = maskRawRegions(source, sentinels);
+  if (exceedsExprNestingLimit(masked)) return source;
   const reduced = reduceExpr(masked);
   return restorePlaceholders(reduced, placeholders, sentinels);
 }
@@ -42,4 +46,26 @@ function reduceExpr(source: string): string {
     current = next;
   }
   return current;
+}
+
+function exceedsExprNestingLimit(source: string): boolean {
+  const expressionStack: boolean[] = [];
+  let expressionDepth = 0;
+
+  for (let i = 0; i < source.length; i++) {
+    if (source.startsWith("[[", i)) {
+      const isExpression = matchDirectiveKind(source, i) !== null;
+      expressionStack.push(isExpression);
+      if (isExpression && ++expressionDepth > MAX_EXPR_NESTING) return true;
+      i++;
+      continue;
+    }
+
+    if (source.startsWith("]]", i)) {
+      if (expressionStack.pop()) expressionDepth--;
+      i++;
+    }
+  }
+
+  return false;
 }

@@ -73,6 +73,29 @@ result.diagnostics;
 result.dependencies;
 ```
 
+## Security defaults
+
+- `[[embed]]` accepts HTTPS iframes only. Inline `style` attributes are removed; use the allowed
+  `width` and `height` attributes for sizing.
+- Local image and gallery paths reject traversal segments, encoded path components, backslashes,
+  NUL bytes, query strings, and fragments.
+- `createSettings("page")` and `DEFAULT_SETTINGS` keep `[[module CSS]]` disabled. Enable it only
+  when the CSS source is trusted:
+
+```ts
+import { createSettings } from "@wdprlib/ast";
+
+const trustedPageSettings = {
+  ...createSettings("page"),
+  allowStyleElements: true,
+};
+```
+
+- HTML block iframes use an empty `sandbox` attribute by default. Set `htmlBlockSandbox: null`
+  only when Wikidot-compatible unsandboxed execution is explicitly required. Avoid combining
+  `allow-scripts` and `allow-same-origin` for same-origin content because that can negate the
+  sandbox.
+
 ## Features
 
 - HTML generation from AST

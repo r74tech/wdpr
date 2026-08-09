@@ -22,7 +22,7 @@
  *
  * | Mode               | Page syntax | Local paths | True IDs | Style elements | HTML blocks |
  * |--------------------|:-----------:|:-----------:|:--------:|:--------------:|:-----------:|
- * | `"page"`           | yes         | yes         | yes      | yes            | yes         |
+ * | `"page"`           | yes         | yes         | yes      | no             | yes         |
  * | `"draft"`          | yes         | yes         | no       | no             | no          |
  * | `"forum-post"`     | no          | no          | no       | no             | no          |
  * | `"direct-message"` | no          | no          | no       | no             | no          |
@@ -76,9 +76,9 @@ export interface WikitextSettings {
   /**
    * Whether `[[module CSS]]` blocks are rendered as `<style>` tags.
    *
-   * User-authored CSS can break page layout, so it is allowed only on
-   * full wiki pages. In draft previews, forum posts, and direct messages
-   * the CSS module is silently ignored.
+   * User-authored CSS can break page layout and leak page data, so it is
+   * disabled by default in every mode. Callers may explicitly enable it
+   * only for trusted CSS.
    */
   allowStyleElements: boolean;
 
@@ -121,7 +121,7 @@ export function createSettings(mode: WikitextMode): WikitextSettings {
         enablePageSyntax: true,
         allowLocalPaths: true,
         useTrueIds: true,
-        allowStyleElements: true,
+        allowStyleElements: false,
         allowHtmlBlocks: true,
       };
     case "draft":

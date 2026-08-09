@@ -1,5 +1,6 @@
 import type { LinkData, LinkLabel } from "@wdprlib/ast";
 import type { SerializeContext } from "./context";
+import { isSafeBareToken, isSafeBracketValue, isSafeTripleBracketValue } from "./directive-safety";
 
 /**
  * Serialize a link element to Wikidot syntax.
@@ -13,6 +14,7 @@ export function serializeLink(ctx: SerializeContext, data: LinkData): void {
   switch (type) {
     case "anchor": {
       const labelText = extractLabelText(label);
+      if (!isSafeBracketValue(labelText)) return;
       ctx.push(`[# ${labelText}]`);
       break;
     }
@@ -28,6 +30,14 @@ export function serializeLink(ctx: SerializeContext, data: LinkData): void {
       const extraSuffix = extra ?? "";
       const labelText = extractLabelText(label);
 
+      if (
+        !isSafeTripleBracketValue(pageName) ||
+        (extraSuffix.length > 0 && !isSafeTripleBracketValue(extraSuffix)) ||
+        (label !== "page" && !isSafeTripleBracketValue(labelText))
+      ) {
+        return;
+      }
+
       if (label === "page" || labelText === pageName) {
         ctx.push(`[[[${pageName}${extraSuffix}${targetSuffix}]]]`);
       } else {
@@ -40,6 +50,10 @@ export function serializeLink(ctx: SerializeContext, data: LinkData): void {
       const labelText = extractLabelText(label);
       const targetPrefix = target === "new-tab" ? "*" : "";
 
+      if (!isSafeBareToken(url) || (!labelIsUrl(label, url) && !isSafeBracketValue(labelText))) {
+        return;
+      }
+
       if (labelIsUrl(label, url)) {
         ctx.push(`[${targetPrefix}${url}]`);
       } else {
@@ -49,13 +63,15 @@ export function serializeLink(ctx: SerializeContext, data: LinkData): void {
     }
     default: {
       const labelText = extractLabelText(label);
-      ctx.push(labelText || (typeof location === "string" ? location : ""));
+      const fallback = labelText || (typeof location === "string" ? location : "");
+      ctx.pushUntrustedText(fallback);
     }
   }
 }
 
 /** Serialize an anchor-name element as `[[# name]]`. */
 export function serializeAnchorName(ctx: SerializeContext, name: string): void {
+  if (!isSafeBracketValue(name)) return;
   ctx.push(`[[# ${name}]]`);
 }
 

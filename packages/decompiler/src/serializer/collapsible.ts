@@ -1,5 +1,6 @@
 import type { CollapsibleData } from "@wdprlib/ast";
 import { SerializeContext } from "./context";
+import { formatDirectiveAttributes } from "./directive-safety";
 import { serializeElements } from "./serialize-element";
 
 /**
@@ -9,29 +10,29 @@ import { serializeElements } from "./serialize-element";
  * when they differ from the Wikidot defaults.
  */
 export function serializeCollapsible(ctx: SerializeContext, data: CollapsibleData): void {
-  const attrs: string[] = [];
+  const attributes: Record<string, string> = {};
 
   if (data["show-text"]) {
-    attrs.push(`show="${data["show-text"]}"`);
+    attributes.show = data["show-text"];
   }
   if (data["hide-text"]) {
-    attrs.push(`hide="${data["hide-text"]}"`);
+    attributes.hide = data["hide-text"];
   }
   if (data["start-open"]) {
-    attrs.push(`folded="no"`);
+    attributes.folded = "no";
   }
 
   // hideLocation: default is show-top=true, show-bottom=false (= "top")
   if (!data["show-top"] && !data["show-bottom"]) {
-    attrs.push(`hideLocation="neither"`);
+    attributes.hideLocation = "neither";
   } else if (!data["show-top"] && data["show-bottom"]) {
-    attrs.push(`hideLocation="bottom"`);
+    attributes.hideLocation = "bottom";
   } else if (data["show-top"] && data["show-bottom"]) {
-    attrs.push(`hideLocation="both"`);
+    attributes.hideLocation = "both";
   }
   // show-top=true, show-bottom=false is the default → no attribute needed
 
-  const attrStr = attrs.length > 0 ? " " + attrs.join(" ") : "";
+  const attrStr = formatDirectiveAttributes(attributes);
 
   ctx.pushBlockLine(`[[collapsible${attrStr}]]`);
   const innerCtx = new SerializeContext({ newline: ctx.newline });

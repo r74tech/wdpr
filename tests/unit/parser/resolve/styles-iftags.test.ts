@@ -1,8 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import { parse, resolveModules, resolveIncludes, type ParserOptions } from "@wdprlib/parser";
-import { STYLE_ANCHOR_PREFIX, type SyntaxTree, type Element } from "@wdprlib/ast";
+import { DEFAULT_SETTINGS, STYLE_ANCHOR_PREFIX, type SyntaxTree, type Element } from "@wdprlib/ast";
 import type { DataProvider } from "../../../../packages/parser/src/parser/rules/block/module/types-common";
 import type { ResolveOptions } from "../../../../packages/parser/src/parser/rules/block/module/resolve";
+
+const TRUSTED_STYLE_SETTINGS = { ...DEFAULT_SETTINGS, allowStyleElements: true };
 
 function parseAst(input: string, options?: ParserOptions): SyntaxTree {
   return parse(input, options).ast;
@@ -345,7 +347,10 @@ describe("resolve → render: CSS order consistency", () => {
 
     const first = await resolveWithoutTags(parseAst(input));
     const second = await resolveWithTags(first, ["x"]);
-    const html = renderToHtml(second, { page: { pageName: "p", tags: ["x"] } });
+    const html = renderToHtml(second, {
+      page: { pageName: "p", tags: ["x"] },
+      settings: TRUSTED_STYLE_SETTINGS,
+    });
 
     expect(second.styles).toEqual([
       ".before { color: blue; }",
@@ -379,12 +384,14 @@ describe("resolve → render: CSS order consistency", () => {
     const resolvedWithTags = await resolveWithTags(ast, ["x"]);
     const htmlA = renderToHtml(resolvedWithTags, {
       page: { pageName: "p", tags: ["x"] },
+      settings: TRUSTED_STYLE_SETTINGS,
     });
 
     // Path B: unresolved (iftags evaluated at render time)
     const unresolved = await resolveWithoutTags(ast);
     const htmlB = renderToHtml(unresolved, {
       page: { pageName: "p", tags: ["x"] },
+      settings: TRUSTED_STYLE_SETTINGS,
     });
 
     // Both paths should produce .top before .conditional
@@ -416,11 +423,13 @@ describe("resolve → render: CSS order consistency", () => {
     const resolvedWithTags = await resolveWithTags(ast, ["x"]);
     const htmlA = renderToHtml(resolvedWithTags, {
       page: { pageName: "p", tags: ["x"] },
+      settings: TRUSTED_STYLE_SETTINGS,
     });
 
     const unresolved = await resolveWithoutTags(ast);
     const htmlB = renderToHtml(unresolved, {
       page: { pageName: "p", tags: ["x"] },
+      settings: TRUSTED_STYLE_SETTINGS,
     });
 
     // Both paths should produce .conditional before .bottom

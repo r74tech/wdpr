@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "verbatimModuleSyntax": true,
+    "baseUrl": ".",
+    "paths": {
+      "@wdprlib/ast": ["../../packages/ast/src/index.ts"],
+      "@wdprlib/parser": ["../../packages/parser/src/index.ts"],
+      "@wdprlib/render": ["../../packages/render/src/index.ts"],
+      "@wdprlib/runtime": ["../../packages/runtime/src/index.ts"]
+    },
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"]
+  },
+  "include": ["src/main.ts"]
+}

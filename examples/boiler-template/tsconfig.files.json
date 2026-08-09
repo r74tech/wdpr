@@ -1,0 +1,9 @@
+{
+  "extends": "./tsconfig.worker.json",
+  "compilerOptions": {
+    "paths": {
+      "@wdprlib/runtime/html-block-script": ["../../packages/runtime/src/html-block-script.ts"]
+    }
+  },
+  "include": ["worker-configuration.d.ts", "src/worker/vite-env.d.ts", "src/files-worker.ts"]
+}

@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wdpr-boiler-files",
+  "main": "src/files-worker.ts",
+  "compatibility_date": "2026-08-08",
+  "r2_buckets": [
+    {
+      "binding": "HTML_BLOCKS",
+      "bucket_name": "wdpr-boiler-html-blocks",
+    },
+  ],
+  "vars": {
+    "ALLOWED_ORIGIN": "http://localhost:5173",
+    "HTML_BLOCK_CSS_URL": "http://localhost:5173/common--theme/base/css/html-block.css",
+  },
+  "dev": {
+    "port": 8788,
+  },
+  "observability": {
+    "enabled": true,
+  },
+}

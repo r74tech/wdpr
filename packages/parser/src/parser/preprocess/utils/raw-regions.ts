@@ -13,16 +13,25 @@ export interface Sentinels {
  * Choose sentinel strings that are guaranteed not to appear in `source`.
  * The placeholders we splice into the masked source have the form
  * `<open><digits><close>`, so the restore pass must not confuse them
- * with content. Extends both sentinel characters until neither appears.
+ * with content.
  */
 export function makeUniqueSentinels(source: string): Sentinels {
-  let open = BASE_PLACEHOLDER_OPEN;
-  let close = BASE_PLACEHOLDER_CLOSE;
-  while (source.includes(open) || source.includes(close)) {
-    open += BASE_PLACEHOLDER_OPEN;
-    close += BASE_PLACEHOLDER_CLOSE;
+  let openRun = 0;
+  let closeRun = 0;
+  let longestOpenRun = 0;
+  let longestCloseRun = 0;
+
+  for (const char of source) {
+    openRun = char === BASE_PLACEHOLDER_OPEN ? openRun + 1 : 0;
+    closeRun = char === BASE_PLACEHOLDER_CLOSE ? closeRun + 1 : 0;
+    longestOpenRun = Math.max(longestOpenRun, openRun);
+    longestCloseRun = Math.max(longestCloseRun, closeRun);
   }
-  return { open, close };
+
+  return {
+    open: BASE_PLACEHOLDER_OPEN.repeat(longestOpenRun + 1),
+    close: BASE_PLACEHOLDER_CLOSE.repeat(longestCloseRun + 1),
+  };
 }
 
 /**

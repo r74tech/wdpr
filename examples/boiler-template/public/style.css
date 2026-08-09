@@ -1,0 +1,47 @@
+@import url("https://d3g0gp89917ko0.cloudfront.net/v--7690939296dc/common--theme/base/css/style.css");
+@import url("https://scp-jp.github.io/sigma/css/sigma.css");
+
+/* WPv4 compatibility patches for SCP-JP Sigma. */
+#header {
+  background-image: unset;
+}
+
+#header h1 a::before,
+#header h1 a::after {
+  content: unset;
+}
+
+#header h1 a span {
+  font-size: unset;
+  letter-spacing: unset;
+}
+
+#page-title[hidden] {
+  display: none;
+}
+
+.footnotes-footer {
+  height: unset;
+}
+
+#page-content .scp-image-block > img.image,
+#page-content .scp-image-block > a > img.image,
+#page-content .scp-image-block > p > img.image,
+#page-content .scp-image-block > p > a > img.image {
+  display: block;
+}
+
+.creditRate::before {
+  display: none;
+}
+
+div.page-rate-widget-box .rate-points {
+  color: #fff;
+  padding: 0 10px;
+}
+
+#page-content iframe {
+  width: 100%;
+  min-height: 5rem;
+  border: 0;
+}

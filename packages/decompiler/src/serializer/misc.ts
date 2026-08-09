@@ -10,11 +10,23 @@ import type {
   BibliographyBlockData,
 } from "@wdprlib/ast";
 import type { SerializeContext } from "./context";
+import {
+  formatDirectiveAttributes,
+  hasBlockCloseCandidate,
+  isSafeBareToken,
+  isSafeBracketValue,
+  isSafeColorValue,
+  isSafeParenthesizedValue,
+} from "./directive-safety";
 import { serializeElements } from "./serialize-element";
 
 /** Serialize a color element to `##color|text##` syntax. */
 export function serializeColor(ctx: SerializeContext, data: ColorData): void {
   // Syntax: ##color|text## — color is the raw value (e.g. "c00", "#fff", "blue", "rgb(1,2,3)")
+  if (!isSafeColorValue(data.color)) {
+    serializeElements(ctx, data.elements);
+    return;
+  }
   ctx.push(`##${data.color}|`);
   serializeElements(ctx, data.elements);
   ctx.push("##");
@@ -39,6 +51,9 @@ export function serializeClearFloat(ctx: SerializeContext, data: ClearFloat): vo
 
 /** Serialize an embed element to `[[embedvideo ...]]` syntax. */
 export function serializeEmbed(ctx: SerializeContext, data: Embed): void {
+  const tokens = Object.values(data.data);
+  if (!tokens.every(isSafeBareToken)) return;
+
   switch (data.embed) {
     case "youtube":
       ctx.pushBlockLine(`[[embedvideo youtube ${data.data["video-id"]}]]`);
@@ -58,6 +73,7 @@ export function serializeEmbed(ctx: SerializeContext, data: Embed): void {
 
 /** Serialize an embed-block element to `[[embed]]...[[/embed]]` syntax. */
 export function serializeEmbedBlock(ctx: SerializeContext, data: EmbedBlockData): void {
+  if (hasBlockCloseCandidate(data.contents, ["embed", "embedvideo", "embedaudio"])) return;
   ctx.pushBlockLine("[[embed]]");
   ctx.push(data.contents);
   if (!data.contents.endsWith("\n")) {
@@ -69,18 +85,20 @@ export function serializeEmbedBlock(ctx: SerializeContext, data: EmbedBlockData)
 
 /** Serialize an iframe element to `[[iframe url attrs]]` syntax. */
 export function serializeIframe(ctx: SerializeContext, data: IframeData): void {
-  const attrs: string[] = [];
-  for (const [key, value] of Object.entries(data.attributes)) {
-    attrs.push(`${key}="${value}"`);
-  }
-  const attrStr = attrs.length > 0 ? " " + attrs.join(" ") : "";
+  if (!isSafeBareToken(data.url)) return;
+  const attrStr = formatDirectiveAttributes(data.attributes);
   ctx.pushBlockLine(`[[iframe ${data.url}${attrStr}]]`);
   ctx.requestBlankLine();
 }
 
 /** Serialize a style element to `[[module CSS]]...[[/module]]` syntax. */
 export function serializeStyle(ctx: SerializeContext, data: string): void {
-  if (data.startsWith(STYLE_ANCHOR_PREFIX)) return;
+  if (
+    data.startsWith(STYLE_ANCHOR_PREFIX) ||
+    hasBlockCloseCandidate(data, ["module", "module654"])
+  ) {
+    return;
+  }
 
   ctx.pushBlockLine("[[module CSS]]");
   ctx.push(data);
@@ -97,16 +115,9 @@ export function serializeStyle(ctx: SerializeContext, data: string): void {
  * The `u-` prefix on id attributes is stripped (Wikidot adds it during rendering).
  */
 export function serializeAnchor(ctx: SerializeContext, data: AnchorData): void {
-  const attrs: string[] = [];
-  for (const [key, value] of Object.entries(data.attributes)) {
-    // Strip the u- prefix from id attributes
-    if (key === "id" && value.startsWith("u-")) {
-      attrs.push(`${key}="${value.slice(2)}"`);
-    } else {
-      attrs.push(`${key}="${value}"`);
-    }
-  }
-  const attrStr = attrs.length > 0 ? " " + attrs.join(" ") : "";
+  const attrStr = formatDirectiveAttributes(data.attributes, {
+    stripGeneratedIdPrefix: true,
+  });
   ctx.push(`[[a${attrStr}]]`);
   serializeElements(ctx, data.elements);
   ctx.push("[[/a]]");
@@ -114,6 +125,7 @@ export function serializeAnchor(ctx: SerializeContext, data: AnchorData): void {
 
 /** Serialize a bibliography cite element to `((bibcite label))` syntax. */
 export function serializeBibliographyCite(ctx: SerializeContext, data: BibliographyCiteData): void {
+  if (!isSafeParenthesizedValue(data.label)) return;
   ctx.push(`((bibcite ${data.label}))`);
 }
 
@@ -137,5 +149,6 @@ export function serializeBibliographyBlock(
 
 /** Serialize an equation reference to `[[eref name]]` syntax. */
 export function serializeEquationRef(ctx: SerializeContext, name: string): void {
+  if (!isSafeBracketValue(name)) return;
   ctx.push(`[[eref ${name}]]`);
 }

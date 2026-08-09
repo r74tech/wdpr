@@ -134,6 +134,9 @@ function normalizeHtml(html: string): string {
       .replace(/&lt;/g, "<")
       .replace(/&gt;/g, ">")
       .replace(/&amp;/g, "&")
+      // DecompilerはWikidot構文境界だけをraw literal化する。境界文字自体の
+      // white-space指定は表示に影響しないため、roundtrip比較では同値と扱う。
+      .replace(/<span style="white-space: pre-wrap;">(\[\[|@@|@<)<\/span>/g, "$1")
       .trim()
   );
 }

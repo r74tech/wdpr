@@ -1,4 +1,5 @@
 import type { SerializeOptions } from "../types";
+import { neutralizeWikitextBoundaries } from "./directive-safety";
 
 /**
  * The two tiers of pending blank line.
@@ -25,6 +26,7 @@ export class SerializeContext {
   inParagraph = false;
   private buffer: string[] = [];
   private atLineStart = true;
+  private pendingUntrustedText = "";
   private _pendingBlankLine: BlankLineType = "none";
 
   constructor(options: SerializeOptions = {}) {
@@ -58,7 +60,9 @@ export class SerializeContext {
   /** Emit the pending blank line if one exists (any tier). */
   flushPendingBlankLine(): void {
     if (this._pendingBlankLine !== "none") {
+      this.flushPendingUntrustedText();
       this.buffer.push(this.newline);
+      this.atLineStart = true;
       this._pendingBlankLine = "none";
     }
   }
@@ -75,8 +79,26 @@ export class SerializeContext {
   /** Push inline content. Any pending blank line is emitted first. */
   push(text: string): void {
     this.flushPendingBlankLine();
+    this.flushPendingUntrustedText();
     this.buffer.push(text);
     this.atLineStart = text.endsWith(this.newline);
+  }
+
+  /** Push text while preventing syntax boundaries from forming across adjacent AST nodes. */
+  pushUntrustedText(text: string): void {
+    this.flushPendingBlankLine();
+    if (text.length === 0) return;
+
+    this.pendingUntrustedText += text;
+    this.atLineStart = text.endsWith(this.newline);
+  }
+
+  private flushPendingUntrustedText(): void {
+    if (this.pendingUntrustedText.length === 0) return;
+    const serialized = neutralizeWikitextBoundaries(this.pendingUntrustedText);
+    this.buffer.push(serialized);
+    this.pendingUntrustedText = "";
+    this.atLineStart = serialized.endsWith(this.newline);
   }
 
   /**
@@ -93,6 +115,7 @@ export class SerializeContext {
    * downgrades the div to inline text.
    */
   pushBlockLine(text: string): void {
+    this.flushPendingUntrustedText();
     if (this._pendingBlankLine === "block") {
       this.flushPendingBlankLine();
     } else {
@@ -122,6 +145,7 @@ export class SerializeContext {
 
   /** Return the full serialized output. */
   getOutput(): string {
+    this.flushPendingUntrustedText();
     return this.buffer.join("");
   }
 

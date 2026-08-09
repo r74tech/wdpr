@@ -1,4 +1,5 @@
 import type { SerializeContext } from "./context";
+import { literalizeWikitext } from "./directive-safety";
 
 /** Map of Unicode characters to their original Wikidot source syntax. */
 const UNICODE_TO_SOURCE: [string, string][] = [
@@ -18,12 +19,12 @@ export function serializeText(ctx: SerializeContext, data: string): void {
   for (const [unicode, source] of UNICODE_TO_SOURCE) {
     text = text.replaceAll(unicode, source);
   }
-  ctx.push(text);
+  ctx.pushUntrustedText(text);
 }
 
 /** Serialize a raw (pre-formatted) element as `@@text@@`. */
 export function serializeRaw(ctx: SerializeContext, data: string): void {
-  ctx.push(`@@${data}@@`);
+  ctx.push(literalizeWikitext(data));
 }
 
 /**
@@ -54,5 +55,5 @@ export function serializeContentSeparator(ctx: SerializeContext): void {
 
 /** Serialize an email address as plain text (Wikidot auto-detects emails). */
 export function serializeEmail(ctx: SerializeContext, data: string): void {
-  ctx.push(data);
+  ctx.pushUntrustedText(data);
 }

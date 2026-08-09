@@ -1,6 +1,7 @@
 import type { ContainerData, Alignment, Element } from "@wdprlib/ast";
 import { isHeaderType, isAlignType, isStringContainerType } from "@wdprlib/ast";
 import { SerializeContext } from "./context";
+import { formatDirectiveAttributes, isSafeBareToken } from "./directive-safety";
 import { serializeElement, serializeElements } from "./serialize-element";
 
 /**
@@ -188,7 +189,10 @@ function serializeSpanLike(
   if (type !== "span") {
     attrs.class = type;
   }
-  const attrStr = formatAttributes(attrs);
+  const attrStr = formatDirectiveAttributes(attrs, {
+    excludeInternal: true,
+    stripGeneratedIdPrefix: true,
+  });
   ctx.push(`[[span${attrStr}]]`);
   serializeElements(ctx, elements);
   ctx.push("[[/span]]");
@@ -205,7 +209,10 @@ function serializeBlockSpan(
   elements: Element[],
   attributes: Record<string, string>,
 ): void {
-  const attrStr = formatAttributes(attributes);
+  const attrStr = formatDirectiveAttributes(attributes, {
+    excludeInternal: true,
+    stripGeneratedIdPrefix: true,
+  });
   // Serialize content in inline context (nested spans stay inline, not span_)
   const innerCtx = new SerializeContext({ newline: ctx.newline });
   innerCtx.inParagraph = true;
@@ -232,7 +239,10 @@ function serializeDivContainer(
   elements: Element[],
   attributes: Record<string, string>,
 ): void {
-  const attrStr = formatAttributes(attributes);
+  const attrStr = formatDirectiveAttributes(attributes, {
+    excludeInternal: true,
+    stripGeneratedIdPrefix: true,
+  });
 
   // div_ detection: first or last child is inline text content → paragraph-strip
   const isParagraphStrip =
@@ -414,6 +424,10 @@ function serializeSizeContainer(
   const style = attributes.style ?? "";
   const match = style.match(/font-size:\s*([^;]+)/);
   const size = match ? match[1]!.trim() : "1em";
+  if (!isSafeBareToken(size)) {
+    serializeElements(ctx, elements);
+    return;
+  }
   ctx.push(`[[size ${size}]]`);
   serializeElements(ctx, elements);
   ctx.push("[[/size]]");
@@ -434,27 +448,4 @@ function serializeInline(parentCtx: SerializeContext, elements: Element[]): stri
   const innerCtx = new SerializeContext({ newline: parentCtx.newline });
   serializeElements(innerCtx, elements);
   return innerCtx.getOutput().replace(/\n$/, "");
-}
-
-/**
- * Format an attribute map to a Wikidot attribute string.
- *
- * Attributes starting with `_` are internal and excluded. The `u-` prefix
- * on id attributes is stripped (Wikidot adds it during rendering).
- */
-function formatAttributes(attributes: Record<string, string>): string {
-  const entries = Object.entries(attributes).filter(([k]) => !k.startsWith("_"));
-  if (entries.length === 0) return "";
-  return (
-    " " +
-    entries
-      .map(([k, v]) => {
-        // Strip the u- prefix from id attributes
-        if (k === "id" && v.startsWith("u-")) {
-          return `${k}="${v.slice(2)}"`;
-        }
-        return `${k}="${v}"`;
-      })
-      .join(" ")
-  );
 }

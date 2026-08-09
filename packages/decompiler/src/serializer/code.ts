@@ -1,5 +1,6 @@
 import type { CodeBlockData } from "@wdprlib/ast";
 import type { SerializeContext } from "./context";
+import { formatDirectiveAttributes, hasBlockCloseCandidate } from "./directive-safety";
 
 /**
  * Serialize a code block element to `[[code]]...[[/code]]` syntax.
@@ -7,15 +8,16 @@ import type { SerializeContext } from "./context";
  * Includes `type` and `name` attributes when present.
  */
 export function serializeCode(ctx: SerializeContext, data: CodeBlockData): void {
-  const attrs: string[] = [];
+  if (hasBlockCloseCandidate(data.contents, "code")) return;
+  const attributes: Record<string, string> = {};
   if (data.language) {
-    attrs.push(`type="${data.language}"`);
+    attributes.type = data.language;
   }
   if (data.name) {
-    attrs.push(`name="${data.name}"`);
+    attributes.name = data.name;
   }
 
-  const attrStr = attrs.length > 0 ? " " + attrs.join(" ") : "";
+  const attrStr = formatDirectiveAttributes(attributes);
 
   ctx.pushBlockLine(`[[code${attrStr}]]`);
   if (data.contents.length > 0) {

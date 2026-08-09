@@ -1,5 +1,6 @@
 import type { ImageData, ImageSource } from "@wdprlib/ast";
 import type { SerializeContext } from "./context";
+import { formatDirectiveAttributes, isSafeBareToken } from "./directive-safety";
 
 /**
  * Serialize an image element to Wikidot `[[image ...]]` syntax.
@@ -9,7 +10,8 @@ import type { SerializeContext } from "./context";
  */
 export function serializeImage(ctx: SerializeContext, data: ImageData): void {
   const source = formatImageSource(data.source);
-  const attrs: string[] = [];
+  if (!isSafeBareToken(source)) return;
+  const attributes: Record<string, string> = {};
 
   // Alignment → Wikidot prefix (<, >, =, f<, f>, f=)
   let alignPrefix = "";
@@ -43,16 +45,15 @@ export function serializeImage(ctx: SerializeContext, data: ImageData): void {
   }
 
   if (data.link) {
-    const link = typeof data.link === "string" ? data.link : data.link.page;
-    attrs.push(`link="${link}"`);
+    attributes.link = typeof data.link === "string" ? data.link : data.link.page;
   }
 
   for (const [key, value] of Object.entries(data.attributes)) {
     if (key === "class" && value === "image") continue;
-    attrs.push(`${key}="${value}"`);
+    attributes[key] = value;
   }
 
-  const attrStr = attrs.length > 0 ? " " + attrs.join(" ") : "";
+  const attrStr = formatDirectiveAttributes(attributes);
   ctx.push(`[[${alignPrefix}image ${source}${attrStr}]]`);
 }
 

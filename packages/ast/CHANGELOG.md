@@ -1,3 +1,14 @@
+# 3.0.0 (2026-08-10)
+
+### 🩹 Fixes
+
+- **release:** 誤ったast releaseを取り消す ([#60](https://github.com/r74tech/wdpr/pull/60))
+- Securityレポートで検出された脆弱性の修正 ([#57](https://github.com/r74tech/wdpr/pull/57))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 2.4.0 (2026-07-24)
 
 ### 🚀 Features

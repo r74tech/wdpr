@@ -3,6 +3,9 @@
   "ignorePatterns": [
     "tests/fixtures/**/*.html",
     "packages/**/dist/**/*",
-    "packages/*/CHANGELOG.md"
+    "packages/*/CHANGELOG.md",
+    "examples/**/dist/**/*",
+    "examples/**/.wrangler/**/*",
+    "examples/**/worker-configuration.d.ts"
   ]
 }

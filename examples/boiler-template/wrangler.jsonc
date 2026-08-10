@@ -1,0 +1,32 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "wdpr-boiler-template",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-08-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": {
+    "HTML_BLOCK_ORIGIN": "http://localhost:8788",
+  },
+  "r2_buckets": [
+    {
+      "binding": "HTML_BLOCKS",
+      "bucket_name": "wdpr-boiler-html-blocks",
+    },
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "wdpr-boiler-db",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "assets": {
+    "not_found_handling": "none",
+    "run_worker_first": ["/*", "!/assets/*", "!/src/*", "!/style.css", "!/common--theme/*"],
+  },
+  "observability": {
+    "enabled": true,
+  },
+  "upload_source_maps": true,
+}

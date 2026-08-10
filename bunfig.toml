@@ -4,3 +4,6 @@ coveragePathIgnorePatterns = [
   "**/dist/**",
   "**/node_modules/**"
 ]
+
+[install]
+linker = "isolated"

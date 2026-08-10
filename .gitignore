@@ -27,6 +27,7 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .cache
 *.tsbuildinfo
 .nx
+.wrangler
 
 # IntelliJ based IDEs
 .idea
@@ -38,4 +39,4 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 .vscode
 
 # generated docs
-docs
+/docs

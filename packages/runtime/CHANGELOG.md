@@ -1,3 +1,13 @@
+## 1.2.0 (2026-08-10)
+
+### 🚀 Features
+
+- 高レベルpipelineとadapter利用性を改善 ([#58](https://github.com/r74tech/wdpr/pull/58))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 1.1.0 (2026-07-22)
 
 ### 🚀 Features

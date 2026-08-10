@@ -1,3 +1,21 @@
+## 4.4.2 (2026-08-10)
+
+### 🚀 Features
+
+- 高レベルpipelineとadapter利用性を改善 ([#58](https://github.com/r74tech/wdpr/pull/58))
+
+### 🩹 Fixes
+
+- Securityレポートで検出された脆弱性の修正 ([#57](https://github.com/r74tech/wdpr/pull/57))
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/ast to 4.0.0
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 4.4.0 (2026-07-24)
 
 ### 🚀 Features

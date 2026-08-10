@@ -1,3 +1,13 @@
+# 4.0.0 (2026-08-10)
+
+### 🩹 Fixes
+
+- Securityレポートで検出された脆弱性の修正 ([#57](https://github.com/r74tech/wdpr/pull/57))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## Unreleased
 
 ### ⚠️ Breaking Changes

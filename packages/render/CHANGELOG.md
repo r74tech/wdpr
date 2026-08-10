@@ -1,33 +1,3 @@
-## 3.3.2 (2026-08-10)
-
-### 🚀 Features
-
-- 高レベルpipelineとadapter利用性を改善 ([#58](https://github.com/r74tech/wdpr/pull/58))
-
-### 🩹 Fixes
-
-- Securityレポートで検出された脆弱性の修正 ([#57](https://github.com/r74tech/wdpr/pull/57))
-
-### 🧱 Updated Dependencies
-
-- Updated @wdprlib/ast to 4.0.0
-
-### ❤️ Thank You
-
-- r74tech @r74tech
-
-## Unreleased
-
-### ⚠️ Breaking Changes
-
-- `[[embed]]` iframe URLs are HTTPS-only and iframe `style` attributes are removed.
-- Unsafe local image and gallery path components are rejected before `/local--files/` URL
-  construction.
-- `DEFAULT_SETTINGS` no longer renders `[[module CSS]]`. Trusted callers must explicitly set
-  `allowStyleElements: true`.
-- HTML block iframes now use an empty `sandbox` attribute by default. Set
-  `htmlBlockSandbox: null` to explicitly opt out.
-
 ## 3.3.0 (2026-07-24)
 
 ### 🚀 Features

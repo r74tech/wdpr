@@ -77,17 +77,9 @@ export async function deletePage(db: D1Database, pageId: number): Promise<void> 
   ]);
 }
 
-export async function rowToPageData(
-  db: D1Database,
-  row: Record<string, unknown>,
-): Promise<PageData> {
-  const pageId = row.page_id as number;
-
-  const tagsResult = await db
-    .prepare("SELECT tag FROM page_tags WHERE page_id = ?")
-    .bind(pageId)
-    .all();
-  const tags = (tagsResult.results || []).map((r) => r.tag as string);
+export function rowToPageData(row: Record<string, unknown>, pageTags: string[]): PageData {
+  const tags = pageTags.filter((tag) => !tag.startsWith("_"));
+  const hiddenTags = pageTags.filter((tag) => tag.startsWith("_"));
 
   const category = row.category as string;
   const unixName = row.unix_name as string;
@@ -102,10 +94,10 @@ export async function rowToPageData(
     updatedAt: new Date(row.date_last_edited as string),
     updatedBy: getUserInfo(row.owner_user_id as number),
     tags,
-    hiddenTags: [],
+    hiddenTags,
     children: 0,
     comments: 0,
-    size: ((row.source as string) || "").length,
+    size: (row.source_size as number | undefined) ?? ((row.source as string) || "").length,
     rating: (row.rate as number) || 0,
     ratingVotes: 0,
     revisions: 1,

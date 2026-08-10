@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { Window } from "happy-dom";
-import { HTML_BLOCK_RESIZE_SCRIPT } from "../src/html-block";
+import { HTML_BLOCK_RESIZE_SCRIPT } from "../src/index";
 
 describe("html-block resize", () => {
   let happyWindow: Window;

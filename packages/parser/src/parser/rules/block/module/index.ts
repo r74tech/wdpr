@@ -82,6 +82,8 @@ export {
   parseParent,
   parseDateSelector,
   parseNumericSelector,
+  definePageData,
+  matchesListPagesSelectors,
 } from "./listpages";
 
 // IfTags module

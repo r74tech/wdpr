@@ -59,6 +59,8 @@ export { extractDataRequirements } from "./extract";
 // Resolution
 export type { ParseFunction, ListPagesModuleData } from "./resolve";
 export { isListPagesModule, resolveListPages } from "./resolve";
+export { definePageData } from "./types/external-data";
+export { matchesListPagesSelectors } from "./selectors";
 
 // Compiler
 export { compileTemplate } from "./compiler";

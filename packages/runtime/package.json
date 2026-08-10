@@ -34,6 +34,17 @@
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
+    },
+    "./html-block-script": {
+      "bun": "./src/html-block-script.ts",
+      "import": {
+        "types": "./dist/html-block-script.d.ts",
+        "default": "./dist/html-block-script.js"
+      },
+      "require": {
+        "types": "./dist/html-block-script.d.cts",
+        "default": "./dist/html-block-script.cjs"
+      }
     }
   },
   "publishConfig": {

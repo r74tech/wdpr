@@ -1,4 +1,9 @@
-import { DEFAULT_SETTINGS, type PageRef, type WikitextPageContext } from "@wdprlib/ast";
+import {
+  DEFAULT_SETTINGS,
+  type Diagnostic,
+  type PageRef,
+  type WikitextPageContext,
+} from "@wdprlib/ast";
 import { parse } from "../parser";
 import { extractDataRequirements } from "../parser/rules/block/module/listpages/extract";
 import {
@@ -14,6 +19,12 @@ import type {
   ProcessWikitextOptions,
 } from "./types";
 
+const DEFAULT_MODULE_MAX_PASSES = 5;
+const PIPELINE_DIAGNOSTIC_POSITION = {
+  start: { line: 1, column: 1, offset: 0 },
+  end: { line: 1, column: 1, offset: 0 },
+};
+
 export async function processWikitext<TPage extends WikitextPageContext>(
   source: string,
   options: ProcessWikitextOptions<TPage>,
@@ -24,6 +35,7 @@ export async function processWikitext<TPage extends WikitextPageContext>(
     settings,
   };
   const dependencies: IncludeDependency[] = [];
+  const diagnostics: Diagnostic[] = [];
   const fetchInclude = createRequestIncludeFetcher(
     options.dataProvider?.fetchInclude
       ? (pageRef) => options.dataProvider!.fetchInclude!(pageRef, callbackContext)
@@ -36,6 +48,14 @@ export async function processWikitext<TPage extends WikitextPageContext>(
       settings,
     });
     dependencies.push(...resolution.dependencies);
+    if (resolution.reachedMaxIterations) {
+      diagnostics.push(
+        createLimitDiagnostic(
+          "include-resolution-limit",
+          `Include expansion stopped after ${options.includeMaxIterations ?? 10} iterations.`,
+        ),
+      );
+    }
     return resolution.source;
   };
 
@@ -45,28 +65,75 @@ export async function processWikitext<TPage extends WikitextPageContext>(
     pageTags: options.page.tags,
     appendImplicitFootnoteBlock: false,
   });
-  const extraction = extractDataRequirements(initial.ast);
+  diagnostics.push(...initial.diagnostics);
   const dataProvider = createModuleDataProvider(options, callbackContext);
-  const resolved = await resolveModulesWithAsyncParse(initial.ast, dataProvider, {
-    parse: async (fragmentSource) =>
-      parse(await resolveSource(fragmentSource), {
-        settings,
-        pageTags: options.page.tags,
-        appendImplicitFootnoteBlock: false,
-      }),
-    compiledListPagesTemplates: extraction.compiledListPagesTemplates,
-    compiledListUsersTemplates: extraction.compiledListUsersTemplates,
-    requirements: extraction.requirements,
-    urlPath: options.page.urlPath,
-    pageTags: options.page.tags,
-  });
+  const parseFragment = async (fragmentSource: string) =>
+    parse(await resolveSource(fragmentSource), {
+      settings,
+      pageTags: options.page.tags,
+      appendImplicitFootnoteBlock: false,
+    });
+  let ast = initial.ast;
+
+  for (let pass = 0; pass < DEFAULT_MODULE_MAX_PASSES; pass++) {
+    const extraction = extractDataRequirements(ast);
+    if (pass > 0 && !hasResolvableRequirements(extraction.requirements, options.dataProvider)) {
+      break;
+    }
+
+    const resolved = await resolveModulesWithAsyncParse(ast, dataProvider, {
+      parse: parseFragment,
+      compiledListPagesTemplates: extraction.compiledListPagesTemplates,
+      compiledListUsersTemplates: extraction.compiledListUsersTemplates,
+      requirements: extraction.requirements,
+      urlPath: options.page.urlPath,
+      pageTags: options.page.tags,
+    });
+    ast = resolved.ast;
+    diagnostics.push(...resolved.diagnostics);
+  }
+
+  if (hasResolvableRequirements(extractDataRequirements(ast).requirements, options.dataProvider)) {
+    diagnostics.push(
+      createLimitDiagnostic(
+        "module-resolution-limit",
+        `Module resolution stopped after ${DEFAULT_MODULE_MAX_PASSES} passes.`,
+      ),
+    );
+  }
 
   return {
-    ast: resolved.ast,
+    ast,
     page: options.page,
     settings,
-    diagnostics: [...initial.diagnostics, ...resolved.diagnostics],
+    diagnostics,
     dependencies,
+  };
+}
+
+function hasResolvableRequirements(
+  requirements: ReturnType<typeof extractDataRequirements>["requirements"],
+  provider:
+    | {
+        fetchListPages?: unknown;
+        fetchListUsers?: unknown;
+        fetchTagCloud?: unknown;
+      }
+    | undefined,
+): boolean {
+  return Boolean(
+    (provider?.fetchListPages && requirements.listPages.length > 0) ||
+    (provider?.fetchListUsers && requirements.listUsers.length > 0) ||
+    (provider?.fetchTagCloud && requirements.tagCloud.length > 0),
+  );
+}
+
+function createLimitDiagnostic(code: string, message: string): Diagnostic {
+  return {
+    severity: "warning",
+    code,
+    message,
+    position: PIPELINE_DIAGNOSTIC_POSITION,
   };
 }
 

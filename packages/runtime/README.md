@@ -31,6 +31,17 @@ const runtime: WdprRuntime = initWdprRuntime({
 runtime.destroy();
 ```
 
+### HTML block script for server runtimes
+
+Workers that only serve HTML block iframe content can import the resize script without loading the
+browser runtime or its DOM types:
+
+```ts
+import { HTML_BLOCK_RESIZE_SCRIPT } from "@wdprlib/runtime/html-block-script";
+```
+
+The existing root import remains available for browser applications.
+
 ## Features
 
 - Tabview tab switching

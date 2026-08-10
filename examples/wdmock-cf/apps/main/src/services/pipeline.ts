@@ -3,8 +3,8 @@
  *
  * Handles source parsing, module resolution, and HTML rendering.
  */
-import { processWikitext } from "@wdprlib/parser";
-import type { NormalizedListPagesQuery, ListPagesExternalData, PageData } from "@wdprlib/parser";
+import { matchesListPagesSelectors, processWikitext } from "@wdprlib/parser";
+import type { NormalizedListPagesQuery, ListPagesExternalData } from "@wdprlib/parser";
 import { renderWikitext } from "@wdprlib/render";
 import { SITE, parseFullname } from "@wdmock/shared";
 import { findPage, getTagsByFullname, rowToPageData } from "@wdmock/db";
@@ -54,7 +54,12 @@ export async function renderPage(
         const included = parseFullname(pageRef.page);
         return (await findPage(db, included.category, included.name))?.source ?? null;
       },
-      fetchListPages: async (query) => queryListPages(db, query, pageName),
+      fetchListPages: async (query) =>
+        queryListPages(db, query, {
+          fullname: pageName,
+          category: identity.category,
+          tags: pageTags,
+        }),
     },
   });
   const rendered = await renderWikitext(document, {
@@ -125,60 +130,29 @@ function normalizePageLookupName(page: string): string {
   return normalized.startsWith("/") ? normalized.slice(1) : normalized;
 }
 
+interface CurrentListPagesPage {
+  fullname: string;
+  category: string;
+  tags: string[];
+}
+
 async function queryListPages(
   db: D1Database,
   query: NormalizedListPagesQuery,
-  currentPageFullname: string,
+  currentPage: CurrentListPagesPage,
 ): Promise<ListPagesExternalData> {
   const conditions: string[] = [];
   const params: unknown[] = [];
 
   if (query.range === ".") {
-    const { category, name } = parseFullname(currentPageFullname);
+    const { category, name } = parseFullname(currentPage.fullname);
     conditions.push("category = ? AND unix_name = ?");
     params.push(category, name);
-  }
-
-  if (query.category) {
-    if (query.category.all) {
-      // "*" - all categories, no filter
-    } else if (query.category.current) {
-      conditions.push("category = '_default'");
-    } else {
-      if (query.category.include.length > 0) {
-        const placeholders = query.category.include.map(() => "?").join(", ");
-        conditions.push(`category IN (${placeholders})`);
-        params.push(...query.category.include);
-      }
-      for (const cat of query.category.exclude) {
-        conditions.push("category != ?");
-        params.push(cat);
-      }
-    }
   }
 
   if (query.name) {
     conditions.push("unix_name = ?");
     params.push(query.name);
-  }
-
-  if (query.tags) {
-    for (const tag of query.tags.all) {
-      conditions.push("page_id IN (SELECT page_id FROM page_tags WHERE tag = ?)");
-      params.push(tag);
-    }
-    if (query.tags.any.length > 0) {
-      const placeholders = query.tags.any.map(() => "?").join(", ");
-      conditions.push(`page_id IN (SELECT page_id FROM page_tags WHERE tag IN (${placeholders}))`);
-      params.push(...query.tags.any);
-    }
-    for (const tag of query.tags.none) {
-      conditions.push("page_id NOT IN (SELECT page_id FROM page_tags WHERE tag = ?)");
-      params.push(tag);
-    }
-    if (query.tags.special === "none") {
-      conditions.push("page_id NOT IN (SELECT DISTINCT page_id FROM page_tags)");
-    }
   }
 
   if (query.limit === 0) {
@@ -187,31 +161,76 @@ async function queryListPages(
 
   const where = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
   const orderBy = buildOrderBy(query);
-  const limit =
-    query.limit !== undefined ? `LIMIT ${Math.min(Number(query.limit), 100)}` : "LIMIT 20";
-  const offset = query.offset ? `OFFSET ${Math.min(Number(query.offset), 1000)}` : "";
-
-  const sql = `SELECT * FROM pages ${where} ${orderBy} ${limit} ${offset}`;
-  const countSql = `SELECT COUNT(*) as count FROM pages ${where}`;
-
-  const [rows, countResult] = await Promise.all([
-    db
-      .prepare(sql)
+  const includeAllContent = query.limit !== undefined && query.limit < 0;
+  const rows = await db
+    .prepare(
+      `SELECT page_id, category, unix_name, title, date_created, date_last_edited,
+              owner_user_id, rate, LENGTH(source) AS source_size${includeAllContent ? ", source" : ""}
+       FROM pages ${where} ${orderBy}`,
+    )
+    .bind(...params)
+    .all();
+  const tagsByPage = new Map<number, string[]>();
+  const needsCandidateTags = Boolean(query.tags) || includeAllContent;
+  if (needsCandidateTags) {
+    const pageTags = await db
+      .prepare(
+        `SELECT page_id, tag FROM page_tags WHERE page_id IN (SELECT page_id FROM pages ${where})`,
+      )
       .bind(...params)
-      .all(),
-    db
-      .prepare(countSql)
-      .bind(...params)
-      .first<{ count: number }>(),
-  ]);
+      .all<{ page_id: number; tag: string }>();
+    for (const { page_id: pageId, tag } of pageTags.results) {
+      tagsByPage.set(pageId, [...(tagsByPage.get(pageId) ?? []), tag]);
+    }
+  }
+  const matchedPages = (rows.results || [])
+    .map((row) => ({
+      pageId: row.page_id as number,
+      page: rowToPageData(row, tagsByPage.get(row.page_id as number) ?? []),
+    }))
+    .filter(({ page }) => matchesListPagesSelectors(page, query, currentPage));
+  const offset = Math.max(0, Math.min(query.offset ?? 0, 1000));
+  const limit = query.limit === undefined ? 20 : Math.min(query.limit, 100);
+  const end = limit < 0 ? undefined : offset + limit;
+  const selectedPages = matchedPages.slice(offset, end);
+  const contentByPage = new Map<number, string>();
+  const selectedTagsByPage = new Map<number, string[]>();
+  if (!includeAllContent && selectedPages.length > 0) {
+    const placeholders = selectedPages.map(() => "?").join(", ");
+    const pageIds = selectedPages.map(({ pageId }) => pageId);
+    const [contents, selectedTags] = await Promise.all([
+      db
+        .prepare(`SELECT page_id, source FROM pages WHERE page_id IN (${placeholders})`)
+        .bind(...pageIds)
+        .all<{ page_id: number; source: string }>(),
+      needsCandidateTags
+        ? null
+        : db
+            .prepare(`SELECT page_id, tag FROM page_tags WHERE page_id IN (${placeholders})`)
+            .bind(...pageIds)
+            .all<{ page_id: number; tag: string }>(),
+    ]);
+    for (const { page_id: pageId, source } of contents.results) {
+      contentByPage.set(pageId, source);
+    }
+    for (const { page_id: pageId, tag } of selectedTags?.results ?? []) {
+      selectedTagsByPage.set(pageId, [...(selectedTagsByPage.get(pageId) ?? []), tag]);
+    }
+  }
 
-  const totalCount = countResult?.count ?? 0;
-
-  const pages: PageData[] = await Promise.all(
-    (rows.results || []).map((row) => rowToPageData(db, row)),
-  );
-
-  return { pages, totalCount, site: SITE };
+  return {
+    pages: selectedPages.map(({ pageId, page }) => {
+      const selectedTags = selectedTagsByPage.get(pageId);
+      return {
+        ...page,
+        tags: selectedTags?.filter((tag) => !tag.startsWith("_")) ?? page.tags,
+        hiddenTags: selectedTags?.filter((tag) => tag.startsWith("_")) ?? page.hiddenTags,
+        content: includeAllContent ? page.content : contentByPage.get(pageId),
+      };
+    }),
+    totalCount: matchedPages.length,
+    site: SITE,
+  };
 }
 
 function buildOrderBy(query: NormalizedListPagesQuery): string {

@@ -58,6 +58,28 @@ export interface PageData {
   revisions: number;
 }
 
+type PageDataInput = Pick<PageData, "fullname" | "title" | "createdAt" | "updatedAt" | "tags"> &
+  Partial<Omit<PageData, "fullname" | "title" | "createdAt" | "updatedAt" | "tags">>;
+
+export function definePageData(input: PageDataInput): PageData {
+  const separator = input.fullname.indexOf(":");
+  const category = separator === -1 ? "_default" : input.fullname.slice(0, separator);
+  const name = separator === -1 ? input.fullname : input.fullname.slice(separator + 1);
+
+  return {
+    ...input,
+    name: input.name ?? name,
+    category: input.category ?? category,
+    hiddenTags: input.hiddenTags ?? [],
+    children: input.children ?? 0,
+    comments: input.comments ?? 0,
+    size: input.size ?? 0,
+    rating: input.rating ?? 0,
+    ratingVotes: input.ratingVotes ?? 0,
+    revisions: input.revisions ?? 0,
+  };
+}
+
 /**
  * Site context information.
  */

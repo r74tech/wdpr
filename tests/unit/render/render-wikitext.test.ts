@@ -112,6 +112,28 @@ describe("renderWikitext", () => {
     expect(result.html).not.toContain("hidden-target");
   });
 
+  it("does not call the page existence resolver without page links", async () => {
+    let calls = 0;
+    const document = {
+      ast: { elements: [{ element: "text", data: "plain text" }] } satisfies SyntaxTree,
+      page,
+      settings: DEFAULT_SETTINGS,
+    };
+
+    const withResolver = await renderWikitext(document, {
+      resolvers: {
+        resolvePageExistence: async () => {
+          calls++;
+          return new Set();
+        },
+      },
+    });
+    const withoutResolver = await renderWikitext(document);
+
+    expect(calls).toBe(0);
+    expect(withResolver.html).toBe(withoutResolver.html);
+  });
+
   it("separates all emitted styles without leaving style tags in HTML", async () => {
     const ast: SyntaxTree = {
       elements: [

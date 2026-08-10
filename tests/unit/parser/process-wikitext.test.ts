@@ -243,6 +243,146 @@ describe("processWikitext", () => {
     expect(blocks).toHaveLength(1);
     expect(blocks[0]?.element === "footnote-block" ? blocks[0].data.title : null).toBe("Top");
   });
+
+  it("resolves modules generated through includes across additional passes", async () => {
+    const calls: string[] = [];
+    const document = await processWikitext(
+      ['[[module ListPages range="." limit="1"]]', "%%content%%", "[[/module]]"].join("\n"),
+      {
+        page: pageContext,
+        dataProvider: {
+          fetchListPages: async () => {
+            calls.push("list-pages");
+            return {
+              pages: [{ ...pageData(), content: "[[include generated-users]]" }],
+              totalCount: 1,
+              site: siteContext(),
+            };
+          },
+          fetchInclude: async ({ page }) => {
+            calls.push(`include:${page}`);
+            if (page === "generated-users") {
+              return [
+                '[[module ListUsers users="."]]',
+                "[[html]]generated user block[[/html]]",
+                "[[include generated-tags]]",
+                "[[/module]]",
+              ].join("\n");
+            }
+            if (page === "generated-tags") return "[[module TagCloud]]";
+            return null;
+          },
+          fetchListUsers: async () => {
+            calls.push("list-users");
+            return { user: { number: 1, title: "Alice", name: "alice" } };
+          },
+          fetchTagCloud: async () => {
+            calls.push("tag-cloud");
+            return {
+              status: "ok",
+              tags: [{ tag: "docs", weight: 1 }],
+              category: null,
+            };
+          },
+        },
+      },
+    );
+
+    expect(calls).toEqual([
+      "list-pages",
+      "include:generated-users",
+      "include:generated-tags",
+      "list-users",
+      "tag-cloud",
+    ]);
+    expect(document.dependencies.map((item) => item.location.page)).toEqual([
+      "generated-users",
+      "generated-tags",
+    ]);
+    expect(document.ast["html-blocks"]).toEqual(["generated user block"]);
+    expect(JSON.stringify(document.ast)).not.toContain('"element":"module"');
+  });
+
+  it("merges diagnostics emitted while parsing an additional pass", async () => {
+    const document = await processWikitext(
+      '[[module ListPages range="." limit="1"]]%%content%%[[/module]]',
+      {
+        page: pageContext,
+        dataProvider: {
+          fetchListPages: async () => ({
+            pages: [{ ...pageData(), content: "[[include generated-users]]" }],
+            totalCount: 1,
+            site: siteContext(),
+          }),
+          fetchInclude: async () =>
+            '[[module ListUsers users="."]][[code]]generated unclosed[[/module]]',
+          fetchListUsers: async () => ({
+            user: { number: 1, title: "Alice", name: "alice" },
+          }),
+        },
+      },
+    );
+
+    expect(document.diagnostics.some((item) => item.code === "unclosed-block")).toBe(true);
+  });
+
+  it("stops without a limit diagnostic when a generated module has no provider", async () => {
+    const document = await processWikitext('[[module ListUsers users="."]]x[[/module]]', {
+      page: pageContext,
+    });
+
+    expect(JSON.stringify(document.ast)).toContain('"module":"list-users"');
+    expect(document.diagnostics.some((item) => item.code === "module-resolution-limit")).toBe(
+      false,
+    );
+  });
+
+  it("keeps the initial IfTags resolution without data providers", async () => {
+    const document = await processWikitext(
+      "[[iftags +component]]visible[[else]]hidden[[/iftags]]",
+      { page: pageContext },
+    );
+
+    expect(JSON.stringify(document.ast)).toContain("visible");
+    expect(JSON.stringify(document.ast)).not.toContain('"element":"if-tags"');
+  });
+
+  it("stops self-generating modules after five passes with a diagnostic", async () => {
+    let calls = 0;
+    const generated = '[[module ListPages range="." limit="1"]]%%content%%[[/module]]';
+    const document = await processWikitext(generated, {
+      page: pageContext,
+      dataProvider: {
+        fetchListPages: async () => {
+          calls++;
+          return {
+            pages: [{ ...pageData(), content: "[[include generated-loop]]" }],
+            totalCount: 1,
+            site: siteContext(),
+          };
+        },
+        fetchInclude: async () => generated,
+      },
+    });
+
+    expect(calls).toBe(5);
+    expect(JSON.stringify(document.ast)).toContain('"module":"list-pages"');
+    expect(document.diagnostics.some((item) => item.code === "module-resolution-limit")).toBe(true);
+  });
+
+  it("reports an include expansion limit", async () => {
+    const document = await processWikitext("[[include a]]", {
+      page: pageContext,
+      includeMaxIterations: 1,
+      dataProvider: {
+        fetchInclude: async ({ page }) => `[[include ${page === "a" ? "b" : "a"}]]`,
+      },
+    });
+
+    expect(document.diagnostics.some((item) => item.code === "include-resolution-limit")).toBe(
+      true,
+    );
+  });
 });
 
 function countElements(elements: Element[], name: Element["element"]): number {

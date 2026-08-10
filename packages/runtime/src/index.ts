@@ -32,7 +32,7 @@ import { initTabview } from "./tabview";
 import { initToc } from "./toc";
 import type { ModuleCleanup, RuntimeOptions, WdprRuntime } from "./types";
 
-export { HTML_BLOCK_RESIZE_SCRIPT } from "./html-block";
+export { HTML_BLOCK_RESIZE_SCRIPT } from "./html-block-script";
 export type { RateResult, RuntimeOptions, WdprRuntime } from "./types";
 
 /**

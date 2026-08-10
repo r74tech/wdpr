@@ -8,9 +8,6 @@
  *
  * The communication protocol uses a typed message with
  * `type: "wdpr-html-block-resize"` and a numeric `height` field.
- * The module also exports a script string ({@link HTML_BLOCK_RESIZE_SCRIPT})
- * that should be injected into the iframe's HTML to send resize messages.
- *
  * DOM interactions:
  * - Listens for `message` events on `window`
  * - Matches `e.source` against `iframe.html-block-iframe` elements in the root
@@ -88,34 +85,3 @@ export function initHtmlBlockResize(root: HTMLElement): ModuleCleanup {
     },
   };
 }
-
-/**
- * Script to inject into htmlBlock iframe content.
- * This should be included in the HTML served for htmlBlock iframes.
- *
- * Usage: Wrap htmlBlock content like this:
- * ```html
- * <!DOCTYPE html>
- * <html>
- * <head><script>${HTML_BLOCK_RESIZE_SCRIPT}</script></head>
- * <body>${htmlBlockContent}</body>
- * </html>
- * ```
- */
-export const HTML_BLOCK_RESIZE_SCRIPT = `(function(){
-  function notifyHeight() {
-    var height = (document.documentElement.scrollHeight || document.body.scrollHeight) + 2;
-    parent.postMessage({ type: 'wdpr-html-block-resize', height: height }, '*');
-  }
-  if (typeof ResizeObserver !== 'undefined') {
-    new ResizeObserver(notifyHeight).observe(document.body);
-  } else {
-    setInterval(notifyHeight, 250);
-  }
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', notifyHeight);
-  } else {
-    notifyHeight();
-  }
-  window.addEventListener('load', notifyHeight);
-})();`;

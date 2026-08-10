@@ -37,9 +37,10 @@ export async function renderWikitext<
   // page-existence and HTML URL resolvers are invoked after collection.
   renderToHtml(document.ast, prepassOptions);
 
-  const existingPages = options.resolvers?.resolvePageExistence
-    ? await options.resolvers.resolvePageExistence(pages)
-    : null;
+  const existingPages =
+    options.resolvers?.resolvePageExistence && pages.length > 0
+      ? await options.resolvers.resolvePageExistence(pages)
+      : null;
   const htmlUrls = options.resolvers?.resolveHtmlBlockUrl
     ? await Promise.all(
         htmlBlocks.map((block) =>

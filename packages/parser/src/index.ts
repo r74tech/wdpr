@@ -185,6 +185,8 @@ export {
   parseParent,
   parseDateSelector,
   parseNumericSelector,
+  definePageData,
+  matchesListPagesSelectors,
   // ListUsers
   extractListUsersVariables,
   compileListUsersTemplate,

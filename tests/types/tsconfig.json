@@ -8,7 +8,8 @@
     "paths": {
       "@wdprlib/ast": ["packages/ast/src/index.ts"],
       "@wdprlib/parser": ["packages/parser/src/index.ts"],
-      "@wdprlib/render": ["packages/render/src/index.ts"]
+      "@wdprlib/render": ["packages/render/src/index.ts"],
+      "@wdprlib/runtime/html-block-script": ["packages/runtime/src/html-block-script.ts"]
     }
   },
   "include": ["./**/*.ts"]

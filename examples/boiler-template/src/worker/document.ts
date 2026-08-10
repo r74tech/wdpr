@@ -36,7 +36,7 @@ export function renderDocument(document: WikiDocument): string {
   <div id="container-wrap-wrap"><div id="container-wrap"><div id="container">
     <div id="header">
       <h1><a href="/"><span>WDPR Boiler</span></a></h1>
-      <h2><span>SCP-JP Sigma on Cloudflare Workers</span></h2>
+      <h2><span>WDPR Boiler</span></h2>
       <div id="search-top-box"></div>
       <div id="top-bar">${topBar.html}</div>
       <div id="login-status"><span class="printuser">user</span></div>

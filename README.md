@@ -18,6 +18,10 @@ Wikidot markup parser and renderer.
 npm install @wdprlib/parser @wdprlib/render
 ```
 
+## Example
+
+[WDPR Workers wiki starter](./examples/boiler-template) is a D1-backed starter using Cloudflare Workers, the official Cloudflare Vite plugin, Hono, vanilla TypeScript, and R2-backed HTML blocks.
+
 ## Usage
 
 ```ts

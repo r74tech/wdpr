@@ -1,3 +1,9 @@
+## 5.1.3 (2026-08-11)
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/ast to 4.0.1
+
 ## 5.1.2 (2026-08-11)
 
 This was a version bump only for @wdprlib/parser to align it with other projects, there were no code changes.

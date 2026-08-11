@@ -1,6 +1,6 @@
 {
   "name": "@wdprlib/decompiler",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "HTML to Wikidot markup decompiler",
   "keywords": [
     "decompiler",

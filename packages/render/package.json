@@ -1,6 +1,6 @@
 {
   "name": "@wdprlib/render",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "HTML renderer for Wikidot markup",
   "keywords": [
     "html",

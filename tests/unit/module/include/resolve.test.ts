@@ -356,6 +356,41 @@ describe("resolveIncludes", () => {
       expect(resolveIncludes(source, fetcher)).toBe("<<[[span]]A[[span]]B[[/span]][[/span]]C>>");
     });
 
+    test("an intentionally single-bracket module token does not hide the outer include", () => {
+      const source = [
+        "[[include tmpl",
+        '|cap=[[module ListPages range="."]{$_}',
+        "|end=[[/module]{$_}",
+        "|_=]",
+        "]]",
+      ].join("\n");
+
+      expect(resolveIncludes(source, fetcher)).toBe('<<[[module ListPages range="."]]>>');
+    });
+
+    test("a single-line malformed nested token closes at the outer include", () => {
+      const source = "[[include tmpl |cap=[[module X]foo]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<[[module X]foo>>");
+    });
+
+    test("an incomplete nested opener is discarded at the line boundary", () => {
+      const source = ["[[include tmpl", "|cap=[[module X", "|foo=bar", "]]"].join("\n");
+      expect(resolveIncludes(source, fetcher)).toBe("<<[[module X>>");
+    });
+
+    test("an apostrophe in an unquoted nested value is not a quote", () => {
+      const source = "[[include tmpl |cap=[[span class=it's]]x[[/span]]]]";
+      expect(resolveIncludes(source, fetcher)).toBe("<<[[span class=it's]]x[[/span]]>>");
+    });
+
+    test("closing brackets inside quoted nested attributes stay literal", () => {
+      const doubleQuoted = '[[include tmpl |cap=[[span title="a]b"]]x[[/span]]]]';
+      const singleQuoted = "[[include tmpl |cap=[[span title='a]b']]x[[/span]]]]";
+
+      expect(resolveIncludes(doubleQuoted, fetcher)).toBe('<<[[span title="a]b"]]x[[/span]]>>');
+      expect(resolveIncludes(singleQuoted, fetcher)).toBe("<<[[span title='a]b']]x[[/span]]>>");
+    });
+
     test("a mid-line stray ]] does not close the directive early", () => {
       const source = "[[include tmpl\n|cap=x ]] y\n]]";
       expect(resolveIncludes(source, fetcher)).toBe("<<x ]] y>>");

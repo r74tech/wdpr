@@ -54,6 +54,38 @@ function listPagesProvider(
 }
 
 describe("processWikitext", () => {
+  it("resolves snake_case ListPages attributes before calling the data provider", async () => {
+    let received: unknown;
+
+    await processWikitext(
+      [
+        '[[module ListPages created_by="@URL|fallback" created_at="@URL|2024" updated_at="@URL|2025" per_page="@URL|5" _status="open"]]',
+        "%%title%%",
+        "[[/module]]",
+      ].join("\n"),
+      {
+        page: {
+          ...pageContext,
+          urlPath: "/docs:pipeline/created-by/user/created-at/2026/updated-at/2027/per-page/7",
+        },
+        dataProvider: listPagesProvider({
+          fetchListPages: async (query) => {
+            received = query;
+            return { pages: [], totalCount: 0, site: siteContext() };
+          },
+        }),
+      },
+    );
+
+    expect(received).toMatchObject({
+      createdBy: "user",
+      createdAt: { type: "year", year: 2026 },
+      updatedAt: { type: "year", year: 2027 },
+      perPage: 7,
+      dataFormFields: { status: "open" },
+    });
+  });
+
   it("propagates one page and settings context to include and module callbacks", async () => {
     const contexts: unknown[] = [];
     const settings = {

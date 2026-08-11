@@ -1,3 +1,13 @@
+## 5.1.5 (2026-08-11)
+
+### 🩹 Fixes
+
+- ListPagesのsnake_case属性を解釈 ([#63](https://github.com/r74tech/wdpr/pull/63))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 5.1.4 (2026-08-11)
 
 ### 🩹 Fixes

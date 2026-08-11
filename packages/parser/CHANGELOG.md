@@ -1,3 +1,13 @@
+## 5.1.4 (2026-08-11)
+
+### 🩹 Fixes
+
+- **parser:** inc-loop経由のmodule生成をWikidot互換にする ([#62](https://github.com/r74tech/wdpr/pull/62))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 5.1.3 (2026-08-11)
 
 ### 🧱 Updated Dependencies

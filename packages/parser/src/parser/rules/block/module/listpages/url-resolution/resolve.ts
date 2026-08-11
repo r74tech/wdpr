@@ -22,7 +22,9 @@ export function resolveQuery(
   const resolved: ListPagesQuery = { ...query };
 
   for (const field of URL_RESOLVABLE_FIELDS) {
-    const rawValue = rawAttributes[field.attr];
+    const rawValue = [field.attr, ...(field.aliases ?? [])]
+      .map((attr) => rawAttributes[attr])
+      .find((value) => value !== undefined);
     if (!rawValue) continue;
 
     const resolvedValue = resolveUrlValue(

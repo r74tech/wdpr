@@ -3,9 +3,9 @@
  * Parser rule for the Wikidot `[[module ListPages ...]]` block.
  *
  * Parses the module's attributes into a structured `list-pages` Module AST node.
- * Handles both hyphenated (`link-to`) and concatenated (`linkto`) attribute name
- * formats, as Wikidot normalizes both to lowercase. The raw attribute values are
- * preserved in the `attributes` field for `@URL` resolution by external applications.
+ * Handles hyphenated (`link-to`), concatenated (`linkto`), and snake_case (`link_to`)
+ * attribute name formats. The raw attribute values are preserved in the `attributes`
+ * field for `@URL` resolution by external applications.
  *
  * @module
  */
@@ -51,19 +51,19 @@ export const listPagesModuleRule: ModuleRule = {
       wrapper,
       rss,
     } = args;
-    // Hyphenated attributes (stored with hyphens in lowercase)
-    const linkTo = args["link-to"] ?? args.linkto;
-    const createdBy = args["created-by"] ?? args.createdby;
-    const createdAt = args["created-at"] ?? args.createdat;
-    const updatedAt = args["updated-at"] ?? args.updatedat;
-    const perPage = args["per-page"] ?? args.perpage;
-    const prependLine = args["prepend-line"] ?? args.prependline;
-    const appendLine = args["append-line"] ?? args.appendline;
-    const rssDescription = args["rss-description"] ?? args.rssdescription;
-    const rssHome = args["rss-home"] ?? args.rsshome;
-    const rssLimit = args["rss-limit"] ?? args.rsslimit;
-    const rssOnly = args["rss-only"] ?? args.rssonly;
-    const urlAttrPrefix = args["url-attr-prefix"] ?? args.urlattrprefix;
+    // Compound attributes accept Wikidot's supported spelling variants.
+    const linkTo = args["link-to"] ?? args.linkto ?? args.link_to;
+    const createdBy = args["created-by"] ?? args.createdby ?? args.created_by;
+    const createdAt = args["created-at"] ?? args.createdat ?? args.created_at;
+    const updatedAt = args["updated-at"] ?? args.updatedat ?? args.updated_at;
+    const perPage = args["per-page"] ?? args.perpage ?? args.per_page;
+    const prependLine = args["prepend-line"] ?? args.prependline ?? args.prepend_line;
+    const appendLine = args["append-line"] ?? args.appendline ?? args.append_line;
+    const rssDescription = args["rss-description"] ?? args.rssdescription ?? args.rss_description;
+    const rssHome = args["rss-home"] ?? args.rsshome ?? args.rss_home;
+    const rssLimit = args["rss-limit"] ?? args.rsslimit ?? args.rss_limit;
+    const rssOnly = args["rss-only"] ?? args.rssonly ?? args.rss_only;
+    const urlAttrPrefix = args["url-attr-prefix"] ?? args.urlattrprefix ?? args.url_attr_prefix;
 
     // Store all raw arguments for @URL resolution by external apps
     const rawArgs: Record<string, string> = { ...args };

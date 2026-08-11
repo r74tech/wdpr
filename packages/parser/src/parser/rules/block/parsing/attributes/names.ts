@@ -19,13 +19,19 @@ export function consumeAttributeName(
   startName: string,
   options: AttributeNameOptions,
 ): AttributeNameResult {
+  if (startName === "_" && isAttributeWordToken(ctx.tokens[startPos])) {
+    startName += ctx.tokens[startPos]?.value ?? "";
+    startPos++;
+    startConsumed++;
+  }
+
   return options.strikeHyphens
     ? consumeRawNameSuffix(ctx, startPos, startConsumed, startName, options.hyphenatedNames)
     : consumeSafeNameSuffix(ctx, startPos, startConsumed, startName);
 }
 
 export function isAttributeNameToken(token: Token | undefined): token is Token {
-  return token?.type === "TEXT" || token?.type === "IDENTIFIER";
+  return isAttributeWordToken(token) || token?.type === "UNDERSCORE";
 }
 
 function consumeSafeNameSuffix(
@@ -38,12 +44,8 @@ function consumeSafeNameSuffix(
   let pos = startPos;
   let consumed = startConsumed;
 
-  while (
-    ctx.tokens[pos]?.type === "TEXT" &&
-    ctx.tokens[pos]?.value === "-" &&
-    isAttributeNameToken(ctx.tokens[pos + 1])
-  ) {
-    name += "-";
+  while (isAttributeNameSeparator(ctx.tokens[pos]) && isAttributeWordToken(ctx.tokens[pos + 1])) {
+    name += ctx.tokens[pos]?.value ?? "";
     pos++;
     consumed++;
     name += ctx.tokens[pos]?.value ?? "";
@@ -65,20 +67,20 @@ function consumeRawNameSuffix(
   let pos = startPos;
   let consumed = startConsumed;
 
-  while (isHyphenToken(ctx.tokens[pos])) {
-    while (isHyphenToken(ctx.tokens[pos])) {
-      if (hyphenatedNames) {
+  while (isAttributeNameSeparator(ctx.tokens[pos])) {
+    while (isAttributeNameSeparator(ctx.tokens[pos])) {
+      if (hyphenatedNames || ctx.tokens[pos]?.type === "UNDERSCORE") {
         name += ctx.tokens[pos]?.value ?? "-";
       }
       pos++;
       consumed++;
     }
 
-    if (!isAttributeNameToken(ctx.tokens[pos])) {
+    if (!isAttributeWordToken(ctx.tokens[pos])) {
       break;
     }
 
-    if (hyphenatedNames) {
+    if (hyphenatedNames || name.endsWith("_")) {
       name += ctx.tokens[pos]?.value ?? "";
     }
     pos++;
@@ -88,6 +90,14 @@ function consumeRawNameSuffix(
   return { name, pos, consumed };
 }
 
-function isHyphenToken(token: Token | undefined): boolean {
-  return (token?.type === "TEXT" && token.value === "-") || token?.type === "STRIKE_MARKER";
+function isAttributeWordToken(token: Token | undefined): boolean {
+  return token?.type === "TEXT" || token?.type === "IDENTIFIER";
+}
+
+function isAttributeNameSeparator(token: Token | undefined): boolean {
+  return (
+    (token?.type === "TEXT" && token.value === "-") ||
+    token?.type === "STRIKE_MARKER" ||
+    token?.type === "UNDERSCORE"
+  );
 }

@@ -26,6 +26,7 @@
       "data": {
         "module": "list-pages",
         "category": ".",
+        "created-by": "-=",
         "parent": "=",
         "rating": ">3",
         "votes": ">=10",
@@ -39,8 +40,7 @@
           "category": ".",
           "pagetype": "hidden",
           "parent": "=",
-          "created": "true",
-          "by": "-=",
+          "created_by": "-=",
           "rating": ">3",
           "votes": ">=10"
         }

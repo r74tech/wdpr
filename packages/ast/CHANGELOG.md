@@ -1,3 +1,7 @@
+## 3.0.1 (2026-08-11)
+
+This was a version bump only for @wdprlib/ast to align it with other projects, there were no code changes.
+
 # 3.0.0 (2026-08-10)
 
 ### 🩹 Fixes

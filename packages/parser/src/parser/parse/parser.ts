@@ -1,4 +1,4 @@
-import type { Element, ParseResult } from "@wdprlib/ast";
+import type { Element, PageRef, ParseResult } from "@wdprlib/ast";
 import type { Token } from "../../lexer";
 import type { ParseContext } from "../rules";
 import type { ParserOptions } from "./options";
@@ -33,26 +33,35 @@ export class Parser {
    * @since 2.0.0
    */
   parse(): ParseResult {
-    const children: Element[] = [];
+    return parseContext(this.ctx);
+  }
+}
 
-    while (!this.isAtEnd()) {
-      const blocks = this.parseBlock();
-      children.push(...blocks);
-    }
+export function parseTokensWithIncludeDeferral(
+  tokens: Token[],
+  options: ParserOptions,
+  deferInclude: (location: PageRef) => boolean,
+): ParseResult {
+  return parseContext(createParseContext(tokens, options, deferInclude));
+}
 
-    return finalizeParseResult(this.ctx, children);
+function parseContext(ctx: ParseContext): ParseResult {
+  const children: Element[] = [];
+
+  while (!isAtEnd(ctx)) {
+    children.push(...parseBlock(ctx));
   }
 
-  private isAtEnd(): boolean {
-    return this.ctx.pos >= this.ctx.tokens.length || this.currentToken().type === "EOF";
-  }
+  return finalizeParseResult(ctx, children);
+}
 
-  private currentToken(): Token {
-    return this.ctx.tokens[this.ctx.pos] ?? this.eofToken();
-  }
+function isAtEnd(ctx: ParseContext): boolean {
+  return ctx.pos >= ctx.tokens.length || currentToken(ctx).type === "EOF";
+}
 
-  private eofToken(): Token {
-    return {
+function currentToken(ctx: ParseContext): Token {
+  return (
+    ctx.tokens[ctx.pos] ?? {
       type: "EOF",
       value: "",
       position: {
@@ -60,20 +69,20 @@ export class Parser {
         end: { line: 0, column: 0, offset: 0 },
       },
       lineStart: false,
-    };
-  }
-
-  private skipWhitespace(): void {
-    while (this.currentToken().type === "WHITESPACE") {
-      this.ctx.pos++;
     }
-  }
+  );
+}
 
-  private parseBlock(): Element[] {
-    return parseNextBlock(
-      this.ctx,
-      () => this.skipWhitespace(),
-      () => this.isAtEnd(),
-    );
+function skipWhitespace(ctx: ParseContext): void {
+  while (currentToken(ctx).type === "WHITESPACE") {
+    ctx.pos++;
   }
+}
+
+function parseBlock(ctx: ParseContext): Element[] {
+  return parseNextBlock(
+    ctx,
+    () => skipWhitespace(ctx),
+    () => isAtEnd(ctx),
+  );
 }

@@ -1,9 +1,13 @@
-import { DEFAULT_SETTINGS } from "@wdprlib/ast";
+import { DEFAULT_SETTINGS, type PageRef } from "@wdprlib/ast";
 import type { Token } from "../../lexer";
 import { blockFallbackRule, blockRules, inlineRules, type ParseContext } from "../rules";
 import type { ParserOptions } from "./options";
 
-export function createParseContext(tokens: Token[], options: ParserOptions = {}): ParseContext {
+export function createParseContext(
+  tokens: Token[],
+  options: ParserOptions = {},
+  deferInclude?: (location: PageRef) => boolean,
+): ParseContext {
   return {
     tokens,
     pos: 0,
@@ -11,6 +15,7 @@ export function createParseContext(tokens: Token[], options: ParserOptions = {})
     trackPositions: options.trackPositions ?? true,
     settings: options.settings ?? DEFAULT_SETTINGS,
     appendImplicitFootnoteBlock: options.appendImplicitFootnoteBlock ?? true,
+    deferInclude,
     footnotes: [],
     tocEntries: [],
     codeBlocks: [],

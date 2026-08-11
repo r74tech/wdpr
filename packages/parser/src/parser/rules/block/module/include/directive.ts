@@ -13,11 +13,10 @@ export function parseIncludeDirective(inner: string): {
   location: PageRef;
   assignments: IncludeAssignment[];
 } {
-  const normalized = inner.includes("\n") ? inner.replaceAll("\n", " ") : inner;
-  const parts = normalized.split("|");
+  const parts = inner.split("|");
   const firstSegment = parts[0]!.trim();
 
-  const spaceIndex = firstSegment.indexOf(" ");
+  const spaceIndex = firstSegment.search(/\s/);
   let target: string;
   const varSegments: string[] = [];
 

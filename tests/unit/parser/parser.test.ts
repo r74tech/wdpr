@@ -58,6 +58,32 @@ describe("Parser", () => {
     });
   });
 
+  describe("module closing tag", () => {
+    it("keeps an incomplete closing directive inside the module body", () => {
+      const doc = parseAst(
+        [
+          '[[module ListUsers users="."]]',
+          "before",
+          "[[/module{$g}]|g=]]",
+          "after",
+          "[[/module]]",
+        ].join("\n"),
+      );
+
+      expect(getContentElements(doc)).toEqual([
+        {
+          element: "module",
+          data: {
+            module: "list-users",
+            users: ".",
+            body: "before\n[[/module{$g}]|g=]]\nafter",
+            attributes: {},
+          },
+        },
+      ]);
+    });
+  });
+
   describe("paragraph separation", () => {
     it("blank line creates separate paragraphs", () => {
       const doc = parseAst("First\n\nSecond");

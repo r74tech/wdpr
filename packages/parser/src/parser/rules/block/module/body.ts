@@ -79,10 +79,9 @@ function parseModuleClose(
   let pos = startPos + 1 + closeNameResult.consumed;
   let consumed = 1 + closeNameResult.consumed;
 
-  if (ctx.tokens[pos]?.type === "BLOCK_CLOSE") {
-    pos++;
-    consumed++;
-  }
+  if (ctx.tokens[pos]?.type !== "BLOCK_CLOSE") return null;
+  pos++;
+  consumed++;
   if (ctx.tokens[pos]?.type === "NEWLINE") {
     pos++;
     consumed++;

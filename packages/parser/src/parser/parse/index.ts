@@ -1,6 +1,6 @@
-import type { ParseResult } from "@wdprlib/ast";
+import type { PageRef, ParseResult } from "@wdprlib/ast";
 import { tokenize } from "../../lexer";
-import { Parser } from "./parser";
+import { Parser, parseTokensWithIncludeDeferral } from "./parser";
 import { parseLargePlainTextDocument, parsePlainNonAsciiDocument } from "./plain-non-ascii";
 import { prepareSourceForParse } from "./source";
 import type { ParserOptions } from "./options";
@@ -23,6 +23,22 @@ export { Parser } from "./parser";
  * @since 2.0.0
  */
 export function parse(source: string, options?: ParserOptions): ParseResult {
+  return parseSource(source, options);
+}
+
+export function parseWithIncludeDeferral(
+  source: string,
+  options: ParserOptions,
+  deferInclude: (location: PageRef) => boolean,
+): ParseResult {
+  return parseSource(source, options, deferInclude);
+}
+
+function parseSource(
+  source: string,
+  options?: ParserOptions,
+  deferInclude?: (location: PageRef) => boolean,
+): ParseResult {
   const plainResult = parsePlainNonAsciiDocument(source);
   if (plainResult) {
     return plainResult;
@@ -38,5 +54,7 @@ export function parse(source: string, options?: ParserOptions): ParseResult {
     trackPositions: options?.trackPositions,
     compactTextRuns: preprocessed.length >= COMPACT_TEXT_RUN_SOURCE_LENGTH,
   });
-  return new Parser(tokens, options).parse();
+  return deferInclude
+    ? parseTokensWithIncludeDeferral(tokens, options ?? {}, deferInclude)
+    : new Parser(tokens, options).parse();
 }

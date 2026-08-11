@@ -1,8 +1,15 @@
 import { DEFAULT_SETTINGS, type SyntaxTree } from "@wdprlib/ast";
 import { processWikitext } from "@wdprlib/parser";
+import type { ParserOptions } from "@wdprlib/parser";
 import { renderWikitext, type RenderOptions } from "@wdprlib/render";
 
 export async function compilePublicPipelineContracts(): Promise<void> {
+  const parserOptions: ParserOptions = {
+    // @ts-expect-error include deferral is an internal pipeline concern
+    deferInclude: () => true,
+  };
+  void parserOptions;
+
   const document = await processWikitext("source", {
     page: {
       fullName: "category:page",

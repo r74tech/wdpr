@@ -3,6 +3,7 @@ import type {
   CodeBlockData,
   Diagnostic,
   Element,
+  PageRef,
   TocEntry,
   Version,
   WikitextSettings,
@@ -26,6 +27,7 @@ export interface ParseContext {
   trackPositions: boolean;
   settings: WikitextSettings;
   appendImplicitFootnoteBlock: boolean;
+  deferInclude?: (location: PageRef) => boolean;
   footnotes: Element[][];
   tocEntries: TocEntry[];
   codeBlocks: CodeBlockData[];

@@ -4,13 +4,10 @@ import {
   type PageRef,
   type WikitextPageContext,
 } from "@wdprlib/ast";
-import { parse } from "../parser";
+import { parseWithIncludeDeferral } from "../parser/parse";
 import { extractDataRequirements } from "../parser/rules/block/module/listpages/extract";
-import {
-  resolveIncludesAsyncWithTrace,
-  type AsyncIncludeFetcher,
-  type IncludeDependency,
-} from "../parser/rules/block/module/include";
+import type { AsyncIncludeFetcher, IncludeDependency } from "../parser/rules/block/module/include";
+import { resolveIncludesAsyncWithTraceSelective } from "../parser/rules/block/module/include/resolve";
 import type { DataProvider } from "../parser/rules/block/module/types-common";
 import { resolveModulesWithAsyncParse } from "../parser/rules/block/module/resolution/resolve-async";
 import type {
@@ -42,37 +39,48 @@ export async function processWikitext<TPage extends WikitextPageContext>(
       : undefined,
   );
   const resolveSource = async (input: string): Promise<string> => {
-    if (!fetchInclude) return input;
-    const resolution = await resolveIncludesAsyncWithTrace(input, fetchInclude, {
-      maxIterations: options.includeMaxIterations,
-      settings,
-    });
-    dependencies.push(...resolution.dependencies);
-    if (resolution.reachedMaxIterations) {
-      diagnostics.push(
-        createLimitDiagnostic(
-          "include-resolution-limit",
-          `Include expansion stopped after ${options.includeMaxIterations ?? 10} iterations.`,
-        ),
+    let expanded = input;
+    if (fetchInclude) {
+      const resolution = await resolveIncludesAsyncWithTraceSelective(
+        input,
+        fetchInclude,
+        (reference) => isCurrentPageInclude(reference.location, options.page),
+        {
+          maxIterations: options.includeMaxIterations,
+          settings,
+        },
       );
+      dependencies.push(...resolution.dependencies);
+      if (resolution.reachedMaxIterations) {
+        diagnostics.push(
+          createLimitDiagnostic(
+            "include-resolution-limit",
+            `Include expansion stopped after ${options.includeMaxIterations ?? 10} iterations.`,
+          ),
+        );
+      }
+      expanded = resolution.source;
     }
-    return resolution.source;
+    return expanded;
   };
 
-  const expandedSource = await resolveSource(source);
-  const initial = parse(expandedSource, {
-    settings,
-    pageTags: options.page.tags,
-    appendImplicitFootnoteBlock: false,
-  });
+  const parseSource = async (input: string) => {
+    const expanded = await resolveSource(input);
+    return parseWithIncludeDeferral(
+      expanded,
+      {
+        settings,
+        pageTags: options.page.tags,
+        appendImplicitFootnoteBlock: false,
+      },
+      (location) => isCurrentPageInclude(location, options.page),
+    );
+  };
+
+  const initial = await parseSource(source);
   diagnostics.push(...initial.diagnostics);
   const dataProvider = createModuleDataProvider(options, callbackContext);
-  const parseFragment = async (fragmentSource: string) =>
-    parse(await resolveSource(fragmentSource), {
-      settings,
-      pageTags: options.page.tags,
-      appendImplicitFootnoteBlock: false,
-    });
+  const parseFragment = parseSource;
   let ast = initial.ast;
 
   for (let pass = 0; pass < DEFAULT_MODULE_MAX_PASSES; pass++) {
@@ -109,6 +117,15 @@ export async function processWikitext<TPage extends WikitextPageContext>(
     diagnostics,
     dependencies,
   };
+}
+
+function isCurrentPageInclude(location: PageRef, page: WikitextPageContext): boolean {
+  if (location.site !== null) {
+    if (!page.site || location.site.toLowerCase() !== page.site.toLowerCase()) return false;
+  }
+
+  const target = location.page.toLowerCase();
+  return target === page.fullName.toLowerCase() || target === page.unixName?.toLowerCase();
 }
 
 function hasResolvableRequirements(

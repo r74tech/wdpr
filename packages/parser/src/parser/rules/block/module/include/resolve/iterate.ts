@@ -107,6 +107,7 @@ export async function expandIterativeAsyncWithTrace(
   source: string,
   fetcher: AsyncIncludeFetcher,
   maxIterations: number,
+  shouldDefer?: (reference: IncludeReference) => boolean,
 ): Promise<ResolveIncludesTraceResult> {
   let current = source;
   const replacementCache = new Map<string, Promise<string>>();
@@ -114,7 +115,13 @@ export async function expandIterativeAsyncWithTrace(
   const iterations: ResolveIncludesTraceResult["iterations"] = [];
 
   for (let i = 0; i < maxIterations; i++) {
-    const expanded = await expandOneIterationAsyncWithTrace(current, fetcher, replacementCache, i);
+    const expanded = await expandOneIterationAsyncWithTrace(
+      current,
+      fetcher,
+      replacementCache,
+      i,
+      shouldDefer,
+    );
     if (expanded === null) break;
 
     dependencies.push(...expanded.dependencies);
@@ -133,7 +140,7 @@ export async function expandIterativeAsyncWithTrace(
     dependencies,
     iterations,
     reachedMaxIterations:
-      iterations.length === maxIterations && scanIncludeDirectives(current).length > 0,
+      iterations.length === maxIterations && hasResolvableDirectives(current, shouldDefer),
   };
 }
 
@@ -219,6 +226,7 @@ async function expandOneIterationAsyncWithTrace(
   fetcher: AsyncIncludeFetcher,
   replacementCache: Map<string, Promise<string>>,
   iteration: number,
+  shouldDefer?: (reference: IncludeReference) => boolean,
 ): Promise<{
   source: string;
   references: IncludeReference[];
@@ -230,8 +238,13 @@ async function expandOneIterationAsyncWithTrace(
   if (directives.length === 0) return null;
 
   const references = directives.map(createIncludeReference);
+  const deferred = references.map((reference) => shouldDefer?.(reference) ?? false);
   const replacements = await Promise.all(
-    directives.map(({ inner }) => replaceCachedAsync(inner, fetcher, replacementCache)),
+    directives.map((directive, index) =>
+      deferred[index]
+        ? Promise.resolve(source.slice(directive.start, directive.end))
+        : replaceCachedAsync(directive.inner, fetcher, replacementCache),
+    ),
   );
   const parts: string[] = [];
   let lastPos = 0;
@@ -246,8 +259,19 @@ async function expandOneIterationAsyncWithTrace(
   return {
     source: parts.join(""),
     references,
-    dependencies: references.map((reference) => ({ ...reference, iteration })),
+    dependencies: references
+      .filter((_, index) => !deferred[index])
+      .map((reference) => ({ ...reference, iteration })),
   };
+}
+
+function hasResolvableDirectives(
+  source: string,
+  shouldDefer: ((reference: IncludeReference) => boolean) | undefined,
+): boolean {
+  const directives = scanIncludeDirectives(source);
+  if (!shouldDefer) return directives.length > 0;
+  return directives.some((directive) => !shouldDefer(createIncludeReference(directive)));
 }
 
 function replaceCached(inner: string, fetcher: IncludeFetcher, cache: Map<string, string>): string {

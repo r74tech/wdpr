@@ -1,4 +1,4 @@
-import type { Element } from "@wdprlib/ast";
+import { lineBreak, paragraph, text, type Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../../types";
 import { currentToken } from "../../types";
 import { parseBlockName } from "../utils";
@@ -46,6 +46,7 @@ export const includeRule: BlockRule = {
     }
     pos++;
     consumed++;
+    const directiveEnd = pos;
 
     if (ctx.tokens[pos]?.type === "NEWLINE") {
       pos++;
@@ -56,6 +57,23 @@ export const includeRule: BlockRule = {
       return { success: false };
     }
 
+    const location = parsePageRef(args.target);
+    if (ctx.deferInclude?.(location)) {
+      // Keep Wikidot's parser extent here. Nested block markup in an include
+      // value must delay its closing brackets through variable expansion.
+      const source = ctx.tokens
+        .slice(ctx.pos, directiveEnd)
+        .map((token) => token.value)
+        .join("");
+      const elements: Element[] = [];
+      const lines = source.split("\n");
+      for (let index = 0; index < lines.length; index++) {
+        if (index > 0) elements.push(lineBreak());
+        if (lines[index] !== "") elements.push(text(lines[index]!));
+      }
+      return { success: true, elements: [paragraph(elements)], consumed };
+    }
+
     return {
       success: true,
       elements: [
@@ -64,7 +82,7 @@ export const includeRule: BlockRule = {
           data: {
             "paragraph-safe": false,
             variables: parseVariables(args.argumentTokens),
-            location: parsePageRef(args.target),
+            location,
             elements: [],
           },
         },

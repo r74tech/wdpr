@@ -6,6 +6,9 @@ import {
   type SiteContext,
 } from "@wdprlib/parser";
 import { DEFAULT_SETTINGS, type Element, type WikitextPageContext } from "@wdprlib/ast";
+import { renderWikitext } from "@wdprlib/render";
+import { getAllText } from "../../helpers";
+import { createFixturePageFetcher } from "../module/include/fixture-pages";
 
 const pageContext: WikitextPageContext = {
   fullName: "docs:pipeline",
@@ -382,6 +385,202 @@ describe("processWikitext", () => {
     expect(document.diagnostics.some((item) => item.code === "include-resolution-limit")).toBe(
       true,
     );
+  });
+
+  it("renders a current-page include introduced by an included page as literal source", async () => {
+    const calls: string[] = [];
+    const document = await processWikitext("[[include :www:component:inc-loop-base |l=_]]", {
+      page: {
+        fullName: "component:inc-loop",
+        unixName: "inc-loop",
+        site: "www",
+        tags: [],
+      },
+      dataProvider: {
+        fetchInclude: async ({ page }) => {
+          calls.push(page);
+          if (page === "component:inc-loop-base") {
+            return "[[include :www:component:inc-loop |l=_]]";
+          }
+          return null;
+        },
+      },
+    });
+    const rendered = await renderWikitext(document);
+
+    expect(calls).toEqual(["component:inc-loop-base"]);
+    expect(document.dependencies.map((item) => item.location.page)).toEqual([
+      "component:inc-loop-base",
+    ]);
+    expect(rendered.html).toContain("<p>[[include :www:component:inc-loop |l=_]]</p>");
+    expect(rendered.html).not.toContain("does not exist");
+    expect(document.diagnostics.some((item) => item.code === "include-resolution-limit")).toBe(
+      false,
+    );
+  });
+
+  it("keeps a genuinely missing non-self include as an error block", async () => {
+    const document = await processWikitext("[[include missing-page]]", {
+      page: pageContext,
+      dataProvider: { fetchInclude: async () => null },
+    });
+    const rendered = await renderWikitext(document);
+
+    expect(rendered.html).toContain('Page to be included "missing-page" cannot be found!');
+    expect(rendered.html).not.toContain("[[include missing-page]]");
+  });
+
+  it("matches self includes by fullName or unixName only on the same site", async () => {
+    const selfCases = [
+      "[[include COMPONENT:INC-LOOP]]",
+      "[[include INC-LOOP]]",
+      "[[include :WWW:COMPONENT:INC-LOOP]]",
+    ];
+
+    for (const source of selfCases) {
+      let calls = 0;
+      const document = await processWikitext(source, {
+        page: {
+          fullName: "component:inc-loop",
+          unixName: "inc-loop",
+          site: "www",
+          tags: [],
+        },
+        dataProvider: {
+          fetchInclude: async () => {
+            calls++;
+            return "unexpected";
+          },
+        },
+      });
+
+      expect(calls).toBe(0);
+      expect(getAllText(document.ast.elements)).toContain(source);
+    }
+
+    for (const page of [
+      { fullName: "component:inc-loop", unixName: "inc-loop", site: "www", tags: [] },
+      { fullName: "component:inc-loop", unixName: "inc-loop", tags: [] },
+    ]) {
+      const document = await processWikitext("[[include :other:component:inc-loop]]", {
+        page,
+        dataProvider: { fetchInclude: async () => "external" },
+      });
+      expect(getAllText(document.ast.elements)).toContain("external");
+    }
+  });
+
+  it("literalizes only protected line-start self includes without marker collisions", async () => {
+    const source = [
+      "before",
+      "prefix [[include wdpr-deferred-include-0]]",
+      "prefix [[include component:inc-loop]]",
+      "[[include component:inc-loop |value=one]]",
+      "[[include component:inc-loop |value=two]]",
+      "after",
+    ].join("\n");
+    const document = await processWikitext(source, {
+      page: { fullName: "component:inc-loop", unixName: "inc-loop", tags: [] },
+      dataProvider: { fetchInclude: async () => null },
+    });
+    const rendered = await renderWikitext(document);
+
+    expect(rendered.html).toContain("before");
+    expect(rendered.html).toContain("prefix [[include wdpr-deferred-include-0]]");
+    expect(rendered.html).toContain("prefix [[include component:inc-loop]]");
+    expect(rendered.html).toContain("[[include component:inc-loop |value=one]]");
+    expect(rendered.html).toContain("[[include component:inc-loop |value=two]]");
+    expect(rendered.html).toContain("after");
+    expect(rendered.html).not.toContain("does not exist");
+  });
+
+  it("preserves paragraph boundaries around a deferred self include", async () => {
+    const document = await processWikitext(
+      ["before", "[[include component:inc-loop]]", "after"].join("\n"),
+      {
+        page: { fullName: "component:inc-loop", unixName: "inc-loop", tags: [] },
+        dataProvider: { fetchInclude: async () => null },
+      },
+    );
+
+    const firstThree = document.ast.elements.slice(0, 3);
+    expect(
+      firstThree.map((element) =>
+        element.element === "container" ? element.data.type : element.element,
+      ),
+    ).toEqual(["paragraph", "paragraph", "paragraph"]);
+    expect(getAllText(firstThree)).toContain("before[[include component:inc-loop]]after");
+  });
+
+  it("does not leak deferred include markers into opaque parser regions", async () => {
+    const selfInclude = "[[include component:inc-loop]]";
+    const document = await processWikitext(
+      [
+        "[[code]]",
+        selfInclude,
+        "[[/code]]",
+        `[[html]]${selfInclude}[[/html]]`,
+        `[[footnote]]${selfInclude}[[/footnote]]`,
+      ].join("\n"),
+      {
+        page: { fullName: "component:inc-loop", unixName: "inc-loop", tags: [] },
+        dataProvider: { fetchInclude: async () => null },
+      },
+    );
+
+    expect(document.ast["code-blocks"]?.[0]?.contents).toContain(selfInclude);
+    expect(document.ast["html-blocks"]).toEqual([selfInclude]);
+    expect(getAllText(document.ast.footnotes.flat())).toContain(selfInclude);
+    expect(JSON.stringify(document.ast)).not.toContain("wdpr-deferred-include-");
+  });
+
+  it("keeps finite ListPages and ListUsers inc-loops working in the high-level pipeline", async () => {
+    const fixtureFetcher = createFixturePageFetcher("include-pages");
+    const fetchInclude = async (pageRef: { site: string | null; page: string }) =>
+      fixtureFetcher(pageRef);
+    const commonPage = { fullName: "docs:pipeline", unixName: "pipeline", site: "www", tags: [] };
+
+    const listPages = await processWikitext(
+      [
+        '[[module ListPages range="." limit="1"]]',
+        "[[include :www:loop c=__________|p=:www:view]]",
+        "|name=%%title%%",
+        "|raw=OK]]",
+        "[[/module]]",
+      ].join("\n"),
+      {
+        page: commonPage,
+        dataProvider: {
+          fetchInclude,
+          fetchListPages: async () => ({
+            pages: [pageData("Page")],
+            totalCount: 1,
+            site: siteContext(),
+          }),
+        },
+      },
+    );
+    expect(getAllText(listPages.ast.elements)).toContain("TARGET raw=OK");
+
+    const listUsers = await processWikitext(
+      [
+        '[[module ListUsers users="."]]',
+        "[[include :www:loop c=__________|p=:www:view]]",
+        "|name=%%title%%#%%number%%",
+        "|raw=OK]]",
+        "[[/module]]",
+      ].join("\n"),
+      {
+        page: commonPage,
+        dataProvider: {
+          fetchInclude,
+          fetchListUsers: async () => ({
+            user: { number: -1, title: "staff", name: "staff" },
+          }),
+        },
+      },
+    );
+    expect(getAllText(listUsers.ast.elements)).toContain("TARGET raw=OK");
   });
 });
 

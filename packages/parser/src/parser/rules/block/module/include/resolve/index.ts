@@ -15,6 +15,7 @@ import {
 import type {
   AsyncIncludeFetcher,
   IncludeFetcher,
+  IncludeReference,
   ResolveIncludesOptions,
   ResolveIncludesTraceResult,
 } from "./types";
@@ -111,6 +112,33 @@ export async function resolveIncludesAsyncWithTrace(
   const maxIterations = options?.maxIterations ?? 10;
   const cachedFetcher = createCachedAsyncIncludeFetcher(fetcher, normalizePageKey);
   return expandIterativeAsyncWithTrace(source, cachedFetcher, maxIterations);
+}
+
+/**
+ * Resolve includes while leaving selected directives untouched for the
+ * high-level parser pipeline to render literally.
+ *
+ * This helper is intentionally not exported from the package barrel so the
+ * public low-level resolver contract remains unchanged.
+ */
+export async function resolveIncludesAsyncWithTraceSelective(
+  source: string,
+  fetcher: AsyncIncludeFetcher,
+  shouldDefer: (reference: IncludeReference) => boolean,
+  options?: ResolveIncludesOptions,
+): Promise<ResolveIncludesTraceResult> {
+  if (options?.settings && !options.settings.enablePageSyntax) {
+    return {
+      source,
+      dependencies: [],
+      iterations: [],
+      reachedMaxIterations: false,
+    };
+  }
+
+  const maxIterations = options?.maxIterations ?? 10;
+  const cachedFetcher = createCachedAsyncIncludeFetcher(fetcher, normalizePageKey);
+  return expandIterativeAsyncWithTrace(source, cachedFetcher, maxIterations, shouldDefer);
 }
 
 /**

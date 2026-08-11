@@ -40,6 +40,8 @@ export function scanIncludeDirectives(source: string): IncludeDirectiveMatch[] {
 
     let depth = 0;
     let linkDepth = 0;
+    const nestedQuotes: Array<number | null> = [];
+    const nestedQuoteAllowed: boolean[] = [];
     let i = start;
     let closeEnd = -1;
 
@@ -48,7 +50,37 @@ export function scanIncludeDirectives(source: string): IncludeDirectiveMatch[] {
       const next = source.charCodeAt(i + 1);
       const nextNext = source.charCodeAt(i + 2);
 
-      if (ch === OPEN_BRACKET && next === OPEN_BRACKET && nextNext === OPEN_BRACKET) {
+      if (ch === 10 || ch === 13) {
+        linkDepth = 0;
+        if (depth > 1) {
+          depth = 1;
+          nestedQuotes.length = 0;
+          nestedQuoteAllowed.length = 0;
+        }
+        i++;
+        continue;
+      }
+
+      const nestedQuote = nestedQuotes.at(-1);
+      if (nestedQuote !== undefined && nestedQuote !== null) {
+        if (ch === 92) {
+          i += 2;
+        } else {
+          if (ch === nestedQuote) {
+            nestedQuotes[nestedQuotes.length - 1] = null;
+            nestedQuoteAllowed[nestedQuoteAllowed.length - 1] = false;
+          }
+          i++;
+        }
+      } else if (
+        nestedQuote === null &&
+        nestedQuoteAllowed.at(-1) === true &&
+        (ch === 34 || ch === 39)
+      ) {
+        nestedQuotes[nestedQuotes.length - 1] = ch;
+        nestedQuoteAllowed[nestedQuoteAllowed.length - 1] = false;
+        i++;
+      } else if (ch === OPEN_BRACKET && next === OPEN_BRACKET && nextNext === OPEN_BRACKET) {
         linkDepth++;
         i += 3;
       } else if (
@@ -62,10 +94,28 @@ export function scanIncludeDirectives(source: string): IncludeDirectiveMatch[] {
       } else if (linkDepth > 0) {
         i++;
       } else if (ch === OPEN_BRACKET && next === OPEN_BRACKET) {
+        if (nestedQuoteAllowed.length > 0) {
+          nestedQuoteAllowed[nestedQuoteAllowed.length - 1] = false;
+        }
+        if (depth > 0) {
+          nestedQuotes.push(null);
+          nestedQuoteAllowed.push(false);
+        }
         depth++;
         i += 2;
+      } else if (ch === CLOSE_BRACKET && next !== CLOSE_BRACKET && depth > 1) {
+        // A lone `]` is the first close of an intentionally incomplete nested
+        // token (for example `[[module ...]` passed through an include value).
+        depth--;
+        nestedQuotes.pop();
+        nestedQuoteAllowed.pop();
+        i++;
       } else if (ch === CLOSE_BRACKET && next === CLOSE_BRACKET) {
         const closeStart = i;
+        if (depth > 1) {
+          nestedQuotes.pop();
+          nestedQuoteAllowed.pop();
+        }
         depth--;
         i += 2;
 
@@ -83,6 +133,13 @@ export function scanIncludeDirectives(source: string): IncludeDirectiveMatch[] {
           }
         }
       } else {
+        if (nestedQuoteAllowed.length > 0) {
+          if (ch === 61) {
+            nestedQuoteAllowed[nestedQuoteAllowed.length - 1] = true;
+          } else if (ch !== 32 && ch !== 9) {
+            nestedQuoteAllowed[nestedQuoteAllowed.length - 1] = false;
+          }
+        }
         i++;
       }
     }

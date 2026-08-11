@@ -1,3 +1,13 @@
+## 5.1.0 (2026-08-11)
+
+### 🩹 Fixes
+
+- **parser:** includeの未完了block構文と自己include処理を修正 ([#61](https://github.com/r74tech/wdpr/pull/61))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 # 5.0.0 (2026-08-10)
 
 ### 🚀 Features

@@ -582,6 +582,41 @@ describe("processWikitext", () => {
     );
     expect(getAllText(listUsers.ast.elements)).toContain("TARGET raw=OK");
   });
+
+  it("keeps multiline module source passed through a ListUsers inc-loop", async () => {
+    const fixtureFetcher = createFixturePageFetcher("include-pages");
+    const document = await processWikitext(
+      [
+        '[[module ListUsers users="."]]',
+        "Pages:",
+        "[[include :www:loop c=__________|p=:www:content]]",
+        '|content=[[module ListPages category="*" created_by="%%name%%"{$g}]',
+        "* %%title_linked{$p}% [[size 80%{$g}](%%fullname{$p}%)[[/size{$g}]",
+        "[[/module{$g}]|g=]|p=%]]",
+        "[[/module]]",
+      ].join("\n"),
+      {
+        page: { fullName: "docs:pipeline", unixName: "pipeline", site: "www", tags: [] },
+        dataProvider: {
+          fetchInclude: async (pageRef) => fixtureFetcher(pageRef),
+          fetchListUsers: async () => ({
+            user: { number: 70, title: "Account Name", name: "account-name" },
+          }),
+          fetchListPages: async () => ({
+            pages: [pageData("Generated")],
+            totalCount: 1,
+            site: siteContext(),
+          }),
+        },
+      },
+    );
+    const rendered = await renderWikitext(document);
+
+    expect(rendered.html).toContain("Generated");
+    expect(rendered.html).toContain("(generated)");
+    expect(rendered.html).not.toContain("%%");
+    expect(rendered.html).not.toContain("[[/module]]");
+  });
 });
 
 function countElements(elements: Element[], name: Element["element"]): number {

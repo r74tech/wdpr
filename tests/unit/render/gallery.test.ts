@@ -33,23 +33,23 @@ function item(source: string, extra: Partial<GalleryItem> = {}): GalleryItem {
 
 describe("renderGallery: box", () => {
   it("renders an empty box for unresolved auto content", () => {
-    expect(render(gallery({}))).toBe('<div class="gallery-box"></div>');
+    expect(render(gallery({}))).toBe('<div class="gallery-box" data-size="thumbnail"></div>');
   });
 
   it("adds data-viewer=false only when the viewer is disabled", () => {
     expect(render(gallery({ viewer: false }))).toBe(
-      '<div class="gallery-box" data-viewer="false"></div>',
+      '<div class="gallery-box" data-size="thumbnail" data-viewer="false"></div>',
     );
   });
 });
 
 describe("renderGallery: item URLs", () => {
-  it("renders a current-page file with resized src and original href", () => {
+  it("renders a current-page file at its original URL with a display width", () => {
     expect(render(gallery({ content: { type: "items", items: [item("a.jpg")] } }))).toBe(
-      '<div class="gallery-box">' +
+      '<div class="gallery-box" data-size="thumbnail">' +
         '<figure class="gallery-item thumbnail">' +
         '<a href="/local--files/test-page/a.jpg" class="with-lb">' +
-        '<img src="/local--resized-images/test-page/a.jpg/thumbnail.jpg" alt=""/>' +
+        '<img src="/local--files/test-page/a.jpg" alt="" width="100" loading="lazy" decoding="async"/>' +
         "</a></figure></div>",
     );
   });
@@ -59,7 +59,7 @@ describe("renderGallery: item URLs", () => {
       render(gallery({ size: "small", content: { type: "items", items: [item("other/b.png")] } })),
     ).toContain(
       '<a href="/local--files/other/b.png" class="with-lb">' +
-        '<img src="/local--resized-images/other/b.png/small.jpg" alt=""/>',
+        '<img src="/local--files/other/b.png" alt="" width="240" loading="lazy" decoding="async"/>',
     );
   });
 
@@ -81,7 +81,7 @@ describe("renderGallery: item URLs", () => {
     ).toContain(
       '<figure class="gallery-item original">' +
         '<a href="/local--files/test-page/a.jpg" class="with-lb">' +
-        '<img src="/local--files/test-page/a.jpg" alt=""/>',
+        '<img src="/local--files/test-page/a.jpg" alt="" loading="lazy" decoding="async"/>',
     );
   });
 
@@ -89,10 +89,10 @@ describe("renderGallery: item URLs", () => {
     expect(
       render(gallery({ content: { type: "items", items: [item("http://example.com/x.png")] } })),
     ).toBe(
-      '<div class="gallery-box">' +
+      '<div class="gallery-box" data-size="thumbnail">' +
         '<figure class="gallery-item thumbnail">' +
         '<a href="http://example.com/x.png" class="with-lb">' +
-        '<img src="http://example.com/x.png" alt=""/>' +
+        '<img src="http://example.com/x.png" alt="" width="100" loading="lazy" decoding="async"/>' +
         "</a></figure></div>",
     );
   });
@@ -108,7 +108,7 @@ describe("renderGallery: item URLs", () => {
     };
     expect(renderToHtml(tree)).toContain(
       '<a href="/local--files/a.jpg" class="with-lb">' +
-        '<img src="/local--resized-images/a.jpg/thumbnail.jpg" alt=""/>',
+        '<img src="/local--files/a.jpg" alt="" width="100" loading="lazy" decoding="async"/>',
     );
   });
 });
@@ -190,10 +190,10 @@ describe("renderGallery: alt and escaping", () => {
 describe("renderGallery: skips and safety", () => {
   it("renders flickr: sources like any other current-page filename", () => {
     expect(render(gallery({ content: { type: "items", items: [item("flickr:123")] } }))).toBe(
-      '<div class="gallery-box">' +
+      '<div class="gallery-box" data-size="thumbnail">' +
         '<figure class="gallery-item thumbnail">' +
         '<a href="/local--files/test-page/flickr:123" class="with-lb">' +
-        '<img src="/local--resized-images/test-page/flickr:123/thumbnail.jpg" alt=""/>' +
+        '<img src="/local--files/test-page/flickr:123" alt="" width="100" loading="lazy" decoding="async"/>' +
         "</a></figure></div>",
     );
   });
@@ -201,7 +201,7 @@ describe("renderGallery: skips and safety", () => {
   it("skips items with a dangerous external source", () => {
     expect(
       render(gallery({ content: { type: "items", items: [item("javascript://alert(1)")] } })),
-    ).toBe('<div class="gallery-box"></div>');
+    ).toBe('<div class="gallery-box" data-size="thumbnail"></div>');
   });
 
   it.each([
@@ -218,7 +218,7 @@ describe("renderGallery: skips and safety", () => {
     "safe/\r../admin.png",
   ])("skips unsafe local source %s", (source) => {
     expect(render(gallery({ content: { type: "items", items: [item(source)] } }))).toBe(
-      '<div class="gallery-box"></div>',
+      '<div class="gallery-box" data-size="thumbnail"></div>',
     );
   });
 
@@ -233,7 +233,7 @@ describe("renderGallery: skips and safety", () => {
     };
 
     expect(renderToHtml(tree, { page: { pageName: "../admin" } })).toBe(
-      '<div class="gallery-box"></div>',
+      '<div class="gallery-box" data-size="thumbnail"></div>',
     );
   });
 
@@ -271,10 +271,10 @@ describe("renderGallery: skips and safety", () => {
       { settings: createSettings("forum-post") },
     );
     expect(html).toBe(
-      '<div class="gallery-box">' +
+      '<div class="gallery-box" data-size="thumbnail">' +
         '<figure class="gallery-item thumbnail">' +
         '<a href="http://example.com/x.png" class="with-lb">' +
-        '<img src="http://example.com/x.png" alt=""/>' +
+        '<img src="http://example.com/x.png" alt="" width="100" loading="lazy" decoding="async"/>' +
         "</a></figure></div>",
     );
   });
@@ -287,21 +287,21 @@ describe("renderGallery: skips and safety", () => {
       { settings: createSettings("forum-post") },
     );
 
-    expect(html).toBe('<div class="gallery-box"></div>');
+    expect(html).toBe('<div class="gallery-box" data-size="thumbnail"></div>');
   });
 });
 
 describe("renderGallery: auto content from page files", () => {
   it("renders pre-filled files like link-less items", () => {
     expect(render(gallery({ content: { type: "auto", files: ["a.jpg", "b.jpg"] } }))).toBe(
-      '<div class="gallery-box">' +
+      '<div class="gallery-box" data-size="thumbnail">' +
         '<figure class="gallery-item thumbnail">' +
         '<a href="/local--files/test-page/a.jpg" class="with-lb">' +
-        '<img src="/local--resized-images/test-page/a.jpg/thumbnail.jpg" alt=""/>' +
+        '<img src="/local--files/test-page/a.jpg" alt="" width="100" loading="lazy" decoding="async"/>' +
         "</a></figure>" +
         '<figure class="gallery-item thumbnail">' +
         '<a href="/local--files/test-page/b.jpg" class="with-lb">' +
-        '<img src="/local--resized-images/test-page/b.jpg/thumbnail.jpg" alt=""/>' +
+        '<img src="/local--files/test-page/b.jpg" alt="" width="100" loading="lazy" decoding="async"/>' +
         "</a></figure></div>",
     );
   });
@@ -332,7 +332,7 @@ describe("renderGallery: auto content from page files", () => {
       ],
     };
     const html = renderToHtml(tree, { page: { pageName: "p", files } });
-    const boxes = html.split('<div class="gallery-box">').slice(1);
+    const boxes = html.split('<div class="gallery-box" data-size="thumbnail">').slice(1);
     expect(boxes[0]!.indexOf("a.png")).toBeLessThan(boxes[0]!.indexOf("b.png"));
     expect(boxes[1]!.indexOf("b.png")).toBeLessThan(boxes[1]!.indexOf("a.png"));
   });
@@ -344,7 +344,7 @@ describe("renderGallery: auto content from page files", () => {
   });
 
   it("renders an empty gallery box when the attachment list is unknown", () => {
-    expect(render(gallery({}))).toBe('<div class="gallery-box"></div>');
+    expect(render(gallery({}))).toBe('<div class="gallery-box" data-size="thumbnail"></div>');
   });
 });
 

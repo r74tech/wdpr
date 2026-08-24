@@ -27,7 +27,7 @@ const pageContext: PageContext = {
   domain: "mysite.example.com",
   pageExists: (name) => checkPageExists(name),
   // Image attachments of the page, shown by the content-less [[gallery]]
-  // form (image/* with resized variants; createdAt enables order="created_at")
+  // form (createdAt enables order="created_at")
   files: [{ name: "photo.jpg", createdAt: 1700000000 }],
 };
 
@@ -40,6 +40,10 @@ const html = renderToHtml(ast, {
   },
 });
 ```
+
+Image `size` presets are emitted as display widths while keeping the original image URL. Gallery
+items use the same display-size contract; initialize `@wdprlib/runtime` for the responsive layout
+and lightbox behavior.
 
 For an asynchronous application pipeline, parse first and render second. `@wdprlib/render`
 does not import or depend on `@wdprlib/parser`:

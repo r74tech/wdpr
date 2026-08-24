@@ -4,8 +4,10 @@
  *
  * Images can be sourced from URLs, page-attached files, or cross-site
  * files. The renderer resolves the source to a URL, sanitizes all
- * attributes, optionally wraps the image in a link (`link` attribute),
- * and optionally wraps everything in an alignment container div.
+ * attributes, converts Wikidot `size` presets to display widths, optionally
+ * wraps the image in a link (`link` attribute), and optionally wraps
+ * everything in an alignment container div. The resolved source URL is not
+ * replaced with a generated resize variant.
  *
  * @module
  */

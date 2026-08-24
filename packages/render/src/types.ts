@@ -32,10 +32,10 @@ export interface PageContext {
   /**
    * Image attachments of the current page, used by the content-less
    * `[[gallery]]` form. Provide attachments whose mimetype is `image/*`
-   * and that have resized variants (matching what Wikidot's gallery
-   * shows); order does not matter — each gallery sorts by its own
-   * `order` attribute. When omitted, auto galleries render as an empty
-   * gallery box; an empty array renders the Wikidot "no images" error.
+   * when the upstream attachment API includes other file types; order does
+   * not matter — each gallery sorts by its own `order` attribute. When
+   * omitted, auto galleries render as an empty gallery box; an empty array
+   * renders the Wikidot "no images" error.
    */
   files?: PageFileData[];
 }

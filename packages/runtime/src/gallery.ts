@@ -13,8 +13,9 @@
  * - Esc (native dialog cancel), the close button, or a backdrop click
  *   close the dialog; focus returns to the anchor that opened it
  *
- * Environments without `HTMLDialogElement.showModal` get no listeners at
- * all — clicks fall through to normal link navigation.
+ * The stylesheet also provides the responsive gallery layout. Environments
+ * without `HTMLDialogElement.showModal` still receive that layout, while
+ * clicks fall through to normal link navigation.
  *
  * A small stylesheet is injected once per document and reference-counted
  * across `initGallery()` instances; consumers can override the
@@ -32,6 +33,19 @@ import { isElement } from "./utils/dom";
 const STYLE_ID = "wdpr-gallery-lightbox-style";
 
 const STYLE_TEXT = [
+  ".gallery-box{--wdpr-gallery-min:6.25rem;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--wdpr-gallery-min)),1fr));gap:0.75rem;width:100%;clear:both}",
+  '.gallery-box[data-size="square"]{--wdpr-gallery-min:4.6875rem}',
+  '.gallery-box[data-size="thumbnail"]{--wdpr-gallery-min:6.25rem}',
+  '.gallery-box[data-size="small"]{--wdpr-gallery-min:10rem}',
+  '.gallery-box[data-size="medium"]{--wdpr-gallery-min:12rem}',
+  '.gallery-box[data-size="original"]{--wdpr-gallery-min:12rem}',
+  ".gallery-box>.gallery-item{float:none;width:auto;height:auto;min-width:0;margin:0;border:0}",
+  ".gallery-box>.gallery-item>a{display:flex;align-items:center;justify-content:center;width:100%;height:100%}",
+  ".gallery-box>.gallery-item img{display:block;width:auto;max-width:100%;height:auto;object-fit:contain}",
+  '.gallery-box[data-size="square"]>.gallery-item img{max-width:75px;max-height:75px}',
+  '.gallery-box[data-size="thumbnail"]>.gallery-item img{max-width:100px;max-height:100px}',
+  '.gallery-box[data-size="small"]>.gallery-item img{max-width:240px;max-height:240px}',
+  '.gallery-box[data-size="medium"]>.gallery-item img{max-width:500px;max-height:500px}',
   "dialog.wdpr-lightbox{border:0;padding:0;background:transparent;overflow:visible}",
   "dialog.wdpr-lightbox::backdrop{background:rgba(0,0,0,0.85)}",
   ".wdpr-lightbox-body{display:flex;align-items:center;gap:0.5rem}",
@@ -146,11 +160,10 @@ function buildLightbox(doc: Document): LightboxParts {
  */
 export function initGallery(root: HTMLElement): ModuleCleanup {
   const doc = root.ownerDocument;
-  if (!supportsDialog(doc)) {
-    return { destroy() {} };
-  }
-
   acquireStyles(doc);
+  if (!supportsDialog(doc)) {
+    return { destroy: () => releaseStyles(doc) };
+  }
 
   let parts: LightboxParts | null = null;
   let anchors: HTMLAnchorElement[] = [];

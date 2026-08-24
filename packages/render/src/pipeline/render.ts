@@ -1,6 +1,7 @@
 import type { WikitextPageContext } from "@wdprlib/ast";
-import { renderToHtml } from "../render";
+import { RenderContext } from "../context";
 import { renderToHtmlWithStyles } from "../render";
+import { renderElements } from "../render";
 import type { PageContext, RenderOptions } from "../types";
 import type {
   RenderableWikitextDocument,
@@ -19,23 +20,23 @@ export async function renderWikitext<
   const htmlBlocks: RenderedHtmlBlock[] = [];
   const pages: string[] = [];
   const seenPages = new Set<string>();
-  const page = createPageContext(document.page, (target) => {
+  const collectionPage = createPageContext(document.page, (target) => {
     if (!seenPages.has(target)) {
       seenPages.add(target);
       pages.push(target);
     }
     return true;
   });
-  const prepassOptions = createRenderOptions(document, options, page, {
+  const collectionOptions = createRenderOptions(document, options, collectionPage, {
     htmlBlockUrl: (index, content) => {
       htmlBlocks.push({ index, content });
       return "about:blank";
     },
   });
-
-  // The discarded pass uses only inert collection callbacks. External user,
-  // page-existence and HTML URL resolvers are invoked after collection.
-  renderToHtml(document.ast, prepassOptions);
+  const collectionContext = new RenderContext(document.ast, collectionOptions, {
+    discardOutput: true,
+  });
+  renderElements(collectionContext, document.ast.elements);
 
   const existingPages =
     options.resolvers?.resolvePageExistence && pages.length > 0

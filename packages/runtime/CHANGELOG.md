@@ -1,3 +1,13 @@
+## 1.2.1 (2026-08-24)
+
+### 🩹 Fixes
+
+- 画像サイズとギャラリー表示を修正 ([#64](https://github.com/r74tech/wdpr/pull/64))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 1.2.0 (2026-08-10)
 
 ### 🚀 Features

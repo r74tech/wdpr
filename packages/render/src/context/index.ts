@@ -49,7 +49,7 @@ import {
  */
 export class RenderContext {
   /** Accumulated HTML fragments; joined by {@link getOutput}. */
-  private output = new RenderOutputBuffer();
+  private output: RenderOutputBuffer;
   /**
    * When true, style elements in the AST are rendered rather than
    * silently skipped. Set while rendering children of unresolved
@@ -90,8 +90,13 @@ export class RenderContext {
   constructor(
     tree: SyntaxTree,
     options: RenderOptions = {},
-    execution: { collectedStyles?: string[]; emitStyleTags?: boolean } = {},
+    execution: {
+      collectedStyles?: string[];
+      emitStyleTags?: boolean;
+      discardOutput?: boolean;
+    } = {},
   ) {
+    this.output = new RenderOutputBuffer(execution.discardOutput);
     this.settings = options.settings ?? DEFAULT_SETTINGS;
     this.counters = new RenderCounters(this.settings.useTrueIds);
     this.options = options;

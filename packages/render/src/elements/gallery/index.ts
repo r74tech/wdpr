@@ -7,7 +7,7 @@
  * legacy table wrapper is replaced with a plain `<figure>` per item.
  *
  * ```html
- * <div class="gallery-box">
+ * <div class="gallery-box" data-size="thumbnail">
  *   <figure class="gallery-item thumbnail">
  *     <a href="/local--files/page/a.jpg" class="with-lb"><img src="..." alt=""/></a>
  *   </figure>
@@ -28,6 +28,7 @@ import type { GalleryData, GalleryItem, GallerySize } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
 import { joinSafeLocalPath, normalizeSafeLocalPath } from "../../context/local-path";
 import { escapeAttr, isDangerousUrl } from "../../escape";
+import { getImageSizeWidth } from "../image-size";
 import { sortGalleryFiles } from "./sort";
 
 export { sortGalleryFiles } from "./sort";
@@ -47,7 +48,7 @@ export function renderGallery(ctx: RenderContext, data: GalleryData): void {
   }
 
   const viewerAttr = data.viewer ? "" : ' data-viewer="false"';
-  ctx.push(`<div class="gallery-box"${viewerAttr}>`);
+  ctx.push(`<div class="gallery-box" data-size="${escapeAttr(data.size)}"${viewerAttr}>`);
   for (const item of items) {
     renderGalleryItem(ctx, item, data.size);
   }
@@ -82,7 +83,7 @@ function collectGalleryItems(ctx: RenderContext, data: GalleryData): GalleryItem
 }
 
 function renderGalleryItem(ctx: RenderContext, item: GalleryItem, size: GallerySize): void {
-  const urls = resolveItemUrls(ctx, item.source, size);
+  const urls = resolveItemUrls(ctx, item.source);
   if (!urls) return;
 
   let href: string | null = null;
@@ -106,7 +107,11 @@ function renderGalleryItem(ctx: RenderContext, item: GalleryItem, size: GalleryS
 
   ctx.push(`<figure class="gallery-item ${size}">`);
   ctx.push(`<a ${anchorAttrs.join(" ")}>`);
-  ctx.push(`<img src="${escapeAttr(urls.src)}" alt="${escapeAttr(item.alt ?? "")}"/>`);
+  const imageAttrs = [`src="${escapeAttr(urls.src)}"`, `alt="${escapeAttr(item.alt ?? "")}"`];
+  const presetWidth = getImageSizeWidth(size);
+  if (presetWidth !== null) imageAttrs.push(`width="${presetWidth}"`);
+  imageAttrs.push('loading="lazy"', 'decoding="async"');
+  ctx.push(`<img ${imageAttrs.join(" ")}/>`);
   ctx.push("</a></figure>");
 }
 
@@ -123,7 +128,7 @@ function resolveGalleryLink(link: string): string {
 }
 
 interface GalleryItemUrls {
-  /** The `<img src>` (size variant for local files) */
+  /** The original image URL used by `<img src>`. */
   src: string;
   /** URL of the full image (link target when the item has no explicit link) */
   imageHref: string;
@@ -137,11 +142,7 @@ interface GalleryItemUrls {
  * Returns null when the item cannot be rendered (dangerous external URL,
  * or local paths disabled by settings).
  */
-function resolveItemUrls(
-  ctx: RenderContext,
-  source: string,
-  size: GallerySize,
-): GalleryItemUrls | null {
+function resolveItemUrls(ctx: RenderContext, source: string): GalleryItemUrls | null {
   if (ABSOLUTE_URL_WITH_AUTHORITY.test(source)) {
     if (isDangerousUrl(source)) return null;
     return { src: source, imageHref: source };
@@ -159,6 +160,5 @@ function resolveItemUrls(
   if (path === null) return null;
 
   const imageHref = `/local--files/${path}`;
-  const src = size === "original" ? imageHref : `/local--resized-images/${path}/${size}.jpg`;
-  return { src, imageHref };
+  return { src: imageHref, imageHref };
 }

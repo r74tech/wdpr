@@ -7,7 +7,7 @@ const STYLE_ID = "wdpr-gallery-lightbox-style";
 function galleryHtml(options: { viewer?: boolean } = {}): string {
   const viewerAttr = options.viewer === false ? ' data-viewer="false"' : "";
   return `
-    <div class="gallery-box"${viewerAttr}>
+    <div class="gallery-box" data-size="thumbnail"${viewerAttr}>
       <figure class="gallery-item thumbnail">
         <a href="/local--files/p/a.jpg" class="with-lb"><img src="/r/a.jpg" alt="First"/></a>
       </figure>
@@ -113,7 +113,7 @@ describe("gallery lightbox", () => {
 
   test("hides prev/next for a single-image gallery", () => {
     root.innerHTML = `
-      <div class="gallery-box">
+      <div class="gallery-box" data-size="thumbnail">
         <figure class="gallery-item thumbnail">
           <a href="/local--files/p/only.jpg" class="with-lb"><img src="/r/only.jpg" alt=""/></a>
         </figure>
@@ -147,6 +147,13 @@ describe("gallery lightbox", () => {
     const b = initGallery(root);
 
     expect(document.querySelectorAll(`#${STYLE_ID}`).length).toBe(1);
+    expect(document.getElementById(STYLE_ID)!.textContent).toContain(
+      '.gallery-box[data-size="medium"]',
+    );
+    expect(document.getElementById(STYLE_ID)!.textContent).toContain(".gallery-box>.gallery-item");
+    expect(document.getElementById(STYLE_ID)!.textContent).toContain("width:auto;max-width:100%");
+    expect(document.getElementById(STYLE_ID)!.textContent).toContain("height:auto");
+    expect(document.getElementById(STYLE_ID)!.textContent).toContain("max-height:500px");
 
     a.destroy();
     expect(document.getElementById(STYLE_ID)).not.toBeNull();

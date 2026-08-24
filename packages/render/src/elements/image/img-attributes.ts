@@ -1,5 +1,6 @@
 import type { ImageSource } from "@wdprlib/ast";
 import { escapeAttr, sanitizeAttributes } from "../../escape";
+import { getImageSizeWidth } from "../image-size";
 import { getFilenameFromSource } from "./source";
 
 export function getImageAttributes(
@@ -8,9 +9,14 @@ export function getImageAttributes(
   attributes: Record<string, string>,
 ): string[] {
   const safeAttrs = sanitizeAttributes(attributes);
+  const { size, ...passedAttrs } = safeAttrs;
   const imgAttrs: string[] = [`src="${escapeAttr(src)}"`];
 
-  appendPassedImageAttributes(imgAttrs, safeAttrs);
+  appendPassedImageAttributes(imgAttrs, passedAttrs);
+  const presetWidth = getImageSizeWidth(size);
+  if (passedAttrs.width === undefined && presetWidth !== null) {
+    imgAttrs.push(`width="${presetWidth}"`);
+  }
   imgAttrs.push(`alt="${escapeAttr(safeAttrs.alt ?? getFilenameFromSource(source))}"`);
   imgAttrs.push(`class="${escapeAttr(safeAttrs.class ?? "image")}"`);
 

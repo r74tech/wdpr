@@ -661,7 +661,8 @@ export interface ImageData {
 /**
  * Image size keyword accepted by `[[gallery]]`.
  * Invalid or missing values fall back to `"thumbnail"` at parse time,
- * matching the Wikidot renderer.
+ * matching the Wikidot renderer. Renderers use the keyword as a display
+ * constraint; it does not imply creation of a resized image asset.
  *
  * @group Element Data
  */

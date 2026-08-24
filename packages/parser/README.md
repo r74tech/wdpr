@@ -46,7 +46,7 @@ The parser and renderer remain separate packages and both depend only on the sha
 - Wikidot markup parsing (bold, italic, links, images, tables, etc.)
 - Include resolution (`[[include page]]`)
 - Module support (ListPages, ListUsers, TagCloud, IfTags, etc.)
-- `[[gallery]]` (auto-collection uses the page's attachments passed to `@wdprlib/render` as `page.files`; lightbox via `@wdprlib/runtime`)
+- `[[gallery]]` (auto-collection uses `page.files`; responsive layout and lightbox via `@wdprlib/runtime`)
 
 - Data extraction for server-side rendering
 

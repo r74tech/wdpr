@@ -49,6 +49,7 @@ The existing root import remains available for browser applications.
 - Table of contents navigation
 - Footnote / bibliography interactions
 - Foldable list toggle
+- Responsive gallery layout and lightbox navigation
 - Math rendering (MathML with SVG polyfill via hfmath)
 - Rating module callbacks
 - Date formatting (odate)

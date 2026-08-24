@@ -3,7 +3,7 @@
     {
       "element": "gallery",
       "data": {
-        "size": "thumbnail",
+        "size": "medium",
         "order": "name",
         "viewer": true,
         "content": {

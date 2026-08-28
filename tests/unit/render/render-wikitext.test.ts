@@ -184,6 +184,254 @@ describe("renderWikitext", () => {
     expect(result.html).toContain('src="https://html.example/custom"');
   });
 
+  it("bulk-resolves rendered users before the final render", async () => {
+    const calls: string[][] = [];
+
+    const result = await renderWikitext(
+      {
+        ast: { elements: [user("alice")] },
+        page,
+        settings: DEFAULT_SETTINGS,
+      },
+      {
+        resolvers: {
+          resolveUsers: async (usernames) => {
+            calls.push(usernames);
+            return new Map([
+              ["alice", { name: "Alice", url: "/user/alice", avatarUrl: "/avatar/alice" }],
+            ]);
+          },
+        },
+      },
+    );
+
+    expect(calls).toEqual([["alice"]]);
+    expect(result.html).toContain('<a href="/user/alice">Alice</a>');
+  });
+
+  it("collects raw usernames once from every rendered nested element path", async () => {
+    const calls: string[][] = [];
+
+    await renderWikitext(
+      {
+        ast: nestedUserTree(),
+        page,
+        settings: { ...DEFAULT_SETTINGS, useTrueIds: true },
+      },
+      {
+        resolvers: {
+          resolveUsers: async (usernames) => {
+            calls.push(usernames);
+            return new Map();
+          },
+        },
+      },
+    );
+
+    expect(calls).toEqual([
+      [
+        "list",
+        "table",
+        "definition-key",
+        "definition-value",
+        "tab",
+        "include",
+        "if",
+        "ifexpr",
+        "iftags",
+        "bibliography",
+        "footnote",
+        " Alice ",
+        "alice",
+      ],
+    ]);
+  });
+
+  it("uses batch hits including null before falling back to the synchronous resolver", async () => {
+    const syncCalls: string[] = [];
+
+    const result = await renderWikitext(
+      {
+        ast: {
+          elements: [user("alice", true), user("missing"), user("missing"), user("bob")],
+        },
+        page,
+        settings: DEFAULT_SETTINGS,
+      },
+      {
+        resolvers: {
+          resolveUsers: async () =>
+            new Map([
+              [
+                "alice",
+                {
+                  name: "Batch Alice",
+                  url: "/batch/alice",
+                  avatarUrl: "/avatar/alice",
+                  karmaUrl: "/karma/alice",
+                },
+              ],
+              ["missing", null],
+            ]),
+          user: (username) => {
+            syncCalls.push(username);
+            return { name: "Sync Bob", url: "/sync/bob" };
+          },
+        },
+      },
+    );
+
+    expect(syncCalls).toEqual(["bob"]);
+    expect(result.html).toContain('href="/batch/alice"');
+    expect(result.html).toContain('src="/avatar/alice"');
+    expect(result.html).toContain("Batch Alice");
+    expect(result.html).toContain("missingmissing");
+    expect(result.html).toContain('<a href="/sync/bob">Sync Bob</a>');
+  });
+
+  it("does not call the bulk user resolver without rendered users", async () => {
+    let calls = 0;
+
+    await renderWikitext(
+      {
+        ast: { elements: [{ element: "text", data: "plain" }] },
+        page,
+        settings: DEFAULT_SETTINGS,
+      },
+      {
+        resolvers: {
+          resolveUsers: async () => {
+            calls++;
+            return new Map();
+          },
+        },
+      },
+    );
+
+    expect(calls).toBe(0);
+  });
+
+  it("runs asynchronous resolver stages before the final synchronous fallback", async () => {
+    const events: string[] = [];
+    const ast: SyntaxTree = {
+      elements: [pageLink("existing"), htmlBlock("block"), user("alice")],
+    };
+
+    await renderWikitext(
+      { ast, page, settings: DEFAULT_SETTINGS },
+      {
+        resolvers: {
+          resolvePageExistence: async () => {
+            events.push("page");
+            return new Set(["existing"]);
+          },
+          resolveHtmlBlockUrl: async () => {
+            events.push("html");
+            return "/html/block";
+          },
+          resolveUsers: async () => {
+            events.push("users");
+            return new Map();
+          },
+          user: () => {
+            events.push("user");
+            return null;
+          },
+        },
+      },
+    );
+
+    expect(events).toEqual(["page", "html", "users", "user"]);
+  });
+
+  it("stops before HTML and user resolution when page resolution rejects", async () => {
+    const events: string[] = [];
+    const ast: SyntaxTree = {
+      elements: [pageLink("existing"), htmlBlock("block"), user("alice")],
+    };
+
+    await expect(
+      renderWikitext(
+        { ast, page, settings: DEFAULT_SETTINGS },
+        {
+          resolvers: {
+            resolvePageExistence: async () => {
+              events.push("page");
+              throw new Error("page failed");
+            },
+            resolveHtmlBlockUrl: async () => {
+              events.push("html");
+              return "/html/block";
+            },
+            resolveUsers: async () => {
+              events.push("users");
+              return new Map();
+            },
+            user: () => {
+              events.push("user");
+              return null;
+            },
+          },
+        },
+      ),
+    ).rejects.toThrow("page failed");
+    expect(events).toEqual(["page"]);
+  });
+
+  it("starts sibling HTML resolvers but stops before user resolution when one rejects", async () => {
+    const events: string[] = [];
+    const ast: SyntaxTree = {
+      elements: [htmlBlock("first"), htmlBlock("second"), user("alice")],
+    };
+
+    await expect(
+      renderWikitext(
+        { ast, page, settings: DEFAULT_SETTINGS },
+        {
+          resolvers: {
+            resolveHtmlBlockUrl: async ({ content }) => {
+              events.push(`html:${content}`);
+              if (content === "first") throw new Error("HTML failed");
+              return "/html/second";
+            },
+            resolveUsers: async () => {
+              events.push("users");
+              return new Map();
+            },
+            user: () => {
+              events.push("user");
+              return null;
+            },
+          },
+        },
+      ),
+    ).rejects.toThrow("HTML failed");
+    expect(events).toEqual(["html:first", "html:second"]);
+  });
+
+  it("stops before the synchronous user resolver when bulk user resolution rejects", async () => {
+    const events: string[] = [];
+
+    await expect(
+      renderWikitext(
+        { ast: { elements: [user("alice")] }, page, settings: DEFAULT_SETTINGS },
+        {
+          resolvers: {
+            resolveUsers: async () => {
+              events.push("users");
+              throw new Error("users failed");
+            },
+            user: () => {
+              events.push("user");
+              return null;
+            },
+          },
+        },
+      ),
+    ).rejects.toThrow("users failed");
+    expect(events).toEqual(["users"]);
+  });
+
   it("does not call the page existence resolver without page links", async () => {
     let calls = 0;
     const document = {
@@ -424,8 +672,8 @@ function htmlBlock(contents: string): Element {
   return { element: "html", data: { contents } };
 }
 
-function user(name: string): Element {
-  return { element: "user", data: { name, "show-avatar": false } };
+function user(name: string, showAvatar = false): Element {
+  return { element: "user", data: { name, "show-avatar": showAvatar } };
 }
 
 function dependencyPair(name: string): Element[] {
@@ -509,5 +757,96 @@ function nestedDependencyTree(): SyntaxTree {
       { element: "footnote-block", data: { title: null, hide: false } },
     ],
     footnotes: [dependencyPair("footnote")],
+  };
+}
+
+function nestedUserTree(): SyntaxTree {
+  const hidden = [user("hidden")];
+  return {
+    elements: [
+      {
+        element: "list",
+        data: {
+          type: "bullet",
+          attributes: {},
+          items: [{ "item-type": "elements", attributes: {}, elements: [user("list")] }],
+        },
+      },
+      {
+        element: "table",
+        data: {
+          attributes: {},
+          rows: [
+            {
+              attributes: {},
+              cells: [
+                {
+                  header: false,
+                  "column-span": 1,
+                  align: null,
+                  attributes: {},
+                  elements: [user("table")],
+                },
+              ],
+            },
+          ],
+        },
+      },
+      {
+        element: "definition-list",
+        data: [{ key: [user("definition-key")], value: [user("definition-value")] }],
+      },
+      { element: "tab-view", data: [{ label: "Tab", elements: [user("tab")] }] },
+      {
+        element: "include",
+        data: {
+          "paragraph-safe": false,
+          variables: {},
+          location: { site: null, page: "resolved" },
+          elements: [user("include")],
+        },
+      },
+      {
+        element: "if",
+        data: {
+          condition: "true",
+          // oxlint-disable-next-line unicorn/no-thenable -- `then` is part of the public AST schema
+          then: [user("if")],
+          else: hidden,
+        },
+      },
+      {
+        element: "ifexpr",
+        data: {
+          expression: "1",
+          // oxlint-disable-next-line unicorn/no-thenable -- `then` is part of the public AST schema
+          then: [user("ifexpr")],
+          else: hidden,
+        },
+      },
+      {
+        element: "if-tags",
+        data: { condition: "+component", elements: [user("iftags")] },
+      },
+      {
+        element: "if-tags",
+        data: { condition: "+hidden", elements: hidden },
+      },
+      {
+        element: "bibliography-block",
+        data: {
+          title: null,
+          hide: false,
+          entries: [{ key_string: "nested", key: hidden, value: [user("bibliography")] }],
+        },
+      },
+      { element: "footnote-block", data: { title: null, hide: false } },
+      user("list"),
+      user(" Anonymous "),
+      user(" Alice "),
+      user("alice"),
+      user(" Alice "),
+    ],
+    footnotes: [[user("footnote")]],
   };
 }

@@ -16,7 +16,10 @@
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "LICENSE",
+    "licenses",
+    "THIRD-PARTY-LICENSES.md"
   ],
   "type": "module",
   "sideEffects": false,

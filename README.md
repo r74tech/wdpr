@@ -40,9 +40,14 @@ bun run build
 bun test
 ```
 
-## Acknowledgments
+## Origins
 
-This project is inspired by [ftml](https://github.com/scpwiki/ftml) and the original [Wikidot Text_Wiki](https://github.com/gabrys/wikidot/tree/master/lib/Text_Wiki/Text).
+wdpr began as an independent TypeScript implementation of Wikidot markup. Its syntax behavior, AST compatibility, and parser design were developed with reference to the following projects, and portions of the project were later adapted from them:
+
+- [ftml](https://github.com/scpwiki/ftml), licensed under the [GNU Affero General Public License v3.0 or later](https://github.com/scpwiki/ftml/blob/master/LICENSE.md).
+- [Wikidot Text_Wiki](https://github.com/gabrys/wikidot/tree/master/lib/Text_Wiki/Text), licensed under the [GNU Lesser General Public License v2.1](https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html).
+
+See [THIRD-PARTY-LICENSES.md](THIRD-PARTY-LICENSES.md) for the applicable notices and licenses.
 
 ## License
 

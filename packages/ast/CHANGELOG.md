@@ -1,3 +1,13 @@
+## 4.0.2 (2026-08-30)
+
+### 🩹 Fixes
+
+- 画像サイズとギャラリー表示を修正 ([#64](https://github.com/r74tech/wdpr/pull/64))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 4.0.1 (2026-08-11)
 
 This was a version bump only for @wdprlib/ast to align it with other projects, there were no code changes.

@@ -1,3 +1,9 @@
+## 4.0.7 (2026-08-30)
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/ast to 4.0.2
+
 ## 4.0.6 (2026-08-30)
 
 ### 🚀 Features

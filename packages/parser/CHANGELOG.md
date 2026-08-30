@@ -1,3 +1,17 @@
+## 5.1.6 (2026-08-30)
+
+### 🩹 Fixes
+
+- 画像サイズとギャラリー表示を修正 ([#64](https://github.com/r74tech/wdpr/pull/64))
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/ast to 4.0.2
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 5.1.5 (2026-08-11)
 
 ### 🩹 Fixes

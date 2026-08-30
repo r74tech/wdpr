@@ -60,7 +60,8 @@ export default defineWorkspace([
       clean: true,
       splitting: false,
       external: ["hfmath"],
-      target: "browser",
     },
   },
-]);
+], {
+  target: "browser",
+});

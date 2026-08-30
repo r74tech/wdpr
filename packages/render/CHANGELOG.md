@@ -1,3 +1,13 @@
+## 4.0.6 (2026-08-30)
+
+### 🚀 Features
+
+- **render:** userの非同期一括解決を追加 ([#68](https://github.com/r74tech/wdpr/pull/68))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 4.0.5 (2026-08-24)
 
 ### 🩹 Fixes

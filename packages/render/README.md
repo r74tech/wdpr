@@ -67,6 +67,7 @@ const result = await renderWikitext(document, {
       const hash = await storeHtmlBlock(content);
       return `/local--html/${page.fullName}/${index}/${hash}`;
     },
+    resolveUsers: async (usernames, page) => findUsers(usernames, page),
   },
 });
 

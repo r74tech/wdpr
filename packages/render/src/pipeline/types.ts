@@ -1,5 +1,5 @@
 import type { SyntaxTree, WikitextPageContext, WikitextSettings } from "@wdprlib/ast";
-import type { RenderOptions, RenderResolvers } from "../types";
+import type { RenderOptions, RenderResolvers, ResolvedUser } from "../types";
 
 export interface RenderableWikitextDocument<
   TPage extends WikitextPageContext = WikitextPageContext,
@@ -29,6 +29,12 @@ export type WikitextRenderResult<TDocument extends RenderableWikitextDocument> =
 export interface RenderWikitextResolvers<TPage extends WikitextPageContext> {
   resolvePageExistence?: (pages: string[]) => Promise<ReadonlySet<string>>;
   resolveHtmlBlockUrl?: (input: { index: number; content: string; page: TPage }) => Promise<string>;
+  /** Resolve rendered raw usernames in one asynchronous batch before the final render. */
+  resolveUsers?: (
+    usernames: string[],
+    page: TPage,
+  ) => Promise<ReadonlyMap<string, ResolvedUser | null>>;
+  /** Synchronous fallback for usernames omitted from the `resolveUsers` result Map. */
   user?: RenderResolvers["user"];
 }
 

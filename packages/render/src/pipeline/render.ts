@@ -2,7 +2,7 @@ import type { WikitextPageContext } from "@wdprlib/ast";
 import { RenderContext } from "../context";
 import { renderToHtmlWithStyles } from "../render";
 import { renderElements } from "../render";
-import type { PageContext, RenderOptions } from "../types";
+import type { PageContext, RenderOptions, RenderResolvers, ResolvedUser } from "../types";
 import type {
   RenderableWikitextDocument,
   RenderedHtmlBlock,
@@ -10,16 +10,15 @@ import type {
   WikitextRenderResult,
 } from "./types";
 
-export async function renderWikitext<
-  TPage extends WikitextPageContext,
-  TDocument extends RenderableWikitextDocument<TPage>,
->(
+export async function renderWikitext<TDocument extends RenderableWikitextDocument>(
   document: TDocument,
-  options: RenderWikitextOptions<TPage> = {},
+  options: RenderWikitextOptions<TDocument["page"]> = {},
 ): Promise<WikitextRenderResult<TDocument>> {
   const htmlBlocks: RenderedHtmlBlock[] = [];
   const pages: string[] = [];
   const seenPages = new Set<string>();
+  const usernames: string[] = [];
+  const seenUsers = options.resolvers?.resolveUsers ? new Set<string>() : null;
   const collectionPage = createPageContext(document.page, (target) => {
     if (!seenPages.has(target)) {
       seenPages.add(target);
@@ -32,6 +31,15 @@ export async function renderWikitext<
       htmlBlocks.push({ index, content });
       return "about:blank";
     },
+    user: seenUsers
+      ? (username) => {
+          if (!seenUsers.has(username)) {
+            seenUsers.add(username);
+            usernames.push(username);
+          }
+          return null;
+        }
+      : undefined,
   });
   const collectionContext = new RenderContext(document.ast, collectionOptions, {
     discardOutput: true,
@@ -49,12 +57,16 @@ export async function renderWikitext<
         ),
       )
     : null;
+  const resolvedUsers =
+    options.resolvers?.resolveUsers && usernames.length > 0
+      ? await options.resolvers.resolveUsers(usernames, document.page)
+      : null;
   const finalPage = createPageContext(
     document.page,
     existingPages ? (target) => existingPages.has(target) : undefined,
   );
   const finalOptions = createRenderOptions(document, options, finalPage, {
-    user: options.resolvers?.user,
+    user: createUserResolver(resolvedUsers, options.resolvers?.user),
     htmlBlockUrl: htmlUrls ? (index) => htmlUrls[index] ?? "" : undefined,
   });
   const rendered = renderToHtmlWithStyles(
@@ -69,6 +81,18 @@ export async function renderWikitext<
     styles: rendered.styles,
     htmlBlocks,
   } as WikitextRenderResult<TDocument>;
+}
+
+function createUserResolver(
+  resolvedUsers: ReadonlyMap<string, ResolvedUser | null> | null,
+  fallback: RenderResolvers["user"],
+): RenderResolvers["user"] {
+  if (resolvedUsers === null) return fallback;
+
+  return (username) =>
+    resolvedUsers.has(username)
+      ? (resolvedUsers.get(username) ?? null)
+      : (fallback?.(username) ?? null);
 }
 
 function createPageContext<TPage extends WikitextPageContext>(

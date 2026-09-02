@@ -141,6 +141,33 @@ describe("gallery lightbox", () => {
     cleanup.destroy();
   });
 
+  test("keeps every image size preset within its gallery item", () => {
+    const presets = [
+      ["square", "min(100%,75px)"],
+      ["thumbnail", "min(100%,100px)"],
+      ["small", "min(100%,240px)"],
+      ["medium", "min(100%,500px)"],
+      ["original", "100%"],
+    ] as const;
+    root.innerHTML = presets
+      .map(
+        ([size]) => `
+          <div class="gallery-box" data-size="${size}">
+            <figure class="gallery-item"><img src="/${size}.jpg" alt="" /></figure>
+          </div>
+        `,
+      )
+      .join("");
+    const cleanup = initGallery(root);
+
+    for (const [size, expected] of presets) {
+      const image = root.querySelector<HTMLImageElement>(`.gallery-box[data-size="${size}"] img`)!;
+      expect(window.getComputedStyle(image).maxWidth).toBe(expected);
+    }
+
+    cleanup.destroy();
+  });
+
   test("injects the stylesheet once and refcounts it across instances", () => {
     root.innerHTML = galleryHtml();
     const a = initGallery(root);

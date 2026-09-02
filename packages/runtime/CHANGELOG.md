@@ -1,3 +1,13 @@
+## 1.2.3 (2026-09-02)
+
+### 🩹 Fixes
+
+- **runtime:** ギャラリー画像をgrid列幅に収める ([#70](https://github.com/r74tech/wdpr/pull/70))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 1.2.2 (2026-08-24)
 
 ### 🩹 Fixes

@@ -1,6 +1,6 @@
 {
   "name": "@wdprlib/runtime",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Client-side runtime for Wikidot markup",
   "keywords": [
     "markup",

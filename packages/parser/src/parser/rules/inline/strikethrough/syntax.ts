@@ -14,7 +14,7 @@ export function hasValidStrikethroughClose(ctx: ParseContext): boolean {
     }
 
     if (token.type === "STRIKE_MARKER") {
-      return !prevWasWhitespace;
+      return pos > ctx.pos + 1 && !prevWasWhitespace;
     }
 
     prevWasWhitespace = token.type === "WHITESPACE";

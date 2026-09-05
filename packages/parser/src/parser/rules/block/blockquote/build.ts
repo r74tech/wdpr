@@ -87,20 +87,8 @@ function parseLines(ctx: ParseContext, lines: BlockquoteLine[]): Element[] {
   const lineCtx: ParseContext = { ...ctx, tokens, pos: 0 };
 
   return parseBlocksUntil(lineCtx, END_OF_CONTENT, {
-    excludedBlockNames: withInheritedExclusions(ctx.scope.excludedBlockNames),
+    excludedBlockNames: EXCLUDED_BLOCK_NAMES,
   }).elements;
-}
-
-/**
- * An enclosing container's exclusions still apply inside the quote: Wikidot
- * keeps a `[[collapsible]]` nested in a quoted line literal when the quote
- * itself sits in a collapsible.
- */
-function withInheritedExclusions(inherited?: ReadonlySet<string>): ReadonlySet<string> {
-  if (!inherited || inherited.size === 0) {
-    return EXCLUDED_BLOCK_NAMES;
-  }
-  return new Set([...EXCLUDED_BLOCK_NAMES, ...inherited]);
 }
 
 function sliceLineTokens(ctx: ParseContext, lines: BlockquoteLine[]): Token[] {

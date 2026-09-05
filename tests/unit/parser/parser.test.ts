@@ -620,11 +620,37 @@ inside
     it("keeps an enclosing container's exclusions", () => {
       const src = [
         '[[collapsible show="+" hide="-"]]',
+        "> Alpha",
         "> [[collapsible]]",
-        "> A",
+        "> Beta",
         "[[/collapsible]]",
       ].join("\n");
-      expect(blockTypes(src)).toEqual(["collapsible", "blockquote", "paragraph", "line-break"]);
+      expect(blockTypes(src)).toEqual([
+        "collapsible",
+        "blockquote",
+        "paragraph",
+        "line-break",
+        "line-break",
+      ]);
+    });
+
+    it("passes the quote's exclusions into a nested container", () => {
+      const src = [
+        "> [[div]]",
+        "> before",
+        "> [[code]]",
+        "> after",
+        "> [[/code]]",
+        "> [[/div]]",
+      ].join("\n");
+      expect(blockTypes(src)).toEqual([
+        "blockquote",
+        "div",
+        "paragraph",
+        "line-break",
+        "line-break",
+        "line-break",
+      ]);
     });
 
     it("treats a comment-only line as blank", () => {

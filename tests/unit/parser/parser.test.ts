@@ -540,4 +540,80 @@ inside
       expect(hasIfTags(content)).toBe(true);
     });
   });
+  describe("blockquote content", () => {
+    function blockTypes(input: string): string[] {
+      function collect(elements: Element[], out: string[]): string[] {
+        for (const el of elements) {
+          if (el.element === "text") continue;
+          if (el.element !== "container") {
+            out.push(el.element);
+            continue;
+          }
+          const type = (el.data as { type: unknown }).type;
+          out.push(typeof type === "string" ? type : JSON.stringify(type));
+          collect((el.data as { elements: Element[] }).elements, out);
+        }
+        return out;
+      }
+      return collect(getContentElements(parseAst(input)), []);
+    }
+
+    it("parses a heading inside a blockquote", () => {
+      expect(blockTypes("> +++ A")).toEqual([
+        "blockquote",
+        '{"header":{"level":3,"has-toc":true}}',
+      ]);
+    });
+
+    it("keeps * out of the table of contents", () => {
+      expect(blockTypes("> +++* A")).toEqual([
+        "blockquote",
+        '{"header":{"level":3,"has-toc":false}}',
+      ]);
+    });
+
+    it("nests lists by content indent", () => {
+      const doc = parseAst("> * a\n>  * b");
+      const quote = getContentElements(doc)[0]!;
+      const list = (quote.data as { elements: Element[] }).elements[0]!;
+      const items = (list.data as { items: { "item-type": string }[] }).items;
+      expect(list.element).toBe("list");
+      expect(items.map((i) => i["item-type"])).toEqual(["elements", "sub-list"]);
+    });
+
+    it("does not treat an indented marker as a heading", () => {
+      expect(blockTypes(">  +++ A")).toEqual(["blockquote", "paragraph"]);
+    });
+
+    it("keeps protected block tags literal but parses their body", () => {
+      expect(blockTypes("> [[code]]\n> +++ A\n> [[/code]]")).toEqual([
+        "blockquote",
+        "paragraph",
+        '{"header":{"level":3,"has-toc":true}}',
+        "paragraph",
+      ]);
+    });
+
+    it("splits paragraphs on a quoted blank line", () => {
+      expect(blockTypes("> a\n> \n> b")).toEqual(["blockquote", "paragraph", "paragraph"]);
+    });
+
+    it("keeps one paragraph when the marker has no space", () => {
+      expect(blockTypes("> a\n>\n> b")).toEqual(["blockquote", "paragraph", "line-break"]);
+    });
+
+    it("orders nested depth between sibling content", () => {
+      expect(blockTypes("> a\n>> b\n> c")).toEqual([
+        "blockquote",
+        "paragraph",
+        "blockquote",
+        "paragraph",
+        "paragraph",
+      ]);
+    });
+
+    it("drops a blockquote whose content produces nothing", () => {
+      expect(blockTypes("> [!-- c --]")).toEqual([]);
+    });
+  });
 });

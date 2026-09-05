@@ -1,0 +1,571 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "blockquote",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": {
+                "header": {
+                  "level": 1,
+                  "has-toc": true
+                }
+              },
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Level"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "one"
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": {
+                "header": {
+                  "level": 2,
+                  "has-toc": true
+                }
+              },
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Level"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "two"
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": {
+                "header": {
+                  "level": 3,
+                  "has-toc": true
+                }
+              },
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Level"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "three"
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": {
+                "header": {
+                  "level": 4,
+                  "has-toc": true
+                }
+              },
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Level"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "four"
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": {
+                "header": {
+                  "level": 5,
+                  "has-toc": true
+                }
+              },
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Level"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "five"
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": {
+                "header": {
+                  "level": 6,
+                  "has-toc": true
+                }
+              },
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Level"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "six"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "blockquote",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": {
+                "header": {
+                  "level": 3,
+                  "has-toc": false
+                }
+              },
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Hidden"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "from"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "the"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "table"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "of"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "contents"
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": {
+                "header": {
+                  "level": 3,
+                  "has-toc": true
+                }
+              },
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "bold",
+                    "attributes": {},
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "Bold"
+                      },
+                      {
+                        "element": "text",
+                        "data": " "
+                      },
+                      {
+                        "element": "text",
+                        "data": "heading"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "+++"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "Indented"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "is"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "not"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "a"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "heading"
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "blockquote",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "container",
+                  "data": {
+                    "type": {
+                      "header": {
+                        "level": 3,
+                        "has-toc": true
+                      }
+                    },
+                    "attributes": {},
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "Nested"
+                      },
+                      {
+                        "element": "text",
+                        "data": " "
+                      },
+                      {
+                        "element": "text",
+                        "data": "depth"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ],
+  "table-of-contents": [
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "table-of-contents",
+                  "link": "#toc0",
+                  "extra": null,
+                  "label": {
+                    "text": "Level one"
+                  },
+                  "target": null
+                }
+              }
+            ]
+          },
+          {
+            "item-type": "sub-list",
+            "element": "list",
+            "data": {
+              "type": "bullet",
+              "attributes": {},
+              "items": [
+                {
+                  "item-type": "elements",
+                  "attributes": {},
+                  "elements": [
+                    {
+                      "element": "link",
+                      "data": {
+                        "type": "table-of-contents",
+                        "link": "#toc1",
+                        "extra": null,
+                        "label": {
+                          "text": "Level two"
+                        },
+                        "target": null
+                      }
+                    }
+                  ]
+                },
+                {
+                  "item-type": "sub-list",
+                  "element": "list",
+                  "data": {
+                    "type": "bullet",
+                    "attributes": {},
+                    "items": [
+                      {
+                        "item-type": "elements",
+                        "attributes": {},
+                        "elements": [
+                          {
+                            "element": "link",
+                            "data": {
+                              "type": "table-of-contents",
+                              "link": "#toc2",
+                              "extra": null,
+                              "label": {
+                                "text": "Level three"
+                              },
+                              "target": null
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "item-type": "sub-list",
+                        "element": "list",
+                        "data": {
+                          "type": "bullet",
+                          "attributes": {},
+                          "items": [
+                            {
+                              "item-type": "elements",
+                              "attributes": {},
+                              "elements": [
+                                {
+                                  "element": "link",
+                                  "data": {
+                                    "type": "table-of-contents",
+                                    "link": "#toc3",
+                                    "extra": null,
+                                    "label": {
+                                      "text": "Level four"
+                                    },
+                                    "target": null
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "item-type": "sub-list",
+                              "element": "list",
+                              "data": {
+                                "type": "bullet",
+                                "attributes": {},
+                                "items": [
+                                  {
+                                    "item-type": "elements",
+                                    "attributes": {},
+                                    "elements": [
+                                      {
+                                        "element": "link",
+                                        "data": {
+                                          "type": "table-of-contents",
+                                          "link": "#toc4",
+                                          "extra": null,
+                                          "label": {
+                                            "text": "Level five"
+                                          },
+                                          "target": null
+                                        }
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "item-type": "sub-list",
+                                    "element": "list",
+                                    "data": {
+                                      "type": "bullet",
+                                      "attributes": {},
+                                      "items": [
+                                        {
+                                          "item-type": "elements",
+                                          "attributes": {},
+                                          "elements": [
+                                            {
+                                              "element": "link",
+                                              "data": {
+                                                "type": "table-of-contents",
+                                                "link": "#toc5",
+                                                "extra": null,
+                                                "label": {
+                                                  "text": "Level six"
+                                                },
+                                                "target": null
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        "item-type": "elements",
+                        "attributes": {},
+                        "elements": [
+                          {
+                            "element": "link",
+                            "data": {
+                              "type": "table-of-contents",
+                              "link": "#toc6",
+                              "extra": null,
+                              "label": {
+                                "text": "Bold heading"
+                              },
+                              "target": null
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "item-type": "elements",
+                        "attributes": {},
+                        "elements": [
+                          {
+                            "element": "link",
+                            "data": {
+                              "type": "table-of-contents",
+                              "link": "#toc7",
+                              "extra": null,
+                              "label": {
+                                "text": "Nested depth"
+                              },
+                              "target": null
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

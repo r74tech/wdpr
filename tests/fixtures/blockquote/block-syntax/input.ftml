@@ -1,0 +1,14 @@
+> ----
+
+> ||~ Head A ||~ Head B ||
+> || 1 || 2 ||
+
+> [[div class="note"]]
+> +++ Inside div
+> [[/div]]
+
+> [[=]]
+> Centered
+> [[/=]]
+
+> ~~~~

@@ -615,5 +615,30 @@ inside
     it("drops a blockquote whose content produces nothing", () => {
       expect(blockTypes("> [!-- c --]")).toEqual([]);
     });
+
+    it("treats a comment-only line as blank", () => {
+      expect(blockTypes("> a\n> [!-- c --]\n> b")).toEqual([
+        "blockquote",
+        "paragraph",
+        "paragraph",
+      ]);
+    });
+
+    it("treats a multi-line comment as blank lines", () => {
+      expect(blockTypes("> a\n> [!--\n> c\n> --]\n> b")).toEqual([
+        "blockquote",
+        "paragraph",
+        "paragraph",
+      ]);
+    });
+
+    it("keeps an unterminated comment literal", () => {
+      expect(blockTypes("> a\n> [!--\n> b")).toEqual([
+        "blockquote",
+        "paragraph",
+        "line-break",
+        "line-break",
+      ]);
+    });
   });
 });

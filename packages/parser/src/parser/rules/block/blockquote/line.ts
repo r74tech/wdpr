@@ -38,7 +38,11 @@ export function parseBlockquoteLine(
   consumed++;
 
   const contentStart = pos;
-  while (pos < ctx.tokens.length && ctx.tokens[pos]?.type !== "NEWLINE") {
+  while (
+    pos < ctx.tokens.length &&
+    ctx.tokens[pos]?.type !== "NEWLINE" &&
+    ctx.tokens[pos]?.type !== "EOF"
+  ) {
     pos++;
     consumed++;
   }

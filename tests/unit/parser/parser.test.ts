@@ -617,6 +617,14 @@ inside
       expect(blockTypes("> [!-- c --]")).toEqual([]);
     });
 
+    it("blanks a comment closed on the last line of the document", () => {
+      expect(blockTypes("> a\n> [!--\n> c\n> --]")).toEqual(["blockquote", "paragraph"]);
+    });
+
+    it("follows a comment past the end of the quote", () => {
+      expect(blockTypes("> [!-- x\ny --]\n> z")).toEqual(["blockquote", "paragraph"]);
+    });
+
     it("keeps an enclosing container's exclusions", () => {
       const src = [
         '[[collapsible show="+" hide="-"]]',

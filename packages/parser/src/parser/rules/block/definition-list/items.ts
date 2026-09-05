@@ -21,8 +21,7 @@ export interface ParsedDefinitionItem {
  *
  * The function expects `startPos` to point at a line-start COLON token.
  * It consumes the first colon, mandatory whitespace, key tokens up to
- * the second colon, then value tokens until a double newline, a new entry,
- * or end of input.
+ * the second colon, then value tokens until a newline or end of input.
  */
 export function parseDefinitionItem(
   ctx: ParseContext,

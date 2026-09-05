@@ -263,6 +263,42 @@
       }
     },
     {
+      "element": "table-of-contents",
+      "data": {
+        "attributes": {
+          "title": "独自の目次"
+        },
+        "align": null
+      }
+    },
+    {
+      "element": "table-of-contents",
+      "data": {
+        "attributes": {
+          "title": "左の目次"
+        },
+        "align": "left"
+      }
+    },
+    {
+      "element": "table-of-contents",
+      "data": {
+        "attributes": {
+          "title": "Right contents"
+        },
+        "align": "right"
+      }
+    },
+    {
+      "element": "table-of-contents",
+      "data": {
+        "attributes": {
+          "title": ""
+        },
+        "align": null
+      }
+    },
+    {
       "element": "footnote-block",
       "data": {
         "title": null,

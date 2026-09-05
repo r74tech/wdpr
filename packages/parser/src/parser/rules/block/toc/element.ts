@@ -1,10 +1,10 @@
 import type { Alignment, Element } from "@wdprlib/ast";
 
-export function createTocElement(align: Alignment | null): Element {
+export function createTocElement(align: Alignment | null, title: string | undefined): Element {
   return {
     element: "table-of-contents",
     data: {
-      attributes: {},
+      attributes: title === undefined ? {} : { title },
       align,
     },
   };

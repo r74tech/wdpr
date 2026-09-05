@@ -1,8 +1,10 @@
 import type { Alignment } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
+import { parseAttributes } from "../utils";
 
 export interface TocOpenResult {
   align: Alignment | null;
+  title: string | undefined;
   consumed: number;
 }
 
@@ -48,7 +50,8 @@ export function parseTocOpen(ctx: ParseContext, startPos: number): TocOpenResult
     return null;
   }
 
-  pos = skipUntilClose(ctx, pos);
+  const attributes = parseAttributes(ctx, pos);
+  pos += attributes.consumed;
 
   if (ctx.tokens[pos]?.type !== "BLOCK_CLOSE") {
     return null;
@@ -56,25 +59,9 @@ export function parseTocOpen(ctx: ParseContext, startPos: number): TocOpenResult
 
   return {
     align,
+    title: attributes.attrs.title,
     consumed: pos + 1 - startPos,
   };
-}
-
-function skipUntilClose(ctx: ParseContext, startPos: number): number {
-  let pos = startPos;
-  while (pos < ctx.tokens.length) {
-    const token = ctx.tokens[pos];
-    if (
-      !token ||
-      token.type === "BLOCK_CLOSE" ||
-      token.type === "NEWLINE" ||
-      token.type === "EOF"
-    ) {
-      break;
-    }
-    pos++;
-  }
-  return pos;
 }
 
 function isNameToken(

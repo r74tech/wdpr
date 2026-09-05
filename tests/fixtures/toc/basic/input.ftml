@@ -20,3 +20,11 @@ more stuff
 
 [[f<toc id="toc-left"]]
 [[f>toc id="toc-right"]]
+
+[[toc title="独自の目次" class="ignored"]]
+
+[[f<toc title="左の目次"]]
+
+[[f>toc title="Right contents"]]
+
+[[toc title=""]]

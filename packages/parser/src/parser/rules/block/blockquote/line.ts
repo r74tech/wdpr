@@ -1,5 +1,4 @@
 import type { ParseContext } from "../../types";
-import { parseInlineUntil } from "../../inline/utils";
 import type { ParsedBlockquoteLine } from "./lines";
 
 /**
@@ -35,19 +34,17 @@ export function parseBlockquoteLine(
     return { kind: "skipped", consumed: consumeLineRemainder(ctx, pos) + consumed };
   }
 
-  while (ctx.tokens[pos]?.type === "WHITESPACE") {
+  pos++;
+  consumed++;
+
+  const contentStart = pos;
+  while (pos < ctx.tokens.length && ctx.tokens[pos]?.type !== "NEWLINE") {
     pos++;
     consumed++;
   }
 
-  const inlineCtx: ParseContext = { ...ctx, pos };
-  const inlineResult = parseInlineUntil(inlineCtx, "NEWLINE");
-  consumed += inlineResult.consumed;
-  pos += inlineResult.consumed;
-
-  let hasLineBreak = false;
   if (ctx.tokens[pos]?.type === "NEWLINE") {
-    hasLineBreak = true;
+    pos++;
     consumed++;
   }
 
@@ -56,7 +53,7 @@ export function parseBlockquoteLine(
     line: {
       depth: depth - 1,
       ltype: null,
-      value: { elements: inlineResult.elements, hasLineBreak },
+      value: { start: contentStart, end: pos },
     },
     consumed,
   };

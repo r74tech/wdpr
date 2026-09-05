@@ -1,11 +1,11 @@
-import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 import { parseBlockquoteLine } from "./line";
 export { buildBlockquoteElements } from "./build";
 
+/** Half-open range of the line's content tokens in the enclosing token stream. */
 export interface BlockquoteLine {
-  elements: Element[];
-  hasLineBreak: boolean;
+  start: number;
+  end: number;
 }
 
 export interface ParsedBlockquoteLine {

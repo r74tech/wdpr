@@ -26,7 +26,14 @@ export function collectBlockquoteLines(ctx: ParseContext): ParsedBlockquoteLines
 
   while (pos < ctx.tokens.length) {
     const result = parseBlockquoteLine(ctx, pos);
-    if (result.kind === "stop") break;
+    if (result.kind === "stop") {
+      const resumed = extendToCommentClose(ctx, lines, pos);
+      if (resumed === pos) break;
+
+      consumed += resumed - pos;
+      pos = resumed;
+      continue;
+    }
 
     pos += result.consumed;
     consumed += result.consumed;
@@ -35,7 +42,6 @@ export function collectBlockquoteLines(ctx: ParseContext): ParsedBlockquoteLines
     }
   }
 
-  consumed = extendToCommentClose(ctx, lines, consumed);
   blankCommentOnlyLines(ctx, lines);
 
   return { lines, consumed };
@@ -43,28 +49,32 @@ export function collectBlockquoteLines(ctx: ParseContext): ParsedBlockquoteLines
 
 /**
  * Comments are stripped before the quoted block is split, so one opened on a
- * quoted line closes wherever its `--]` is, quoted or not.
+ * quoted line closes wherever its `--]` is, quoted or not. The rest of the
+ * closing line joins the quoted line the comment started on.
  */
 function extendToCommentClose(
   ctx: ParseContext,
   lines: ParsedBlockquoteLine[],
-  consumed: number,
+  stopPos: number,
 ): number {
   const last = lines[lines.length - 1];
   if (!last || !endsInsideComment(ctx, lines)) {
-    return consumed;
+    return stopPos;
   }
 
-  for (let pos = ctx.pos + consumed; pos < ctx.tokens.length; pos++) {
-    const type = ctx.tokens[pos]?.type;
-    if (type === "EOF") break;
-    if (type !== "COMMENT_CLOSE") continue;
-
-    last.value.end = pos + 1;
-    return pos + 1 - ctx.pos;
+  let pos = stopPos;
+  while (pos < ctx.tokens.length && ctx.tokens[pos]?.type !== "COMMENT_CLOSE") {
+    if (ctx.tokens[pos]?.type === "EOF") return stopPos;
+    pos++;
   }
 
-  return consumed;
+  while (pos < ctx.tokens.length && ctx.tokens[pos]?.type !== "EOF") {
+    pos++;
+    if (ctx.tokens[pos - 1]?.type === "NEWLINE") break;
+  }
+
+  last.value.end = pos;
+  return pos;
 }
 
 function endsInsideComment(ctx: ParseContext, lines: ParsedBlockquoteLine[]): boolean {
@@ -100,12 +110,17 @@ function blankCommentOnlyLines(ctx: ParseContext, lines: ParsedBlockquoteLine[])
   for (let open = 0; open < positions.length; open++) {
     if (ctx.tokens[positions[open]!.pos]?.type !== "COMMENT_OPEN") continue;
 
-    for (let close = open + 1; close < positions.length; close++) {
-      if (ctx.tokens[positions[close]!.pos]?.type !== "COMMENT_CLOSE") continue;
-      commented.fill(true, open, close + 1);
-      open = close;
-      break;
+    let close = open + 1;
+    while (
+      close < positions.length &&
+      ctx.tokens[positions[close]!.pos]?.type !== "COMMENT_CLOSE"
+    ) {
+      close++;
     }
+    if (close === positions.length) break;
+
+    commented.fill(true, open, close + 1);
+    open = close;
   }
 
   const hasContent: boolean[] = Array.from({ length: lines.length }, () => false);

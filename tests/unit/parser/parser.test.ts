@@ -625,6 +625,14 @@ inside
       expect(blockTypes("> [!-- x\ny --]\n> z")).toEqual(["blockquote", "paragraph"]);
     });
 
+    it("quotes what the comment leaves on its closing line", () => {
+      expect(blockTypes("> [!-- x\ny --] tail\n> z")).toEqual([
+        "blockquote",
+        "paragraph",
+        "line-break",
+      ]);
+    });
+
     it("keeps an enclosing container's exclusions", () => {
       const src = [
         '[[collapsible show="+" hide="-"]]',

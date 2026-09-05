@@ -10,6 +10,7 @@ export interface LexerState {
   line: number;
   column: number;
   lineStart: boolean;
+  quoteContentStart: boolean;
   tokens: Token[];
 }
 
@@ -20,8 +21,13 @@ export function createInitialLexerState(source: string): LexerState {
     line: 1,
     column: 1,
     lineStart: true,
+    quoteContentStart: false,
     tokens: [],
   };
+}
+
+export function isSyntaxLineStart(state: LexerState): boolean {
+  return state.lineStart || state.quoteContentStart;
 }
 
 export function isAtEnd(state: LexerState): boolean {
@@ -46,20 +52,33 @@ export function advanceBy(state: LexerState, n = 1): void {
   updatePosition(state, start, end);
 }
 
-export function advanceByToken(state: LexerState, type: TokenType, length: number): void {
+export function advanceByToken(
+  state: LexerState,
+  type: TokenType,
+  length: number,
+  value = "",
+): void {
+  const afterQuoteMarker = state.tokens[state.tokens.length - 1]?.type === "BLOCKQUOTE_MARKER";
   state.pos += length;
 
   if (type === "NEWLINE") {
     state.line++;
     state.column = 1;
     state.lineStart = true;
+    state.quoteContentStart = false;
     return;
   }
 
   state.column += length;
-  if (type !== "WHITESPACE") {
-    state.lineStart = false;
+  if (type === "WHITESPACE") {
+    if (afterQuoteMarker && value === " ") {
+      state.quoteContentStart = true;
+    }
+    return;
   }
+
+  state.lineStart = false;
+  state.quoteContentStart = false;
 }
 
 function updatePosition(state: LexerState, start: number, end: number): void {

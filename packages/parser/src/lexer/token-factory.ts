@@ -58,5 +58,18 @@ function currentTokenPosition(state: LexerState, value: string): Position {
 }
 
 function isTokenAtLineStart(state: LexerState): boolean {
-  return state.tokens.length === 0 || state.tokens[state.tokens.length - 1]?.type === "NEWLINE";
+  if (state.tokens.length === 0) {
+    return true;
+  }
+
+  const last = state.tokens[state.tokens.length - 1];
+  if (last?.type === "NEWLINE") {
+    return true;
+  }
+
+  return (
+    last?.type === "WHITESPACE" &&
+    last.value === " " &&
+    state.tokens[state.tokens.length - 2]?.type === "BLOCKQUOTE_MARKER"
+  );
 }

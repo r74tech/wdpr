@@ -545,13 +545,14 @@ inside
       function collect(elements: Element[], out: string[]): string[] {
         for (const el of elements) {
           if (el.element === "text") continue;
-          if (el.element !== "container") {
+          if (el.element === "container") {
+            const type = (el.data as { type: unknown }).type;
+            out.push(typeof type === "string" ? type : JSON.stringify(type));
+          } else {
             out.push(el.element);
-            continue;
           }
-          const type = (el.data as { type: unknown }).type;
-          out.push(typeof type === "string" ? type : JSON.stringify(type));
-          collect((el.data as { elements: Element[] }).elements, out);
+          const nested = (el.data as { elements?: Element[] } | undefined)?.elements;
+          if (nested) collect(nested, out);
         }
         return out;
       }
@@ -614,6 +615,16 @@ inside
 
     it("drops a blockquote whose content produces nothing", () => {
       expect(blockTypes("> [!-- c --]")).toEqual([]);
+    });
+
+    it("keeps an enclosing container's exclusions", () => {
+      const src = [
+        '[[collapsible show="+" hide="-"]]',
+        "> [[collapsible]]",
+        "> A",
+        "[[/collapsible]]",
+      ].join("\n");
+      expect(blockTypes(src)).toEqual(["collapsible", "blockquote", "paragraph", "line-break"]);
     });
 
     it("treats a comment-only line as blank", () => {

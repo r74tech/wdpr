@@ -269,6 +269,10 @@ describe("Lexer", () => {
       expect(markers).toHaveLength(1);
     });
 
+    it("should clear the prefix line start once content begins", () => {
+      expect(getTokenTypes('> "+++ A')).not.toContain("HEADING_MARKER");
+    });
+
     it("should apply the prefix at any depth", () => {
       const tokens = tokenize(">> +++ A");
       expect(tokens[0]?.value).toBe(">>");

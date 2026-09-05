@@ -90,8 +90,9 @@ function updatePositionFromValue(state: LexerState, value: string): void {
   const firstNewline = value.indexOf("\n");
   if (firstNewline === -1) {
     state.column += value.length;
-    if (state.lineStart && hasNonLineStartSpacing(value, 0)) {
+    if (hasNonLineStartSpacing(value, 0)) {
       state.lineStart = false;
+      state.quoteContentStart = false;
     }
     return;
   }
@@ -109,6 +110,7 @@ function updatePositionFromValue(state: LexerState, value: string): void {
   state.line += newlineCount;
   state.column = value.length - lastNewline;
   state.lineStart = !hasNonLineStartSpacing(value, lastNewline + 1);
+  state.quoteContentStart = false;
 }
 
 function hasNonLineStartSpacing(value: string, start: number): boolean {

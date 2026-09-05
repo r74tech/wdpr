@@ -17,18 +17,9 @@ const EXCLUDED_BLOCK_NAMES: ReadonlySet<string> = new Set([
   "include",
   "math",
   "module",
-  "module-backlinks",
-  "module-categories",
-  "module-css",
-  "module-join",
-  "module-listpages",
-  "module-listusers",
-  "module-page-tree",
-  "module-rate",
-  "module-tagcloud",
 ]);
 
-const END_OF_CONTENT = () => false;
+const NEVER_CLOSES = () => false;
 
 export function buildBlockquoteElements(
   ctx: ParseContext,
@@ -86,7 +77,7 @@ function parseLines(ctx: ParseContext, lines: BlockquoteLine[]): Element[] {
   const tokens = sliceLineTokens(ctx, lines);
   const lineCtx: ParseContext = { ...ctx, tokens, pos: 0 };
 
-  return parseBlocksUntil(lineCtx, END_OF_CONTENT, {
+  return parseBlocksUntil(lineCtx, NEVER_CLOSES, {
     excludedBlockNames: EXCLUDED_BLOCK_NAMES,
   }).elements;
 }

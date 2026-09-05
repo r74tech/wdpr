@@ -407,6 +407,91 @@
       }
     },
     {
+      "element": "container",
+      "data": {
+        "type": "blockquote",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "[["
+                },
+                {
+                  "element": "text",
+                  "data": "bibliography"
+                },
+                {
+                  "element": "text",
+                  "data": "]]"
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": {
+                "header": {
+                  "level": 3,
+                  "has-toc": true
+                }
+              },
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Not"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "a"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "bibliography"
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "[[/"
+                },
+                {
+                  "element": "text",
+                  "data": "bibliography"
+                },
+                {
+                  "element": "text",
+                  "data": "]]"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
       "element": "footnote-block",
       "data": {
         "title": null,
@@ -501,6 +586,24 @@
                               "extra": null,
                               "label": {
                                 "text": "Not a module"
+                              },
+                              "target": null
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "item-type": "elements",
+                        "attributes": {},
+                        "elements": [
+                          {
+                            "element": "link",
+                            "data": {
+                              "type": "table-of-contents",
+                              "link": "#toc4",
+                              "extra": null,
+                              "label": {
+                                "text": "Not a bibliography"
                               },
                               "target": null
                             }

@@ -273,6 +273,20 @@ describe("Lexer", () => {
       expect(getTokenTypes('> "+++ A')).not.toContain("HEADING_MARKER");
     });
 
+    it("should not apply the prefix to an indented marker", () => {
+      const tokens = tokenize("x\n  > ----");
+      expect(tokens.map((t) => [t.type, t.value, t.lineStart])).toEqual([
+        ["IDENTIFIER", "x", true],
+        ["NEWLINE", "\n", false],
+        ["WHITESPACE", "  ", true],
+        ["BLOCKQUOTE_MARKER", ">", false],
+        ["WHITESPACE", " ", false],
+        ["STRIKE_MARKER", "--", false],
+        ["STRIKE_MARKER", "--", false],
+        ["EOF", "", false],
+      ]);
+    });
+
     it("should apply the prefix at any depth", () => {
       const tokens = tokenize(">> +++ A");
       expect(tokens[0]?.value).toBe(">>");

@@ -1,5 +1,5 @@
 import type { Position } from "@wdprlib/ast";
-import type { LexerState } from "./state";
+import { isLineStartQuoteMarker, type LexerState } from "./state";
 import type { Token, TokenType } from "./tokens";
 
 const ZERO_POSITION: Position = {
@@ -70,6 +70,6 @@ function isTokenAtLineStart(state: LexerState): boolean {
   return (
     last?.type === "WHITESPACE" &&
     last.value === " " &&
-    state.tokens[state.tokens.length - 2]?.type === "BLOCKQUOTE_MARKER"
+    isLineStartQuoteMarker(state.tokens[state.tokens.length - 2])
   );
 }

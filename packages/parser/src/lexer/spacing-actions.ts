@@ -1,12 +1,13 @@
 import { findWhitespaceRunEnd } from "./runs";
+import { isLineStartQuoteMarker } from "./state";
 import type { TokenAction } from "./token-actions";
-import type { TokenType } from "./tokens";
+import type { Token } from "./tokens";
 
 export function limitBlockquotePrefixSpace(
   action: TokenAction,
-  previousType: TokenType | undefined,
+  previous: Token | undefined,
 ): TokenAction {
-  if (previousType !== "BLOCKQUOTE_MARKER" || action.type !== "WHITESPACE") {
+  if (!isLineStartQuoteMarker(previous) || action.type !== "WHITESPACE") {
     return action;
   }
   if (action.length <= 1 || !action.value.startsWith(" ")) {

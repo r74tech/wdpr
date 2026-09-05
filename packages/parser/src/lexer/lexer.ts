@@ -144,9 +144,7 @@ export class Lexer {
 
     const spacingAction = scanSpacingToken(src, this.state.pos);
     if (spacingAction) {
-      this.emitTokenAction(
-        limitBlockquotePrefixSpace(spacingAction, this.state.tokens.at(-1)?.type),
-      );
+      this.emitTokenAction(limitBlockquotePrefixSpace(spacingAction, this.state.tokens.at(-1)));
       return;
     }
 

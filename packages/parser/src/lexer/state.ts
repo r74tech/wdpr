@@ -30,6 +30,11 @@ export function isSyntaxLineStart(state: LexerState): boolean {
   return state.lineStart || state.quoteContentStart;
 }
 
+/** An indented `>` is not a blockquote, so its content keeps the enclosing line. */
+export function isLineStartQuoteMarker(token: Token | undefined): boolean {
+  return token?.type === "BLOCKQUOTE_MARKER" && token.lineStart;
+}
+
 export function isAtEnd(state: LexerState): boolean {
   return state.pos >= state.source.length;
 }
@@ -58,7 +63,7 @@ export function advanceByToken(
   length: number,
   value = "",
 ): void {
-  const afterQuoteMarker = state.tokens[state.tokens.length - 1]?.type === "BLOCKQUOTE_MARKER";
+  const afterQuoteMarker = isLineStartQuoteMarker(state.tokens[state.tokens.length - 1]);
   state.pos += length;
 
   if (type === "NEWLINE") {

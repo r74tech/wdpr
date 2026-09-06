@@ -8,57 +8,69 @@ import catalog from "./fixtures/i18n/messages.ja.json";
 import { normalizeForParity } from "../../wikidot-parity/lib/normalize";
 
 describe("renderer i18n", () => {
-  it("matches the saved pseudo-scp-jp preview from parsed source and the fixture AST", async () => {
-    const fixture = new URL("./fixtures/i18n/", import.meta.url);
-    const source = await Bun.file(new URL("input.ftml", fixture)).text();
-    const expectedAst: SyntaxTree = await Bun.file(new URL("expected.json", fixture)).json();
-    const preview = await Bun.file(new URL("wikidot.html", fixture)).text();
-    const options = { i18n: { locale: "ja", messages: catalog } };
-    const { ast } = parse(source);
-    expect(ast).toEqual(expectedAst);
-    expect(renderToHtml(ast)).toBe((await Bun.file(new URL("output.html", fixture)).text()).trim());
-    const pipeline = await renderWikitext(
-      {
-        ast,
-        settings: DEFAULT_SETTINGS,
-        page: {
-          fullName: "scp-003",
-          unixName: "scp-003",
-          tags: [],
-          urlPath: "/scp-003",
+  it.each(["en", "ja"])(
+    "matches the saved %s preview through both render APIs and the fixture AST",
+    async (locale) => {
+      const fixture = new URL("./fixtures/i18n/", import.meta.url);
+      const source = await Bun.file(new URL("input.ftml", fixture)).text();
+      const expectedAst: SyntaxTree = await Bun.file(new URL("expected.json", fixture)).json();
+      const preview = await Bun.file(new URL(`wikidot.${locale}.html`, fixture)).text();
+      const options = locale === "ja" ? { i18n: { locale, messages: catalog } } : {};
+      const { ast } = parse(source);
+      expect(ast).toEqual(expectedAst);
+      expect(renderToHtml(ast)).toBe(
+        (await Bun.file(new URL("output.html", fixture)).text()).trim(),
+      );
+      const pipeline = await renderWikitext(
+        {
+          ast,
+          settings: DEFAULT_SETTINGS,
+          page: {
+            fullName: "test",
+            unixName: "test",
+            tags: [],
+            urlPath: "/test",
+          },
         },
-      },
-      options,
-    );
-    const original = new Window().document;
-    original.body.innerHTML = preview;
-    // The renderer uses HTTPS and rel protection for the fixed documentation link.
-    const documentation = original.querySelector('a[href="http://www.wikidot.com/doc:modules"]')!;
-    documentation.setAttribute("href", "https://www.wikidot.com/doc:modules");
-    documentation.setAttribute("rel", "noopener noreferrer");
-    for (const html of [
-      renderToHtml(ast, options),
-      renderToHtml(expectedAst, options),
-      pipeline.html,
-    ]) {
-      const actual = new Window().document;
-      actual.body.innerHTML = html;
-      expect(normalizeForParity(actual.body.innerHTML)).toBe(
-        normalizeForParity(original.body.innerHTML),
+        options,
       );
-      // The general parity normalizer removes rate widgets; compare their labels directly.
-      expect(actual.querySelector(".rate-points")?.textContent).toBe(
-        original.querySelector(".rate-points")?.textContent,
-      );
-      expect(
-        [...actual.querySelectorAll(".page-rate-widget-box a")].map((a) => a.getAttribute("title")),
-      ).toEqual(
-        [...original.querySelectorAll(".page-rate-widget-box a")].map((a) =>
-          a.getAttribute("title"),
-        ),
-      );
-    }
-  });
+      const original = new Window().document;
+      original.body.innerHTML = preview;
+      // The renderer uses HTTPS and rel protection for the fixed documentation link.
+      const documentation = original.querySelector('a[href="http://www.wikidot.com/doc:modules"]')!;
+      documentation.setAttribute("href", "https://www.wikidot.com/doc:modules");
+      documentation.setAttribute("rel", "noopener noreferrer");
+      for (const html of [
+        renderToHtml(ast, options),
+        renderToHtml(expectedAst, options),
+        pipeline.html,
+      ]) {
+        const actual = new Window().document;
+        actual.body.innerHTML = html;
+        expect(normalizeForParity(actual.body.innerHTML)).toBe(
+          normalizeForParity(original.body.innerHTML),
+        );
+        // The general parity normalizer removes rate widgets; compare their labels directly.
+        expect(actual.querySelector(".rate-points")?.textContent).toBe(
+          original.querySelector(".rate-points")?.textContent,
+        );
+        // The English preview site disables downvotes; WDPR still renders that control.
+        if (locale === "en") {
+          expect(original.querySelector(".ratedown")).toBeNull();
+          actual.querySelector(".ratedown")?.remove();
+        }
+        expect(
+          [...actual.querySelectorAll(".page-rate-widget-box a")].map((a) =>
+            a.getAttribute("title"),
+          ),
+        ).toEqual(
+          [...original.querySelectorAll(".page-rate-widget-box a")].map((a) =>
+            a.getAttribute("title"),
+          ),
+        );
+      }
+    },
+  );
   it("uses a caller catalog and falls back to English for missing entries", () => {
     const { ast } = parse("[[toc]]\n\n+ Heading");
     const html = renderToHtml(ast, {

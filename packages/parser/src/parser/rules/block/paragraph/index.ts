@@ -54,6 +54,7 @@ export const paragraphRule: BlockRule = {
 export function wrapParagraphElements(elements: Element[]): Element[] {
   const output: Element[] = [];
   let group: Element[] = [];
+  let bare = false;
   const flush = (trimBreaks = false) => {
     const content = trimBreaks ? normalizeParagraphElements(group) : group;
     while (content[0]?.element === "line-break") content.shift();
@@ -67,7 +68,7 @@ export function wrapParagraphElements(elements: Element[]): Element[] {
       content[0] = { element: "text", data: content[0].data.trimStart() };
     if (content.length)
       output.push(
-        ...(content.some((el) => el.element === "image")
+        ...(bare || content.some((el) => el.element === "image")
           ? content
           : [
               {
@@ -79,9 +80,10 @@ export function wrapParagraphElements(elements: Element[]): Element[] {
     group = [];
   };
   for (const el of elements) {
-    if (el.element === "image" && el.data.alignment !== null) {
+    if ((el.element === "image" && el.data.alignment !== null) || el.element === "embed-block") {
       flush(el.element === "image");
       output.push(el);
+      bare = el.element === "embed-block";
     } else group.push(el);
   }
   flush();

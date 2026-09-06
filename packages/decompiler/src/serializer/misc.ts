@@ -72,15 +72,22 @@ export function serializeEmbed(ctx: SerializeContext, data: Embed): void {
 }
 
 /** Serialize an embed-block element to `[[embed]]...[[/embed]]` syntax. */
-export function serializeEmbedBlock(ctx: SerializeContext, data: EmbedBlockData): void {
+export function serializeEmbedBlock(
+  ctx: SerializeContext,
+  data: EmbedBlockData,
+  followedByText = false,
+): void {
   if (hasBlockCloseCandidate(data.contents, ["embed", "embedvideo", "embedaudio"])) return;
   ctx.pushBlockLine("[[embed]]");
   ctx.push(data.contents);
   if (!data.contents.endsWith("\n")) {
     ctx.push(ctx.newline);
   }
-  ctx.pushBlockLine("[[/embed]]");
-  ctx.requestBlankLine();
+  if (followedByText) ctx.push("[[/embed]]");
+  else {
+    ctx.pushBlockLine("[[/embed]]");
+    ctx.requestBlankLine();
+  }
 }
 
 /** Serialize an iframe element to `[[iframe url attrs]]` syntax. */

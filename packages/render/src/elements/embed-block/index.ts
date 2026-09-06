@@ -27,5 +27,5 @@ export function renderEmbedBlock(ctx: RenderContext, data: EmbedBlockData): void
     return;
   }
 
-  ctx.push(normalizeBooleanAttributes(sanitized));
+  ctx.push(`<p>${normalizeBooleanAttributes(sanitized)}</p>`);
 }

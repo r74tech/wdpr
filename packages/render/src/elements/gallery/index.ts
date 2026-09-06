@@ -59,7 +59,7 @@ export function renderGallery(ctx: RenderContext, data: GalleryData): void {
  * Determine the items to render. The auto form takes filenames from
  * `content.files` when a resolver pre-filled them, otherwise from the
  * page context's attachment list sorted by the gallery's `order`
- * (an unknown attachment list renders as an empty gallery box).
+ * (an unknown attachment list renders the no-images message).
  * Returns null for the "no images attached" error case.
  */
 function collectGalleryItems(ctx: RenderContext, data: GalleryData): GalleryItem[] | null {
@@ -72,7 +72,7 @@ function collectGalleryItems(ctx: RenderContext, data: GalleryData): GalleryItem
     files = data.content.files;
   } else {
     const pageFiles = ctx.page?.files;
-    if (pageFiles === undefined) return [];
+    if (pageFiles === undefined) return null;
     files = sortGalleryFiles(pageFiles, data.order).map((f) => f.name);
   }
 

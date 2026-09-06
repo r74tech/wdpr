@@ -15,6 +15,9 @@ import { currentToken } from "../../types";
 import { parseBlockName } from "../utils";
 import { parseAttributesRaw } from "../utils";
 import { repairSwallowedCodeClose } from "./attributes";
+import { parseInlineUntil } from "../../inline/utils";
+import { getParagraphNewlineBoundary } from "../../inline/parsing/paragraph-boundary";
+import { normalizeParagraphElements } from "../paragraph/normalize";
 import { collectCodeContent } from "./content";
 
 /**
@@ -86,15 +89,16 @@ export const codeBlockRule: BlockRule = {
     };
     ctx.codeBlocks.push(codeBlockData);
 
-    return {
-      success: true,
-      elements: [
-        {
-          element: "code",
-          data: codeBlockData,
-        },
-      ],
-      consumed,
-    };
+    const elements: Element[] = [{ element: "code", data: codeBlockData }];
+    if (
+      ctx.tokens[pos]?.type === "NEWLINE" &&
+      !getParagraphNewlineBoundary(ctx, pos, false).shouldBreak &&
+      !ctx.scope.blockCloseCondition?.({ ...ctx, pos: pos + 1 })
+    ) {
+      const after = parseInlineUntil({ ...ctx, pos: pos + 1 }, "PARAGRAPH_BREAK");
+      elements.push({ element: "line-break" }, ...normalizeParagraphElements(after.elements));
+      consumed += 1 + after.consumed;
+    }
+    return { success: true, elements, consumed };
   },
 };

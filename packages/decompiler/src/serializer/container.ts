@@ -250,7 +250,9 @@ function serializeDivContainer(
   // div_ detection: first or last child is inline text content → paragraph-strip
   const isParagraphStrip =
     elements.length > 0 &&
-    (isInlineTextElement(elements[0]!) || isInlineTextElement(elements[elements.length - 1]!));
+    (isInlineTextElement(elements[0]!) ||
+      (isInlineTextElement(elements[elements.length - 1]!) &&
+        !elements.some((el) => el.element === "code")));
 
   const openTag = isParagraphStrip ? "div_" : "div";
   ctx.pushBlockLine(`[[${openTag}${attrStr}]]`);

@@ -1,0 +1,136 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "before"
+          }
+        ]
+      }
+    },
+    {
+      "element": "code",
+      "data": {
+        "contents": "after",
+        "language": null,
+        "name": null
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "text",
+      "data": "after2"
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "before"
+                }
+              ]
+            }
+          },
+          {
+            "element": "code",
+            "data": {
+              "contents": "after",
+              "language": null,
+              "name": null
+            }
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "after2"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "before"
+                }
+              ]
+            }
+          },
+          {
+            "element": "code",
+            "data": {
+              "contents": "after",
+              "language": null,
+              "name": null
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "after2"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ],
+  "code-blocks": [
+    {
+      "contents": "after",
+      "language": null,
+      "name": null
+    },
+    {
+      "contents": "after",
+      "language": null,
+      "name": null
+    },
+    {
+      "contents": "after",
+      "language": null,
+      "name": null
+    }
+  ]
+}

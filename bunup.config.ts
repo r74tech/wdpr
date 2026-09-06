@@ -1,4 +1,7 @@
 import { defineWorkspace } from "bunup";
+import { generateBuildInfo } from "./scripts/build-info";
+
+await generateBuildInfo();
 
 export default defineWorkspace([
   {

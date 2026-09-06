@@ -6,6 +6,7 @@ import { serialize } from "./serializer/index";
 export type { DecompileOptions, SerializeOptions } from "./types";
 export { htmlToAst } from "./html2ast/index";
 export { serialize } from "./serializer/index";
+export { buildInfo } from "./build-info.generated";
 
 /**
  * Decompile HTML into Wikidot syntax.

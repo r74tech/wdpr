@@ -20,6 +20,8 @@
  * @packageDocumentation
  */
 
+export { buildInfo } from "./build-info.generated";
+
 // Re-export AST types and utilities from @wdprlib/ast
 export type {
   Position,

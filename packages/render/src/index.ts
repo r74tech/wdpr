@@ -17,6 +17,8 @@
  * @packageDocumentation
  */
 
+export { buildInfo } from "./build-info.generated";
+
 export { renderToHtml } from "./render";
 export { renderWikitext } from "./pipeline";
 export type {

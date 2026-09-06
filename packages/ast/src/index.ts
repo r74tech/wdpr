@@ -10,6 +10,8 @@
  * @packageDocumentation
  */
 
+export { buildInfo } from "./build-info.generated";
+
 export type { Position, Point } from "./position";
 export { createPoint, createPosition } from "./position";
 

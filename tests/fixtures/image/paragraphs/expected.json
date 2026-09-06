@@ -1,0 +1,186 @@
+{
+  "elements": [
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "url",
+          "data": "https://example.com/a.png"
+        },
+        "link": null,
+        "alignment": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "text",
+      "data": "x"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "url",
+          "data": "https://example.com/a.png"
+        },
+        "link": null,
+        "alignment": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "text",
+      "data": "y"
+    },
+    {
+      "element": "text",
+      "data": "text"
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "url",
+          "data": "https://example.com/a.png"
+        },
+        "link": null,
+        "alignment": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "url",
+          "data": "https://example.com/a.png"
+        },
+        "link": null,
+        "alignment": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "text",
+      "data": "text"
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "x"
+          }
+        ]
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "url",
+          "data": "https://example.com/a.png"
+        },
+        "link": null,
+        "alignment": {
+          "align": "left",
+          "float": false
+        },
+        "attributes": {}
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "y"
+          }
+        ]
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "url",
+          "data": "https://example.com/a.png"
+        },
+        "link": null,
+        "alignment": {
+          "align": "left",
+          "float": true
+        },
+        "attributes": {}
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "text"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "text"
+          }
+        ]
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "url",
+          "data": "https://example.com/a.png"
+        },
+        "link": null,
+        "alignment": {
+          "align": "left",
+          "float": true
+        },
+        "attributes": {}
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

@@ -44,17 +44,46 @@ export const paragraphRule: BlockRule = {
 
     return {
       success: true,
-      elements: [
-        {
-          element: "container",
-          data: {
-            type: "paragraph",
-            attributes: {},
-            elements,
-          },
-        },
-      ],
+      elements: wrapParagraphElements(elements),
       consumed: result.consumed,
     };
   },
 };
+
+/** Block images split paragraphs; ordinary images suppress the surrounding p. */
+export function wrapParagraphElements(elements: Element[]): Element[] {
+  const output: Element[] = [];
+  let group: Element[] = [];
+  const flush = (trimBreaks = false) => {
+    const content = trimBreaks ? normalizeParagraphElements(group) : group;
+    while (content[0]?.element === "line-break") content.shift();
+    while (content.length) {
+      const last = content.at(-1)!;
+      if (last.element !== "text" || last.data.trim() !== "") break;
+      content.pop();
+    }
+    while (content[0]?.element === "text" && content[0].data.trim() === "") content.shift();
+    if (content[0]?.element === "text")
+      content[0] = { element: "text", data: content[0].data.trimStart() };
+    if (content.length)
+      output.push(
+        ...(content.some((el) => el.element === "image")
+          ? content
+          : [
+              {
+                element: "container" as const,
+                data: { type: "paragraph" as const, attributes: {}, elements: content },
+              },
+            ]),
+      );
+    group = [];
+  };
+  for (const el of elements) {
+    if (el.element === "image" && el.data.alignment !== null) {
+      flush(el.element === "image");
+      output.push(el);
+    } else group.push(el);
+  }
+  flush();
+  return output;
+}

@@ -103,6 +103,9 @@ function serializeStringContainer(
   switch (type) {
     case "paragraph": {
       // Single-line centering: style="text-align: center;" → = text
+      if (!ctx.inParagraph && !ctx.isAtLineStart()) {
+        ctx.push(ctx.newline + ctx.newline);
+      }
       const style = attributes.style ?? "";
       const prevInParagraph = ctx.inParagraph;
       ctx.inParagraph = true;

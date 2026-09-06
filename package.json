@@ -15,6 +15,8 @@
     "build": "bunup",
     "clean": "rm -rf packages/**/dist",
     "dev": "bunup --watch",
+    "messages:extract": "bun scripts/render-messages.ts",
+    "messages:check": "bun scripts/render-messages.ts --check",
     "test": "bun test && bun run --filter @wdpr/example-boiler test",
     "test:unit": "bun test tests/unit",
     "test:integration": "bun test tests/integration",
@@ -33,6 +35,7 @@
     "docs:all": "bun run docs:api && bun run docs:llms"
   },
   "devDependencies": {
+    "@formatjs/cli": "^6.16.23",
     "@nx/js": "^22.4.5",
     "@r74tech/typedoc-plugin-monorepo-versions": "^1.0.1",
     "@swc-node/register": "^1.11.1",

@@ -41,7 +41,9 @@ export function renderGallery(ctx: RenderContext, data: GalleryData): void {
   if (items === null) {
     // Auto form on a page that provided files but has no images: Wikidot
     // replaces the whole gallery with an error block.
-    ctx.push(`<div class="error-block">${escapeHtml(ctx.messages.text("gallery.empty"))}</div>`);
+    ctx.push(
+      `<div class="error-block">${escapeHtml(ctx.messages.text({ id: "gallery.empty", defaultMessage: "Sorry, we couldn't find any images attached to this page." }))}</div>`,
+    );
     return;
   }
 

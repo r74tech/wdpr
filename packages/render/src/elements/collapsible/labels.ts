@@ -11,10 +11,14 @@ export function getCollapsibleLabels(ctx: RenderContext, data: CollapsibleData):
   return {
     show: data["show-text"]
       ? formatLabelText(data["show-text"])
-      : formatLabelText(ctx.messages.text("collapsible.show")),
+      : formatLabelText(
+          ctx.messages.text({ id: "collapsible.show", defaultMessage: "+ show block" }),
+        ),
     hide: data["hide-text"]
       ? formatLabelText(data["hide-text"])
-      : formatLabelText(ctx.messages.text("collapsible.hide")),
+      : formatLabelText(
+          ctx.messages.text({ id: "collapsible.hide", defaultMessage: "– hide block" }),
+        ),
   };
 }
 

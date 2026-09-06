@@ -5,7 +5,8 @@ import { escapeAttr, escapeHtml } from "../../escape";
 type JoinModule = Extract<Module, { module: "join" }>;
 
 export function renderJoinMarkup(ctx: RenderContext, data: JoinModule): string {
-  const buttonText = data["button-text"] ?? ctx.messages.text("module.join");
+  const buttonText =
+    data["button-text"] ?? ctx.messages.text({ id: "module.join", defaultMessage: "Join" });
   const className = data.attributes?.class ?? "join-box";
   return `<div class="${escapeAttr(className)}"><a href="javascript:;">${escapeHtml(buttonText)}</a></div>`;
 }

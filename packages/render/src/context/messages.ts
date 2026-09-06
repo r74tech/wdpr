@@ -1,6 +1,6 @@
 import { IntlMessageFormat, type FormatXMLElementFn } from "intl-messageformat";
 import { escapeHtml } from "../escape";
-import { renderMessages, type RenderI18n, type RenderMessageId } from "../messages";
+import type { RenderI18n, RenderMessageId, RenderMessageDescriptor } from "../messages";
 
 class Markup {
   constructor(readonly html: string) {}
@@ -11,13 +11,13 @@ export class RenderMessages {
 
   constructor(private readonly i18n: RenderI18n | undefined = undefined) {}
 
-  text(id: RenderMessageId): string {
-    if (this.translation(id) === undefined) return renderMessages[id];
-    return this.format(id).join("");
+  text(message: RenderMessageDescriptor): string {
+    if (this.translation(message.id) === undefined) return message.defaultMessage;
+    return this.format(message).join("");
   }
 
   html(
-    id: RenderMessageId,
+    message: RenderMessageDescriptor,
     values: Record<string, string>,
     tags: Record<string, (html: string) => string>,
   ): string {
@@ -25,7 +25,7 @@ export class RenderMessages {
     for (const [name, render] of Object.entries(tags)) {
       richValues[name] = (chunks) => new Markup(render(chunks.map(serialize).join("")));
     }
-    return this.format(id, richValues).map(serialize).join("");
+    return this.format(message, richValues).map(serialize).join("");
   }
 
   private translation(id: RenderMessageId): string | undefined {
@@ -33,9 +33,10 @@ export class RenderMessages {
   }
 
   private format(
-    id: RenderMessageId,
+    message: RenderMessageDescriptor,
     values?: Record<string, string | FormatXMLElementFn<Markup>>,
   ): Array<string | Markup> {
+    const { id, defaultMessage } = message;
     let formatter = this.formatters.get(id);
     const translation = this.translation(id);
     if (translation !== undefined) {
@@ -46,9 +47,9 @@ export class RenderMessages {
       } catch (error) {
         this.i18n?.onError?.(error, id);
       }
-      return formatParts(new IntlMessageFormat(renderMessages[id], "en"), values);
+      return formatParts(new IntlMessageFormat(defaultMessage, "en"), values);
     }
-    formatter ??= new IntlMessageFormat(renderMessages[id], "en");
+    formatter ??= new IntlMessageFormat(defaultMessage, "en");
     this.formatters.set(id, formatter);
     return formatParts(formatter, values);
   }

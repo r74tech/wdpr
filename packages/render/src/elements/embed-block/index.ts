@@ -24,7 +24,9 @@ export function renderEmbedBlock(ctx: RenderContext, data: EmbedBlockData): void
 
   const sanitized = validateAndSanitizeEmbed(data.contents, allowlist, ctx.options.baseUrl);
   if (sanitized === null) {
-    ctx.push(`<div class="error-block">${escapeHtml(ctx.messages.text("embed.invalid"))}</div>`);
+    ctx.push(
+      `<div class="error-block">${escapeHtml(ctx.messages.text({ id: "embed.invalid", defaultMessage: "Sorry, no match for the embedded content." }))}</div>`,
+    );
     return;
   }
 

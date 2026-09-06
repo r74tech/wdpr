@@ -7,7 +7,11 @@ export function renderUnknownModule(
 ): void {
   ctx.push(
     `<div class="error-block">${ctx.messages.html(
-      "module.unknown",
+      {
+        id: "module.unknown",
+        defaultMessage:
+          "[[module <emphasis>{name}</emphasis>]] No such module, please <documentationLink>check available modules</documentationLink> and fix this page.",
+      },
       { name: data.name },
       {
         emphasis: (html) => `<em>${html}</em>`,

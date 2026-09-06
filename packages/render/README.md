@@ -100,6 +100,9 @@ The application loads and updates community catalogs, selects the locale, and me
 language/region fallback catalogs before rendering. The renderer performs no catalog fetches
 and bundles no translated catalogs. `renderMessages` exports the stable message IDs and English
 source messages; `RenderMessageId` and `RenderI18n` expose the corresponding types.
+This list is generated from `{ id, defaultMessage }` declarations at renderer call sites.
+After changing a declaration, run `bun run messages:extract` in the repository root.
+CI runs `bun run messages:check` to detect a stale list. Unmarked UI text still requires review.
 
 For example, a catalog can contain:
 

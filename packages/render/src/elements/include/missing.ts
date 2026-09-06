@@ -6,7 +6,11 @@ export function renderMissingInclude(ctx: RenderContext, page: string): void {
   const safePath = encodeIncludeEditPath(pageName);
   ctx.push(
     `<div class="error-block"><p>${ctx.messages.html(
-      "include.missing",
+      {
+        id: "include.missing",
+        defaultMessage:
+          'Included page "{page}" does not exist (<createLink>create it now</createLink>)',
+      },
       { page: pageName },
       {
         createLink: (html) => `<a href="/${escapeAttr(safePath)}/edit/true">${html}</a>`,

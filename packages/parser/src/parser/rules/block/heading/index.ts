@@ -55,6 +55,13 @@ export const headingRule: BlockRule = {
     const inlineCtx: ParseContext = { ...ctx, pos };
     const inlineResult = parseInlineUntil(inlineCtx, "NEWLINE");
     const children: Element[] = inlineResult.elements;
+    while (children.at(-1)?.element === "text") {
+      const last = children.at(-1)!;
+      if (last.element !== "text") break;
+      last.data = last.data.trimEnd();
+      if (last.data) break;
+      children.pop();
+    }
     consumed += inlineResult.consumed;
     pos += inlineResult.consumed;
 

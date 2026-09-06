@@ -33,6 +33,7 @@ export function serializeTable(ctx: SerializeContext, data: TableData): void {
       // since bare newlines would break the row structure.
       const innerCtx = new SerializeContext({ newline: ctx.newline });
       innerCtx.forceLineBreakSyntax = true;
+      innerCtx.inParagraph = true;
       serializeElements(innerCtx, cell.elements);
       const raw = innerCtx.getOutput();
       const content = raw.replace(/\n$/, "");

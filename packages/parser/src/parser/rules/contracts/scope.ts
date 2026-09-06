@@ -10,6 +10,8 @@ import type { ParseContext } from "./parse-context";
 export interface ScopeContext {
   /** Exclusive token boundary inherited by nested inline rules. */
   readonly inlineEnd?: number;
+  /** Closing delimiters paired across cells of the current pipe table. */
+  readonly tableFormatting?: { end: number; suppressedClosers: Set<number> };
   /**
    * Close condition for the current block. The paragraph parser calls
    * it to decide when to stop collecting inline content.

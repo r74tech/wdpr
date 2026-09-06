@@ -79,7 +79,7 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
       break;
     }
 
-    if (multiline && token.type === "NEWLINE") {
+    if (multiline && token.type === "NEWLINE" && !ctx.scope.tableFormatting) {
       const boundary = getParagraphNewlineBoundary(ctx, pos, nodes.length > 0);
       if (boundary.shouldBreak) {
         if (boundary.preservePrecedingLineBreak) {
@@ -89,6 +89,12 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
         consumed += boundary.consumed;
         break;
       }
+    }
+
+    if (ctx.scope.tableFormatting?.suppressedClosers.has(pos)) {
+      pos++;
+      consumed++;
+      continue;
     }
 
     if (token.type === endType) {

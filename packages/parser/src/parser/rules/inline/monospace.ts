@@ -3,8 +3,8 @@
  * Parses the Wikidot monospace (teletype) formatting syntax: `{{text}}`.
  *
  * Monospace text is delimited by double curly braces. The opening and
- * closing markers must appear on the same line. If no closing `}}`
- * is found before a newline, the opening marker is emitted as literal text.
+ * closing markers must appear within the same paragraph. If no closing `}}`
+ * is found before a block boundary, the opening marker is emitted as literal text.
  *
  * Note: the opening marker is `MONO_MARKER` (`{{`) and the closing marker
  * is `MONO_CLOSE` (`}}`). These are distinct token types because `{` and
@@ -21,13 +21,13 @@
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
-import { parseSameLineDelimitedContainer } from "./formatting/container";
+import { parseDelimitedContainer } from "./formatting/container";
 
 /**
  * Inline rule for parsing `{{monospace}}` formatting.
  *
  * Triggered by a `MONO_MARKER` token (`{{`). Checks for a matching
- * `MONO_CLOSE` (`}}`) on the same line, then recursively parses
+ * `MONO_CLOSE` (`}}`) within the same paragraph, then recursively parses
  * inline content between the markers.
  *
  * When no closing marker is found, the opening `{{` is treated as
@@ -45,6 +45,6 @@ export const monospaceRule: InlineRule = {
    *          with `type: "monospace"`, or a text fallback for unmatched markers
    */
   parse(ctx: ParseContext): RuleResult<Element> {
-    return parseSameLineDelimitedContainer(ctx, "MONO_CLOSE", "monospace");
+    return parseDelimitedContainer(ctx, "MONO_CLOSE", "monospace");
   },
 };

@@ -103,6 +103,7 @@ source messages; `RenderMessageId` and `RenderI18n` expose the corresponding typ
 This list is generated from `{ id, defaultMessage }` declarations at renderer call sites.
 After changing a declaration, run `bun run messages:extract` in the repository root.
 CI runs `bun run messages:check` to detect a stale list. Unmarked UI text still requires review.
+After `bun run build`, `bun run test:build` checks CommonJS exports using Node.js 22+.
 
 For example, a catalog can contain:
 

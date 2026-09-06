@@ -20,6 +20,7 @@
     "test": "bun test && bun run --filter @wdpr/example-boiler test",
     "test:unit": "bun test tests/unit",
     "test:integration": "bun test tests/integration",
+    "test:build": "node --no-experimental-require-module tests/build/render.cjs",
     "lint": "oxlint packages/ tests/ examples/",
     "lint:fix": "oxlint --fix packages/ tests/ examples/",
     "format": "oxfmt --check packages/ tests/ examples/",

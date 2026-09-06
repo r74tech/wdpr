@@ -22,7 +22,7 @@ import { renderFoldedSection, renderUnfoldedSection } from "./sections";
  */
 export function renderCollapsible(ctx: RenderContext, data: CollapsibleData): void {
   const startOpen = data["start-open"];
-  const labels = getCollapsibleLabels(data);
+  const labels = getCollapsibleLabels(ctx, data);
 
   ctx.push(`<div class="collapsible-block">`);
   renderFoldedSection(ctx, startOpen, labels);

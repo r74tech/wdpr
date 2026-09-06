@@ -3,22 +3,17 @@ import {
   renderEmbedBlock,
   type EmbedAllowlistEntry,
 } from "../../../packages/render/src/elements/embed-block";
-import type { RenderContext } from "../../../packages/render/src/context";
+import { RenderContext } from "../../../packages/render/src/context";
+import type { RenderOptions } from "@wdprlib/render";
 
-// Mock RenderContext
-function createMockContext(options: any = {}): RenderContext {
-  const output: string[] = [];
-  return {
-    push: (s: string) => output.push(s),
-    getOutput: () => output.join(""),
-    options,
-  } as any;
+function createContext(options: RenderOptions = {}): RenderContext {
+  return new RenderContext({ elements: [] }, options);
 }
 
 describe("embed-block security", () => {
   describe("allowed hosts with correct paths", () => {
     test("YouTube embed with /embed/ path is allowed", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents:
           '<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>',
@@ -30,7 +25,7 @@ describe("embed-block security", () => {
     });
 
     test("YouTube-nocookie embed with /embed/ path is allowed", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"></iframe>',
       };
@@ -39,7 +34,7 @@ describe("embed-block security", () => {
     });
 
     test("Vimeo embed with /video/ path is allowed", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://player.vimeo.com/video/123456789"></iframe>',
       };
@@ -48,7 +43,7 @@ describe("embed-block security", () => {
     });
 
     test("Google Maps embed with /maps/embed path is allowed", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://www.google.com/maps/embed?pb=xyz"></iframe>',
       };
@@ -57,7 +52,7 @@ describe("embed-block security", () => {
     });
 
     test("Google Calendar embed with /calendar/embed path is allowed", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://calendar.google.com/calendar/embed?src=abc"></iframe>',
       };
@@ -66,7 +61,7 @@ describe("embed-block security", () => {
     });
 
     test("Spotify embed with /embed/ path is allowed", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://open.spotify.com/embed/track/123"></iframe>',
       };
@@ -75,7 +70,7 @@ describe("embed-block security", () => {
     });
 
     test("SoundCloud embed with /player/ path is allowed", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://w.soundcloud.com/player/?url=xyz"></iframe>',
       };
@@ -84,7 +79,7 @@ describe("embed-block security", () => {
     });
 
     test("CodePen embed is allowed (no path restriction)", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://codepen.io/user/embed/pen123"></iframe>',
       };
@@ -95,7 +90,7 @@ describe("embed-block security", () => {
 
   describe("path validation (blocked wrong paths)", () => {
     test("YouTube without /embed/ path is blocked", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://www.youtube.com/watch?v=dQw4w9WgXcQ"></iframe>',
       };
@@ -104,7 +99,7 @@ describe("embed-block security", () => {
     });
 
     test("Vimeo without /video/ path is blocked", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://player.vimeo.com/channels/123"></iframe>',
       };
@@ -113,7 +108,7 @@ describe("embed-block security", () => {
     });
 
     test("Google without /maps/embed path is blocked", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://www.google.com/search?q=test"></iframe>',
       };
@@ -122,7 +117,7 @@ describe("embed-block security", () => {
     });
 
     test("Spotify without /embed/ path is blocked", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://open.spotify.com/track/123"></iframe>',
       };
@@ -131,7 +126,7 @@ describe("embed-block security", () => {
     });
 
     test("Path prefix boundary - /maps/embedX is blocked", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://www.google.com/maps/embedXmalicious"></iframe>',
       };
@@ -140,7 +135,7 @@ describe("embed-block security", () => {
     });
 
     test("Path prefix boundary - /maps/embed?query is allowed", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://www.google.com/maps/embed?pb=xyz"></iframe>',
       };
@@ -149,7 +144,7 @@ describe("embed-block security", () => {
     });
 
     test("Path prefix boundary - /maps/embed/subpath is allowed", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://www.google.com/maps/embed/v1/place"></iframe>',
       };
@@ -160,7 +155,7 @@ describe("embed-block security", () => {
 
   describe("blocked content", () => {
     test("HTTP iframe is blocked for allowlisted host", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="http://www.youtube.com/embed/dQw4w9WgXcQ"></iframe>',
       };
@@ -169,7 +164,7 @@ describe("embed-block security", () => {
     });
 
     test("Unknown host is blocked", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="https://evil.example.com/malware"></iframe>',
       };
@@ -178,7 +173,7 @@ describe("embed-block security", () => {
     });
 
     test("javascript: URL is blocked", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe src="javascript:alert(1)"></iframe>',
       };
@@ -187,7 +182,7 @@ describe("embed-block security", () => {
     });
 
     test("No iframe is blocked", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: "<script>alert(1)</script>",
       };
@@ -196,7 +191,7 @@ describe("embed-block security", () => {
     });
 
     test("iframe without src is blocked", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents: '<iframe srcdoc="<script>alert(1)</script>"></iframe>',
       };
@@ -205,7 +200,7 @@ describe("embed-block security", () => {
     });
 
     test("Multiple iframes are blocked", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents:
           '<iframe src="https://www.youtube.com/embed/abc"></iframe><iframe src="https://evil.com/xss"></iframe>',
@@ -215,7 +210,7 @@ describe("embed-block security", () => {
     });
 
     test("Multiple iframes with same allowed host are blocked", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const data = {
         contents:
           '<iframe src="https://www.youtube.com/embed/abc"></iframe><iframe src="https://www.youtube.com/embed/def"></iframe>',
@@ -227,7 +222,7 @@ describe("embed-block security", () => {
 
   describe("anyiframe mode (null allowlist)", () => {
     test("Any HTTPS iframe is allowed when allowlist is null", () => {
-      const ctx = createMockContext({ embedAllowlist: null });
+      const ctx = createContext({ embedAllowlist: null });
       const data = {
         contents: '<iframe src="https://any-site.example.com/embed"></iframe>',
       };
@@ -236,7 +231,7 @@ describe("embed-block security", () => {
     });
 
     test("HTTP is blocked when allowlist is null", () => {
-      const ctx = createMockContext({ embedAllowlist: null });
+      const ctx = createContext({ embedAllowlist: null });
       const data = {
         contents: '<iframe src="http://any-site.example.com/embed"></iframe>',
       };
@@ -245,7 +240,7 @@ describe("embed-block security", () => {
     });
 
     test("Multiple iframes are still blocked when allowlist is null", () => {
-      const ctx = createMockContext({ embedAllowlist: null });
+      const ctx = createContext({ embedAllowlist: null });
       const data = {
         contents: '<iframe src="https://a.com/"></iframe><iframe src="https://b.com/"></iframe>',
       };
@@ -256,7 +251,7 @@ describe("embed-block security", () => {
 
   describe("protocol-relative URLs", () => {
     test("protocol-relative URL is resolved with HTTPS baseUrl", () => {
-      const ctx = createMockContext({
+      const ctx = createContext({
         embedAllowlist: null,
         baseUrl: "https://scp-wiki.wikidot.com",
       });
@@ -268,7 +263,7 @@ describe("embed-block security", () => {
     });
 
     test("protocol-relative URL resolved with HTTP baseUrl is blocked", () => {
-      const ctx = createMockContext({ embedAllowlist: null, baseUrl: "http://scp-jp.wikidot.com" });
+      const ctx = createContext({ embedAllowlist: null, baseUrl: "http://scp-jp.wikidot.com" });
       const data = {
         contents: '<iframe src="//interwiki.scp-jp.org/interwikiFrame.html"></iframe>',
       };
@@ -277,7 +272,7 @@ describe("embed-block security", () => {
     });
 
     test("protocol-relative URL defaults to HTTPS when baseUrl is not provided", () => {
-      const ctx = createMockContext({ embedAllowlist: null });
+      const ctx = createContext({ embedAllowlist: null });
       const data = {
         contents: '<iframe src="//interwiki.scp-jp.org/interwikiFrame.html"></iframe>',
       };
@@ -286,7 +281,7 @@ describe("embed-block security", () => {
     });
 
     test("protocol-relative URL is checked against allowlist", () => {
-      const ctx = createMockContext({ baseUrl: "https://example.com" });
+      const ctx = createContext({ baseUrl: "https://example.com" });
       const data = {
         contents: '<iframe src="//unknown-host.example.com/page"></iframe>',
       };
@@ -296,7 +291,7 @@ describe("embed-block security", () => {
 
     test("protocol-relative URL with allowlisted host is allowed", () => {
       const allowlist = [{ host: "*.youtube.com", pathPrefix: "/embed/" }];
-      const ctx = createMockContext({ embedAllowlist: allowlist, baseUrl: "https://example.com" });
+      const ctx = createContext({ embedAllowlist: allowlist, baseUrl: "https://example.com" });
       const data = {
         contents: '<iframe src="//www.youtube.com/embed/abc123"></iframe>',
       };
@@ -306,7 +301,7 @@ describe("embed-block security", () => {
   });
 
   test("iframe style is removed while safe size attributes remain", () => {
-    const ctx = createMockContext();
+    const ctx = createContext();
     const data = {
       contents:
         '<iframe src="https://www.youtube.com/embed/abc" width="640" height="360" style="position:fixed;inset:0;z-index:99999"></iframe>',
@@ -322,7 +317,7 @@ describe("embed-block security", () => {
 
   describe("ReDoS resistance", () => {
     test("Malicious input with many spaces does not hang", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const maliciousSpaces = "<iframe" + " ".repeat(100);
       const data = {
         contents: maliciousSpaces,
@@ -337,7 +332,7 @@ describe("embed-block security", () => {
     });
 
     test("Malicious input with repeated src attributes does not hang", () => {
-      const ctx = createMockContext();
+      const ctx = createContext();
       const maliciousSrc =
         '<iframe src="https://youtube.com/embed/-"' +
         ' src="https://youtube.com/embed/-"'.repeat(20);
@@ -355,7 +350,7 @@ describe("embed-block security", () => {
 
   describe("iframe attributes preservation", () => {
     test("style attribute is removed from iframe", () => {
-      const ctx = createMockContext({ embedAllowlist: null });
+      const ctx = createContext({ embedAllowlist: null });
       const data = {
         contents: '<iframe src="https://example.com/frame.html" style="display: none"></iframe>',
       };
@@ -366,7 +361,7 @@ describe("embed-block security", () => {
     });
 
     test("class attribute is preserved on iframe", () => {
-      const ctx = createMockContext({ embedAllowlist: null });
+      const ctx = createContext({ embedAllowlist: null });
       const data = {
         contents: '<iframe src="https://example.com/frame.html" class="my-iframe"></iframe>',
       };
@@ -380,7 +375,7 @@ describe("embed-block security", () => {
   describe("custom allowlist", () => {
     test("Custom allowlist with host only", () => {
       const allowlist: EmbedAllowlistEntry[] = [{ host: "example.com" }];
-      const ctx = createMockContext({ embedAllowlist: allowlist });
+      const ctx = createContext({ embedAllowlist: allowlist });
       const data = {
         contents: '<iframe src="https://example.com/any/path"></iframe>',
       };
@@ -390,7 +385,7 @@ describe("embed-block security", () => {
 
     test("Custom allowlist with host and path - correct path allowed", () => {
       const allowlist: EmbedAllowlistEntry[] = [{ host: "example.com", pathPrefix: "/embed/" }];
-      const ctx = createMockContext({ embedAllowlist: allowlist });
+      const ctx = createContext({ embedAllowlist: allowlist });
       renderEmbedBlock(ctx, {
         contents: '<iframe src="https://example.com/embed/video"></iframe>',
       });
@@ -399,7 +394,7 @@ describe("embed-block security", () => {
 
     test("Custom allowlist with host and path - wrong path blocked", () => {
       const allowlist: EmbedAllowlistEntry[] = [{ host: "example.com", pathPrefix: "/embed/" }];
-      const ctx = createMockContext({ embedAllowlist: allowlist });
+      const ctx = createContext({ embedAllowlist: allowlist });
       renderEmbedBlock(ctx, {
         contents: '<iframe src="https://example.com/other/path"></iframe>',
       });
@@ -408,7 +403,7 @@ describe("embed-block security", () => {
 
     test("Custom allowlist with wildcard host", () => {
       const allowlist: EmbedAllowlistEntry[] = [{ host: "*.example.com" }];
-      const ctx = createMockContext({ embedAllowlist: allowlist });
+      const ctx = createContext({ embedAllowlist: allowlist });
       const data = {
         contents: '<iframe src="https://sub.example.com/video"></iframe>',
       };
@@ -418,7 +413,7 @@ describe("embed-block security", () => {
 
     test("YouTube is blocked with custom allowlist not including it", () => {
       const allowlist: EmbedAllowlistEntry[] = [{ host: "example.com" }];
-      const ctx = createMockContext({ embedAllowlist: allowlist });
+      const ctx = createContext({ embedAllowlist: allowlist });
       const data = {
         contents: '<iframe src="https://www.youtube.com/embed/abc"></iframe>',
       };
@@ -427,7 +422,7 @@ describe("embed-block security", () => {
     });
 
     test("Empty allowlist blocks all embeds", () => {
-      const ctx = createMockContext({ embedAllowlist: [] });
+      const ctx = createContext({ embedAllowlist: [] });
       const data = {
         contents: '<iframe src="https://www.youtube.com/embed/abc"></iframe>',
       };

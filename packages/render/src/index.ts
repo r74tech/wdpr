@@ -39,3 +39,5 @@ export { DEFAULT_EMBED_ALLOWLIST } from "./elements/embed-block";
 // Wikitext settings (re-exported from @wdprlib/ast)
 export type { WikitextMode, WikitextSettings } from "@wdprlib/ast";
 export { createSettings, DEFAULT_SETTINGS } from "@wdprlib/ast";
+export { renderMessages } from "./messages";
+export type { RenderI18n, RenderMessageId } from "./messages";

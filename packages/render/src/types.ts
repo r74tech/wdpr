@@ -1,5 +1,6 @@
 import type { Element, WikitextSettings } from "@wdprlib/ast";
 import type { EmbedAllowlistEntry } from "./elements/embed-block";
+import type { RenderI18n } from "./messages";
 
 /**
  * Contextual information about the wiki page being rendered.
@@ -119,6 +120,8 @@ export interface RenderResolvers {
  * @group Render Options
  */
 export interface RenderOptions {
+  /** Caller-selected ICU catalog. Omit to retain the English source messages. */
+  i18n?: RenderI18n;
   /**
    * Base URL for resolving protocol-relative URLs (e.g. `"//example.com/path"`).
    *

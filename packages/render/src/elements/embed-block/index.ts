@@ -6,6 +6,7 @@
 
 import type { EmbedBlockData } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
+import { escapeHtml } from "../../escape";
 import { DEFAULT_EMBED_ALLOWLIST, type EmbedAllowlistEntry } from "./allowlist";
 import { normalizeBooleanAttributes, validateAndSanitizeEmbed } from "./sanitize";
 
@@ -23,7 +24,7 @@ export function renderEmbedBlock(ctx: RenderContext, data: EmbedBlockData): void
 
   const sanitized = validateAndSanitizeEmbed(data.contents, allowlist, ctx.options.baseUrl);
   if (sanitized === null) {
-    ctx.push('<div class="error-block">Sorry, no match for the embedded content.</div>');
+    ctx.push(`<div class="error-block">${escapeHtml(ctx.messages.text("embed.invalid"))}</div>`);
     return;
   }
 

@@ -22,7 +22,7 @@ export { renderFootnoteRef } from "./ref";
  */
 export function renderFootnoteBlock(ctx: RenderContext, data: FootnoteBlockData): void {
   if (ctx.footnotes.length === 0) return;
-  const title = data.title ?? "Footnotes";
+  const title = data.title ?? ctx.messages.text("footnote.title");
 
   ctx.push(`<div class="footnotes-footer">`);
   ctx.push(`<div class="title">${escapeHtml(title)}</div>`);

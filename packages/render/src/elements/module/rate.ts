@@ -29,7 +29,7 @@ import { getRateWidgetParts } from "./rate-markup";
  * @param ctx - The current render context.
  */
 export function renderRate(ctx: RenderContext): void {
-  for (const part of getRateWidgetParts()) {
+  for (const part of getRateWidgetParts(ctx)) {
     ctx.push(part);
   }
 }

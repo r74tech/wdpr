@@ -1,0 +1,199 @@
+{
+  "elements": [
+    {
+      "element": "table-of-contents",
+      "data": {
+        "attributes": {},
+        "align": null
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": {
+          "header": {
+            "level": 1,
+            "has-toc": true
+          }
+        },
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Heading"
+          }
+        ]
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "rate"
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "user",
+            "data": {
+              "name": "anonymous",
+              "show-avatar": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Text"
+          },
+          {
+            "element": "footnote"
+          }
+        ]
+      }
+    },
+    {
+      "element": "bibliography-block",
+      "data": {
+        "entries": [
+          {
+            "key_string": "ref",
+            "key": [
+              {
+                "element": "text",
+                "data": "ref"
+              }
+            ],
+            "value": [
+              {
+                "element": "text",
+                "data": "Reference"
+              }
+            ]
+          }
+        ],
+        "title": null,
+        "hide": false
+      }
+    },
+    {
+      "element": "collapsible",
+      "data": {
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Body"
+                }
+              ]
+            }
+          }
+        ],
+        "attributes": {},
+        "start-open": false,
+        "show-text": null,
+        "hide-text": null,
+        "show-top": true,
+        "show-bottom": false
+      }
+    },
+    {
+      "element": "gallery",
+      "data": {
+        "size": "thumbnail",
+        "order": "name",
+        "viewer": true,
+        "content": {
+          "type": "auto",
+          "files": null
+        }
+      }
+    },
+    {
+      "element": "embed-block",
+      "data": {
+        "contents": "invalid"
+      }
+    },
+    {
+      "element": "include",
+      "data": {
+        "paragraph-safe": false,
+        "variables": {},
+        "location": {
+          "site": null,
+          "page": "wdpr-i18n-missing-page-20260906"
+        },
+        "elements": []
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "unknown",
+        "name": "Missing",
+        "arguments": {}
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ],
+  "table-of-contents": [
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "elements",
+            "attributes": {},
+            "elements": [
+              {
+                "element": "link",
+                "data": {
+                  "type": "table-of-contents",
+                  "link": "#toc0",
+                  "extra": null,
+                  "label": {
+                    "text": "Heading"
+                  },
+                  "target": null
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "footnotes": [
+    [
+      {
+        "element": "text",
+        "data": "Note"
+      }
+    ]
+  ]
+}

@@ -25,6 +25,7 @@ import { renderAttributeString } from "./attributes";
 import { BibliographyIndex } from "./bibliography";
 import { RenderCounters } from "./counters";
 import { RenderOutputBuffer } from "./output";
+import { RenderMessages } from "./messages";
 import { StyleSlotState } from "./style-slots";
 import {
   resolveImageSource as resolveImageSourceUrl,
@@ -67,6 +68,7 @@ export class RenderContext {
   readonly settings: WikitextSettings;
   /** Full render options supplied by the caller. */
   readonly options: RenderOptions;
+  readonly messages: RenderMessages;
   /** Footnote element arrays collected from the syntax tree. */
   readonly footnotes: Element[][];
   /** CSS `<style>` blocks extracted from the syntax tree. */
@@ -100,6 +102,7 @@ export class RenderContext {
     this.settings = options.settings ?? DEFAULT_SETTINGS;
     this.counters = new RenderCounters(this.settings.useTrueIds);
     this.options = options;
+    this.messages = new RenderMessages(options.i18n);
     this.collectedStyles = execution.collectedStyles ?? null;
     this.emitStyleTags = execution.emitStyleTags ?? true;
     this.footnotes = options.footnotes ?? tree.footnotes ?? [];

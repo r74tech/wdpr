@@ -5,7 +5,7 @@ import type { SyntaxTree } from "@wdprlib/ast";
 import { Window } from "happy-dom";
 import { renderToHtml, renderWikitext, type RenderI18n } from "@wdprlib/render";
 import catalog from "./fixtures/i18n/messages.ja.json";
-import { normalizeForParity } from "../../wikidot-parity/lib/normalize";
+import { normalizeForParity } from "../../helpers/normalize-parity";
 
 describe("renderer i18n", () => {
   it.each(["en", "ja"])(

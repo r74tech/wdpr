@@ -6,7 +6,6 @@ const extracted = Bun.spawnSync(
   [
     process.execPath,
     "x",
-    "--bun",
     "--no-install",
     "formatjs",
     "extract",

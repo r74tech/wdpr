@@ -35,11 +35,11 @@ import { buildBlockquoteElements, collectBlockquoteLines } from "./lines";
  * Parsing strategy:
  * 1. Collect consecutive lines that begin with BLOCKQUOTE_MARKER at line start.
  * 2. For each line, record the depth (number of `>` chars, zero-indexed)
- *    and parse the inline content after the mandatory space.
+ *    and the token range of the content after the mandatory space.
  * 3. Lines missing the required space are consumed but produce no output.
  * 4. Feed the flat depth list into {@link processDepths} to build a nested tree.
- * 5. Recursively convert the tree into nested blockquote container elements
- *    via `buildBlockquoteElement()`.
+ * 5. Recursively convert the tree into nested blockquote container elements,
+ *    re-parsing each run of content tokens as blocks.
  */
 export const blockquoteRule: BlockRule = {
   name: "blockquote",
@@ -64,11 +64,10 @@ export const blockquoteRule: BlockRule = {
       return { success: false };
     }
 
-    const blockquotes = buildBlockquoteElements(blockquoteLines.lines);
+    const blockquotes = buildBlockquoteElements(ctx, blockquoteLines.lines);
 
-    // Return first blockquote (should usually be only one)
     if (blockquotes.length === 0) {
-      return { success: false };
+      return { success: true, elements: [], consumed: blockquoteLines.consumed };
     }
 
     return {

@@ -1,0 +1,156 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "blockquote",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "list",
+            "data": {
+              "type": "bullet",
+              "attributes": {},
+              "items": [
+                {
+                  "item-type": "elements",
+                  "attributes": {},
+                  "elements": [
+                    {
+                      "element": "text",
+                      "data": "Apple"
+                    }
+                  ]
+                },
+                {
+                  "item-type": "sub-list",
+                  "element": "list",
+                  "data": {
+                    "type": "bullet",
+                    "attributes": {},
+                    "items": [
+                      {
+                        "item-type": "elements",
+                        "attributes": {},
+                        "elements": [
+                          {
+                            "element": "text",
+                            "data": "Banana"
+                          }
+                        ]
+                      },
+                      {
+                        "item-type": "sub-list",
+                        "element": "list",
+                        "data": {
+                          "type": "bullet",
+                          "attributes": {},
+                          "items": [
+                            {
+                              "item-type": "elements",
+                              "attributes": {},
+                              "elements": [
+                                {
+                                  "element": "text",
+                                  "data": "Cherry"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                },
+                {
+                  "item-type": "elements",
+                  "attributes": {},
+                  "elements": [
+                    {
+                      "element": "text",
+                      "data": "Durian"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "blockquote",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "list",
+            "data": {
+              "type": "numbered",
+              "attributes": {},
+              "items": [
+                {
+                  "item-type": "elements",
+                  "attributes": {},
+                  "elements": [
+                    {
+                      "element": "text",
+                      "data": "One"
+                    }
+                  ]
+                },
+                {
+                  "item-type": "elements",
+                  "attributes": {},
+                  "elements": [
+                    {
+                      "element": "text",
+                      "data": "Two"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "blockquote",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "definition-list",
+            "data": [
+              {
+                "key_string": "Term",
+                "key": [
+                  {
+                    "element": "text",
+                    "data": "Term"
+                  }
+                ],
+                "value": [
+                  {
+                    "element": "text",
+                    "data": "Definition"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

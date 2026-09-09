@@ -10,6 +10,7 @@ export interface LexerState {
   line: number;
   column: number;
   lineStart: boolean;
+  quoteContentStart: boolean;
   tokens: Token[];
 }
 
@@ -20,8 +21,18 @@ export function createInitialLexerState(source: string): LexerState {
     line: 1,
     column: 1,
     lineStart: true,
+    quoteContentStart: false,
     tokens: [],
   };
+}
+
+export function isSyntaxLineStart(state: LexerState): boolean {
+  return state.lineStart || state.quoteContentStart;
+}
+
+/** An indented `>` is not a blockquote, so its content keeps the enclosing line. */
+export function isLineStartQuoteMarker(token: Token | undefined): boolean {
+  return token?.type === "BLOCKQUOTE_MARKER" && token.lineStart;
 }
 
 export function isAtEnd(state: LexerState): boolean {
@@ -46,20 +57,33 @@ export function advanceBy(state: LexerState, n = 1): void {
   updatePosition(state, start, end);
 }
 
-export function advanceByToken(state: LexerState, type: TokenType, length: number): void {
+export function advanceByToken(
+  state: LexerState,
+  type: TokenType,
+  length: number,
+  value = "",
+): void {
+  const afterQuoteMarker = isLineStartQuoteMarker(state.tokens[state.tokens.length - 1]);
   state.pos += length;
 
   if (type === "NEWLINE") {
     state.line++;
     state.column = 1;
     state.lineStart = true;
+    state.quoteContentStart = false;
     return;
   }
 
   state.column += length;
-  if (type !== "WHITESPACE") {
-    state.lineStart = false;
+  if (type === "WHITESPACE") {
+    if (afterQuoteMarker && value === " ") {
+      state.quoteContentStart = true;
+    }
+    return;
   }
+
+  state.lineStart = false;
+  state.quoteContentStart = false;
 }
 
 function updatePosition(state: LexerState, start: number, end: number): void {
@@ -71,8 +95,9 @@ function updatePositionFromValue(state: LexerState, value: string): void {
   const firstNewline = value.indexOf("\n");
   if (firstNewline === -1) {
     state.column += value.length;
-    if (state.lineStart && hasNonLineStartSpacing(value, 0)) {
+    if (hasNonLineStartSpacing(value, 0)) {
       state.lineStart = false;
+      state.quoteContentStart = false;
     }
     return;
   }
@@ -90,6 +115,7 @@ function updatePositionFromValue(state: LexerState, value: string): void {
   state.line += newlineCount;
   state.column = value.length - lastNewline;
   state.lineStart = !hasNonLineStartSpacing(value, lastNewline + 1);
+  state.quoteContentStart = false;
 }
 
 function hasNonLineStartSpacing(value: string, start: number): boolean {

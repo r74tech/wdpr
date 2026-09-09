@@ -11,6 +11,7 @@ import {
   createInitialLexerState,
   current,
   isAtEnd,
+  isSyntaxLineStart,
   type LexerState,
 } from "./state";
 import { findInvalidAnchorNameEnd } from "./anchor";
@@ -19,7 +20,7 @@ import { scanSimpleSyntaxToken } from "./syntax-actions";
 import type { TokenAction } from "./token-actions";
 import { scanPunctuationToken } from "./punctuation";
 import { scanCompactTextToken, scanTextToken } from "./text-actions";
-import { scanSpacingToken } from "./spacing-actions";
+import { limitBlockquotePrefixSpace, scanSpacingToken } from "./spacing-actions";
 
 /**
  * Converts a Wikidot markup source string into a flat array of {@link Token}s.
@@ -119,7 +120,7 @@ export class Lexer {
   }
 
   private emitTokenAction(action: TokenAction): void {
-    advanceByToken(this.state, action.type, action.length);
+    advanceByToken(this.state, action.type, action.length, action.value);
     this.addToken(action.type, action.value);
   }
 
@@ -138,12 +139,12 @@ export class Lexer {
    */
   private scanToken(): void {
     const char = this.current();
-    const isLineStart = this.state.lineStart;
+    const isLineStart = isSyntaxLineStart(this.state);
     const src = this.state.source;
 
     const spacingAction = scanSpacingToken(src, this.state.pos);
     if (spacingAction) {
-      this.emitTokenAction(spacingAction);
+      this.emitTokenAction(limitBlockquotePrefixSpace(spacingAction, this.state.tokens.at(-1)));
       return;
     }
 
@@ -152,6 +153,7 @@ export class Lexer {
       source: src,
       pos: this.state.pos,
       lineStart: isLineStart,
+      physicalLineStart: this.state.lineStart,
       splitBlockClose: this.splitBlockClosePositions.has(this.state.pos),
       findInvalidAnchorNameEnd: () => this.findInvalidAnchorNameEnd(),
     });

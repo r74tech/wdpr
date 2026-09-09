@@ -113,9 +113,10 @@ export interface Token {
   /** Start/end location in the original source string */
   position: Position;
   /**
-   * `true` when this token is the first non-whitespace token on its
-   * line. Block-level rules (headings, lists, blockquotes) check this
-   * flag before attempting to match.
+   * `true` when this token opens a logical line: the first non-whitespace
+   * token on a source line, or the first token after a blockquote prefix.
+   * Block-level rules (headings, lists, blockquotes) check this flag before
+   * attempting to match.
    */
   lineStart: boolean;
 }

@@ -52,7 +52,10 @@ export function parseBlocksUntil(
   let consumed = 0;
   let pos = ctx.pos;
 
-  const excluded = options?.excludedBlockNames;
+  const excluded = mergeExcludedBlockNames(
+    ctx.scope.excludedBlockNames,
+    options?.excludedBlockNames,
+  );
   const blockRules = excluded ? getExcludedBlockRules(ctx.blockRules, excluded) : ctx.blockRules;
   const blockScope = {
     ...ctx.scope,
@@ -104,6 +107,20 @@ export function parseBlocksUntil(
   }
 
   return { elements, consumed };
+}
+
+/**
+ * An enclosing container's exclusions stay in force in its body: Wikidot keeps
+ * a `[[collapsible]]` nested in a div literal when the div itself sits in a
+ * collapsible.
+ */
+function mergeExcludedBlockNames(
+  inherited: ReadonlySet<string> | undefined,
+  added: ReadonlySet<string> | undefined,
+): ReadonlySet<string> | undefined {
+  if (!inherited?.size) return added;
+  if (!added?.size) return inherited;
+  return new Set([...inherited, ...added]);
 }
 
 function getExcludedBlockRules(

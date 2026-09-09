@@ -228,4 +228,69 @@ describe("Lexer", () => {
       expect(tokenAfterNewline?.lineStart).toBe(true);
     });
   });
+
+  describe("blockquote prefix", () => {
+    it("should tokenize heading markers after the prefix", () => {
+      const tokens = tokenize("> +++ A");
+      expect(tokens.map((t) => [t.type, t.value, t.lineStart])).toEqual([
+        ["BLOCKQUOTE_MARKER", ">", true],
+        ["WHITESPACE", " ", false],
+        ["HEADING_MARKER", "+++", true],
+        ["WHITESPACE", " ", false],
+        ["IDENTIFIER", "A", false],
+        ["EOF", "", false],
+      ]);
+    });
+
+    it("should split the prefix space from the content indent", () => {
+      const tokens = tokenize(">  * b");
+      expect(tokens.map((t) => [t.type, t.value, t.lineStart])).toEqual([
+        ["BLOCKQUOTE_MARKER", ">", true],
+        ["WHITESPACE", " ", false],
+        ["WHITESPACE", " ", true],
+        ["LIST_BULLET", "*", false],
+        ["WHITESPACE", " ", false],
+        ["IDENTIFIER", "b", false],
+        ["EOF", "", false],
+      ]);
+    });
+
+    it("should keep an indented heading marker off line start", () => {
+      const marker = tokenize(">   +++ A").find((t) => t.type === "HEADING_MARKER");
+      expect(marker?.lineStart).toBe(false);
+    });
+
+    it("should not treat a tab as the prefix space", () => {
+      expect(getTokenTypes(">\t+++ A")).not.toContain("HEADING_MARKER");
+    });
+
+    it("should not nest on a > inside quoted content", () => {
+      const markers = tokenize("> > deep").filter((t) => t.type === "BLOCKQUOTE_MARKER");
+      expect(markers).toHaveLength(1);
+    });
+
+    it("should clear the prefix line start once content begins", () => {
+      expect(getTokenTypes('> "+++ A')).not.toContain("HEADING_MARKER");
+    });
+
+    it("should not apply the prefix to an indented marker", () => {
+      const tokens = tokenize("x\n  > ----");
+      expect(tokens.map((t) => [t.type, t.value, t.lineStart])).toEqual([
+        ["IDENTIFIER", "x", true],
+        ["NEWLINE", "\n", false],
+        ["WHITESPACE", "  ", true],
+        ["BLOCKQUOTE_MARKER", ">", false],
+        ["WHITESPACE", " ", false],
+        ["STRIKE_MARKER", "--", false],
+        ["STRIKE_MARKER", "--", false],
+        ["EOF", "", false],
+      ]);
+    });
+
+    it("should apply the prefix at any depth", () => {
+      const tokens = tokenize(">> +++ A");
+      expect(tokens[0]?.value).toBe(">>");
+      expect(tokens.find((t) => t.type === "HEADING_MARKER")?.lineStart).toBe(true);
+    });
+  });
 });

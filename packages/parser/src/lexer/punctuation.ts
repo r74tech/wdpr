@@ -14,6 +14,7 @@ export interface PunctuationScanInput {
   source: string;
   pos: number;
   lineStart: boolean;
+  physicalLineStart: boolean;
   splitBlockClose: boolean;
   findInvalidAnchorNameEnd: () => number | null;
 }
@@ -51,7 +52,7 @@ export function scanPunctuationToken(input: PunctuationScanInput): PunctuationSc
       return { handled: true, actions: scanAtToken(source, pos) };
 
     case ">":
-      return { handled: true, actions: scanGreaterToken(source, pos, lineStart) };
+      return { handled: true, actions: scanGreaterToken(source, pos, input.physicalLineStart) };
 
     case "-":
       return { handled: true, actions: scanDashToken(source, pos, lineStart) };

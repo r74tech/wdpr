@@ -1,5 +1,20 @@
 import { findWhitespaceRunEnd } from "./runs";
+import { isLineStartQuoteMarker } from "./state";
 import type { TokenAction } from "./token-actions";
+import type { Token } from "./tokens";
+
+export function limitBlockquotePrefixSpace(
+  action: TokenAction,
+  previous: Token | undefined,
+): TokenAction {
+  if (!isLineStartQuoteMarker(previous) || action.type !== "WHITESPACE") {
+    return action;
+  }
+  if (action.length <= 1 || !action.value.startsWith(" ")) {
+    return action;
+  }
+  return { type: "WHITESPACE", value: " ", length: 1 };
+}
 
 export function scanSpacingToken(src: string, pos: number): TokenAction | null {
   const char = src[pos];

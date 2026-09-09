@@ -1,0 +1,21 @@
+> [[code]]
+> +++ Not a code block
+> [[/code]]
+
+> [[html]]
+> +++ Not html
+> [[/html]]
+
+> [[math]]
+> +++ Not math
+> [[/math]]
+
+> [[module CSS]]
+> +++ Not a module
+> [[/module]]
+
+> [[include :scp-jp:credit:start]]
+
+> [[bibliography]]
+> +++ Not a bibliography
+> [[/bibliography]]

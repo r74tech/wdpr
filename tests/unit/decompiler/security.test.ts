@@ -55,21 +55,12 @@ describe("decompiler directive boundaries", () => {
     expect(parse(source).ast).toEqual({
       elements: [
         {
-          element: "container",
+          element: "image",
           data: {
-            type: "paragraph",
+            source: { type: "file1", data: { file: "x" } },
+            link: null,
+            alignment: null,
             attributes: {},
-            elements: [
-              {
-                element: "image",
-                data: {
-                  source: { type: "file1", data: { file: "x" } },
-                  link: null,
-                  alignment: null,
-                  attributes: {},
-                },
-              },
-            ],
           },
         },
         { element: "footnote-block", data: { title: null, hide: false } },

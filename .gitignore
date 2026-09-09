@@ -4,6 +4,7 @@ node_modules
 # output
 out
 dist
+packages/*/src/build-info.generated.ts
 *.tgz
 
 # code coverage

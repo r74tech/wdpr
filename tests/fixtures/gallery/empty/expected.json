@@ -1,0 +1,23 @@
+{
+  "elements": [
+    {
+      "element": "gallery",
+      "data": {
+        "size": "thumbnail",
+        "order": "name",
+        "viewer": true,
+        "content": {
+          "type": "auto",
+          "files": null
+        }
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

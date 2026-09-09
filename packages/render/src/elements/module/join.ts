@@ -24,5 +24,5 @@ import { renderJoinMarkup } from "./join-markup";
  * @param data - Join module data with optional `button-text` and CSS class.
  */
 export function renderJoin(ctx: RenderContext, data: Extract<Module, { module: "join" }>): void {
-  ctx.push(renderJoinMarkup(data));
+  ctx.push(renderJoinMarkup(ctx, data));
 }

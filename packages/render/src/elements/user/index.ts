@@ -21,7 +21,7 @@ export function renderUser(ctx: RenderContext, data: UserData): void {
   const normalized = data.name.toLowerCase().trim();
 
   if (normalized === "anonymous") {
-    ctx.push("Anonymous");
+    ctx.pushEscaped(ctx.messages.text({ id: "user.anonymous", defaultMessage: "Anonymous" }));
     return;
   }
 

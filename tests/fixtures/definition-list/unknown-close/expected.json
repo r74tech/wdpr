@@ -1,0 +1,59 @@
+{
+  "elements": [
+    {
+      "element": "definition-list",
+      "data": [
+        {
+          "key_string": "a",
+          "key": [
+            {
+              "element": "text",
+              "data": "a"
+            }
+          ],
+          "value": [
+            {
+              "element": "text",
+              "data": "b"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "[[/"
+          },
+          {
+            "element": "text",
+            "data": "foo"
+          },
+          {
+            "element": "text",
+            "data": "]]"
+          },
+          {
+            "element": "line-break"
+          },
+          {
+            "element": "text",
+            "data": "after"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

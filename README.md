@@ -32,6 +32,23 @@ const ast = parse('**Hello** world')
 const html = renderToHtml(ast)
 ```
 
+## Build information
+
+Every package exports its own build information:
+
+```ts
+import { buildInfo } from '@wdprlib/render'
+
+buildInfo.version // This package's version
+buildInfo.sha     // Full source commit SHA, or null when unavailable
+buildInfo.dirty   // Uncommitted repository changes, or null when unavailable
+```
+
+The object is read-only and frozen. It records a snapshot when metadata is generated,
+not the current state of the consuming application. `dirty` includes tracked and
+untracked changes across the repository, excluding ignored files. Dependency package
+versions are not included. ESM, CommonJS and Bun exports carry the same snapshot.
+
 ## Development
 
 ```bash
@@ -39,6 +56,11 @@ bun install
 bun run build
 bun test
 ```
+
+`bun install` and build startup generate package metadata automatically. Run
+`bun run build:info` after changing the checkout when using source imports without
+rebuilding. Restart `bun run dev` to refresh metadata during watch development.
+Generated metadata is included in published packages; consumers do not need Git.
 
 ## Origins
 

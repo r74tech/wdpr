@@ -1,5 +1,6 @@
 import type { Token, TokenType } from "../../lexer";
 import type { ParseContext } from "./contracts";
+import { getParagraphNewlineBoundary } from "./inline/parsing/paragraph-boundary";
 
 /**
  * Helper to get current token
@@ -51,7 +52,7 @@ export function hasClosingMarkerBeforeNewline(
   markerValue?: string,
 ): boolean {
   let pos = ctx.pos;
-  while (pos < ctx.tokens.length) {
+  while (pos < (ctx.scope.inlineEnd ?? ctx.tokens.length)) {
     const token = ctx.tokens[pos];
     if (!token || token.type === "NEWLINE" || token.type === "EOF") {
       return false;
@@ -76,24 +77,14 @@ export function hasClosingMarkerBeforeParagraphBreak(
   markerValue?: string,
 ): boolean {
   let pos = ctx.pos;
-  while (pos < ctx.tokens.length) {
+  while (pos < (ctx.scope.inlineEnd ?? ctx.tokens.length)) {
     const token = ctx.tokens[pos];
     if (!token || token.type === "EOF") {
       return false;
     }
-    // Check for paragraph break (NEWLINE followed by NEWLINE after optional whitespace)
-    if (token.type === "NEWLINE") {
-      let lookAhead = 1;
-      while (ctx.tokens[pos + lookAhead]?.type === "WHITESPACE") {
-        lookAhead++;
-      }
-      if (
-        ctx.tokens[pos + lookAhead]?.type === "NEWLINE" ||
-        ctx.tokens[pos + lookAhead]?.type === "EOF" ||
-        !ctx.tokens[pos + lookAhead]
-      ) {
-        return false;
-      }
+    if (ctx.scope.blockCloseCondition?.({ ...ctx, pos })) return false;
+    if (token.type === "NEWLINE" && getParagraphNewlineBoundary(ctx, pos, true).shouldBreak) {
+      return false;
     }
     if (token.type === markerType) {
       if (markerValue === undefined || token.value === markerValue) {

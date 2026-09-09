@@ -1,24 +1,7 @@
 import type { ParseContext } from "../../types";
+import { findFormattingClose } from "../formatting/close";
 
-/**
- * Returns true when the current `--` can be parsed as strikethrough.
- */
 export function hasValidStrikethroughClose(ctx: ParseContext): boolean {
-  let pos = ctx.pos + 1;
-  let prevWasWhitespace = false;
-
-  while (pos < ctx.tokens.length) {
-    const token = ctx.tokens[pos];
-    if (!token || token.type === "NEWLINE" || token.type === "EOF") {
-      return false;
-    }
-
-    if (token.type === "STRIKE_MARKER") {
-      return !prevWasWhitespace;
-    }
-
-    prevWasWhitespace = token.type === "WHITESPACE";
-    pos++;
-  }
-  return false;
+  const close = findFormattingClose(ctx, ctx.pos + 1, "STRIKE_MARKER");
+  return close !== null && close > ctx.pos + 1 && ctx.tokens[close - 1]?.type !== "WHITESPACE";
 }

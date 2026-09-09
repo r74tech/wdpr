@@ -1,0 +1,15 @@
+{
+  "toc.title": "目次",
+  "toc.fold": "折り畳む",
+  "toc.unfold": "表示",
+  "footnote.title": "脚注",
+  "bibliography.title": "参考文献",
+  "user.anonymous": "匿名",
+  "rate.label": "評価",
+  "rate.up": "好き",
+  "rate.down": "好きじゃない",
+  "rate.cancel": "投票を取り消す",
+  "gallery.empty": "申し訳ないのですが、このページに添付されている画像が見つかりませんでした。",
+  "include.missing": "インクルードを行おうとしたページ、 {page}は存在しません(<createLink>ページを作成する</createLink>)",
+  "module.unknown": "[[module <emphasis>{name}</emphasis>]]モジュールは存在しません。<documentationLink>利用可能なモジュールのリスト</documentationLink>を参照してページを修正してください。"
+}

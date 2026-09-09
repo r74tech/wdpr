@@ -27,17 +27,8 @@ export function parseDefinitionItemValue(
     }
 
     if (token.type === "NEWLINE") {
-      const nextToken = ctx.tokens[pos + 1];
-      if (nextToken?.type === "COLON" && nextToken.lineStart) {
-        pos++;
-        consumed++;
-        break;
-      }
-      if (nextToken?.type === "NEWLINE" || !nextToken || nextToken.type === "EOF") {
-        pos++;
-        consumed++;
-        break;
-      }
+      consumed++;
+      break;
     }
 
     const inlineCtx: ParseContext = { ...ctx, pos };

@@ -6,7 +6,7 @@
  * - [[f<toc ...]] - float left
  * - [[f>toc ...]] - float right
  *
- * Note: Wikidot ignores attributes on [[toc]] (class, style, id are not applied)
+ * The title attribute overrides the heading; class, style, and id are ignored.
  * [[>toc]] and [[<toc]] are invalid in Wikidot and not supported.
  */
 import type { Element } from "@wdprlib/ast";
@@ -37,7 +37,7 @@ export const tocRule: BlockRule = {
 
     return {
       success: true,
-      elements: [createTocElement(openResult.align)],
+      elements: [createTocElement(openResult.align, openResult.title)],
       consumed: openResult.consumed,
     };
   },

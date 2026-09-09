@@ -1,0 +1,17 @@
+[[image https://example.com/a.png]]
+
+x [[image https://example.com/a.png]] y
+
+text
+[[image https://example.com/a.png]]
+
+[[image https://example.com/a.png]]
+text
+
+x [[<image https://example.com/a.png]] y
+
+[[f<image https://example.com/a.png]]
+text
+
+text
+[[f<image https://example.com/a.png]]

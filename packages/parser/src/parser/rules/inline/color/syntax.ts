@@ -1,6 +1,6 @@
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
-import { hasClosingMarkerBeforeNewline } from "../../types";
+import { findFormattingClose, consumeFormattingClose } from "../formatting/close";
 import { parseInlineUntil } from "../utils";
 
 export interface ColorContent {
@@ -10,7 +10,8 @@ export interface ColorContent {
 }
 
 export function parseColorContent(ctx: ParseContext): ColorContent | null {
-  if (!hasClosingMarkerBeforeNewline({ ...ctx, pos: ctx.pos + 1 }, "COLOR_MARKER")) {
+  const close = findFormattingClose(ctx, ctx.pos + 1, "COLOR_MARKER");
+  if (close === null) {
     return null;
   }
 
@@ -18,7 +19,7 @@ export function parseColorContent(ctx: ParseContext): ColorContent | null {
   let consumed = 1;
   let colorSpec = "";
 
-  while (pos < ctx.tokens.length) {
+  while (pos < (ctx.scope.inlineEnd ?? ctx.tokens.length)) {
     const token = ctx.tokens[pos];
     if (
       !token ||
@@ -44,16 +45,12 @@ export function parseColorContent(ctx: ParseContext): ColorContent | null {
   pos += contentResult.consumed;
   consumed += contentResult.consumed;
 
-  if (ctx.tokens[pos]?.type !== "COLOR_MARKER") {
-    return null;
-  }
-  consumed++;
-
   const color = colorSpec.trim();
   if (color === "" || contentResult.elements.length === 0) {
     return null;
   }
 
+  consumed += consumeFormattingClose(ctx, close, pos);
   return {
     color: hexifyColor(color),
     elements: contentResult.elements,

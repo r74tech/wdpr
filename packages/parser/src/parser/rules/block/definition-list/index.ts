@@ -14,10 +14,8 @@
  * Key parsing details:
  * - Whitespace after the first colon is required (`": key"` not `":key"`).
  * - The key portion supports inline markup (bold, links, etc.).
- * - The value continues until a double newline, a new definition entry, or
- *   the end of the document.
- * - A single newline within the value does NOT break the entry -- parsing
- *   continues on the next line.
+ * - The value ends at the next newline or the end of the document.
+ * - Explicit line continuations (` _`) can extend a value across source lines.
  *
  * @module
  */
@@ -49,14 +47,10 @@ export const definitionListRule: BlockRule = {
       return { success: false };
     }
 
+    const items = toDefinitionListItems(result.items.filter((item) => item.value.length > 0));
     return {
       success: true,
-      elements: [
-        {
-          element: "definition-list",
-          data: toDefinitionListItems(result.items),
-        },
-      ],
+      elements: items.length > 0 ? [{ element: "definition-list", data: items }] : [],
       consumed: result.consumed,
     };
   },

@@ -9,7 +9,8 @@ export function renderBibliographyBlock(
 ): void {
   if (data.hide) return;
 
-  const title = data.title ?? "Bibliography";
+  const title =
+    data.title ?? ctx.messages.text({ id: "bibliography.title", defaultMessage: "Bibliography" });
   ctx.push(`<div class="bibitems">`);
   ctx.push(`<div class="title">${escapeHtml(title)}</div>`);
 

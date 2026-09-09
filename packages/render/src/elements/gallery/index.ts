@@ -27,14 +27,12 @@
 import type { GalleryData, GalleryItem, GallerySize } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
 import { joinSafeLocalPath, normalizeSafeLocalPath } from "../../context/local-path";
-import { escapeAttr, isDangerousUrl } from "../../escape";
+import { escapeAttr, escapeHtml, isDangerousUrl } from "../../escape";
 import { getImageSizeWidth } from "../image-size";
 import { sortGalleryFiles } from "./sort";
 
 export { sortGalleryFiles } from "./sort";
 
-/** Wikidot's message for an auto gallery on a page without image attachments. */
-const NO_IMAGES_MESSAGE = "Sorry, we couldn't find any images attached to this page.";
 const ABSOLUTE_URL_WITH_AUTHORITY = /^[A-Za-z][A-Za-z0-9+.-]*:\/\//;
 
 /** Render a gallery element (explicit items or auto-collected page files). */
@@ -43,7 +41,9 @@ export function renderGallery(ctx: RenderContext, data: GalleryData): void {
   if (items === null) {
     // Auto form on a page that provided files but has no images: Wikidot
     // replaces the whole gallery with an error block.
-    ctx.push(`<div class="error-block">${NO_IMAGES_MESSAGE}</div>`);
+    ctx.push(
+      `<div class="error-block">${escapeHtml(ctx.messages.text({ id: "gallery.empty", defaultMessage: "Sorry, we couldn't find any images attached to this page." }))}</div>`,
+    );
     return;
   }
 
@@ -59,7 +59,7 @@ export function renderGallery(ctx: RenderContext, data: GalleryData): void {
  * Determine the items to render. The auto form takes filenames from
  * `content.files` when a resolver pre-filled them, otherwise from the
  * page context's attachment list sorted by the gallery's `order`
- * (an unknown attachment list renders as an empty gallery box).
+ * (an unknown attachment list renders the no-images message).
  * Returns null for the "no images attached" error case.
  */
 function collectGalleryItems(ctx: RenderContext, data: GalleryData): GalleryItem[] | null {
@@ -72,7 +72,7 @@ function collectGalleryItems(ctx: RenderContext, data: GalleryData): GalleryItem
     files = data.content.files;
   } else {
     const pageFiles = ctx.page?.files;
-    if (pageFiles === undefined) return [];
+    if (pageFiles === undefined) return null;
     files = sortGalleryFiles(pageFiles, data.order).map((f) => f.name);
   }
 

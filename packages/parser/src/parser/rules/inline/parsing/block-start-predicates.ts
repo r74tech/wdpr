@@ -1,3 +1,4 @@
+import { parseImageOpen } from "../image/open";
 import type { ParseContext } from "../../types";
 import { BLOCK_START_TOKEN_SET } from "../../../constants";
 import {
@@ -26,6 +27,7 @@ export function isParagraphBreakingBlockStart(
   }
 
   return (
+    !parseImageOpen({ ...ctx, pos: nextPos }) &&
     !isOrphanCloseSpan(ctx, nextPos) &&
     !isAnchorName(ctx, nextPos) &&
     !isInvalidBlockOpen(ctx, nextPos) &&

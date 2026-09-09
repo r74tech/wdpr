@@ -12,12 +12,17 @@
     "examples/wdmock-cf/apps/*"
   ],
   "scripts": {
+    "postinstall": "bun run build:info",
+    "build:info": "bun scripts/build-info.ts",
     "build": "bunup",
     "clean": "rm -rf packages/**/dist",
     "dev": "bunup --watch",
+    "messages:extract": "bun scripts/render-messages.ts",
+    "messages:check": "bun scripts/render-messages.ts --check",
     "test": "bun test && bun run --filter @wdpr/example-boiler test",
     "test:unit": "bun test tests/unit",
     "test:integration": "bun test tests/integration",
+    "test:build": "node --no-experimental-require-module tests/build/render.cjs && node --no-experimental-require-module tests/build/build-info.mjs",
     "lint": "oxlint packages/ tests/ examples/",
     "lint:fix": "oxlint --fix packages/ tests/ examples/",
     "format": "oxfmt --check packages/ tests/ examples/",
@@ -33,6 +38,7 @@
     "docs:all": "bun run docs:api && bun run docs:llms"
   },
   "devDependencies": {
+    "@formatjs/cli": "^6.16.23",
     "@nx/js": "^22.4.5",
     "@r74tech/typedoc-plugin-monorepo-versions": "^1.0.1",
     "@swc-node/register": "^1.11.1",
@@ -44,7 +50,11 @@
     "@wdprlib/render": "workspace:*",
     "@wdprlib/runtime": "workspace:*",
     "bunup": "^0.16.20",
+    "dom-serializer": "^2.0.0",
+    "domhandler": "^5.0.3",
+    "domutils": "^3.2.2",
     "happy-dom": "^20.3.9",
+    "htmlparser2": "^10.1.0",
     "nx": "^22.4.5",
     "oxfmt": "^0.27.0",
     "oxlint": "^1.42.0",

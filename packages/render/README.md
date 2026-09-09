@@ -78,6 +78,57 @@ result.diagnostics;
 result.dependencies;
 ```
 
+## Internationalization
+
+Pass a caller-owned [ICU MessageFormat](https://formatjs.github.io/docs/core-concepts/icu-syntax/)
+catalog through `i18n` on either `renderToHtml` or `renderWikitext`:
+
+```ts
+import { renderToHtml } from "@wdprlib/render";
+import messages from "./catalogs/ja.json";
+
+const html = renderToHtml(ast, {
+  i18n: {
+    locale: "ja",
+    messages,
+    onError: (error, id) => console.warn(`Invalid renderer message: ${id}`, error),
+  },
+});
+```
+
+The application loads and updates community catalogs, selects the locale, and merges any
+language/region fallback catalogs before rendering. The renderer performs no catalog fetches
+and bundles no translated catalogs. `renderMessages` exports the stable message IDs and English
+source messages; `RenderMessageId` and `RenderI18n` expose the corresponding types.
+This list is generated from `{ id, defaultMessage }` declarations at renderer call sites.
+After changing a declaration, run `bun run messages:extract` in the repository root.
+CI runs `bun run messages:check` to detect a stale list. Unmarked UI text still requires review.
+After `bun run build`, `bun run test:build` checks CommonJS exports using Node.js 22+.
+
+For example, a catalog can contain:
+
+```json
+{
+  "toc.title": "目次",
+  "footnote.title": "脚注",
+  "include.missing": "<createLink>{page} を作成する</createLink>（ページが存在しません）"
+}
+```
+
+`include.missing` receives `{page}` and the `<createLink>` tag. `module.unknown` receives
+`{name}`, `<emphasis>`, and `<documentationLink>`. These tags can move within the translated
+sentence, but their HTML and URLs remain renderer-owned. Other messages take no arguments or
+tags. Translations are text, not raw HTML; ICU quoting allows literal markup characters.
+Wikidot's source-string keys, `%s` placeholders, and wiki links must be converted to these IDs,
+named arguments, and rich tags when importing a catalog.
+
+Without `i18n`, existing English output is retained. Missing entries and invalid ICU messages
+fall back to English formatted with `en`; invalid messages also call `onError` when supplied.
+Throwing from `onError` aborts rendering. Empty translations are preserved. Author-provided
+titles and collapsible labels override translated defaults. Catalogs should remain unchanged
+during a render; separate calls may use different catalogs concurrently. `renderWikitext` can
+report a catalog error in both its collection and final render passes.
+
 ## Security defaults
 
 - `[[embed]]` accepts HTTPS iframes only. Inline `style` attributes are removed; use the allowed

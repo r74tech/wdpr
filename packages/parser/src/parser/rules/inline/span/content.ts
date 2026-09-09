@@ -1,3 +1,4 @@
+import { rawRegionEnd } from "../raw/end";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 import { inlineRules } from "../../index";
@@ -24,16 +25,21 @@ export function parseSpanContent(
   const escapedChildren: Element[] = [];
   const splitSpans: Element[][] = [];
   let foundClose = false;
+  let forcedClose = false;
   let afterBlankLine = false;
   let consumed = 0;
   let pos = startPos;
 
-  while (pos < ctx.tokens.length) {
+  while (pos < (ctx.scope.inlineEnd ?? ctx.tokens.length)) {
     const token = ctx.tokens[pos];
     if (!token || token.type === "EOF") {
       break;
     }
 
+    if (ctx.scope.tableFormatting?.suppressedClosers.has(pos)) {
+      forcedClose = true;
+      break;
+    }
     const close = parseCloseSpan(ctx, pos);
     if (close.success) {
       pos += close.consumed;
@@ -70,6 +76,31 @@ export function parseSpanContent(
     consumed += parsed.consumed;
   }
 
+  if (!foundClose && ctx.scope.tableFormatting && (pos === ctx.scope.inlineEnd || forcedClose)) {
+    let depth = 0;
+    for (let next = pos; next < ctx.scope.tableFormatting.end; next++) {
+      const rawEnd = rawRegionEnd(ctx.tokens, next, ctx.scope.tableFormatting.end);
+      if (rawEnd > next) {
+        next = rawEnd - 1;
+        continue;
+      }
+      if (
+        ctx.tokens[next]?.type === "BLOCK_OPEN" &&
+        /^span_?$/i.test(ctx.tokens[next + 1]?.value ?? "")
+      )
+        depth++;
+      const close = parseCloseSpan(ctx, next);
+      if (!close.success) continue;
+      if (depth > 0) {
+        depth--;
+        continue;
+      }
+      for (let offset = 0; offset < close.consumed; offset++)
+        ctx.scope.tableFormatting.suppressedClosers.add(next + offset);
+      foundClose = true;
+      break;
+    }
+  }
   return { children, escapedChildren, splitSpans, consumed, foundClose };
 }
 

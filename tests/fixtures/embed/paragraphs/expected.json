@@ -1,0 +1,62 @@
+{
+  "elements": [
+    {
+      "element": "embed-block",
+      "data": {
+        "contents": "x"
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "text"
+          },
+          {
+            "element": "line-break"
+          }
+        ]
+      }
+    },
+    {
+      "element": "embed-block",
+      "data": {
+        "contents": "x"
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "x"
+          }
+        ]
+      }
+    },
+    {
+      "element": "embed-block",
+      "data": {
+        "contents": "z"
+      }
+    },
+    {
+      "element": "text",
+      "data": "y"
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

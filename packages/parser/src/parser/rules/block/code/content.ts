@@ -49,9 +49,6 @@ function consumeCodeClose(ctx: ParseContext, startPos: number, closeNameConsumed
     pos++;
     consumed++;
   }
-  if (ctx.tokens[pos]?.type === "NEWLINE") {
-    consumed++;
-  }
 
   return consumed;
 }

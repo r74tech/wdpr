@@ -17,6 +17,8 @@
  * @packageDocumentation
  */
 
+export { buildInfo } from "./build-info.generated";
+
 import { initBibcite } from "./bibcite";
 import { initCollapsible } from "./collapsible";
 import { initEmail } from "./email";

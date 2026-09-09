@@ -3,8 +3,8 @@
  * Parses the Wikidot bold formatting syntax: `**text**`.
  *
  * Bold text is delimited by double asterisks. The opening and closing
- * markers must appear on the same line; if no closing `**` is found
- * before a newline, the opening marker is emitted as literal text.
+ * markers must appear within the same paragraph; if no closing `**` is found
+ * before a block boundary, the opening marker is emitted as literal text.
  *
  * Wikidot behavior for empty bold (`****`): the markers and their
  * (empty) content are discarded entirely, producing no output.
@@ -18,13 +18,13 @@
  */
 import type { Element } from "@wdprlib/ast";
 import type { InlineRule, ParseContext, RuleResult } from "../types";
-import { parseSameLineDelimitedContainer } from "./formatting/container";
+import { parseDelimitedContainer } from "./formatting/container";
 
 /**
  * Inline rule for parsing `**bold**` formatting.
  *
  * Triggered by a `BOLD_MARKER` token (`**`). The rule checks for a
- * matching closing marker on the same line, then recursively parses
+ * matching closing marker within the same paragraph, then recursively parses
  * inline content between the markers.
  *
  * When no closing marker is found, the opening `**` is treated as
@@ -44,6 +44,6 @@ export const boldRule: InlineRule = {
    *          fallback for unmatched markers
    */
   parse(ctx: ParseContext): RuleResult<Element> {
-    return parseSameLineDelimitedContainer(ctx, "BOLD_MARKER", "bold", { discardEmpty: true });
+    return parseDelimitedContainer(ctx, "BOLD_MARKER", "bold", { discardEmpty: true });
   },
 };

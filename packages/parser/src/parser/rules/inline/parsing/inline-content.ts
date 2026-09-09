@@ -1,3 +1,4 @@
+import { protectedInlineRegionEnd } from "../raw/end";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 import {
@@ -32,31 +33,53 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
   let pos = ctx.pos;
 
   const paragraphMode = endType === "PARAGRAPH_BREAK";
+  const multiline = paragraphMode || FORMATTING_CLOSE_TOKENS.has(endType);
+  let inlineEnd = ctx.scope.inlineEnd ?? ctx.tokens.length;
+  if (!multiline) {
+    for (let end = ctx.pos; end < inlineEnd; end++) {
+      const protectedEnd = protectedInlineRegionEnd(ctx.tokens, end, inlineEnd);
+      if (protectedEnd > end) {
+        end = protectedEnd - 1;
+        continue;
+      }
+      if (
+        ctx.tokens[end]?.type === "NEWLINE" &&
+        ctx.tokens[end - 1]?.type === "UNDERSCORE" &&
+        ctx.tokens[end - 2]?.type === "WHITESPACE"
+      )
+        continue;
+      if (ctx.tokens[end]?.type === "NEWLINE" || ctx.tokens[end]?.type === endType) {
+        inlineEnd = end;
+        break;
+      }
+    }
+  }
   const { inlineRules } = ctx;
   const inlineCtx: ParseContext = {
     ...ctx,
     pos,
+    scope: { ...ctx.scope, inlineEnd },
   };
   const canCollectLongPlainTextRuns = ctx.tokens.length >= MIN_INLINE_TEXT_RUN_DOCUMENT_TOKENS;
 
-  while (pos < ctx.tokens.length) {
+  while (pos < inlineEnd) {
     const token = ctx.tokens[pos];
     if (!token || token.type === "EOF") {
       break;
     }
 
-    if (paragraphMode && ctx.scope.blockCloseCondition) {
+    if (ctx.scope.blockCloseCondition) {
       const checkCtx: ParseContext = { ...ctx, pos };
       if (ctx.scope.blockCloseCondition(checkCtx)) {
         break;
       }
     }
 
-    if (!paragraphMode && token.type === "NEWLINE") {
+    if (!multiline && token.type === "NEWLINE") {
       break;
     }
 
-    if (paragraphMode && token.type === "NEWLINE") {
+    if (multiline && token.type === "NEWLINE" && !ctx.scope.tableFormatting) {
       const boundary = getParagraphNewlineBoundary(ctx, pos, nodes.length > 0);
       if (boundary.shouldBreak) {
         if (boundary.preservePrecedingLineBreak) {
@@ -66,6 +89,12 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
         consumed += boundary.consumed;
         break;
       }
+    }
+
+    if (ctx.scope.tableFormatting?.suppressedClosers.has(pos)) {
+      pos++;
+      consumed++;
+      continue;
     }
 
     if (token.type === endType) {
@@ -96,6 +125,20 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
     for (const rule of getCandidateInlineRules(inlineRules, token.type)) {
       const result = rule.parse(inlineCtx);
       if (result.success) {
+        if (rule.name === "comment") {
+          let after = pos + result.consumed;
+          while (ctx.tokens[after]?.type === "WHITESPACE") after++;
+          if (ctx.tokens[after]?.type === "NEWLINE" || ctx.tokens[after]?.type === "EOF") {
+            while (nodes.at(-1)?.element === "text") {
+              const last = nodes.at(-1)!;
+              if (last.element !== "text") break;
+              last.data = last.data.trimEnd();
+              if (last.data) break;
+              nodes.pop();
+            }
+            if (nodes.at(-1)?.element === "line-break") nodes.pop();
+          }
+        }
         nodes.push(...result.elements);
         consumed += result.consumed;
         pos += result.consumed;
@@ -113,3 +156,14 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
 
   return { elements: nodes, consumed };
 }
+
+const FORMATTING_CLOSE_TOKENS: ReadonlySet<string> = new Set([
+  "BOLD_MARKER",
+  "ITALIC_MARKER",
+  "UNDERLINE_MARKER",
+  "STRIKE_MARKER",
+  "SUPER_MARKER",
+  "SUB_MARKER",
+  "MONO_CLOSE",
+  "COLOR_MARKER",
+]);

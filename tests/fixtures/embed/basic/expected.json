@@ -1,18 +1,9 @@
 {
   "elements": [
     {
-      "element": "container",
+      "element": "embed-block",
       "data": {
-        "type": "paragraph",
-        "attributes": {},
-        "elements": [
-          {
-            "element": "embed-block",
-            "data": {
-              "contents": "<iframe width=\"1208\" height=\"680\" src=\"https://www.youtube.com/embed/dQw4w9WgXcQ\" title=\"Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>"
-            }
-          }
-        ]
+        "contents": "<iframe width=\"1208\" height=\"680\" src=\"https://www.youtube.com/embed/dQw4w9WgXcQ\" title=\"Rick Astley - Never Gonna Give You Up (Official Video) (4K Remaster)\" frameborder=\"0\" allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\" referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>"
       }
     },
     {

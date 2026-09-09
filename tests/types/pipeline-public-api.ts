@@ -3,6 +3,9 @@ import { processWikitext } from "@wdprlib/parser";
 import type { ParserOptions } from "@wdprlib/parser";
 import {
   renderWikitext,
+  renderToHtml,
+  renderMessages,
+  type RenderMessageId,
   type RenderOptions,
   type RenderResolvers,
   type ResolvedUser,
@@ -41,6 +44,15 @@ export async function compilePublicPipelineContracts(): Promise<void> {
   void invalidHtml;
 
   const lowLevelCompatibility: RenderOptions = {
+    i18n: {
+      locale: "ja",
+      messages: { "toc.title": "目次" },
+      onError: (_error, id) => {
+        const messageId: RenderMessageId = id;
+        const source: string = renderMessages[messageId];
+        void source;
+      },
+    },
     resolvers: {
       htmlBlockUrl: (index) => `/html/${index}`,
       user: (username) => ({ name: username }),
@@ -56,6 +68,8 @@ export async function compilePublicPipelineContracts(): Promise<void> {
   void lowLevelResolvers;
 
   const ast: SyntaxTree = { elements: [] };
+  renderToHtml(ast, lowLevelCompatibility);
+  await renderWikitext(document, lowLevelCompatibility);
   await renderWikitext({
     ast,
     settings: DEFAULT_SETTINGS,

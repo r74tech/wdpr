@@ -1,4 +1,5 @@
 import type { CollapsibleData } from "@wdprlib/ast";
+import type { RenderContext } from "../../context";
 import { escapeHtml } from "../../escape";
 
 export interface CollapsibleLabels {
@@ -6,24 +7,19 @@ export interface CollapsibleLabels {
   hide: string;
 }
 
-export function getCollapsibleLabels(data: CollapsibleData): CollapsibleLabels {
+export function getCollapsibleLabels(ctx: RenderContext, data: CollapsibleData): CollapsibleLabels {
   return {
     show: data["show-text"]
       ? formatLabelText(data["show-text"])
-      : formatCollapsibleText("+", "show block"),
+      : formatLabelText(
+          ctx.messages.text({ id: "collapsible.show", defaultMessage: "+ show block" }),
+        ),
     hide: data["hide-text"]
       ? formatLabelText(data["hide-text"])
-      : formatCollapsibleText("\u2013", "hide block"),
+      : formatLabelText(
+          ctx.messages.text({ id: "collapsible.hide", defaultMessage: "– hide block" }),
+        ),
   };
-}
-
-/**
- * Format a default collapsible link label by prepending a prefix symbol
- * (e.g. "+" or en-dash) with `&nbsp;` encoding for spaces.
- */
-function formatCollapsibleText(prefix: string, text: string): string {
-  const encoded = escapeHtml(text).replace(/ /g, "&nbsp;");
-  return `${prefix}&nbsp;${encoded}`;
 }
 
 /**

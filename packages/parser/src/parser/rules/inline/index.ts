@@ -1,3 +1,4 @@
+import { embedBlockRule } from "../block/embed-block";
 /**
  *
  * Central registry and priority-ordered list of all inline parsing rules.
@@ -130,6 +131,7 @@ export const inlineRules: InlineRule[] = [
   htmlInlineRule,
   rawRule,
   imageRule,
+  embedBlockRule,
   sizeRule,
   footnoteRule,
   spanRule,

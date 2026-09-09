@@ -1,11 +1,21 @@
 import type { RenderContext } from "../../context";
-import { escapeAttr, escapeHtml } from "../../escape";
+import { escapeAttr } from "../../escape";
 
 export function renderMissingInclude(ctx: RenderContext, page: string): void {
   const pageName = page.toLowerCase();
   const safePath = encodeIncludeEditPath(pageName);
   ctx.push(
-    `<div class="error-block"><p>Included page "${escapeHtml(pageName)}" does not exist (<a href="/${escapeAttr(safePath)}/edit/true">create it now</a>)</p></div>`,
+    `<div class="error-block"><p>${ctx.messages.html(
+      {
+        id: "include.missing",
+        defaultMessage:
+          'Included page "{page}" does not exist (<createLink>create it now</createLink>)',
+      },
+      { page: pageName },
+      {
+        createLink: (html) => `<a href="/${escapeAttr(safePath)}/edit/true">${html}</a>`,
+      },
+    )}</p></div>`,
   );
 }
 

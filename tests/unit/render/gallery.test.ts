@@ -32,12 +32,14 @@ function item(source: string, extra: Partial<GalleryItem> = {}): GalleryItem {
 }
 
 describe("renderGallery: box", () => {
-  it("renders an empty box for unresolved auto content", () => {
-    expect(render(gallery({}))).toBe('<div class="gallery-box" data-size="thumbnail"></div>');
+  it("renders the no-images error for unresolved auto content", () => {
+    expect(render(gallery({}))).toBe(
+      '<div class="error-block">Sorry, we couldn\'t find any images attached to this page.</div>',
+    );
   });
 
   it("adds data-viewer=false only when the viewer is disabled", () => {
-    expect(render(gallery({ viewer: false }))).toBe(
+    expect(render(gallery({ viewer: false, content: { type: "items", items: [] } }))).toBe(
       '<div class="gallery-box" data-size="thumbnail" data-viewer="false"></div>',
     );
   });
@@ -343,8 +345,10 @@ describe("renderGallery: auto content from page files", () => {
     );
   });
 
-  it("renders an empty gallery box when the attachment list is unknown", () => {
-    expect(render(gallery({}))).toBe('<div class="gallery-box" data-size="thumbnail"></div>');
+  it("renders the no-images error when the attachment list is unknown", () => {
+    expect(render(gallery({}))).toBe(
+      '<div class="error-block">Sorry, we couldn\'t find any images attached to this page.</div>',
+    );
   });
 });
 

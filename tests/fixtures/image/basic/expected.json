@@ -1,34 +1,25 @@
 {
   "elements": [
     {
-      "element": "container",
+      "element": "text",
+      "data": "BASIC"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "image",
       "data": {
-        "type": "paragraph",
-        "attributes": {},
-        "elements": [
-          {
-            "element": "text",
-            "data": "BASIC"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "filename.png"
-                }
-              },
-              "link": null,
-              "alignment": null,
-              "attributes": {}
-            }
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "filename.png"
           }
-        ]
+        },
+        "link": null,
+        "alignment": null,
+        "attributes": {}
       }
     },
     {
@@ -40,85 +31,85 @@
           {
             "element": "text",
             "data": "LEFT"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "filename.png"
-                }
-              },
-              "link": null,
-              "alignment": {
-                "align": "left",
-                "float": false
-              },
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
+          }
+        ]
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "filename.png"
+          }
+        },
+        "link": null,
+        "alignment": {
+          "align": "left",
+          "float": false
+        },
+        "attributes": {}
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
           {
             "element": "text",
             "data": "RIGHT"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "filename.png"
-                }
-              },
-              "link": null,
-              "alignment": {
-                "align": "right",
-                "float": false
-              },
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
+          }
+        ]
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "filename.png"
+          }
+        },
+        "link": null,
+        "alignment": {
+          "align": "right",
+          "float": false
+        },
+        "attributes": {}
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
           {
             "element": "text",
             "data": "CENTER"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "filename.png"
-                }
-              },
-              "link": null,
-              "alignment": {
-                "align": "center",
-                "float": false
-              },
-              "attributes": {}
-            }
           }
         ]
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "filename.png"
+          }
+        },
+        "link": null,
+        "alignment": {
+          "align": "center",
+          "float": false
+        },
+        "attributes": {}
       }
     },
     {
@@ -138,31 +129,33 @@
           {
             "element": "text",
             "data": "LEFT"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "landscape.jpg"
-                }
-              },
-              "link": null,
-              "alignment": {
-                "align": "left",
-                "float": true
-              },
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
+          }
+        ]
+      }
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "landscape.jpg"
+          }
+        },
+        "link": null,
+        "alignment": {
+          "align": "left",
+          "float": true
+        },
+        "attributes": {}
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
           {
             "element": "text",
             "data": "FLOAT"
@@ -174,337 +167,306 @@
           {
             "element": "text",
             "data": "RIGHT"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "landscape.jpg"
-                }
-              },
-              "link": null,
-              "alignment": {
-                "align": "right",
-                "float": true
-              },
-              "attributes": {}
-            }
           }
         ]
       }
     },
     {
-      "element": "container",
+      "element": "image",
       "data": {
-        "type": "paragraph",
-        "attributes": {},
-        "elements": [
-          {
-            "element": "text",
-            "data": "EXTERNAL"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "url",
-                "data": "https://example.com/some-image.webp"
-              },
-              "link": null,
-              "alignment": null,
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
-          {
-            "element": "text",
-            "data": "FILE"
-          },
-          {
-            "element": "text",
-            "data": "_"
-          },
-          {
-            "element": "text",
-            "data": "1"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "url",
-                "data": "/my-picture.png"
-              },
-              "link": null,
-              "alignment": null,
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
-          {
-            "element": "text",
-            "data": "FILE"
-          },
-          {
-            "element": "text",
-            "data": "_"
-          },
-          {
-            "element": "text",
-            "data": "2"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "url",
-                "data": "/some-other-page/my-picture.png"
-              },
-              "link": null,
-              "alignment": null,
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
-          {
-            "element": "text",
-            "data": "FILE"
-          },
-          {
-            "element": "text",
-            "data": "_"
-          },
-          {
-            "element": "text",
-            "data": "2"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file2",
-                "data": {
-                  "page": "some-other-page",
-                  "file": "my-picture.png"
-                }
-              },
-              "link": null,
-              "alignment": null,
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
-          {
-            "element": "text",
-            "data": "FILE"
-          },
-          {
-            "element": "text",
-            "data": "_"
-          },
-          {
-            "element": "text",
-            "data": "3"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "url",
-                "data": "/scp-wiki/some-other-page/my-picture.png"
-              },
-              "link": null,
-              "alignment": null,
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
-          {
-            "element": "text",
-            "data": "FILE"
-          },
-          {
-            "element": "text",
-            "data": "_"
-          },
-          {
-            "element": "text",
-            "data": "3"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file3",
-                "data": {
-                  "site": "scp-wiki",
-                  "page": "some-other-page",
-                  "file": "my-picture.png"
-                }
-              },
-              "link": null,
-              "alignment": null,
-              "attributes": {}
-            }
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "landscape.jpg"
           }
-        ]
+        },
+        "link": null,
+        "alignment": {
+          "align": "right",
+          "float": true
+        },
+        "attributes": {}
       }
     },
     {
-      "element": "container",
+      "element": "text",
+      "data": "EXTERNAL"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "image",
       "data": {
-        "type": "paragraph",
-        "attributes": {},
-        "elements": [
-          {
-            "element": "text",
-            "data": "ATTRS"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "foo.gif"
-                }
-              },
-              "link": null,
-              "alignment": null,
-              "attributes": {
-                "class": "animated",
-                "style": "border: 1em solid",
-                "alt": "A foobar made of gold",
-                "title": "FOO"
-              }
-            }
-          }
-        ]
+        "source": {
+          "type": "url",
+          "data": "https://example.com/some-image.webp"
+        },
+        "link": null,
+        "alignment": null,
+        "attributes": {}
       }
     },
     {
-      "element": "container",
+      "element": "line-break"
+    },
+    {
+      "element": "text",
+      "data": "FILE"
+    },
+    {
+      "element": "text",
+      "data": "_"
+    },
+    {
+      "element": "text",
+      "data": "1"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "image",
       "data": {
-        "type": "paragraph",
-        "attributes": {},
-        "elements": [
-          {
-            "element": "text",
-            "data": "LINK"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "foo.gif"
-                }
-              },
-              "link": "#gif-sucks",
-              "alignment": null,
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
-          {
-            "element": "text",
-            "data": "LINK"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "foo.gif"
-                }
-              },
-              "link": "some-page",
-              "alignment": null,
-              "attributes": {}
-            }
-          },
-          {
-            "element": "line-break"
-          },
-          {
-            "element": "text",
-            "data": "LINK"
-          },
-          {
-            "element": "text",
-            "data": " "
-          },
-          {
-            "element": "image",
-            "data": {
-              "source": {
-                "type": "file1",
-                "data": {
-                  "file": "foo.gif"
-                }
-              },
-              "link": "https://example.com/",
-              "alignment": null,
-              "attributes": {}
-            }
+        "source": {
+          "type": "url",
+          "data": "/my-picture.png"
+        },
+        "link": null,
+        "alignment": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "text",
+      "data": "FILE"
+    },
+    {
+      "element": "text",
+      "data": "_"
+    },
+    {
+      "element": "text",
+      "data": "2"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "url",
+          "data": "/some-other-page/my-picture.png"
+        },
+        "link": null,
+        "alignment": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "text",
+      "data": "FILE"
+    },
+    {
+      "element": "text",
+      "data": "_"
+    },
+    {
+      "element": "text",
+      "data": "2"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file2",
+          "data": {
+            "page": "some-other-page",
+            "file": "my-picture.png"
           }
-        ]
+        },
+        "link": null,
+        "alignment": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "text",
+      "data": "FILE"
+    },
+    {
+      "element": "text",
+      "data": "_"
+    },
+    {
+      "element": "text",
+      "data": "3"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "url",
+          "data": "/scp-wiki/some-other-page/my-picture.png"
+        },
+        "link": null,
+        "alignment": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "text",
+      "data": "FILE"
+    },
+    {
+      "element": "text",
+      "data": "_"
+    },
+    {
+      "element": "text",
+      "data": "3"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file3",
+          "data": {
+            "site": "scp-wiki",
+            "page": "some-other-page",
+            "file": "my-picture.png"
+          }
+        },
+        "link": null,
+        "alignment": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "text",
+      "data": "ATTRS"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "foo.gif"
+          }
+        },
+        "link": null,
+        "alignment": null,
+        "attributes": {
+          "class": "animated",
+          "style": "border: 1em solid",
+          "alt": "A foobar made of gold",
+          "title": "FOO"
+        }
+      }
+    },
+    {
+      "element": "text",
+      "data": "LINK"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "foo.gif"
+          }
+        },
+        "link": "#gif-sucks",
+        "alignment": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "text",
+      "data": "LINK"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "foo.gif"
+          }
+        },
+        "link": "some-page",
+        "alignment": null,
+        "attributes": {}
+      }
+    },
+    {
+      "element": "line-break"
+    },
+    {
+      "element": "text",
+      "data": "LINK"
+    },
+    {
+      "element": "text",
+      "data": " "
+    },
+    {
+      "element": "image",
+      "data": {
+        "source": {
+          "type": "file1",
+          "data": {
+            "file": "foo.gif"
+          }
+        },
+        "link": "https://example.com/",
+        "alignment": null,
+        "attributes": {}
       }
     },
     {

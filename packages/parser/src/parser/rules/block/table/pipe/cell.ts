@@ -1,3 +1,4 @@
+import { protectedInlineRegionEnd } from "../../../inline/raw/end";
 import type { Element, TableCell } from "@wdprlib/ast";
 import type { ParseContext } from "../../../types";
 import { getCandidateInlineRules } from "../../../inline/utils";
@@ -20,7 +21,35 @@ export function parseTableCell(
   }
 
   const { inlineRules } = ctx;
-  const inlineCtx: ParseContext = { ...ctx, pos };
+  let inlineEnd = pos;
+  while (inlineEnd < ctx.tokens.length) {
+    const rawEnd = protectedInlineRegionEnd(ctx.tokens, inlineEnd, ctx.tokens.length);
+    if (rawEnd > inlineEnd) {
+      inlineEnd = rawEnd;
+      continue;
+    }
+    const token = ctx.tokens[inlineEnd];
+    if (!token || token.type === "EOF" || token.type === "NEWLINE" || isPipeTableToken(token.type))
+      break;
+    if (
+      token.type === "WHITESPACE" &&
+      ctx.tokens[inlineEnd + 1]?.type === "UNDERSCORE" &&
+      ctx.tokens[inlineEnd + 2]?.type === "NEWLINE"
+    )
+      inlineEnd += 3;
+    else inlineEnd++;
+  }
+  const inlineCtx: ParseContext = {
+    ...ctx,
+    pos,
+    scope: {
+      ...ctx.scope,
+      inlineEnd,
+      tableFormatting: isPipeTableToken(ctx.tokens[inlineEnd]?.type ?? "EOF")
+        ? ctx.scope.tableFormatting
+        : undefined,
+    },
+  };
 
   while (pos < ctx.tokens.length) {
     const token = ctx.tokens[pos];
@@ -29,6 +58,12 @@ export function parseTableCell(
     }
     if (isPipeTableToken(token.type)) {
       break;
+    }
+
+    if (ctx.scope.tableFormatting?.suppressedClosers.has(pos)) {
+      pos++;
+      consumed++;
+      continue;
     }
 
     if (tryConsumeUnderscoreLineBreak(ctx, pos, children)) {

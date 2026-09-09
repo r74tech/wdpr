@@ -403,13 +403,10 @@ describe("Parser", () => {
 
   describe("image attribute parsing", () => {
     type ImageData = { source: unknown; attributes: Record<string, string> };
-    type ContainerData = { elements: { element: string; data: ImageData }[] };
 
-    function getImageFromParagraph(content: Element[]): { element: string; data: ImageData } {
-      const para = content[0] as { element: string; data: ContainerData };
-      expect(para.element).toBe("container");
-      expect(para.data.elements.length).toBeGreaterThan(0);
-      return para.data.elements[0] as { element: string; data: ImageData };
+    function getImage(content: Element[]): { element: string; data: ImageData } {
+      expect(content[0]?.element).toBe("image");
+      return content[0] as { element: string; data: ImageData };
     }
 
     // data-* attributes should not be accepted (Wikidot behavior)
@@ -419,7 +416,7 @@ describe("Parser", () => {
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(1);
-      const img = getImageFromParagraph(content);
+      const img = getImage(content);
       expect(img.element).toBe("image");
       // data-src should be ignored entirely
       expect(img.data.attributes).toEqual({});
@@ -432,7 +429,7 @@ describe("Parser", () => {
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(1);
-      const img = getImageFromParagraph(content);
+      const img = getImage(content);
       expect(img.element).toBe("image");
       // data--src should be ignored entirely (no src attribute should be created)
       expect(img.data.attributes).toEqual({});
@@ -444,7 +441,7 @@ describe("Parser", () => {
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(1);
-      const img = getImageFromParagraph(content);
+      const img = getImage(content);
       expect(img.element).toBe("image");
       expect(img.data.attributes).toEqual({});
       expect(img.data.source).toEqual({ type: "file1", data: { file: "foo.jpg" } });
@@ -455,7 +452,7 @@ describe("Parser", () => {
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(1);
-      const img = getImageFromParagraph(content);
+      const img = getImage(content);
       expect(img.element).toBe("image");
       expect(img.data.attributes).toEqual({});
       expect(img.data.source).toEqual({ type: "file1", data: { file: "foo.jpg" } });
@@ -466,7 +463,7 @@ describe("Parser", () => {
       const content = getContentElements(doc);
 
       expect(content).toHaveLength(1);
-      const img = getImageFromParagraph(content);
+      const img = getImage(content);
       expect(img.element).toBe("image");
       expect(img.data.attributes).toEqual({ alt: "Description", width: "100" });
     });

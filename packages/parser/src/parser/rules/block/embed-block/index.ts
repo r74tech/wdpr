@@ -8,9 +8,6 @@
  * between the tags is stored verbatim as an `embed-block` element. Validation
  * and sanitisation are expected to happen at rendering time or on the server.
  *
- * The embed block is wrapped in a paragraph container in the AST, matching
- * Wikidot's rendering behaviour where embeds sit inside `<p>` tags.
- *
  * If no closing tag is found, the rule fails to prevent consuming the rest
  * of the document.
  *
@@ -18,6 +15,8 @@
  */
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../../types";
+import { parseInlineUntil } from "../../inline/utils";
+import { normalizeParagraphElements } from "../paragraph/normalize";
 import { currentToken } from "../../types";
 import { collectEmbedContent, consumeEmbedClose } from "./content";
 import { parseEmbedBlockOpen } from "./open";
@@ -34,6 +33,8 @@ export const embedBlockRule: BlockRule = {
   name: "embed-block",
   startTokens: ["BLOCK_OPEN"],
   requiresLineStart: false,
+  preservesPrecedingLineBreak: true,
+  isStartPattern: (ctx, pos) => parseEmbedBlockOpen(ctx, pos) !== null,
 
   parse(ctx: ParseContext): RuleResult<Element> {
     const openToken = currentToken(ctx);
@@ -53,12 +54,17 @@ export const embedBlockRule: BlockRule = {
     consumed += contentResult.consumed;
 
     if (!contentResult.foundClose) {
-      ctx.diagnostics.push({
-        severity: "warning",
-        code: "unclosed-block",
-        message: `Missing closing tag [[/${openResult.blockName}]] for [[${openResult.blockName}]]`,
-        position: openToken.position,
-      });
+      if (
+        !ctx.diagnostics.some(
+          (d) => d.code === "unclosed-block" && d.position === openToken.position,
+        )
+      )
+        ctx.diagnostics.push({
+          severity: "warning",
+          code: "unclosed-block",
+          message: `Missing closing tag [[/${openResult.blockName}]] for [[${openResult.blockName}]]`,
+          position: openToken.position,
+        });
       return { success: false };
     }
 
@@ -66,26 +72,20 @@ export const embedBlockRule: BlockRule = {
     pos += closeConsumed;
     consumed += closeConsumed;
 
-    return {
-      success: true,
-      elements: [
-        {
-          element: "container",
-          data: {
-            type: "paragraph",
-            attributes: {},
-            elements: [
-              {
-                element: "embed-block",
-                data: {
-                  contents: contentResult.contents.trim(),
-                },
-              },
-            ],
-          },
-        },
-      ],
-      consumed,
-    };
+    const elements: Element[] = [
+      { element: "embed-block", data: { contents: contentResult.contents.trim() } },
+    ];
+    if (
+      ctx.scope.inlineEnd === undefined &&
+      ctx.tokens[pos]?.type !== "NEWLINE" &&
+      ctx.tokens[pos]?.type !== "EOF"
+    ) {
+      const after = parseInlineUntil({ ...ctx, pos }, "PARAGRAPH_BREAK");
+      const tail = normalizeParagraphElements(after.elements);
+      if (tail[0]?.element === "text") tail[0].data = tail[0].data.trimStart();
+      elements.push(...tail);
+      consumed += after.consumed;
+    }
+    return { success: true, elements, consumed };
   },
 };

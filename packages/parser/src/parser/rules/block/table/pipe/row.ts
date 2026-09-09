@@ -1,3 +1,4 @@
+import { protectedInlineRegionEnd } from "../../../inline/raw/end";
 import type { TableCell, TableRow } from "@wdprlib/ast";
 import type { ParseContext } from "../../../types";
 import { parseCellStart } from "./cell-start";
@@ -8,6 +9,25 @@ export function parsePipeTableRows(
   ctx: ParseContext,
   startPos: number,
 ): { rows: TableRow[]; consumed: number } {
+  let end = startPos;
+  while (end < ctx.tokens.length && ctx.tokens[end]?.type !== "EOF") {
+    const protectedEnd = protectedInlineRegionEnd(ctx.tokens, end, ctx.tokens.length);
+    if (protectedEnd > end) {
+      end = protectedEnd;
+      continue;
+    }
+    if (
+      ctx.tokens[end]?.type === "NEWLINE" &&
+      !isPipeTableToken(ctx.tokens[end + 1]?.type ?? "EOF") &&
+      !(ctx.tokens[end - 1]?.type === "UNDERSCORE" && ctx.tokens[end - 2]?.type === "WHITESPACE")
+    )
+      break;
+    end++;
+  }
+  const tableCtx: ParseContext = {
+    ...ctx,
+    scope: { ...ctx.scope, tableFormatting: { end, suppressedClosers: new Set() } },
+  };
   const rows: TableRow[] = [];
   let pos = startPos;
   let consumed = 0;
@@ -19,7 +39,7 @@ export function parsePipeTableRows(
       break;
     }
 
-    const rowResult = parseTableRow(ctx, pos);
+    const rowResult = parseTableRow(tableCtx, pos);
     rows.push(rowResult.row);
     pos += rowResult.consumed;
     consumed += rowResult.consumed;

@@ -180,6 +180,12 @@ export function serializeElements(
     if (topLevel && el.element === "footnote-block" && i === elements.length - 1) {
       (el as Record<string, unknown>)._isLastElement = true;
     }
-    serializeElement(ctx, el);
+    if (el.element === "code" && elements[i + 1]?.element === "line-break") {
+      serializeCode(ctx, el.data, true);
+    } else if (el.element === "embed-block" && elements[i + 1]?.element === "text") {
+      serializeEmbedBlock(ctx, el.data, true);
+    } else {
+      serializeElement(ctx, el);
+    }
   }
 }

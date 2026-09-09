@@ -6,7 +6,7 @@
  * token has dual meaning in Wikidot: it can be either a strikethrough
  * marker or an em-dash. The disambiguation rule is:
  *
- * - If a matching closing `--` is found on the same line AND the closing
+ * - If a matching closing `--` is found within the same paragraph AND the closing
  *   marker is NOT preceded by whitespace, it is treated as strikethrough.
  * - Otherwise, the `--` is converted to an em-dash character (U+2014).
  *

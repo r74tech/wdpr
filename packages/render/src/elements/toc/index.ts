@@ -12,6 +12,6 @@ import { closeTocFrame, openTocFrame } from "./frame";
 
 export function renderTableOfContents(ctx: RenderContext, data: TableOfContentsData): void {
   openTocFrame(ctx, data.align);
-  renderTocBody(ctx);
+  renderTocBody(ctx, data.attributes?.title);
   closeTocFrame(ctx, data.align);
 }

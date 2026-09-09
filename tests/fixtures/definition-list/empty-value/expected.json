@@ -1,0 +1,56 @@
+{
+  "elements": [
+    {
+      "element": "definition-list",
+      "data": [
+        {
+          "key_string": "用語",
+          "key": [
+            {
+              "element": "text",
+              "data": "用"
+            },
+            {
+              "element": "text",
+              "data": "語"
+            }
+          ],
+          "value": [
+            {
+              "element": "text",
+              "data": "定"
+            },
+            {
+              "element": "text",
+              "data": "義"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "本"
+          },
+          {
+            "element": "text",
+            "data": "文"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

@@ -7,7 +7,11 @@ import { formatDirectiveAttributes, hasBlockCloseCandidate } from "./directive-s
  *
  * Includes `type` and `name` attributes when present.
  */
-export function serializeCode(ctx: SerializeContext, data: CodeBlockData): void {
+export function serializeCode(
+  ctx: SerializeContext,
+  data: CodeBlockData,
+  followedByLineBreak = false,
+): void {
   if (hasBlockCloseCandidate(data.contents, "code")) return;
   const attributes: Record<string, string> = {};
   if (data.language) {
@@ -26,6 +30,9 @@ export function serializeCode(ctx: SerializeContext, data: CodeBlockData): void 
       ctx.push(ctx.newline);
     }
   }
-  ctx.pushBlockLine("[[/code]]");
-  ctx.requestBlankLine();
+  if (followedByLineBreak) ctx.push("[[/code]]");
+  else {
+    ctx.pushBlockLine("[[/code]]");
+    ctx.requestBlankLine();
+  }
 }

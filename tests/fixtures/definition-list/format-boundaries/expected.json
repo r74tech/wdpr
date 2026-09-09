@@ -1,0 +1,86 @@
+{
+  "elements": [
+    {
+      "element": "definition-list",
+      "data": [
+        {
+          "key_string": "@<a:b>@",
+          "key": [
+            {
+              "element": "raw",
+              "data": "a:b"
+            }
+          ],
+          "value": [
+            {
+              "element": "text",
+              "data": "value"
+            }
+          ]
+        },
+        {
+          "key_string": "**key",
+          "key": [
+            {
+              "element": "text",
+              "data": "**"
+            },
+            {
+              "element": "text",
+              "data": "key"
+            }
+          ],
+          "value": [
+            {
+              "element": "text",
+              "data": "value"
+            }
+          ]
+        },
+        {
+          "key_string": "key",
+          "key": [
+            {
+              "element": "text",
+              "data": "key"
+            }
+          ],
+          "value": [
+            {
+              "element": "text",
+              "data": "__"
+            },
+            {
+              "element": "text",
+              "data": "value"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "next"
+          },
+          {
+            "element": "text",
+            "data": "__"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

@@ -1,3 +1,19 @@
+## 5.2.0 (2026-09-09)
+
+### 🩹 Fixes
+
+- Wikidotとの構文・描画の差分を修正し、i18nとビルド情報を追加する ([#73](https://github.com/r74tech/wdpr/pull/73))
+- **parser:** blockquote内でブロック構文をパースする ([#72](https://github.com/r74tech/wdpr/pull/72))
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/ast to 4.1.0
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+- Yuki Watanabe
+
 ## 5.1.6 (2026-08-30)
 
 ### 🩹 Fixes

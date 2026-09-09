@@ -1,3 +1,13 @@
+## 1.3.0 (2026-09-09)
+
+### 🩹 Fixes
+
+- Wikidotとの構文・描画の差分を修正し、i18nとビルド情報を追加する ([#73](https://github.com/r74tech/wdpr/pull/73))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 1.2.3 (2026-09-02)
 
 ### 🩹 Fixes

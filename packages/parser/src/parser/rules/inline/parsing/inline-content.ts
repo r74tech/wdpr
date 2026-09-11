@@ -1,3 +1,4 @@
+import { parseDateSyntax } from "../date/syntax";
 import { emailRegionEnd } from "../email/candidates";
 import { protectedInlineRegionEnd } from "../raw/end";
 import type { Element } from "@wdprlib/ast";
@@ -39,6 +40,7 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
   if (!multiline) {
     for (let end = ctx.pos; end < inlineEnd; end++) {
       const protectedEnd = Math.max(
+        parseDateSyntax(ctx, end, inlineEnd)?.end ?? end,
         emailRegionEnd(ctx.tokens, end, inlineEnd),
         protectedInlineRegionEnd(ctx.tokens, end, inlineEnd),
       );

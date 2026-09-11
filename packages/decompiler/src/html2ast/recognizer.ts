@@ -1,3 +1,4 @@
+import { recognizeDate } from "./date";
 import type { Element } from "@wdprlib/ast";
 import { isTag, isText, type ChildNode, type Element as DomElement } from "domhandler";
 import type { DecompileContext } from "./context";
@@ -169,6 +170,9 @@ function recognizeSpanDispatch(
 ): Element[] {
   const className = node.attribs.class ?? "";
   const style = node.attribs.style ?? "";
+
+  const date = recognizeDate(node);
+  if (date) return [date];
 
   // math-inline
   if (className.includes("math-inline")) {

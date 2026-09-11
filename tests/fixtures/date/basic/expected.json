@@ -1,0 +1,201 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "date",
+            "data": {
+              "value": {
+                "timestamp": 1237135440,
+                "timezone": "UTC"
+              },
+              "format": "%e %b %Y, %H:%M %Z|agohover",
+              "hover": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "date",
+            "data": {
+              "value": {
+                "timestamp": 1237135440,
+                "timezone": "UTC"
+              },
+              "format": "%c",
+              "hover": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "date",
+            "data": {
+              "value": {
+                "timestamp": 1216153821,
+                "timezone": "UTC"
+              },
+              "format": null,
+              "hover": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "date",
+            "data": {
+              "value": {
+                "timestamp": 1216153821,
+                "timezone": "UTC"
+              },
+              "format": "%d. %m. %Y|agohover",
+              "hover": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "date",
+            "data": {
+              "value": {
+                "timestamp": 681746400,
+                "timezone": "UTC"
+              },
+              "format": "James is %O young",
+              "hover": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": {
+          "header": {
+            "level": 3,
+            "has-toc": true
+          }
+        },
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Minutes"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "from"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "date",
+            "data": {
+              "value": {
+                "timestamp": 1234567890,
+                "timezone": "UTC"
+              },
+              "format": "%e %B|agohover",
+              "hover": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ],
+  "table-of-contents": [
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "sub-list",
+            "element": "list",
+            "data": {
+              "type": "bullet",
+              "attributes": {},
+              "items": [
+                {
+                  "item-type": "sub-list",
+                  "element": "list",
+                  "data": {
+                    "type": "bullet",
+                    "attributes": {},
+                    "items": [
+                      {
+                        "item-type": "elements",
+                        "attributes": {},
+                        "elements": [
+                          {
+                            "element": "link",
+                            "data": {
+                              "type": "table-of-contents",
+                              "link": "#toc0",
+                              "extra": null,
+                              "label": {
+                                "text": "Minutes from "
+                              },
+                              "target": null
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

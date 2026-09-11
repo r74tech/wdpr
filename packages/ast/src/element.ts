@@ -814,7 +814,7 @@ export interface DateData {
   value: DateItem;
   /** strftime-style format string, or null for default */
   format: string | null;
-  /** Whether to show a tooltip with the full date on hover */
+  /** Whether to show elapsed time in a tooltip on hover */
   hover: boolean;
 }
 

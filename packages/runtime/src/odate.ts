@@ -1,22 +1,5 @@
-/**
- *
- * Runtime module for converting server-rendered dates to the user's local timezone.
- *
- * Wikidot encodes timestamps and format strings in CSS class names on
- * `<span class="odate">` elements:
- * - `time_{unix_timestamp}` -- the Unix timestamp in seconds
- * - `format%{url_encoded_format}` -- the strftime-compatible format string
- *
- * This module scans for these elements and replaces their text content
- * with the formatted date in the user's local timezone.
- *
- * Supported strftime specifiers: `%Y`, `%y`, `%m`, `%d`, `%e`, `%H`, `%M`,
- * `%S`, `%a`, `%A`, `%b`, `%B`, `%j`, `%O`, `%%`.
- *
- * This is a one-shot initialization (no event listeners to clean up).
- *
- * @module
- */
+/** Format timestamp metadata from rendered Wikidot dates in the browser's locale. */
+const hoverListeners = new WeakMap<HTMLElement, () => void>();
 
 /** Abbreviated English day names, indexed by `Date.getDay()`. */
 const DAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -69,35 +52,35 @@ export function initOdate(root: HTMLElement): void {
   }
 }
 
-/**
- * Extract timestamp and format from a single odate element's CSS classes
- * and replace its text content with the locally-formatted date.
- *
- * The timestamp class has the form `time_{unix_seconds}` and the format
- * class has the form `format%{url_encoded_strftime}`. If no format class
- * is present, the default `%e %b %Y, %H:%M` is used (matching Wikidot).
- *
- * @param el - A `<span class="odate">` element to process.
- */
+/** Read modern format_ classes and the older format% encoding. */
 function processOdate(el: HTMLElement): void {
-  const classes = el.className.split(/\s+/);
-
   let timestamp: number | null = null;
-  let format = "%e %b %Y, %H:%M";
-
-  for (const cls of classes) {
-    if (cls.startsWith("time_")) {
-      const val = Number(cls.slice(5));
-      if (!Number.isNaN(val)) timestamp = val;
-    } else if (cls.startsWith("format%")) {
-      format = decodeFormat(cls.slice(6));
-    }
+  let format: string | null = null;
+  for (const cls of el.className.split(/\s+/)) {
+    if (/^time_-?\d+$/.test(cls)) timestamp = Number(cls.slice(5));
+    else if (cls.startsWith("format_")) format = decodeFormat(cls.slice(7));
+    else if (cls.startsWith("format%")) format = decodeFormat(cls.slice(6));
   }
-
-  if (timestamp === null) return;
-
+  if (timestamp === null || !Number.isSafeInteger(timestamp)) return;
   const date = new Date(timestamp * 1000);
-  el.textContent = formatDate(date, format);
+  if (!Number.isFinite(date.getTime())) return;
+  const [pattern, ...options] = format?.split("|") ?? [];
+  el.textContent = pattern === undefined ? date.toLocaleString() : formatDate(date, pattern);
+
+  const previous = hoverListeners.get(el);
+  if (previous) {
+    el.removeEventListener("mouseover", previous);
+    hoverListeners.delete(el);
+    el.removeAttribute("title");
+  }
+  if (options.includes("agohover")) {
+    const updateHover = () => {
+      el.title = `${elapsedTime(date)} ago`;
+    };
+    updateHover();
+    el.addEventListener("mouseover", updateHover);
+    hoverListeners.set(el, updateHover);
+  }
 }
 
 /**
@@ -166,7 +149,7 @@ function formatDate(date: Date, format: string): string {
  * - `%b` -- abbreviated month name (Jan-Dec)
  * - `%B` -- full month name (January-December)
  * - `%j` -- day of year (1-366)
- * - `%O` -- day of month with English ordinal suffix (1st, 2nd, ...)
+ * - `%O` -- elapsed seconds, minutes, hours or days
  * - `%%` -- literal percent sign
  *
  * Unknown specifiers are returned as-is (e.g. `%z` becomes `"%z"`).
@@ -204,7 +187,31 @@ function formatSpec(date: Date, spec: string): string {
     case "j":
       return String(getDayOfYear(date));
     case "O":
-      return getOrdinalSuffix(date.getDate());
+      return elapsedTime(date);
+    case "c":
+      return date.toLocaleString();
+    case "I":
+      return pad2(date.getHours() % 12 || 12);
+    case "p":
+      return date.getHours() < 12 ? "AM" : "PM";
+    case "r":
+      return formatDate(date, "%I:%M:%S %p");
+    case "R":
+      return formatDate(date, "%H:%M");
+    case "T":
+      return formatDate(date, "%H:%M:%S");
+    case "D":
+      return formatDate(date, "%m/%d/%y");
+    case "z": {
+      const minutes = -date.getTimezoneOffset();
+      return `${minutes >= 0 ? "+" : "-"}${pad2(Math.floor(Math.abs(minutes) / 60))}${pad2(Math.abs(minutes) % 60)}`;
+    }
+    case "Z":
+      return (
+        new Intl.DateTimeFormat(undefined, { timeZoneName: "short" })
+          .formatToParts(date)
+          .find((part) => part.type === "timeZoneName")?.value ?? ""
+      );
     case "%":
       return "%";
     default:
@@ -238,25 +245,16 @@ function getDayOfYear(date: Date): number {
   return Math.floor(diff / 86400000);
 }
 
-/**
- * Format a day-of-month number with its English ordinal suffix.
- *
- * Special-cases 11th, 12th, and 13th (which do not follow the
- * usual -st/-nd/-rd pattern), then dispatches on the last digit.
- *
- * @param day - The day of the month (1-31).
- * @returns The day with its ordinal suffix (e.g. `"1st"`, `"12th"`, `"23rd"`).
- */
-function getOrdinalSuffix(day: number): string {
-  if (day >= 11 && day <= 13) return `${day}th`;
-  switch (day % 10) {
-    case 1:
-      return `${day}st`;
-    case 2:
-      return `${day}nd`;
-    case 3:
-      return `${day}rd`;
-    default:
-      return `${day}th`;
-  }
+/** Match Wikidot's seconds/minutes/hours/days elapsed-time units. */
+function elapsedTime(date: Date): string {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+  const [amount, unit] =
+    seconds >= 86400
+      ? ([Math.floor(seconds / 86400), "day"] as const)
+      : seconds >= 3600
+        ? ([Math.floor(seconds / 3600), "hour"] as const)
+        : seconds >= 60
+          ? ([Math.floor(seconds / 60), "minute"] as const)
+          : ([seconds || 1, "second"] as const);
+  return `${amount} ${unit}${amount > 1 ? "s" : ""}`;
 }

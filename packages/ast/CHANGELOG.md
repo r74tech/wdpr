@@ -1,3 +1,13 @@
+## 4.2.0 (2026-09-11)
+
+### 🚀 Features
+
+- ListPagesのページャーを実装 ([#74](https://github.com/r74tech/wdpr/pull/74))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 4.1.0 (2026-09-09)
 
 ### 🩹 Fixes

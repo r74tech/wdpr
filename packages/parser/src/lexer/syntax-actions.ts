@@ -1,6 +1,7 @@
 import type { TokenAction } from "./token-actions";
 import { findRepeatedCharRunEnd } from "./runs";
 import type { TokenType } from "./tokens";
+import { startsWithUrl } from "./url-schemes";
 
 export function scanSimpleSyntaxToken(
   src: string,
@@ -42,7 +43,11 @@ export function scanSimpleSyntaxToken(
 }
 
 function scanStarToken(src: string, pos: number, isLineStart: boolean): TokenAction {
-  if (src[pos + 1] === "*") {
+  // `**http://x…` は太字にならない。Wikidotは2つ目の`*`をURLの新規タブプレフィックスとして
+  // 扱い、開きの`**`ペアが壊れる（`*` リテラル + `*http://x…` autolink + 末尾`**` リテラル）。
+  // 直後が有効なURLのときだけBOLD_MARKERに結合せず単一の`*`として切り出す。
+  // `**http://**`のようにURL本体が無い場合はautolinkが成立しないため太字のまま扱う
+  if (src[pos + 1] === "*" && !startsWithUrl(src, pos + 2)) {
     return token("BOLD_MARKER", "**");
   }
   return isLineStart ? token("LIST_BULLET", "*") : token("STAR", "*");

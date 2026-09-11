@@ -47,18 +47,14 @@ export function serializeLink(ctx: SerializeContext, data: LinkData): void {
     }
     case "direct": {
       const url = typeof location === "string" ? location : "";
-      const labelText = extractLabelText(label);
+      const labelText = extractLabelText(label) || url;
       const targetPrefix = target === "new-tab" ? "*" : "";
 
-      if (!isSafeBareToken(url) || (!labelIsUrl(label, url) && !isSafeBracketValue(labelText))) {
+      if (!isSafeBareToken(url) || !isSafeBracketValue(labelText)) {
         return;
       }
 
-      if (labelIsUrl(label, url)) {
-        ctx.push(`[${targetPrefix}${url}]`);
-      } else {
-        ctx.push(`[${targetPrefix}${url} ${labelText}]`);
-      }
+      ctx.push(`[${targetPrefix}${url} ${labelText}]`);
       break;
     }
     default: {
@@ -81,12 +77,4 @@ function extractLabelText(label: LinkLabel): string {
   if ("text" in label) return label.text;
   if ("url" in label) return label.url ?? "";
   return "";
-}
-
-/** Check whether the label represents the URL itself (no custom label text). */
-function labelIsUrl(label: LinkLabel, url: string): boolean {
-  if (label === "page") return false;
-  if ("url" in label) return true;
-  if ("text" in label) return label.text === url;
-  return false;
 }

@@ -5,6 +5,7 @@ import {
   isAsciiAlphanumericCode,
 } from "./runs";
 import type { TokenAction } from "./token-actions";
+import { TRAILING_URL_SCHEME } from "./url-schemes";
 
 export function scanTextToken(src: string, pos: number): TokenAction {
   const char = src[pos] ?? "";
@@ -28,7 +29,20 @@ export function scanTextToken(src: string, pos: number): TokenAction {
 }
 
 export function scanCompactTextToken(src: string, pos: number): TokenAction | null {
-  const end = findCompactPlainTextRunEnd(src, pos);
+  let end = findCompactPlainTextRunEnd(src, pos);
+
+  // 生URLの自動リンク化はIDENTIFIERトークンのスキーム名から発火する。
+  // このcompactモード（大きなソースで連続する平文を1つのTEXTトークンにまとめる高速化）が
+  // `see http` のようにスキーム名までTEXTに取り込むとリンク化されなくなるため、
+  // 次の文字が`:`でトークンがスキーム名で終わる場合はスキーム名の手前で切り、
+  // スキーム名を通常のIDENTIFIERスキャンに委ねる
+  if (end > pos && src[end] === ":") {
+    const match = TRAILING_URL_SCHEME.exec(src.slice(pos, end));
+    if (match) {
+      end -= match[1]!.length;
+    }
+  }
+
   return end > pos ? runToken(src, pos, end, "TEXT") : null;
 }
 

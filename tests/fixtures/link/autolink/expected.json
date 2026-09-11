@@ -1,0 +1,1355 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "inline"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/page",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/page"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "after"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "head"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/page",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/page"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": "."
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "tail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/page",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/page"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": ","
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "mid"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "paren"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "("
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/pg",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/pg"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": ")"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "and"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "「"
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/pg",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/pg"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": "」"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "quoted"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "こ"
+          },
+          {
+            "element": "text",
+            "data": "れ"
+          },
+          {
+            "element": "text",
+            "data": "は"
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/page",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/page"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": "で"
+          },
+          {
+            "element": "text",
+            "data": "す"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "not"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "a"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "link"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "abchttp"
+          },
+          {
+            "element": "text",
+            "data": ":"
+          },
+          {
+            "element": "text",
+            "data": "//"
+          },
+          {
+            "element": "text",
+            "data": "example"
+          },
+          {
+            "element": "text",
+            "data": "."
+          },
+          {
+            "element": "text",
+            "data": "com"
+          },
+          {
+            "element": "text",
+            "data": "/"
+          },
+          {
+            "element": "text",
+            "data": "pg"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "here"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "https://example.com/new-tab-target",
+              "extra": null,
+              "label": {
+                "text": "https://example.com/new-tab-target"
+              },
+              "target": "new-tab"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "star"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "mid"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/star-mid",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/star-mid"
+              },
+              "target": "new-tab"
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "x"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "mail"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "mailto:someone@example.com",
+              "extra": null,
+              "label": {
+                "text": "mailto:someone@example.com"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "schemes"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "https://example.com/s",
+              "extra": null,
+              "label": {
+                "text": "https://example.com/s"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "ftp://example.com/f",
+              "extra": null,
+              "label": {
+                "text": "ftp://example.com/f"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "more"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "schemes"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "gopher://example.com/g",
+              "extra": null,
+              "label": {
+                "text": "gopher://example.com/g"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "news://example.com/n",
+              "extra": null,
+              "label": {
+                "text": "news://example.com/n"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "mms://example.com/m",
+              "extra": null,
+              "label": {
+                "text": "mms://example.com/m"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "bare"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "http"
+          },
+          {
+            "element": "text",
+            "data": ":"
+          },
+          {
+            "element": "text",
+            "data": "//"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "no"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "terminator"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "query"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/p?a=1&b=2",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/p?a=1&b=2"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "fragment"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/p#sec",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/p#sec"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "tilde"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/~user",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/~user"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "trailing"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "slash"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/p/",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/p/"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "bold"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "*"
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/b",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/b"
+              },
+              "target": "new-tab"
+            }
+          },
+          {
+            "element": "text",
+            "data": "**"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "mono"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "monospace",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "link",
+                  "data": {
+                    "type": "direct",
+                    "link": "http://example.com/m",
+                    "extra": null,
+                    "label": {
+                      "text": "http://example.com/m"
+                    },
+                    "target": null
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "strike"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "strikethrough",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "link",
+                  "data": {
+                    "type": "direct",
+                    "link": "http://example.com/s",
+                    "extra": null,
+                    "label": {
+                      "text": "http://example.com/s"
+                    },
+                    "target": null
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "consecutive"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/a",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/a"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/b",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/b"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "fullwidth"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "space"
+          },
+          {
+            "element": "text",
+            "data": "　"
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/fw",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/fw"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "described"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "ftp"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "ftp://example.com/file",
+              "extra": null,
+              "label": {
+                "text": "Label"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "described"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "mailto"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "mailto:someone@example.com",
+              "extra": null,
+              "label": {
+                "text": "メール"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "described"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "news"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "news://example.com/n",
+              "extra": null,
+              "label": {
+                "text": "News"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "in"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "span"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "span",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "link",
+                  "data": {
+                    "type": "direct",
+                    "link": "http://example.com/s",
+                    "extra": null,
+                    "label": {
+                      "text": "http://example.com/s"
+                    },
+                    "target": null
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "in"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "span"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "close"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "span",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "see"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "link",
+                  "data": {
+                    "type": "direct",
+                    "link": "http://example.com/x",
+                    "extra": null,
+                    "label": {
+                      "text": "http://example.com/x"
+                    },
+                    "target": null
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "after"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "bold"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "space"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "bold",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "bold"
+                }
+              ]
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/x",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/x"
+              },
+              "target": null
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "bold"
+          },
+          {
+            "element": "text",
+            "data": "-"
+          },
+          {
+            "element": "text",
+            "data": "adjacent"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "**"
+          },
+          {
+            "element": "text",
+            "data": "bold"
+          },
+          {
+            "element": "text",
+            "data": "*"
+          },
+          {
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "http://example.com/x",
+              "extra": null,
+              "label": {
+                "text": "http://example.com/x"
+              },
+              "target": "new-tab"
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "end"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

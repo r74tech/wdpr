@@ -53,6 +53,12 @@ function isValidBlockStartAfterNewline(ctx: ParseContext, tokenPos: number): boo
     return false;
   }
 
+  if (token.type === "LIST_BULLET" || token.type === "LIST_NUMBER") {
+    // リスト構文はマーカー直後の空白が必須（list/line.tsと同じ規則）。
+    // 空白なしの行（例: 行頭の `*http://...`）はリストにならないため<br>を抑制しない
+    return ctx.tokens[tokenPos + 1]?.type === "WHITESPACE";
+  }
+
   if (token.type !== "HEADING_MARKER") {
     return true;
   }

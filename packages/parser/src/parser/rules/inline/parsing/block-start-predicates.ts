@@ -32,9 +32,19 @@ export function isParagraphBreakingBlockStart(
     !isAnchorName(ctx, nextPos) &&
     !isInvalidBlockOpen(ctx, nextPos) &&
     !isInvalidHeading(ctx, nextPos) &&
+    !isInvalidListMarker(ctx, nextPos) &&
     !isExcludedBlockStart(ctx, nextPos) &&
     !isUnknownBlockStart(ctx, nextPos)
   );
+}
+
+function isInvalidListMarker(ctx: ParseContext, markerPos: number): boolean {
+  const marker = ctx.tokens[markerPos];
+  if (marker?.type !== "LIST_BULLET" && marker?.type !== "LIST_NUMBER") return false;
+
+  // リスト構文はマーカー直後の空白が必須（list/line.tsと同じ規則）。
+  // 空白なしの行（例: 行頭の `*http://...`）はリストにならないため段落境界にもしない
+  return ctx.tokens[markerPos + 1]?.type !== "WHITESPACE";
 }
 
 function isOrphanCloseSpan(ctx: ParseContext, blockEndOpenPos: number): boolean {

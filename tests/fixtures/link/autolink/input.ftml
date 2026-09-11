@@ -1,0 +1,53 @@
+inline http://example.com/page after
+
+head http://example.com/page. tail http://example.com/page, mid
+
+paren (http://example.com/pg) and 「http://example.com/pg」 quoted
+
+これはhttp://example.com/pageです
+
+not-a-link abchttp://example.com/pg here
+
+*https://example.com/new-tab-target
+
+star mid *http://example.com/star-mid x
+
+mail mailto:someone@example.com end
+
+schemes https://example.com/s ftp://example.com/f end
+
+more-schemes gopher://example.com/g news://example.com/n mms://example.com/m end
+
+bare http:// no-terminator
+
+query http://example.com/p?a=1&b=2 end
+
+fragment http://example.com/p#sec end
+
+tilde http://example.com/~user end
+
+trailing-slash http://example.com/p/ end
+
+bold **http://example.com/b** end
+
+mono {{http://example.com/m}} end
+
+strike --http://example.com/s-- end
+
+consecutive http://example.com/a http://example.com/b end
+
+fullwidth-space　http://example.com/fw end
+
+described-ftp [ftp://example.com/file Label] end
+
+described-mailto [mailto:someone@example.com メール] end
+
+described-news [news://example.com/n News] end
+
+in-span [[span]]http://example.com/s[[/span]] end
+
+in-span-close [[span]]see http://example.com/x[[/span]] after
+
+bold-space **bold** http://example.com/x end
+
+bold-adjacent **bold**http://example.com/x end

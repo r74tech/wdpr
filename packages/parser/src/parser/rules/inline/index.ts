@@ -31,6 +31,7 @@ import { linkTripleRule } from "./link-triple";
 import { linkSingleRule } from "./link-single";
 import { linkAnchorRule } from "./link-anchor";
 import { linkStarRule } from "./link-star";
+import { autolinkRule } from "./autolink";
 import { colorRule } from "./color";
 import {
   backslashLineBreakRule,
@@ -65,6 +66,7 @@ export { linkTripleRule } from "./link-triple";
 export { linkSingleRule } from "./link-single";
 export { linkAnchorRule } from "./link-anchor";
 export { linkStarRule } from "./link-star";
+export { autolinkRule } from "./autolink";
 export { colorRule } from "./color";
 export {
   backslashLineBreakRule,
@@ -123,6 +125,7 @@ export const inlineRules: InlineRule[] = [
   linkSingleRule,
   linkAnchorRule,
   linkStarRule,
+  autolinkRule,
   colorRule,
   backslashLineBreakRule,
   underscoreLineBreakRule,

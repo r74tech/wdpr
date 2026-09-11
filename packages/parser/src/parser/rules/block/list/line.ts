@@ -51,10 +51,13 @@ export function parseNativeListLine(ctx: ParseContext, startPos: number): ListLi
   pos++;
   consumed++;
 
-  if (ctx.tokens[pos]?.type === "WHITESPACE") {
-    pos++;
-    consumed++;
+  // Wikidotのリスト構文はマーカー直後の空白が必須（Text_Wiki List.php: `(\*|#) `）。
+  // 空白なしの行（例: 生URLの `*http://...`）はリストではなくインライン内容として扱う
+  if (ctx.tokens[pos]?.type !== "WHITESPACE") {
+    return { kind: "stop" };
   }
+  pos++;
+  consumed++;
 
   const inlineCtx: ParseContext = { ...ctx, pos };
   const inlineResult = parseInlineUntil(inlineCtx, "NEWLINE");

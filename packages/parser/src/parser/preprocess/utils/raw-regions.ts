@@ -47,6 +47,16 @@ export function maskRawRegions(
   let i = 0;
 
   while (i < source.length) {
+    if (source.startsWith("[!--", i)) {
+      const close = source.indexOf("--]", i + 4);
+      if (close !== -1) {
+        const end = close + 3;
+        masked += source.slice(i, end);
+        i = end;
+        continue;
+      }
+    }
+
     const rawBlock = tryMaskRawBlock(source, i, placeholders, sentinels);
     if (rawBlock) {
       masked += rawBlock.placeholder;

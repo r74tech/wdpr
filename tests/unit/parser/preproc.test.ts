@@ -103,6 +103,25 @@ describe("typography", () => {
 });
 
 describe("preprocess", () => {
+  test("commented-out raw openers do not shield following text", () => {
+    expect(preprocess("[!-- [[code]] --]\n\nOutside...\\\nnext")).toBe(
+      "[!-- [[code]] --]\n\nOutside…\uE000next",
+    );
+  });
+
+  test.each([
+    "@@日本語... ``quotes''@@",
+    "@<日本語... ``quotes''>@",
+    "[[code]]\n日本語... ``quotes''\\\nnext\n[[/code]]",
+    "[[html]]\n<script>const text = '...';</script>\n[[/html]]",
+  ])("preserves raw source in %s", (raw) => {
+    expect(preprocess(`...\n\n${raw}\n\n...`)).toBe(`…\n\n${raw}\n\n…`);
+  });
+
+  test("raw placeholders do not collide with private-use source characters", () => {
+    expect(preprocess("\uE0000\uE001 @@...@@ ...")).toBe("\uE0000\uE001 @@...@@ …");
+  });
+
   test("should apply both whitespace and typography", () => {
     const input = "``Hello...''\r\n\tWorld";
     const result = preprocess(input);

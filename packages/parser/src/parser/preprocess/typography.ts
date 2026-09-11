@@ -19,6 +19,8 @@
  * @module
  */
 
+import { makeUniqueSentinels, maskRawRegions, restorePlaceholders } from "./utils";
+
 /** Unicode left single quotation mark (U+2018) */
 const LEFT_SINGLE_QUOTE = "\u2018"; // '
 /** Unicode right single quotation mark (U+2019) */
@@ -99,7 +101,17 @@ function replaceDelimitedTypography(
  * @returns Text with ASCII typography patterns replaced by Unicode equivalents
  */
 export function substitute(text: string): string {
-  let result = text;
+  if (
+    !text.includes("`") &&
+    !text.includes(",,") &&
+    !text.includes("...") &&
+    !text.includes(". . .")
+  ) {
+    return text;
+  }
+  const sentinels = makeUniqueSentinels(text);
+  const { masked, placeholders } = maskRawRegions(text, sentinels);
+  let result = masked;
 
   // Double quotes: ``...'' -> "..."
   if (result.includes("``") && result.includes("''")) {
@@ -128,5 +140,5 @@ export function substitute(text: string): string {
     result = replaceExactEllipsisPattern(result, ". . .");
   }
 
-  return result;
+  return restorePlaceholders(result, placeholders, sentinels);
 }

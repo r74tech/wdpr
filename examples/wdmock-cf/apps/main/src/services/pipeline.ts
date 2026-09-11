@@ -189,15 +189,16 @@ async function queryListPages(
       page: rowToPageData(row, tagsByPage.get(row.page_id as number) ?? []),
     }))
     .filter(({ page }) => matchesListPagesSelectors(page, query, currentPage));
-  const offset = Math.max(0, Math.min(query.offset ?? 0, 1000));
-  const limit = query.limit === undefined ? 20 : Math.min(query.limit, 100);
+  const offset = Math.max(0, query.offset ?? 0);
+  const limit = Math.min(query.limit ?? 20, query.perPage ?? 20, 250);
   const end = limit < 0 ? undefined : offset + limit;
   const selectedPages = matchedPages.slice(offset, end);
   const contentByPage = new Map<number, string>();
   const selectedTagsByPage = new Map<number, string[]>();
-  if (!includeAllContent && selectedPages.length > 0) {
-    const placeholders = selectedPages.map(() => "?").join(", ");
-    const pageIds = selectedPages.map(({ pageId }) => pageId);
+  for (let start = 0; !includeAllContent && start < selectedPages.length; start += 80) {
+    const batch = selectedPages.slice(start, start + 80);
+    const placeholders = batch.map(() => "?").join(", ");
+    const pageIds = batch.map(({ pageId }) => pageId);
     const [contents, selectedTags] = await Promise.all([
       db
         .prepare(`SELECT page_id, source FROM pages WHERE page_id IN (${placeholders})`)
@@ -234,13 +235,13 @@ async function queryListPages(
 }
 
 function buildOrderBy(query: NormalizedListPagesQuery): string {
-  if (!query.order) return "ORDER BY date_created DESC";
+  if (!query.order) return "ORDER BY date_created DESC, page_id DESC";
 
   const column = ORDER_COLUMN_MAP[query.order.field];
-  if (!column) return "ORDER BY date_created DESC";
+  if (!column) return "ORDER BY date_created DESC, page_id DESC";
 
   const direction = query.order.direction === "asc" ? "ASC" : "DESC";
-  return `ORDER BY ${column} ${direction}`;
+  return `ORDER BY ${column} ${direction}, page_id ${direction}`;
 }
 
 // R2 Storage helpers

@@ -67,7 +67,7 @@ export function initWdprRuntime(options?: RuntimeOptions): WdprRuntime {
 
   cleanups.push(initMath(root));
 
-  initOdate(root);
+  cleanups.push(initOdate(root));
   initEmail(root);
 
   return {

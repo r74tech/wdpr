@@ -9,8 +9,8 @@ function renderDate(source: string) {
   const win = new Window();
   const root = win.document.createElement("div");
   root.innerHTML = renderToHtml(parse(source).ast);
-  initOdate(root as unknown as HTMLElement);
-  return { win, root, date: root.querySelector("span.odate") };
+  const cleanup = initOdate(root as unknown as HTMLElement);
+  return { win, root, cleanup, date: root.querySelector("span.odate") };
 }
 
 describe("date wikitext runtime", () => {
@@ -64,4 +64,27 @@ test("removes an earlier hover listener when reinitialized without agohover", ()
   initOdate(root as unknown as HTMLElement);
   date!.dispatchEvent(new win.MouseEvent("mouseover"));
   expect(date?.hasAttribute("title")).toBe(false);
+});
+
+test("stops refreshing the tooltip after destroy", () => {
+  setSystemTime(new Date(681746400000 + 2 * 86400000));
+  const { cleanup, date, win } = renderDate('[[date 681746400 format="%Y|agohover"]]');
+  cleanup.destroy();
+  setSystemTime(new Date(681746400000 + 3 * 86400000));
+  date!.dispatchEvent(new win.MouseEvent("mouseover"));
+  expect(date!.title).toBe("2 days ago");
+});
+
+test("an old cleanup handle does not remove a newer initialization", () => {
+  setSystemTime(new Date(681746400000 + 2 * 86400000));
+  const { cleanup, root, date, win } = renderDate('[[date 681746400 format="%Y|agohover"]]');
+  const current = initOdate(root as unknown as HTMLElement);
+  cleanup.destroy();
+  setSystemTime(new Date(681746400000 + 4 * 86400000));
+  date!.dispatchEvent(new win.MouseEvent("mouseover"));
+  expect(date!.title).toBe("4 days ago");
+  current.destroy();
+  setSystemTime(new Date(681746400000 + 5 * 86400000));
+  date!.dispatchEvent(new win.MouseEvent("mouseover"));
+  expect(date!.title).toBe("4 days ago");
 });

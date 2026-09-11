@@ -1,3 +1,5 @@
+import type { ModuleCleanup } from "./types";
+
 /** Format timestamp metadata from rendered Wikidot dates in the browser's locale. */
 const hoverListeners = new WeakMap<HTMLElement, () => void>();
 
@@ -40,20 +42,31 @@ const MONTHS_LONG = [
  * Initialize odate processing for all `<span class="odate">` elements within root.
  *
  * Scans for every `span.odate` and replaces its text content with the
- * formatted date string in the user's local timezone. This is a one-shot
- * operation with no event listeners and therefore no cleanup is needed.
+ * formatted date string in the user's local timezone. The returned handle
+ * removes listeners used to refresh elapsed-time tooltips.
  *
  * @param root - The root DOM element containing rendered Wikidot markup.
  */
-export function initOdate(root: HTMLElement): void {
+export function initOdate(root: HTMLElement): ModuleCleanup {
+  const listeners: Array<[HTMLElement, () => void]> = [];
   const elements = root.querySelectorAll<HTMLElement>("span.odate");
   for (const el of elements) {
-    processOdate(el);
+    const listener = processOdate(el);
+    if (listener) listeners.push([el, listener]);
   }
+  return {
+    destroy() {
+      for (const [el, listener] of listeners) {
+        el.removeEventListener("mouseover", listener);
+        if (hoverListeners.get(el) === listener) hoverListeners.delete(el);
+      }
+      listeners.length = 0;
+    },
+  };
 }
 
 /** Read modern format_ classes and the older format% encoding. */
-function processOdate(el: HTMLElement): void {
+function processOdate(el: HTMLElement): (() => void) | undefined {
   let timestamp: number | null = null;
   let format: string | null = null;
   for (const cls of el.className.split(/\s+/)) {
@@ -80,6 +93,7 @@ function processOdate(el: HTMLElement): void {
     updateHover();
     el.addEventListener("mouseover", updateHover);
     hoverListeners.set(el, updateHover);
+    return updateHover;
   }
 }
 

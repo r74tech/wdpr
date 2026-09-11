@@ -61,6 +61,7 @@ export class RenderContext {
   private _styleSlots = new StyleSlotState();
   /** Sequential counters and ID suffix state for this render pass. */
   private counters: RenderCounters;
+  private readonly equations = new Map<string, number>();
   private readonly collectedStyles: string[] | null;
   private readonly emitStyleTags: boolean;
 
@@ -125,6 +126,19 @@ export class RenderContext {
    */
   push(html: string): void {
     this.output.push(html);
+  }
+
+  /** Resolve a fragment after all rendered elements have registered their targets. */
+  pushDeferred(render: () => string): void {
+    this.output.pushDeferred(render);
+  }
+
+  registerEquation(name: string, index: number): void {
+    this.equations.set(name, index);
+  }
+
+  getEquationIndex(name: string): number | undefined {
+    return this.equations.get(name);
   }
 
   /**

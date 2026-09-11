@@ -2,7 +2,6 @@ import type { Element } from "@wdprlib/ast";
 import type { Element as DomElement } from "domhandler";
 import { isTag } from "domhandler";
 import type { DecompileContext } from "./context";
-import type { ChildrenRecognizer } from "./types-internal";
 
 /**
  * Recognize a `<sup class="footnoteref">` element as a footnote-ref.
@@ -28,7 +27,7 @@ export function recognizeFootnoteRef(node: DomElement, _ctx: DecompileContext): 
 export function recognizeFootnotesFooter(
   node: DomElement,
   ctx: DecompileContext,
-  rec: ChildrenRecognizer,
+  rec: (node: DomElement) => Element[],
 ): Element[] {
   for (const child of node.childNodes) {
     if (!isTag(child)) continue;
@@ -52,7 +51,7 @@ export function recognizeFootnotesFooter(
 /**
  * Extract footnote body content, skipping the leading `<a>N</a>. ` prefix.
  */
-function extractFootnoteContent(node: DomElement, rec: ChildrenRecognizer): Element[] {
+function extractFootnoteContent(node: DomElement, rec: (node: DomElement) => Element[]): Element[] {
   const elements: Element[] = [];
   let pastLink = false;
   let pastDotSpace = false;

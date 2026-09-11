@@ -1,3 +1,4 @@
+import { recognizeEquationReference } from "./equation-reference";
 import { recognizeDate } from "./date";
 import type { Element } from "@wdprlib/ast";
 import { isTag, isText, type ChildNode, type Element as DomElement } from "domhandler";
@@ -174,6 +175,9 @@ function recognizeSpanDispatch(
   const date = recognizeDate(node);
   if (date) return [date];
 
+  const equationReference = recognizeEquationReference(node);
+  if (equationReference) return [equationReference];
+
   // math-inline
   if (className.includes("math-inline")) {
     return [recognizeMathInline(node)];
@@ -227,7 +231,7 @@ function recognizeDivDispatch(
 
   // footnotes-footer
   if (className.includes("footnotes-footer")) {
-    return recognizeFootnotesFooter(node, ctx, rec);
+    return recognizeFootnotesFooter(node, ctx, (child) => recognizeElement(child, ctx));
   }
 
   // math-block

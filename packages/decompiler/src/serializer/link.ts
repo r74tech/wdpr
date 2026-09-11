@@ -12,6 +12,25 @@ export function serializeLink(ctx: SerializeContext, data: LinkData): void {
   const { type, link: location, label, target, extra } = data;
 
   switch (type) {
+    case "interwiki": {
+      if (typeof location !== "string") return;
+      const labelText = extractLabelText(label);
+      const destination = location + (extra ?? "");
+      if (target === "new-tab") {
+        if (!isSafeBareToken(destination) || !isSafeBracketValue(labelText)) {
+          ctx.pushUntrustedText(labelText || location);
+          return;
+        }
+        ctx.push(`[${destination} ${labelText}]`);
+      } else {
+        if (!isSafeTripleBracketValue(destination) || !isSafeBracketValue(labelText)) {
+          ctx.pushUntrustedText(labelText || location);
+          return;
+        }
+        ctx.push(`[[[${destination}|${labelText}]]]`);
+      }
+      break;
+    }
     case "anchor": {
       const labelText = extractLabelText(label);
       if (!isSafeBracketValue(labelText)) return;

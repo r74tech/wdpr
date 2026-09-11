@@ -4,8 +4,10 @@ import { normalizeAnchor } from "./anchor";
 import { isDirectBracketUrl } from "./direct-url";
 import { collectBracketLinkParts } from "./parts";
 import { parseBracketLinkPrefix } from "./prefix";
+import { isBracketEmail, wikipediaPage } from "./special-target";
 
 export interface ParsedBracketLink {
+  interwiki?: boolean;
   link: string;
   labelText: string;
   target: AnchorTarget | null;
@@ -20,19 +22,22 @@ export function parseSingleBracketLink(ctx: ParseContext): ParsedBracketLink | n
   }
 
   const link = parts.first.trim();
-  if (!isDirectBracketUrl(link)) {
+  const email = isBracketEmail(link);
+  const wikiPage = wikipediaPage(link);
+  if (!email && wikiPage === null && !isDirectBracketUrl(link)) {
     return null;
   }
 
-  const labelText = parts.label.trim();
+  const labelText = parts.label.trim() || wikiPage;
   if (!labelText) {
     return null;
   }
 
   return {
-    link,
+    link: email ? `mailto:${link}` : link,
+    interwiki: wikiPage !== null,
     labelText,
-    target: prefix.target,
+    target: wikiPage !== null ? "new-tab" : prefix.target,
     consumed: 1 + prefix.consumed + parts.consumed,
   };
 }

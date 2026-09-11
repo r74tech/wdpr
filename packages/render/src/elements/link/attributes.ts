@@ -21,6 +21,9 @@ export function getLinkAttributes(
 
 function resolveSafeHref(ctx: RenderContext, data: LinkData): string {
   let href = ctx.resolvePageLink(data.link);
+  if (data.type === "interwiki" && href.startsWith("wikipedia:")) {
+    href = `http://en.wikipedia.org/wiki/${href.slice("wikipedia:".length)}`;
+  }
 
   if (data.extra) {
     href += data.extra;

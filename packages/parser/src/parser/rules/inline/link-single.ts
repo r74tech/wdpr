@@ -8,15 +8,17 @@
  * Supported URL formats:
  * - Absolute URLs: `[https://example.com/ Label]`
  * - Relative paths: `[/some-page Label]`
+ * - Email addresses: `[support@example.com Label]`
+ * - Wikipedia links: `[wikipedia:Article]` or `[wikipedia:Article Label]`
  *
  * An optional `*` prefix on the URL opens the link in a new tab:
  * `[*https://example.com/ Opens in new tab]`.
  *
  * Unlike triple-bracket links (`[[[page]]]`), single-bracket links
- * require a full URL (starting with `http://`, `https://`, or `/`).
- * The label text is required.
+ * require an external target or site-relative path.
+ * The label text is required except for Wikipedia links.
  *
- * Produces a `"link"` AST element with `type: "direct"`.
+ * Produces a `"link"` AST element with `type: "direct"` or `"interwiki"`.
  *
  * @module
  */
@@ -33,8 +35,8 @@ import { parseSingleBracketLink } from "./link-bracket/parsed";
  *
  * Fails if:
  * - No closing `]` is found on the same line
- * - The URL does not start with `http://`, `https://`, or `/`
- * - The label text is empty
+ * - The target is not a supported URL, email address, or Wikipedia target
+ * - The label is empty for a non-Wikipedia target
  */
 export const linkSingleRule: InlineRule = {
   name: "linkSingle",
@@ -44,7 +46,7 @@ export const linkSingleRule: InlineRule = {
    * Attempts to parse a single-bracket link at the current position.
    *
    * @param ctx - Parse context with token stream and current position
-   * @returns A successful result with a `"link"` element of type `"direct"`,
+   * @returns A successful result with a `"link"` element of type `"direct"` or `"interwiki"`,
    *          or `{ success: false }`
    */
   parse(ctx: ParseContext): RuleResult<Element> {
@@ -59,7 +61,7 @@ export const linkSingleRule: InlineRule = {
         {
           element: "link",
           data: {
-            type: "direct",
+            type: parsed.interwiki ? "interwiki" : "direct",
             link: parsed.link,
             extra: null,
             label: linkLabel,

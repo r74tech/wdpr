@@ -1,0 +1,85 @@
+{
+  "elements": [
+    {
+      "element": "table",
+      "data": {
+        "attributes": {
+          "_source": "pipe"
+        },
+        "rows": [
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "a"
+                  },
+                  {
+                    "element": "footnote"
+                  }
+                ]
+              },
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "b"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ],
+  "footnotes": [
+    [
+      {
+        "element": "text",
+        "data": "note"
+      },
+      {
+        "element": "container",
+        "data": {
+          "type": "span",
+          "attributes": {
+            "class": "br"
+          },
+          "elements": [
+            {
+              "element": "container",
+              "data": {
+                "type": "bold",
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "sample"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ]
+  ]
+}

@@ -28,7 +28,10 @@ export const footnoteRule: InlineRule = {
 
     const contentResult = parseFootnoteContent(ctx, openResult.bodyStart);
     const consumed = openResult.consumed + contentResult.consumed;
-    const children = buildFootnoteChildren(contentResult.paragraphs);
+    const children = buildFootnoteChildren(
+      contentResult.elements,
+      contentResult.leadingParagraphBreak,
+    );
 
     if (!contentResult.foundClose) {
       ctx.diagnostics.push({

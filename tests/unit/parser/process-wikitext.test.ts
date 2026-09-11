@@ -54,6 +54,56 @@ function listPagesProvider(
 }
 
 describe("processWikitext", () => {
+  it("keeps pagination identities across includes and secondary content expansion", async () => {
+    const nested = '[[module ListPages perPage="1" wrapper="no"]]\n%%title%%\n[[/module]]';
+    const queries: { offset?: number; limit?: number }[] = [];
+    const document = await processWikitext(
+      [
+        '[[module ListPages limit="1"]]\n%%content%%\n[[/module]]',
+        "[[include listing]]",
+        '[[module ListPages perPage="1" urlAttrPrefix="other"]]\n%%title%%\n[[/module]]',
+      ].join("\n"),
+      {
+        page: { ...pageContext, urlPath: "/docs:pipeline/p2/2/p3/3/other_p/4" },
+        dataProvider: listPagesProvider({
+          fetchInclude: async () => nested,
+          fetchListPages: async (query, requirement) => {
+            queries.push(query);
+            return {
+              pages: [
+                {
+                  ...pageData(`item-${query.offset}`),
+                  content: requirement.neededVariables.includes("content") ? nested : "",
+                },
+              ],
+              totalCount: 10,
+              site: siteContext(),
+            };
+          },
+        }),
+      },
+    );
+    expect(queries.map((query) => query.offset)).toEqual([0, 1, 3, 2]);
+    const { html } = await renderWikitext(document);
+    expect(html).toContain("page 2 of 10");
+    expect(html).toContain("page 3 of 10");
+    expect(html).toContain("page 4 of 10");
+    expect(html).toContain('href="/docs:pipeline/p2/2/other_p/4/p3/2"');
+  });
+
+  it.each([undefined, "/"])("uses the page name as the pagination URL for %s", async (urlPath) => {
+    const document = await processWikitext("[[module ListPages]]\n%%title%%\n[[/module]]", {
+      page: { fullName: "test", tags: [], urlPath },
+      dataProvider: listPagesProvider({
+        fetchListPages: async () => ({ pages: [pageData()], totalCount: 21, site: siteContext() }),
+      }),
+    });
+    const { html } = await renderWikitext(document, {
+      i18n: { locale: "ja", messages: { "pager.next": "次 »" } },
+    });
+    expect(html).toContain('<a href="/test/p/2">次 »</a>');
+  });
+
   it("resolves snake_case ListPages attributes before calling the data provider", async () => {
     let received: unknown;
 

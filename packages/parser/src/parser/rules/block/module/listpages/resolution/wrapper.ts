@@ -1,13 +1,16 @@
 import type { Element } from "@wdprlib/ast";
 import { getModuleParseAst, type ParseFunction } from "../../types";
 import type { ListPagesModuleData } from "../resolve";
+import type { ListPagesExternalData } from "../types";
+import { createListPagesPager } from "./pager";
 
 export function wrapListPagesResult(
   module: ListPagesModuleData,
   items: Element[],
   parse: ParseFunction,
+  data?: ListPagesExternalData,
 ): Element[] {
-  if (items.length === 0) {
+  if (items.length === 0 && (!data || data.pages.length === 0)) {
     return [];
   }
 
@@ -24,6 +27,8 @@ export function wrapListPagesResult(
     const appendAst = getModuleParseAst(parse(module["append-line"]));
     result.push(...appendAst.elements);
   }
+
+  if (data) result.push(...createListPagesPager(data));
 
   if (module.wrapper) {
     return [

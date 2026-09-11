@@ -26,6 +26,8 @@ import {
 import { buildListPagesDataMap, buildListUsersDataMap, buildTagCloudDataMap } from "./data-maps";
 import { ModuleDocumentRegistry } from "./document";
 import { collectStyles, mergeCollectedStyles } from "./styles";
+import { createListPagesPager } from "../listpages/resolution/pager";
+import type { ListPagesPaginationState } from "./data-maps";
 
 export type AsyncModuleParseFunction = (source: string) => Promise<ModuleParseResult>;
 
@@ -40,6 +42,7 @@ export interface ResolveModulesWithAsyncParseOptions {
   };
   urlPath?: string;
   pageTags: string[];
+  paginationState?: ListPagesPaginationState;
 }
 
 export interface AsyncModuleResolutionResult {
@@ -73,7 +76,12 @@ export async function resolveModulesWithAsyncParse(
     registry.register(await options.parse(source));
 
   const [listPagesData, listUsersData, tagCloudData] = await Promise.all([
-    buildListPagesDataMap(dataProvider, options.requirements.listPages ?? [], options.urlPath),
+    buildListPagesDataMap(
+      dataProvider,
+      options.requirements.listPages ?? [],
+      options.urlPath,
+      options.paginationState,
+    ),
     buildListUsersDataMap(dataProvider, options.requirements.listUsers ?? []),
     buildTagCloudDataMap(dataProvider, options.requirements.tagCloud ?? []),
   ]);
@@ -175,9 +183,9 @@ async function resolveListPagesAsync(
     if (!page) continue;
     const variableContext: VariableContext = {
       page,
-      index: i + 1,
+      index: (data.pagination?.offset ?? 0) + i + 1,
       total: data.totalCount,
-      limit: module.limit,
+      limit: data.pagination ? data.pagination.limit : module.limit,
       site: data.site,
     };
     const parsed = await parse(template(variableContext));
@@ -197,6 +205,7 @@ async function resolveListPagesAsync(
   if (module["append-line"] && !module.separate) {
     result.push(...(await parse(module["append-line"])).elements);
   }
+  result.push(...createListPagesPager(data));
 
   return module.wrapper
     ? [

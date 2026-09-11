@@ -12,7 +12,181 @@ import type {
   NormalizedListPagesQuery,
 } from "../../../../packages/parser/src/parser/rules/block/module/listpages/types";
 import { getContainerType, getChildren, getTextValue, isContainer } from "../../../helpers";
-import { parse } from "@wdprlib/parser";
+import { parse, extractDataRequirements } from "@wdprlib/parser";
+import { renderToHtml } from "@wdprlib/render";
+
+it("paginates 251 matches and preserves tag parameters without a wrapper", async () => {
+  const ast = parse(
+    '[[module ListPages tags="@URL" perPage="250" wrapper="no"]]\n%%title%%\n[[/module]]',
+  ).ast;
+  const extraction = extractDataRequirements(ast);
+  const queries: NormalizedListPagesQuery[] = [];
+  const resolved = await resolveModules(
+    ast,
+    {
+      fetchListPages: async (query) => {
+        queries.push(query);
+        return { pages: [createPage()], totalCount: 251, site: createSite() };
+      },
+    },
+    { ...extraction, parse, urlPath: "/system:page-tags/tag/jp/p/2?view=full#list" },
+  );
+  expect(queries).toHaveLength(1);
+  expect(queries[0]).toMatchObject({ offset: 250, limit: 250, perPage: 250 });
+  expect(resolved.elements.find((element) => element.element === "pager")).toEqual({
+    element: "pager",
+    data: {
+      currentPage: 2,
+      totalPages: 2,
+      pages: [
+        { page: 1, href: "/system:page-tags/tag/jp/p/1?view=full#list" },
+        { page: 2, href: "/system:page-tags/tag/jp/p/2?view=full#list" },
+      ],
+    },
+  });
+  const html = renderToHtml(resolved);
+  expect(html).toContain('class="pager"');
+  expect(html).toContain("page 2 of 2");
+  expect(html).toContain('href="/system:page-tags/tag/jp/p/1?view=full#list"');
+  expect(html).not.toContain('class="list-pages-box"');
+});
+
+it("clamps to the last page while applying the total limit after the starting offset", async () => {
+  const ast = parse(
+    '[[module ListPages offset="10" limit="@URL" perPage="20" separate="no" wrapper="no" prependLine="before" appendLine="after"]]\n%%index%%/%%total%%/%%limit%%/%%total_or_limit%%\n[[/module]]',
+  ).ast;
+  const queries: NormalizedListPagesQuery[] = [];
+  const resolved = await resolveModules(
+    ast,
+    {
+      fetchListPages: async (query) => {
+        queries.push(query);
+        return {
+          pages: Array.from({ length: query.limit ?? 0 }, () => createPage()),
+          totalCount: 100,
+          site: createSite(),
+        };
+      },
+    },
+    { ...extractDataRequirements(ast), parse, urlPath: "/test/limit/25/p/999" },
+  );
+  expect(queries[0]).toMatchObject({ offset: 30, limit: 5, perPage: 20 });
+  const html = renderToHtml(resolved);
+  expect(html).toContain("31/100/25/25");
+  expect(html).toContain("35/100/25/25");
+  expect(html).not.toContain("36/100");
+  expect(html.indexOf("before")).toBeLessThan(html.indexOf("31/100"));
+  expect(html.indexOf("after")).toBeLessThan(html.indexOf('class="pager"'));
+  expect(html).toContain("page 2 of 2");
+});
+
+it("refetches an out-of-range page using the matching count", async () => {
+  const ast = parse('[[module ListPages perPage="20"]]\n%%index%%\n[[/module]]').ast;
+  const offsets: number[] = [];
+  const resolved = await resolveModules(
+    ast,
+    {
+      fetchListPages: async (query) => {
+        offsets.push(query.offset ?? 0);
+        return {
+          pages: query.offset === 40 ? [createPage()] : [],
+          totalCount: 41,
+          site: createSite(),
+        };
+      },
+    },
+    { ...extractDataRequirements(ast), parse, urlPath: "/test/p/9" },
+  );
+  expect(offsets).toEqual([160, 40]);
+  expect(renderToHtml(resolved)).toContain("page 3 of 3");
+});
+
+it("paginates a page whose name is also a URL attribute", async () => {
+  const ast = parse('[[module ListPages tags="@URL" perPage="1"]]\n%%index%%\n[[/module]]').ast;
+  let received: NormalizedListPagesQuery | undefined;
+  const result = await resolveModules(
+    ast,
+    {
+      fetchListPages: async (query) => {
+        received = query;
+        return { pages: [createPage()], totalCount: 3, site: createSite() };
+      },
+    },
+    { ...extractDataRequirements(ast), parse, urlPath: "/tags/tag/jp/p/2" },
+  );
+  expect(received).toMatchObject({ offset: 1, tags: { any: ["jp"] } });
+  expect(renderToHtml(result)).toContain("page 2 of 3");
+});
+
+it.each(["0", "-1", "abc", "1.5", "9007199254740992", "９"])(
+  "uses page 1 for invalid page number %s",
+  async (page) => {
+    const ast = parse('[[module ListPages tags="@URL"]]\n%%title%%\n[[/module]]').ast;
+    let received: NormalizedListPagesQuery | undefined;
+    const resolved = await resolveModules(
+      ast,
+      {
+        fetchListPages: async (query) => {
+          received = query;
+          return { pages: [createPage()], totalCount: 100, site: createSite() };
+        },
+      },
+      { ...extractDataRequirements(ast), parse, urlPath: `/test/p/${page}/tag/jp?view=full#list` },
+    );
+    expect(received).toMatchObject({ offset: 0, perPage: 20, limit: 20, tags: { any: ["jp"] } });
+    expect(renderToHtml(resolved)).toContain('href="/test/tag/jp/p/2?view=full#list"');
+  },
+);
+
+it.each([0, 1, 20])("omits pagination for %i matching items", async (totalCount) => {
+  const ast = parse("[[module ListPages]]\n%%title%%\n[[/module]]").ast;
+  const resolved = await resolveModules(
+    ast,
+    {
+      fetchListPages: async () => ({
+        pages: Array.from({ length: totalCount }, () => createPage()),
+        totalCount,
+        site: createSite(),
+      }),
+    },
+    { ...extractDataRequirements(ast), parse, urlPath: "/test" },
+  );
+  expect(renderToHtml(resolved)).not.toContain('class="pager"');
+});
+
+it("keeps the pager when a nonempty list produces no visible template content", async () => {
+  const ast = parse(
+    '[[module ListPages separate="no" wrapper="no"]]\n%%content%%\n[[/module]]',
+  ).ast;
+  const resolved = await resolveModules(
+    ast,
+    {
+      fetchListPages: async () => ({
+        pages: [createPage({ content: "" })],
+        totalCount: 21,
+        site: createSite(),
+      }),
+    },
+    { ...extractDataRequirements(ast), parse, urlPath: "/test" },
+  );
+  expect(renderToHtml(resolved)).toContain("page 1 of 2");
+});
+
+it.each([0, -1, 1000])("normalizes perPage=%i without exceeding 250", async (perPage) => {
+  const ast = parse(`[[module ListPages perPage="${perPage}"]]\n%%title%%\n[[/module]]`).ast;
+  let received: NormalizedListPagesQuery | undefined;
+  await resolveModules(
+    ast,
+    {
+      fetchListPages: async (query) => {
+        received = query;
+        return { pages: [], totalCount: 0, site: createSite() };
+      },
+    },
+    { ...extractDataRequirements(ast), parse, urlPath: "/test" },
+  );
+  expect(received?.perPage).toBe(perPage === 1000 ? 250 : 20);
+});
 
 /**
  * Type alias for list-pages module

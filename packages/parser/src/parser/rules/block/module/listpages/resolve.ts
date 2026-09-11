@@ -56,5 +56,5 @@ export function resolveListPages(
   parse: ParseFunction,
 ): Element[] {
   const items = renderListPagesItems(module, data, compiledTemplate, parse);
-  return wrapListPagesResult(module, items, parse);
+  return wrapListPagesResult(module, items, parse, data);
 }

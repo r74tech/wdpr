@@ -75,6 +75,7 @@ export type {
   GalleryContent,
   GalleryData,
   TableOfContentsData,
+  PagerData,
   FootnoteBlockData,
   BibliographyCiteData,
   BibliographyBlockData,

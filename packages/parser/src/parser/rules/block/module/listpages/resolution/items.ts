@@ -17,9 +17,9 @@ export function renderListPagesItems(
 
     const ctx: VariableContext = {
       page,
-      index: i + 1,
+      index: (data.pagination?.offset ?? 0) + i + 1,
       total: data.totalCount,
-      limit: module.limit,
+      limit: data.pagination ? data.pagination.limit : module.limit,
       site: data.site,
     };
 

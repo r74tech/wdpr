@@ -28,6 +28,10 @@ export const BLOCK_START_TOKENS: TokenType[] = [
   "HEADING_MARKER",
   "HR_MARKER",
   "TABLE_MARKER",
+  "TABLE_HEADER",
+  "TABLE_LEFT",
+  "TABLE_CENTER",
+  "TABLE_RIGHT",
   "COLON", // Definition list
   "BLOCK_OPEN", // [[footnoteblock]], [[div]], etc.
   "BLOCK_END_OPEN", // [[/div]], [[/collapsible]], etc.

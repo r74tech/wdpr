@@ -1,0 +1,270 @@
+{
+  "elements": [
+    {
+      "element": "table",
+      "data": {
+        "attributes": {
+          "_source": "pipe"
+        },
+        "rows": [
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": true,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "A"
+                  }
+                ]
+              },
+              {
+                "header": true,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "B"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "a"
+                  }
+                ]
+              },
+              {
+                "header": false,
+                "column-span": 1,
+                "align": null,
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "b"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": {
+          "header": {
+            "level": 2,
+            "has-toc": true
+          }
+        },
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Header"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "table",
+            "data": {
+              "attributes": {
+                "_source": "pipe"
+              },
+              "rows": [
+                {
+                  "attributes": {},
+                  "cells": [
+                    {
+                      "header": true,
+                      "column-span": 1,
+                      "align": null,
+                      "attributes": {},
+                      "elements": [
+                        {
+                          "element": "text",
+                          "data": "C"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "attributes": {},
+                  "cells": [
+                    {
+                      "header": false,
+                      "column-span": 1,
+                      "align": null,
+                      "attributes": {},
+                      "elements": [
+                        {
+                          "element": "text",
+                          "data": "c"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "table",
+      "data": {
+        "attributes": {
+          "_source": "pipe"
+        },
+        "rows": [
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 1,
+                "align": "left",
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "L"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "table",
+      "data": {
+        "attributes": {
+          "_source": "pipe"
+        },
+        "rows": [
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 1,
+                "align": "center",
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "C"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "table",
+      "data": {
+        "attributes": {
+          "_source": "pipe"
+        },
+        "rows": [
+          {
+            "attributes": {},
+            "cells": [
+              {
+                "header": false,
+                "column-span": 1,
+                "align": "right",
+                "attributes": {},
+                "elements": [
+                  {
+                    "element": "text",
+                    "data": "R"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ],
+  "table-of-contents": [
+    {
+      "element": "list",
+      "data": {
+        "type": "bullet",
+        "attributes": {},
+        "items": [
+          {
+            "item-type": "sub-list",
+            "element": "list",
+            "data": {
+              "type": "bullet",
+              "attributes": {},
+              "items": [
+                {
+                  "item-type": "elements",
+                  "attributes": {},
+                  "elements": [
+                    {
+                      "element": "link",
+                      "data": {
+                        "type": "table-of-contents",
+                        "link": "#toc0",
+                        "label": {
+                          "text": "Header"
+                        },
+                        "target": null,
+                        "extra": null
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

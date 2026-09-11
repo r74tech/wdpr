@@ -195,20 +195,11 @@ describe("Parser", () => {
   });
 
   describe("raw escape special cases", () => {
-    it("@@@@ produces text with @@", () => {
+    it("@@@@ produces no content", () => {
       const doc = parseAst("@@@@");
       const content = getContentElements(doc);
 
-      expect(content).toEqual([
-        {
-          element: "container",
-          data: {
-            type: "paragraph",
-            attributes: {},
-            elements: [{ element: "text", data: "@@" }],
-          },
-        },
-      ]);
+      expect(content).toEqual([]);
     });
 
     it("@@@@@ produces text with single @", () => {

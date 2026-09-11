@@ -32,7 +32,7 @@ export function parseNextBlock(
   }
 
   const result = ctx.blockFallbackRule.parse(ctx);
-  if (result.success && result.elements.length > 0) {
+  if (result.success) {
     ctx.pos += result.consumed;
     return result.elements;
   }

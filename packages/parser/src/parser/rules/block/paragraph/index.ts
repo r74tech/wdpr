@@ -23,13 +23,13 @@ export const paragraphRule: BlockRule = {
 
   parse(ctx: ParseContext): RuleResult<Element> {
     const result = parseInlineContent(ctx);
-    if (result.elements.length === 0) {
+    if (result.consumed === 0) {
       return { success: false };
     }
 
     const elements = normalizeParagraphElements(result.elements);
     if (elements.length === 0) {
-      return { success: false };
+      return { success: true, elements: [], consumed: result.consumed };
     }
 
     const nextPos = ctx.pos + result.consumed;

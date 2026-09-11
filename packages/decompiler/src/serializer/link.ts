@@ -38,7 +38,9 @@ export function serializeLink(ctx: SerializeContext, data: LinkData): void {
         return;
       }
 
-      if (label === "page" || labelText === pageName) {
+      if (label === "page") {
+        ctx.push(`[[[${pageName}${extraSuffix}${targetSuffix}|]]]`);
+      } else if (labelText === pageName && !/[#:]/.test(pageName)) {
         ctx.push(`[[[${pageName}${extraSuffix}${targetSuffix}]]]`);
       } else {
         ctx.push(`[[[${pageName}${extraSuffix}${targetSuffix} | ${labelText}]]]`);

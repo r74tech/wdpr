@@ -340,9 +340,7 @@
                     "page": "some-page"
                   },
                   "extra": null,
-                  "label": {
-                    "text": "some-page"
-                  },
+                  "label": "page",
                   "target": null
                 }
               }

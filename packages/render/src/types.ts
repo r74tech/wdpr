@@ -28,6 +28,8 @@ export interface PageContext {
    * to the link element — the standard Wikidot convention for red-links.
    */
   pageExists?: (page: string) => boolean;
+  /** Resolve a canonical local page name to its title; null/undefined means unavailable. */
+  pageTitle?: (page: string) => string | null | undefined;
   /** Page tags used for client-side `[[iftags]]` evaluation during rendering */
   tags?: string[];
   /**

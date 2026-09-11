@@ -1,13 +1,19 @@
 import type { LinkLabel } from "@wdprlib/ast";
 
 export function buildTripleLinkLabel(args: {
+  isPage: boolean;
   foundPipe: boolean;
   labelText: string;
   finalTarget: string;
   originalTarget: string;
 }): LinkLabel {
+  if (args.isPage && args.foundPipe && !args.labelText.trim()) return "page";
   return {
-    text: getTripleLinkDisplayText(args),
+    text: getTripleLinkDisplayText({
+      ...args,
+      originalTarget:
+        args.isPage && !args.foundPipe ? args.originalTarget.split("#")[0]! : args.originalTarget,
+    }),
   };
 }
 

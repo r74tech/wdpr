@@ -28,6 +28,8 @@ export type WikitextRenderResult<TDocument extends RenderableWikitextDocument> =
 
 export interface RenderWikitextResolvers<TPage extends WikitextPageContext> {
   resolvePageExistence?: (pages: string[]) => Promise<ReadonlySet<string>>;
+  /** Resolve canonical local page names to titles. Keys imply existence unless overridden. */
+  resolvePageTitles?: (pages: string[]) => Promise<ReadonlyMap<string, string>>;
   resolveHtmlBlockUrl?: (input: { index: number; content: string; page: TPage }) => Promise<string>;
   /** Resolve rendered raw usernames in one asynchronous batch before the final render. */
   resolveUsers?: (

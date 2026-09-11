@@ -101,3 +101,10 @@ The PHP Group can be contacted via Email at group@php.net.
 For more information on the PHP Group and the PHP project,
 please see <http://www.php.net>.
 ```
+
+## wikidot-normalize
+
+- Source: <https://github.com/scpwiki/wikidot-normalize>
+- Copyright (c) 2019-2023 Emmie Maeda
+- License: MIT, reproduced in [licenses/wikidot-normalize-MIT.txt](licenses/wikidot-normalize-MIT.txt)
+- Used for page name normalization rules in `src/context/page-name.ts`.

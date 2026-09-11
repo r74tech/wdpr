@@ -52,7 +52,7 @@ export function parseInlineBranch(ctx: ParseContext, startPos: number): BranchPa
       }
       const result = rule.parse(inlineCtx);
       if (result.success) {
-        elements.push(...result.elements);
+        for (const element of result.elements) elements.push(element);
         consumed += result.consumed;
         pos += result.consumed;
         matched = true;

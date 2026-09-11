@@ -92,7 +92,9 @@ describe("bracket emails and Wikipedia links", () => {
 
   it("does not accept mail headers or unknown schemes", () => {
     const html = renderToHtml(parse("[a%0d%0abcc:evil@example.com mail] [unknown:page label]").ast);
-    expect(html).not.toContain("<a ");
+    expect(html).not.toContain('href="mailto:a%');
+    expect(html).not.toContain('href="unknown:');
+    expect(html).toContain('href="mailto:evil@example.com"');
   });
 
   it("keeps raw examples and explicit labels literal", () => {

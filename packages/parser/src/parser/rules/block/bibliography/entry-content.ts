@@ -60,7 +60,7 @@ export function parseBibliographyContent(
     const inlineCtx: ParseContext = { ...ctx, pos };
     const result = parseInlineUntil(inlineCtx, "NEWLINE");
     if (result.elements.length > 0) {
-      content.push(...result.elements);
+      for (const element of result.elements) content.push(element);
       pos += result.consumed;
       consumed += result.consumed;
     } else {

@@ -1,3 +1,4 @@
+import { emailRegionEnd } from "../email/candidates";
 import { protectedInlineRegionEnd } from "../raw/end";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
@@ -37,7 +38,10 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
   let inlineEnd = ctx.scope.inlineEnd ?? ctx.tokens.length;
   if (!multiline) {
     for (let end = ctx.pos; end < inlineEnd; end++) {
-      const protectedEnd = protectedInlineRegionEnd(ctx.tokens, end, inlineEnd);
+      const protectedEnd = Math.max(
+        emailRegionEnd(ctx.tokens, end, inlineEnd),
+        protectedInlineRegionEnd(ctx.tokens, end, inlineEnd),
+      );
       if (protectedEnd > end) {
         end = protectedEnd - 1;
         continue;
@@ -97,11 +101,12 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
       continue;
     }
 
-    if (token.type === endType) {
+    const hasEmail = emailRegionEnd(ctx.tokens, pos, inlineEnd) > pos;
+    if (token.type === endType && !hasEmail) {
       break;
     }
 
-    if (canCollectLongPlainTextRuns) {
+    if (canCollectLongPlainTextRuns && !hasEmail) {
       const plainTextRun = collectLongPlainTextRun(ctx, pos, endType);
       if (plainTextRun) {
         nodes.push({ element: "text", data: plainTextRun.value });
@@ -112,7 +117,7 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
     }
 
     const simpleToken = parseSimpleInlineToken(token, ctx.tokens[pos + 1]);
-    if (simpleToken) {
+    if (simpleToken && !hasEmail) {
       nodes.push(simpleToken.element);
       consumed += simpleToken.consumed;
       pos += simpleToken.consumed;
@@ -139,7 +144,7 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
             if (nodes.at(-1)?.element === "line-break") nodes.pop();
           }
         }
-        nodes.push(...result.elements);
+        for (const element of result.elements) nodes.push(element);
         consumed += result.consumed;
         pos += result.consumed;
         matched = true;

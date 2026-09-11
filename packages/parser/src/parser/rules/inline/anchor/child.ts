@@ -14,7 +14,11 @@ export function parseAnchorChild(ctx: ParseContext, pos: number): AnchorChildRes
     return { elements: [], consumed: 0 };
   }
 
-  const inlineCtx: ParseContext = { ...ctx, pos };
+  const inlineCtx: ParseContext = {
+    ...ctx,
+    pos,
+    scope: { ...ctx.scope, suppressEmailLinks: true },
+  };
   for (const rule of getCandidateInlineRules(inlineRules, token.type)) {
     const result = rule.parse(inlineCtx);
     if (result.success) {

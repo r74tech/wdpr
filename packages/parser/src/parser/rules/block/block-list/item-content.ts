@@ -108,7 +108,7 @@ export function collectPostLiTrailingContent(
 
     const inlineResult = parseListItemInlineContent(ctx, pos, token.type);
     if (inlineResult.matched) {
-      elements.push(...inlineResult.elements);
+      for (const element of inlineResult.elements) elements.push(element);
       consumed += inlineResult.consumed;
       pos += inlineResult.consumed;
       continue;

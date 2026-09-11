@@ -59,7 +59,7 @@ export function collectLiItemContent(
 
     const blockResult = parseListItemBlockContent(ctx, pos, token);
     if (blockResult.matched) {
-      elements.push(...blockResult.elements);
+      for (const element of blockResult.elements) elements.push(element);
       consumed += blockResult.consumed;
       pos += blockResult.consumed;
       continue;
@@ -67,7 +67,7 @@ export function collectLiItemContent(
 
     const inlineResult = parseListItemInlineContent(ctx, pos, token.type);
     if (inlineResult.matched) {
-      elements.push(...inlineResult.elements);
+      for (const element of inlineResult.elements) elements.push(element);
       consumed += inlineResult.consumed;
       pos += inlineResult.consumed;
       continue;

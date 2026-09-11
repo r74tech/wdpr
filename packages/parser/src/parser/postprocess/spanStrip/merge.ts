@@ -55,7 +55,7 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
       }
 
       const hasSpanStrip = hasParagraphStripSpan(nextPara);
-      mergedChildren.push(...nextParaData.elements);
+      for (const element of nextParaData.elements) mergedChildren.push(element);
       i++;
 
       if (!hasSpanStrip) {

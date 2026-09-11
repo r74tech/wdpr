@@ -50,7 +50,7 @@ export function parseAnchorContent(
     }
 
     const child = parseAnchorChild(ctx, pos);
-    children.push(...child.elements);
+    for (const element of child.elements) children.push(element);
     pos += child.consumed;
     consumed += child.consumed;
   }

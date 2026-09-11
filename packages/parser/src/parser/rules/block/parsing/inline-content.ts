@@ -69,7 +69,7 @@ export function parseInlineContentUntil(
     for (const rule of getCandidateBlockRules(blockRules, token)) {
       const result = rule.parse(blockCtx);
       if (result.success) {
-        elements.push(...result.elements);
+        for (const element of result.elements) elements.push(element);
         consumed += result.consumed;
         pos += result.consumed;
         matched = true;
@@ -84,7 +84,7 @@ export function parseInlineContentUntil(
     for (const rule of getCandidateInlineRules(inlineRules, token.type)) {
       const result = rule.parse(inlineCtx);
       if (result.success) {
-        elements.push(...result.elements);
+        for (const element of result.elements) elements.push(element);
         consumed += result.consumed;
         pos += result.consumed;
         matched = true;

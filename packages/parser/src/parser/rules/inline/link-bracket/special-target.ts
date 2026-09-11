@@ -5,5 +5,5 @@ export function isBracketEmail(target: string): boolean {
 
 /** Single-bracket Interwiki.php grammar, restricted to the verified Wikipedia mapping. */
 export function wikipediaPage(target: string): string | null {
-  return /^wikipedia:((?!:)[A-Za-z0-9_/=&~#.:;+\-]+)$/.exec(target)?.[1] ?? null;
+  return /^wikipedia:((?!:)[A-Za-z0-9_/=&~#.:;+-]+)$/.exec(target)?.[1] ?? null;
 }

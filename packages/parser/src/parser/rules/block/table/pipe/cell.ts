@@ -85,7 +85,7 @@ export function parseTableCell(
     for (const rule of getCandidateInlineRules(inlineRules, token.type)) {
       const result = rule.parse(inlineCtx);
       if (result.success) {
-        children.push(...result.elements);
+        for (const element of result.elements) children.push(element);
         consumed += result.consumed;
         pos += result.consumed;
         matched = true;

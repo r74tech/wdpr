@@ -118,7 +118,7 @@ function parseOneSpanChild(
   for (const rule of getCandidateInlineRules(inlineRules, token.type)) {
     const result = rule.parse(inlineCtx);
     if (result.success) {
-      targetChildren.push(...result.elements);
+      for (const element of result.elements) targetChildren.push(element);
       return { consumed: result.consumed };
     }
   }

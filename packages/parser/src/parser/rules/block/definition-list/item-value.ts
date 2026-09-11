@@ -34,7 +34,7 @@ export function parseDefinitionItemValue(
     const inlineCtx: ParseContext = { ...ctx, pos };
     const result = parseInlineUntil(inlineCtx, "NEWLINE");
     if (result.elements.length > 0) {
-      value.push(...result.elements);
+      for (const element of result.elements) value.push(element);
       pos += result.consumed;
       consumed += result.consumed;
     } else {

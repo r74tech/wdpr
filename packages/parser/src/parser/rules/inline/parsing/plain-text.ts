@@ -1,3 +1,4 @@
+import { getEmailCandidate } from "../email/candidates";
 import type { TokenType } from "../../../../lexer";
 import { URL_SCHEME_NAMES } from "../../../../lexer/url-schemes";
 import type { ParseContext } from "../../types";
@@ -19,6 +20,7 @@ export function collectLongPlainTextRun(
 ): PlainTextRun | null {
   const firstToken = ctx.tokens[startPos];
   if (
+    !getEmailCandidate(ctx.tokens, startPos) &&
     firstToken?.type === "TEXT" &&
     firstToken.value.length >= MIN_INLINE_TEXT_RUN_LENGTH &&
     firstToken.value !== "("
@@ -51,7 +53,7 @@ export function collectLongPlainTextRun(
 
 function isPlainTextRunToken(ctx: ParseContext, pos: number): boolean {
   const token = ctx.tokens[pos];
-  if (!token) return false;
+  if (!token || getEmailCandidate(ctx.tokens, pos)) return false;
 
   if (token.type === "IDENTIFIER") {
     // 連続平文の一括テキスト化がURL先頭のスキーム名を取り込むと

@@ -32,6 +32,7 @@ import { linkSingleRule } from "./link-single";
 import { linkAnchorRule } from "./link-anchor";
 import { linkStarRule } from "./link-star";
 import { autolinkRule } from "./autolink";
+import { emailRule } from "./email";
 import { colorRule } from "./color";
 import {
   backslashLineBreakRule,
@@ -114,6 +115,7 @@ export { textRule, fallbackRule } from "./text";
  * separate last-resort handler.
  */
 export const inlineRules: InlineRule[] = [
+  emailRule,
   boldRule,
   italicRule,
   underlineRule,

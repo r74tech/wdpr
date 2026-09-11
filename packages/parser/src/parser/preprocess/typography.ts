@@ -68,14 +68,24 @@ function replaceDelimitedTypography(
   let searchFrom = 0;
   let result = "";
   let lastCopied = 0;
+  let closeIndex = -1;
+  let newlineIndex = -1;
 
   while (searchFrom < text.length) {
     const openIndex = text.indexOf(opener, searchFrom);
     if (openIndex === -1) break;
 
     const contentStart = openIndex + opener.length;
-    const closeIndex = text.indexOf(closer, contentStart);
+    if (closeIndex < contentStart) closeIndex = text.indexOf(closer, contentStart);
     if (closeIndex === -1) break;
+    if (newlineIndex < contentStart) {
+      const nextNewline = text.indexOf("\n", contentStart);
+      newlineIndex = nextNewline === -1 ? text.length : nextNewline;
+    }
+    if (newlineIndex < closeIndex) {
+      searchFrom = newlineIndex + 1;
+      continue;
+    }
 
     result += text.slice(lastCopied, openIndex);
     result += leftQuote;

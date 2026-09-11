@@ -25,6 +25,7 @@ export { renderEmbed } from "./embed";
 export { renderUser } from "./user";
 export { renderBibliographyCite, renderBibliographyBlock } from "./bibliography";
 export { renderTableOfContents } from "./toc";
+export { renderPager } from "./pager";
 export { renderLineBreaks } from "./line-break";
 export { renderClearFloat } from "./clear-float";
 export { renderIframe } from "./iframe";

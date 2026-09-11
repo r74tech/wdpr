@@ -743,6 +743,18 @@ export interface TableOfContentsData {
 }
 
 /**
+ * Resolved pagination state and navigation targets.
+ *
+ * @group Element Data
+ */
+export interface PagerData {
+  currentPage: number;
+  totalPages: number;
+  /** Ascending targets, including the current page, its neighbors, and both ends. */
+  pages: { page: number; href: string }[];
+}
+
+/**
  * Data for `[[footnoteblock]]` elements.
  *
  * @group Element Data
@@ -969,6 +981,7 @@ export type ElementDataMap = {
   "definition-list": DefinitionListItem[];
   collapsible: CollapsibleData;
   "table-of-contents": TableOfContentsData;
+  pager: PagerData;
   footnote: void;
   "footnote-ref": number;
   "footnote-block": FootnoteBlockData;

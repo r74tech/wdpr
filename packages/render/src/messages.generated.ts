@@ -11,6 +11,9 @@ export const renderMessages = {
   "module.join": "Join",
   "module.unknown":
     "[[module <emphasis>{name}</emphasis>]] No such module, please <documentationLink>check available modules</documentationLink> and fix this page.",
+  "pager.info": "page {current} of {total}",
+  "pager.next": "next »",
+  "pager.previous": "« previous",
   "rate.cancel": "Cancel my vote",
   "rate.down": "I don't like it",
   "rate.label": "rating",

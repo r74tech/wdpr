@@ -94,6 +94,19 @@ export interface SiteContext {
  */
 export interface ListPagesExternalData {
   pages: PageData[];
+  /** Matching items before offset and limit; use the same visibility filters as pages. */
   totalCount: number;
   site: SiteContext;
+  /** Filled by module resolution when a page URL is available. */
+  pagination?: {
+    currentPage: number;
+    perPage: number;
+    totalPages: number;
+    /** Actual fetch offset, including the module's starting offset. */
+    offset: number;
+    /** Total item limit after URL resolution, not the fetch batch size. */
+    limit?: number;
+    urlPath: string;
+    parameter: string;
+  };
 }

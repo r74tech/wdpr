@@ -82,6 +82,12 @@ export async function processWikitext<TPage extends WikitextPageContext>(
   const dataProvider = createModuleDataProvider(options, callbackContext);
   const parseFragment = parseSource;
   let ast = initial.ast;
+  const paginationState = { nextUnprefixed: 1 };
+  const requestedPath = options.page.urlPath;
+  const urlPath =
+    !requestedPath || /^\/(?:[?#]|$)/.test(requestedPath)
+      ? `/${options.page.fullName}${requestedPath?.slice(1) ?? ""}`
+      : requestedPath;
 
   for (let pass = 0; pass < DEFAULT_MODULE_MAX_PASSES; pass++) {
     const extraction = extractDataRequirements(ast);
@@ -94,7 +100,8 @@ export async function processWikitext<TPage extends WikitextPageContext>(
       compiledListPagesTemplates: extraction.compiledListPagesTemplates,
       compiledListUsersTemplates: extraction.compiledListUsersTemplates,
       requirements: extraction.requirements,
-      urlPath: options.page.urlPath,
+      urlPath,
+      paginationState,
       pageTags: options.page.tags,
     });
     ast = resolved.ast;

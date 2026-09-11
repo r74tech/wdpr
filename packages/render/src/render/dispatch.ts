@@ -26,6 +26,7 @@ import { renderTable } from "../elements/table";
 import { renderTabView } from "../elements/tab-view";
 import { renderRaw, renderEmail, renderText } from "../elements/text";
 import { renderTableOfContents } from "../elements/toc";
+import { renderPager } from "../elements/pager";
 import { renderUser } from "../elements/user";
 import {
   renderContentSeparator,
@@ -114,6 +115,9 @@ export function renderElement(ctx: RenderContext, element: Element): void {
       break;
     case "table-of-contents":
       renderTableOfContents(ctx, element.data);
+      break;
+    case "pager":
+      renderPager(ctx, element.data);
       break;
     case "math":
       renderMath(ctx, element.data);

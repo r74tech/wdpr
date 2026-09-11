@@ -2,12 +2,13 @@ import { URL_RESOLVABLE_FIELDS } from "./fields";
 
 /**
  * Parse URL path parameters like /offset/1/page2_limit/1.
- * Returns a map of parameter name -> value.
+ * Returns a map of parameter name -> value. Set hasPageName for a full page path;
+ * otherwise the legacy parameter-only-path heuristic is used.
  */
-export function parseUrlParams(url: string): Map<string, string> {
+export function parseUrlParams(url: string, hasPageName = false): Map<string, string> {
   const params = new Map<string, string>();
-  const parts = url.split("/").filter(Boolean);
-  const pairStart = isUrlParameter(parts[0]) ? 0 : 1;
+  const parts = url.split(/[?#]/, 1)[0]!.split("/").filter(Boolean);
+  const pairStart = !hasPageName && isUrlParameter(parts[0]) ? 0 : 1;
 
   // Skip the page name (first part), parse key/value pairs.
   for (let i = pairStart; i < parts.length - 1; i += 2) {

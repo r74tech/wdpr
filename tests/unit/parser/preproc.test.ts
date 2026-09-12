@@ -103,6 +103,26 @@ describe("typography", () => {
 });
 
 describe("preprocess", () => {
+  test("nested code attributes follow token delimiter rules", () => {
+    expect(preprocess("[[code]]\n[[code foo=[[bar]]\n[[/code]]\n\noutside...")).toBe(
+      "[[code]]\n[[code foo=[[bar]]\n[[/code]]\n\noutside…",
+    );
+    const raw = '[[code]]\n[[code name="[[bar]]"]]\n...\n[[/code]]\ntail...\n[[/code]]';
+    expect(preprocess(`${raw}\n\noutside...`)).toBe(`${raw}\n\noutside…`);
+  });
+
+  test("whitespace-prefixed code tags do not open nested raw blocks", () => {
+    expect(preprocess("[[code]]\n[[ code]]\n[[/code]]\n\noutside...")).toBe(
+      "[[code]]\n[[ code]]\n[[/code]]\n\noutside…",
+    );
+    expect(preprocess("[[ code]]\n...\n[[/code]]")).toBe("[[ code]]\n…\n[[/code]]");
+  });
+
+  test("nested code and escaped code closers remain protected through the outer close", () => {
+    const raw = "[[code]]\n[[code]]\n...\n[[/code]]\n@<[[/code]]>@\n...\\\nnext\n[[/code]]";
+    expect(preprocess(`${raw}\n\n...`)).toBe(`${raw}\n\n…`);
+  });
+
   test("commented-out raw openers do not shield following text", () => {
     expect(preprocess("[!-- [[code]] --]\n\nOutside...\\\nnext")).toBe(
       "[!-- [[code]] --]\n\nOutside…\uE000next",

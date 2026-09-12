@@ -71,6 +71,8 @@ const SKIP_ROUNDTRIP = new Set<string>([
   "list/block",
   // lossy変換: 複数@やアングルブラケットrawの複雑なエスケープ
   "raw/basic",
+  // decompilerは閉じタグを含むcode本文を出力せず、構文注入を防ぐ
+  "code/protected-close",
   // lossy変換: 段落先頭のインデントが失われ、再パースで見出しになる（blockquote外でも同様）
   "blockquote/heading",
 ]);

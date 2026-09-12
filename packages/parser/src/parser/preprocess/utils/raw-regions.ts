@@ -1,7 +1,11 @@
+import { tokenize, type Token } from "../../../lexer";
+import { findCodeOpen } from "../../rules/block/code/open";
+import { findCodeBodyBounds } from "../../rules/block/code/boundary";
+
 const BASE_PLACEHOLDER_OPEN = "\uE000";
 const BASE_PLACEHOLDER_CLOSE = "\uE001";
 
-const RAW_BLOCK_OPEN_PATTERN = /\[\[\s*(code|html)\b[^\]]*\]\]/iy;
+const RAW_BLOCK_OPEN_PATTERN = /\[\[html\b[^\]]*\]\]/iy;
 
 /** Unique sentinel characters used to wrap raw-region placeholders. */
 export interface Sentinels {
@@ -43,6 +47,8 @@ export function maskRawRegions(
   sentinels: Sentinels,
 ): { masked: string; placeholders: string[] } {
   const placeholders: string[] = [];
+  let tokens: Token[] | undefined;
+  const getTokens = () => (tokens ??= tokenize(source));
   let masked = "";
   let i = 0;
 
@@ -57,7 +63,7 @@ export function maskRawRegions(
       }
     }
 
-    const rawBlock = tryMaskRawBlock(source, i, placeholders, sentinels);
+    const rawBlock = tryMaskRawBlock(source, i, placeholders, sentinels, getTokens);
     if (rawBlock) {
       masked += rawBlock.placeholder;
       i = rawBlock.end;
@@ -96,16 +102,30 @@ function tryMaskRawBlock(
   pos: number,
   placeholders: string[],
   sentinels: Sentinels,
+  getTokens: () => Token[],
 ): { placeholder: string; end: number } | null {
   if (source[pos] !== "[" || source[pos + 1] !== "[") return null;
+
+  if (source.slice(pos, pos + 6).toLowerCase() === "[[code") {
+    const tokens = getTokens();
+    const start = tokenAtOffset(tokens, pos);
+    const open = findCodeOpen(tokens, start);
+    if (!open) return null;
+    const bounds = open.closingSwallowed ? null : findCodeBodyBounds(tokens, open.bodyStart);
+    const end = open.closingSwallowed
+      ? tokens[open.attributesEnd - 1]!.position.end.offset
+      : bounds!.foundClose
+        ? tokens[bounds!.end - 1]!.position.end.offset
+        : source.length;
+    return { placeholder: pushPlaceholder(placeholders, source.slice(pos, end), sentinels), end };
+  }
 
   RAW_BLOCK_OPEN_PATTERN.lastIndex = pos;
   const openMatch = RAW_BLOCK_OPEN_PATTERN.exec(source);
   if (!openMatch) return null;
 
-  const name = openMatch[1]!.toLowerCase();
   const openLen = openMatch[0].length;
-  const closePattern = new RegExp(`\\[\\[\\/\\s*${name}\\s*\\]\\]`, "ig");
+  const closePattern = /\[\[\/\s*html\s*\]\]/gi;
   closePattern.lastIndex = pos + openLen;
   const closeMatch = closePattern.exec(source);
 
@@ -117,12 +137,18 @@ function tryMaskRawBlock(
     };
   }
 
-  if (name !== "code") return null;
+  return null;
+}
 
-  return {
-    placeholder: pushPlaceholder(placeholders, source.slice(pos), sentinels),
-    end: source.length,
-  };
+function tokenAtOffset(tokens: readonly Token[], offset: number): number {
+  let low = 0;
+  let high = tokens.length;
+  while (low < high) {
+    const middle = Math.floor((low + high) / 2);
+    if (tokens[middle]!.position.start.offset < offset) low = middle + 1;
+    else high = middle;
+  }
+  return tokens[low]?.position.start.offset === offset ? low : tokens.length;
 }
 
 function tryMaskRawInline(
@@ -150,15 +176,24 @@ function tryMaskSingleLineRaw(
   placeholders: string[],
   sentinels: Sentinels,
 ): { placeholder: string; end: number } | null {
-  const closePos = source.indexOf(close, pos + openerLength);
-  const newline = source.indexOf("\n", pos + openerLength);
-  if (closePos === -1 || (newline !== -1 && newline < closePos)) return null;
-
-  const end = closePos + close.length;
+  const end = singleLineRawEnd(source, pos, openerLength, close);
+  if (end === pos) return null;
   return {
     placeholder: pushPlaceholder(placeholders, source.slice(pos, end), sentinels),
     end,
   };
+}
+
+function singleLineRawEnd(
+  source: string,
+  pos: number,
+  openerLength: number,
+  close: string,
+): number {
+  const closePos = source.indexOf(close, pos + openerLength);
+  const newline = source.indexOf("\n", pos + openerLength);
+  if (closePos === -1 || (newline !== -1 && newline < closePos)) return pos;
+  return closePos + close.length;
 }
 
 function pushPlaceholder(placeholders: string[], text: string, sentinels: Sentinels): string {

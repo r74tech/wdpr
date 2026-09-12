@@ -1,0 +1,43 @@
+{
+  "elements": [
+    {
+      "element": "code",
+      "data": {
+        "contents": "[[code type=\"php\"]]\n日本語...\nline\\\nnext\n[[/code]]\n@<[[code]]>@\n@<[[/code]]>@\n@@[[/code]]@@\ntail...",
+        "language": null,
+        "name": null
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "outside"
+          },
+          {
+            "element": "text",
+            "data": "…"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ],
+  "code-blocks": [
+    {
+      "contents": "[[code type=\"php\"]]\n日本語...\nline\\\nnext\n[[/code]]\n@<[[code]]>@\n@<[[/code]]>@\n@@[[/code]]@@\ntail...",
+      "language": null,
+      "name": null
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+[[code]]
+[[code type="php"]]
+日本語...
+line\
+next
+[[/code]]
+@<[[code]]>@
+@<[[/code]]>@
+@@[[/code]]@@
+tail...
+[[/code ]]
+
+outside...

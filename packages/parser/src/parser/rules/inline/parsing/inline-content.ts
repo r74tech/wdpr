@@ -29,6 +29,7 @@ export interface InlineParseResult {
 
 /**
  * Parse inline content until a specific token type.
+ * EOF mode preserves literal newlines within the inherited inline boundary.
  *
  * When endType is "PARAGRAPH_BREAK", handles NEWLINEs and stops at:
  * - Double NEWLINE (paragraph break)
@@ -42,7 +43,8 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
   let consumedEmptyRaw = false;
 
   const paragraphMode = endType === "PARAGRAPH_BREAK";
-  const multiline = paragraphMode || FORMATTING_CLOSE_TOKENS.has(endType);
+  const preserveNewlines = endType === "EOF";
+  const multiline = paragraphMode || preserveNewlines || FORMATTING_CLOSE_TOKENS.has(endType);
   let inlineEnd = ctx.scope.inlineEnd ?? ctx.tokens.length;
   if (!multiline) {
     for (let end = ctx.pos; end < inlineEnd; end++) {
@@ -92,6 +94,13 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
 
     if (!multiline && token.type === "NEWLINE") {
       break;
+    }
+
+    if (preserveNewlines && token.type === "NEWLINE") {
+      nodes.push({ element: "text", data: token.value });
+      pos++;
+      consumed++;
+      continue;
     }
 
     if (multiline && token.type === "NEWLINE" && !ctx.scope.tableFormatting) {

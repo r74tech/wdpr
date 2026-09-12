@@ -129,6 +129,21 @@ test.each(["http:", "https:"])("reenables a valid share template using %s", (pro
   expect(new URL(link.href).searchParams.get("url")).toBe(sourceUrl);
   expect(link.hasAttribute("aria-disabled")).toBe(false);
 });
+test("encodes raw markup in templates without changing URL separators or existing escapes", () => {
+  const { root } = setup();
+  const link = root.querySelector("a")!;
+  link.setAttribute(
+    "data-wdpr-social-template",
+    'https://example.test/share?label=<tag>"&encoded=%22&url={url}#section',
+  );
+  initSocial(root);
+  expect(link.getAttribute("href")).toContain("label=%3Ctag%3E%22&encoded=%22&url=");
+  const href = new URL(link.href);
+  expect(href.searchParams.get("label")).toBe('<tag>"');
+  expect(href.searchParams.get("encoded")).toBe('"');
+  expect(href.searchParams.get("url")).toBe(sourceUrl);
+  expect(href.hash).toBe("#section");
+});
 test("does not discard custom content added to generated markup during HTML import", () => {
   const { root } = setup();
   root.querySelector("a")!.append("keep me");

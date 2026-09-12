@@ -3,6 +3,7 @@
  */
 import { Hono } from "hono";
 import { processWikitext } from "@wdprlib/parser";
+import type { RatingRef } from "@wdprlib/parser";
 import type { RatingAction } from "@wdprlib/runtime";
 import type { Bindings } from "@wdmock/shared";
 import { parseFullname, buildFullname, SITE } from "@wdmock/shared";
@@ -14,10 +15,12 @@ import {
   upsertVote,
   deleteVote,
   recalculatePageRate,
+  upsertCustomVote,
+  deleteCustomVote,
   getTagsByFullname,
 } from "@wdmock/db";
 import { renderPage, deletePageBlocks, getIncludeSource } from "../services/pipeline";
-import { readMainRating } from "../services/ratings";
+import { readPageRatings } from "../services/ratings";
 
 const api = new Hono<{ Bindings: Bindings }>();
 
@@ -32,16 +35,9 @@ api.post("/rate", async (c) => {
   if (!body || typeof body !== "object") return c.json({ error: "Invalid request" }, 400);
   const { page_id, ref, action } = body;
   const userId = 2; // Fixed: user
+  const ratingRef = readRatingRef(ref);
 
-  if (
-    typeof page_id !== "number" ||
-    !Number.isSafeInteger(page_id) ||
-    page_id <= 0 ||
-    !ref ||
-    typeof ref !== "object" ||
-    !("kind" in ref) ||
-    ref.kind !== "main"
-  ) {
+  if (typeof page_id !== "number" || !Number.isSafeInteger(page_id) || page_id <= 0 || !ratingRef) {
     return c.json({ error: "Invalid request" }, 400);
   }
   const ratingAction = readRatingAction(action);
@@ -49,8 +45,8 @@ api.post("/rate", async (c) => {
 
   const db = c.env.DB;
   const page = await db
-    .prepare("SELECT category, unix_name, source FROM pages WHERE page_id = ?")
-    .bind(page_id)
+    .prepare("SELECT category, unix_name, source FROM pages WHERE site_id = ? AND page_id = ?")
+    .bind(SITE.id, page_id)
     .first<{ category: string; unix_name: string; source: string }>();
   if (!page) return c.json({ error: "Page not found" }, 404);
   let declared = false;
@@ -63,12 +59,37 @@ api.post("/rate", async (c) => {
     dataProvider: {
       fetchInclude: (reference) => getIncludeSource(db, reference),
       fetchRatings: async (refs) => {
-        declared = refs.some((reference) => reference.kind === "main");
+        declared = refs.some((reference) =>
+          reference.kind === "main"
+            ? ratingRef.kind === "main"
+            : ratingRef.kind === "custom" && reference.axisKey === ratingRef.axisKey,
+        );
         return [];
       },
     },
   });
   if (!declared) return c.json({ error: "Rating is not available on this page" }, 403);
+
+  const state = (await readPageRatings(db, page_id, [ratingRef]))[0];
+  if (
+    !state ||
+    (ratingAction.type === "cancel"
+      ? !state.canCancel
+      : !state.canVote || !state.allowedVotes.includes(ratingAction.value))
+  ) {
+    return c.json({ error: "Rating action is not permitted" }, 403);
+  }
+
+  if (ratingRef.kind === "custom") {
+    if (ratingAction.type === "cancel") {
+      await deleteCustomVote(db, userId, page_id, ratingRef.axisKey);
+    } else if (
+      !(await upsertCustomVote(db, userId, page_id, ratingRef.axisKey, ratingAction.value))
+    ) {
+      return c.json({ error: "Rating action is not permitted" }, 403);
+    }
+    return c.json((await readPageRatings(db, page_id, [ratingRef]))[0] ?? null);
+  }
 
   if (ratingAction.type === "cancel") {
     await deleteVote(db, userId, page_id);
@@ -77,8 +98,21 @@ api.post("/rate", async (c) => {
   }
 
   await recalculatePageRate(db, page_id);
-  return c.json(await readMainRating(db, page_id));
+  return c.json((await readPageRatings(db, page_id, [ratingRef]))[0]);
 });
+
+function readRatingRef(ref: unknown): RatingRef | null {
+  if (!ref || typeof ref !== "object" || !("kind" in ref)) return null;
+  if (ref.kind === "main") return { kind: "main" };
+  if (
+    ref.kind === "custom" &&
+    "axisKey" in ref &&
+    typeof ref.axisKey === "string" &&
+    ref.axisKey.length > 0
+  )
+    return { kind: "custom", axisKey: ref.axisKey };
+  return null;
+}
 
 function readRatingAction(action: unknown): RatingAction | null {
   if (!action || typeof action !== "object" || !("type" in action)) return null;

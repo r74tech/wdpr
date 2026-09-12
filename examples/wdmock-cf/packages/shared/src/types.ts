@@ -15,6 +15,7 @@ export interface Bindings {
  * Site configuration
  */
 export const SITE = {
+  id: 1,
   title: "WikidotMock",
   name: "wikidotmock",
   domain: "localhost",

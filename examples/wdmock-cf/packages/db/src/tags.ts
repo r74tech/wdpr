@@ -1,6 +1,7 @@
 /**
  * Tags table operations
  */
+import { SITE } from "@wdmock/shared";
 
 export async function getPageTags(db: D1Database, pageId: number): Promise<string[]> {
   const result = await db.prepare("SELECT tag FROM page_tags WHERE page_id = ?").bind(pageId).all();
@@ -13,8 +14,8 @@ export async function getTagsByFullname(
   name: string,
 ): Promise<string[]> {
   const page = await db
-    .prepare("SELECT page_id FROM pages WHERE category = ? AND unix_name = ?")
-    .bind(category, name)
+    .prepare("SELECT page_id FROM pages WHERE site_id = ? AND category = ? AND unix_name = ?")
+    .bind(SITE.id, category, name)
     .first<{ page_id: number }>();
 
   if (!page) return [];

@@ -16,7 +16,7 @@ import type {
 import { renderWikitext } from "@wdprlib/render";
 import { SITE, parseFullname } from "@wdmock/shared";
 import { findPage, getTagsByFullname, rowToPageData } from "@wdmock/db";
-import { readMainRating } from "./ratings";
+import { readPageRatings, readRatingAxes, readCustomRatings } from "./ratings";
 
 // Normalized order field -> DB column mapping
 const ORDER_COLUMN_MAP: Record<string, string> = {
@@ -63,9 +63,8 @@ export async function renderPage(
     dataProvider: {
       fetchInclude: (pageRef) => getIncludeSource(db, pageRef),
       fetchRatings: async (refs) => {
-        if (!refs.some((ref) => ref.kind === "main")) return [];
         const stored = await findPage(db, identity.category, identity.name);
-        return stored ? [await readMainRating(db, stored.page_id)] : [];
+        return stored ? readPageRatings(db, stored.page_id, refs) : [];
       },
       fetchListPages: async (query, requirement) =>
         queryListPages(
@@ -119,10 +118,10 @@ async function findExistingPages(db: D1Database, pages: string[]): Promise<Reado
         .prepare(
           `SELECT LOWER(CASE WHEN category = '_default' THEN unix_name ELSE category || ':' || unix_name END) AS fullname
            FROM pages
-           WHERE LOWER(CASE WHEN category = '_default' THEN unix_name ELSE category || ':' || unix_name END)
+           WHERE site_id = ? AND LOWER(CASE WHEN category = '_default' THEN unix_name ELSE category || ':' || unix_name END)
              IN (${placeholders})`,
         )
-        .bind(...batch)
+        .bind(SITE.id, ...batch)
         .all<{ fullname: string }>();
     }),
   );
@@ -169,16 +168,20 @@ async function queryListPages(
   currentPage: CurrentListPagesPage,
   requirement: ListPagesDataRequirement,
 ): Promise<ListPagesExternalData> {
-  // No custom/metadata registry or materialized readable sizes exist in this demo DB.
-  if (
-    query.ratingAxis !== undefined ||
-    query.order?.field === "metadata" ||
-    query.order?.field === "size"
-  ) {
+  // No metadata registry or materialized readable sizes exist in this demo DB.
+  if (query.order?.field === "metadata" || query.order?.field === "size") {
     return { pages: [], totalCount: 0, site: SITE };
   }
-  const conditions: string[] = [];
-  const params: unknown[] = [];
+  const axes = await readRatingAxes(db, [
+    ...(requirement.customRateKeys ?? []),
+    ...(query.ratingAxis !== undefined ? [query.ratingAxis] : []),
+  ]);
+  const queryAxis = axes.find((axis) => axis.axis_key === query.ratingAxis);
+  if (query.ratingAxis !== undefined && (!queryAxis || queryAxis.show_aggregate !== 1)) {
+    return { pages: [], totalCount: 0, site: SITE };
+  }
+  const conditions: string[] = ["site_id = ?"];
+  const params: unknown[] = [SITE.id];
 
   if (query.range === ".") {
     const { category, name } = parseFullname(currentPage.fullname);
@@ -203,9 +206,18 @@ async function queryListPages(
       `SELECT page_id, category, unix_name, title, date_created, date_last_edited,
               owner_user_id, rate,
               (SELECT COUNT(*) FROM page_rate_vote WHERE page_rate_vote.page_id = pages.page_id) AS rating_votes${includeAllContent ? ", source" : ""}
+              ${
+                queryAxis
+                  ? `,
+                (SELECT COALESCE(SUM(rate), 0) FROM page_custom_rate_vote
+                 WHERE site_id = pages.site_id AND page_id = pages.page_id AND axis_key = ?) AS axis_points,
+                (SELECT COUNT(*) FROM page_custom_rate_vote
+                 WHERE site_id = pages.site_id AND page_id = pages.page_id AND axis_key = ?) AS axis_votes`
+                  : ""
+              }
        FROM pages ${where} ${orderBy}`,
     )
-    .bind(...params)
+    .bind(...(queryAxis ? [queryAxis.axis_key, queryAxis.axis_key] : []), ...params)
     .all();
   const tagsByPage = new Map<number, string[]>();
   const needsCandidateTags = Boolean(query.tags) || includeAllContent;
@@ -224,17 +236,25 @@ async function queryListPages(
     .map((row) => ({
       pageId: row.page_id as number,
       page: rowToPageData(row, tagsByPage.get(row.page_id as number) ?? []),
+      points: (queryAxis ? row.axis_points : row.rate) as number,
+      votes: (queryAxis ? row.axis_votes : row.rating_votes) as number,
     }))
     .filter(
-      ({ page }) =>
+      ({ page, points, votes }) =>
         matchesListPagesSelectors(page, query, currentPage) &&
-        matchesNumber(page.rating, query.rating) &&
-        matchesNumber(page.ratingVotes, query.votes),
+        matchesNumber(points, query.rating) &&
+        matchesNumber(votes, query.votes),
     );
   const offset = Math.max(0, query.offset ?? 0);
   const limit = Math.min(query.limit ?? 20, query.perPage ?? 20, 250);
   const end = limit < 0 ? undefined : offset + limit;
   const selectedPages = matchedPages.slice(offset, end);
+  const displayKeys = new Set(requirement.customRateKeys);
+  const customRatings = await readCustomRatings(
+    db,
+    selectedPages.map(({ pageId }) => pageId),
+    axes.filter((axis) => displayKeys.has(axis.axis_key) && axis.show_aggregate === 1),
+  );
   const contentByPage = new Map<number, string>();
   const selectedTagsByPage = new Map<number, string[]>();
   for (let start = 0; !includeAllContent && start < selectedPages.length; start += 80) {
@@ -284,6 +304,11 @@ async function queryListPages(
           remaining.tagCloud.length === 0;
         return {
           ...page,
+          customRates: Object.fromEntries(
+            (customRatings.get(pageId) ?? []).flatMap((state) =>
+              state.ref.kind === "custom" ? [[state.ref.axisKey, state.aggregate]] : [],
+            ),
+          ),
           tags: selectedTags?.filter((tag) => !tag.startsWith("_")) ?? page.tags,
           hiddenTags: selectedTags?.filter((tag) => tag.startsWith("_")) ?? page.hiddenTags,
           content,
@@ -300,7 +325,12 @@ async function queryListPages(
 function buildOrderBy(query: NormalizedListPagesQuery): string {
   if (!query.order) return "ORDER BY date_created DESC, page_id DESC";
 
-  const column = ORDER_COLUMN_MAP[query.order.field];
+  const column =
+    query.ratingAxis !== undefined && query.order.field === "rating"
+      ? "axis_points"
+      : query.ratingAxis !== undefined && query.order.field === "votes"
+        ? "axis_votes"
+        : ORDER_COLUMN_MAP[query.order.field];
   if (!column) return "ORDER BY date_created DESC, page_id DESC";
 
   const direction = query.order.direction === "asc" ? "ASC" : "DESC";

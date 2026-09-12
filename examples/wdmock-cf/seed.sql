@@ -10,6 +10,33 @@ INSERT OR IGNORE INTO members (site_id, user_id) VALUES (1, 1);
 -- User as site member
 INSERT OR IGNORE INTO members (site_id, user_id) VALUES (1, 2);
 
+INSERT INTO site_rating_axes (site_id, axis_key, label, allow_nv, allow_dv) VALUES
+  (1, 'contest-2026-theme', 'テーマ適合性', 1, 1),
+  (1, 'contest-2026-style', '表現への支持', 0, 0)
+ON CONFLICT(site_id, axis_key) DO NOTHING;
+
+INSERT INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES
+  (1, 'rating-example', 'first', '評価サンプル A', '+ 評価サンプル A
+[[module Rate]]
+[[module CustomRate key="contest-2026-theme"]]
+[[module CustomRate key="contest-2026-style"]]
+', 1),
+  (1, 'rating-example', 'second', '評価サンプル B', '+ 評価サンプル B
+[[module Rate]]
+[[module CustomRate key="contest-2026-theme"]]
+[[module CustomRate key="contest-2026-style"]]
+', 1),
+  (1, 'rating-example', 'results', '評価サンプルの集計', '+ 評価サンプルの集計
+[[module ListPages category="rating-example" tags="entry" rating-axis="contest-2026-theme" order="rating desc"]]
+* %%title_linked%%: 主評価 %%rating%% / テーマ %%customrate{contest-2026-theme}%% (%%customrate_votes{contest-2026-theme}%%票、%%customrate_percent{contest-2026-theme}%%%) / 表現 %%customrate{contest-2026-style}%%
+[[/module]]
+', 1)
+ON CONFLICT(site_id, category, unix_name) DO NOTHING;
+
+INSERT OR IGNORE INTO page_tags (page_id, tag)
+SELECT page_id, 'entry' FROM pages
+WHERE site_id = 1 AND category = 'rating-example' AND unix_name IN ('first', 'second');
+
 INSERT OR REPLACE INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, 'nav', 'top', 'Top Navigation', '[[div class="top-bar"]]
 * [/ Home]
 * [/about About]

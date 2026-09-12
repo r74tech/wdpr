@@ -9,7 +9,10 @@ import {
   type InlineEndType,
 } from "./plain-text";
 import { getParagraphNewlineBoundary } from "./paragraph-boundary";
-import { createPreservedTrailingLineBreak } from "./preserved-line-break";
+import {
+  createPreservedLeadingLineBreak,
+  createPreservedTrailingLineBreak,
+} from "./preserved-line-break";
 import { getCandidateInlineRules } from "./rules";
 import { parseSimpleInlineToken } from "./simple-token";
 
@@ -33,6 +36,7 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
   const nodes: Element[] = [];
   let consumed = 0;
   let pos = ctx.pos;
+  let consumedEmptyRaw = false;
 
   const paragraphMode = endType === "PARAGRAPH_BREAK";
   const multiline = paragraphMode || FORMATTING_CLOSE_TOKENS.has(endType);
@@ -132,6 +136,9 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
     for (const rule of getCandidateInlineRules(inlineRules, token.type)) {
       const result = rule.parse(inlineCtx);
       if (result.success) {
+        if (rule.name === "raw" && result.elements.length === 0 && nodes.length === 0) {
+          consumedEmptyRaw = true;
+        }
         if (rule.name === "comment") {
           let after = pos + result.consumed;
           while (ctx.tokens[after]?.type === "WHITESPACE") after++;
@@ -146,7 +153,17 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
             if (nodes.at(-1)?.element === "line-break") nodes.pop();
           }
         }
-        for (const element of result.elements) nodes.push(element);
+        for (const element of result.elements) {
+          nodes.push(
+            paragraphMode &&
+              consumedEmptyRaw &&
+              nodes.length === 0 &&
+              token.type === "NEWLINE" &&
+              element.element === "line-break"
+              ? createPreservedLeadingLineBreak()
+              : element,
+          );
+        }
         consumed += result.consumed;
         pos += result.consumed;
         matched = true;

@@ -30,13 +30,15 @@ export function serializeRaw(ctx: SerializeContext, data: string): void {
 /**
  * Serialize a line-break element.
  *
- * At line start or inside lists/definition-lists, uses the explicit
- * ` _\n` syntax. Otherwise, emits a bare newline (which Wikidot
- * renders as `<br>` inside paragraphs).
+ * Lists and tables use explicit ` _\n` continuation. A leading paragraph
+ * break uses an empty literal to keep it from being trimmed. Other breaks
+ * use a bare newline.
  */
 export function serializeLineBreak(ctx: SerializeContext): void {
-  if (ctx.isAtLineStart() || ctx.forceLineBreakSyntax) {
+  if (ctx.forceLineBreakSyntax) {
     ctx.push(" _" + ctx.newline);
+  } else if (ctx.isAtLineStart()) {
+    ctx.push("@@@@" + ctx.newline);
   } else {
     ctx.push(ctx.newline);
   }

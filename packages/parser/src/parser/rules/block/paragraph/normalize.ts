@@ -1,5 +1,6 @@
 import type { Element } from "@wdprlib/ast";
 import { processCloseSpanMarkers } from "./span-markers";
+import { isPreservedLeadingLineBreak } from "../../inline/parsing/preserved-line-break";
 
 type PreservedLineBreak = Extract<Element, { element: "line-break" }> & {
   _preservedTrailingBreak?: boolean;
@@ -44,7 +45,11 @@ function removeTrailingWhitespaceText(elements: Element[]): void {
 
 function removeLeadingLineBreaks(elements: Element[]): Element[] {
   let first = 0;
-  while (first < elements.length && elements[first]?.element === "line-break") {
+  while (
+    first < elements.length &&
+    elements[first]?.element === "line-break" &&
+    !isPreservedLeadingLineBreak(elements[first])
+  ) {
     first++;
   }
 

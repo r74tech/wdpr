@@ -36,6 +36,7 @@ export function normalizeQuery(query: ListPagesQuery): NormalizedListPagesQuery 
   if (query.pagetype) result.pagetype = query.pagetype;
   if (query.linkTo) result.linkTo = query.linkTo;
   if (query.createdBy) result.createdBy = query.createdBy;
+  if (query.ratingAxis !== undefined) result.ratingAxis = query.ratingAxis;
   if (query.name) result.name = query.name;
   if (query.fullname) result.fullname = query.fullname;
   if (query.range) result.range = query.range;

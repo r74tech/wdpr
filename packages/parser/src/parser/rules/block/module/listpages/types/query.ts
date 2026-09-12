@@ -34,6 +34,8 @@ export interface ListPagesQuery {
 
   /** Rating selector. @untrusted User input. */
   rating?: string;
+  /** Exact registered custom key for rating/votes filters and order; omitted means main. */
+  ratingAxis?: string;
 
   /** Votes selector. @untrusted User input. */
   votes?: string;

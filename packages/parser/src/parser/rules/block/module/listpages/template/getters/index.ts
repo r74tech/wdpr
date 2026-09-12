@@ -6,6 +6,7 @@ import {
 } from "./parameterized";
 import { SIMPLE_GETTERS } from "./simple";
 import type { VariableGetter } from "./types";
+import { createRegisteredGetter } from "./registered";
 import { excerptText } from "@wdprlib/ast";
 import { literalWikitext } from "../literal";
 
@@ -31,6 +32,9 @@ export function createVariableGetter(
           maxLength: parenParam === undefined ? undefined : Number(parenParam),
         }),
       );
+  const registeredGetter =
+    braceParam !== undefined ? createRegisteredGetter(name, braceParam, format) : null;
+  if (registeredGetter) return registeredGetter;
   const braceGetter = braceParam !== undefined ? createBraceParamGetter(name, braceParam) : null;
   if (braceGetter) return braceGetter;
   if (braceParam !== undefined) return () => "";

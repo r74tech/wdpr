@@ -32,6 +32,8 @@ export function extractListPagesModule(
     contentSectionIndices: extraction.contentIndices,
     previewLengths: extraction.previewLengths,
     formFields: extraction.formFields,
+    metadataKeys: extraction.metadataKeys,
+    customRateKeys: extraction.customRateKeys,
     needsReadableText: extraction.variables.some((name) =>
       ["preview", "preview_n", "summary", "first_paragraph", "excerpt"].includes(name),
     ),

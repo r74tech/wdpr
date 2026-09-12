@@ -52,6 +52,7 @@ export type {
   DataRequirements,
   UserInfo,
   PageData,
+  PageMetadataValue,
   SiteContext,
   ListPagesExternalData,
   ListPagesDataFetcher,

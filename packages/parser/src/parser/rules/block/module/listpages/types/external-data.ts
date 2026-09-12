@@ -1,3 +1,12 @@
+import type { RatingAggregate } from "@wdprlib/ast";
+
+/** Values for host-registered metadata keys. Missing entries remain unavailable. */
+export type PageMetadataValue =
+  | { type: "text"; value: string }
+  | { type: "number"; value: number }
+  | { type: "date"; value: Date }
+  | { type: "user"; value: UserInfo };
+
 /**
  * User information.
  */
@@ -11,6 +20,18 @@ export interface UserInfo {
  * Page data provided by an external source.
  */
 export interface PageData {
+  /**
+   * `%%metadata{key}%%`: only registered, readable entries; keys are case-sensitive.
+   * Values are literal text. Date values accept strftime; user format is name, |id or |unix.
+   * Tag change date/editor may be host-defined keys; WDPR reserves no such keys.
+   */
+  metadata?: Readonly<Record<string, PageMetadataValue | null>>;
+  /**
+   * `%%customrate{key}%%`, `%%customrate_votes{key}%%`, `%%customrate_percent{key}%%`.
+   * Supply readable aggregates for requirement.customRateKeys, just as formFields selects
+   * form data. Missing keys expand to empty text; a supplied zero remains zero.
+   */
+  customRates?: Readonly<Record<string, RatingAggregate | null>>;
   // Identity
   name: string;
   category: string;

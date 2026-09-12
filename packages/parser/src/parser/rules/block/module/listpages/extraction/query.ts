@@ -21,6 +21,7 @@ export function buildQuery(module: ListPagesModuleData): ListPagesQuery {
     updatedAt: module["updated-at"],
     createdBy: module["created-by"],
     rating: module.rating,
+    ratingAxis: module["rating-axis"],
     votes: module.votes,
     name: module.name,
     fullname: module.fullname,

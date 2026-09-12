@@ -546,6 +546,7 @@ export type Module =
       "created-at"?: string;
       "updated-at"?: string;
       rating?: string;
+      "rating-axis"?: string;
       votes?: string;
       name?: string;
       fullname?: string;

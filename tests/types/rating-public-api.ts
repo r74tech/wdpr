@@ -4,7 +4,7 @@ import type {
   RatingState as RuntimeRatingState,
   RatingAction,
 } from "../../packages/runtime/src/rating";
-import type { DataProvider } from "@wdprlib/parser";
+import type { DataProvider, PageData, PageMetadataValue } from "@wdprlib/parser";
 
 /** Runtime's independent structural contract must match the AST/provider contract in both directions. */
 export function checkRatingContracts(
@@ -19,5 +19,10 @@ export function checkRatingContracts(
   const b: RatingRef = runtimeRef;
   const provider: DataProvider = { fetchRatings: async () => [state] };
   const action: RatingAction = { type: "vote", value: 0 };
-  void [forward, backward, a, b, provider, action];
+  const metadata: PageMetadataValue = { type: "number", value: 0 };
+  const values: Pick<PageData, "metadata" | "customRates"> = {
+    metadata: { zero: metadata },
+    customRates: { theme: { points: 0, votes: 1, percent: 0 } },
+  };
+  void [forward, backward, a, b, provider, action, values];
 }

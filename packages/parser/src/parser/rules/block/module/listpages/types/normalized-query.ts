@@ -32,6 +32,8 @@ export interface NormalizedCategory {
 export type OrderField =
   | "created_at"
   | "updated_at"
+  | "commented_at"
+  | "metadata"
   | "title"
   | "fullname"
   | "rating"
@@ -48,11 +50,13 @@ export type OrderDirection = "asc" | "desc";
 
 /**
  * Normalized order specification.
+ * Providers validate metadata registration, readability and sortability without falling back
+ * to another field. Sort before pagination with a stable page ID tie-breaker. For commented_at,
+ * put pages without comments last and use the same visible, non-deleted comments as the count.
  */
-export interface NormalizedOrder {
-  field: OrderField;
-  direction: OrderDirection;
-}
+export type NormalizedOrder =
+  | { field: Exclude<OrderField, "metadata">; direction: OrderDirection }
+  | { field: "metadata"; key: string; direction: OrderDirection };
 
 /**
  * Normalized parent selector.
@@ -107,6 +111,12 @@ export interface NormalizedListPagesQuery {
   updatedAt?: NormalizedDateSelector;
   createdBy?: string;
   rating?: NormalizedNumericSelector;
+  /**
+   * `rating-axis` selects the custom aggregate for rating/votes filters and order; omission
+   * selects main. Verify registration and read access before filtering, counting or sorting.
+   * Unknown keys must not fall back to main. Display variables select their own keys.
+   */
+  ratingAxis?: string;
   votes?: NormalizedNumericSelector;
   name?: string;
   fullname?: string;

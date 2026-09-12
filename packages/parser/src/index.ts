@@ -121,6 +121,7 @@ export type {
   // External data types
   UserInfo,
   PageData,
+  PageMetadataValue,
   SiteContext,
   ListPagesExternalData,
   // Callback types

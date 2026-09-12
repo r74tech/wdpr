@@ -6,6 +6,19 @@ import { Window } from "happy-dom";
 import { htmlToAst } from "@wdprlib/decompiler";
 
 describe("readable text", () => {
+  test.each([
+    ["[[#if true | A | B]]C", "AC", "A", "C"],
+    ["[[#if 0 | A | B]]C", "BC", "B", "C"],
+    ["[[#ifexpr 1 | 前 | 別]]後", "前後", "前", "後"],
+    ["[[#ifexpr 0 | 前 | 別]]後", "別後", "別", "後"],
+    ["[[#if true | | B]]C", "C", "", "C"],
+  ])("conditional branch padding is omitted: %s", async (source, expected, start, excerpt) => {
+    const document = await processWikitext(source!, { page: { fullName: "test", tags: [] } });
+    expect(document.readableText).toBe(expected);
+    expect(document.characterCount).toBe(expected!.length);
+    expect(excerptText(document.readableText, { start, maxLength: 1 })).toBe(excerpt);
+  });
+
   test("extracts resolved body and labels while omitting syntax and duplicated UI", async () => {
     const source =
       "+ 見出し\n[[toc]]\n[[module CSS]]\n.secret {color:red}\n[[/module]]\n[[module Rate]]\n[[include component]]\n\n説明: **恐竜**です。次の文。\n[https://example.invalid 表示名]\n[[footnote]]注の本文[[/footnote]]\n[[footnoteblock]]\n[[tabview]]\n[[tab A]]\nタブA\n[[/tab]]\n[[tab B]]\nタブB\n[[/tab]]\n[[/tabview]]\n[[collapsible]]\n閉じた本文\n[[/collapsible]]\n[[code]]\nconst x = 1;\n[[/code]]\n[[$ \\alpha $]]";

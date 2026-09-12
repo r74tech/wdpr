@@ -68,6 +68,13 @@ export function extractReadableText(ast: SyntaxTree, options: ReadableTextOption
     visit(elements, omit);
     emit("\n\n", omit);
   };
+  const visitBranch = (elements: Element[], omit: boolean) => {
+    const end =
+      elements.findLastIndex(
+        (element) => element.element !== "text" || element.data.trim() !== "",
+      ) + 1;
+    visit(elements.slice(0, end), omit);
+  };
   const visit = (elements: Element[], inheritedOmit = false): void => {
     for (const element of elements) {
       const omit = inheritedOmit || options.exclude?.(element) === true;
@@ -176,12 +183,15 @@ export function extractReadableText(ast: SyntaxTree, options: ReadableTextOption
           for (const entry of element.data.entries) block(entry.value, omit);
           break;
         case "if":
-          visit(isTruthy(element.data.condition) ? element.data.then : element.data.else, omit);
+          visitBranch(
+            isTruthy(element.data.condition) ? element.data.then : element.data.else,
+            omit,
+          );
           break;
         case "ifexpr": {
           const result = evaluateExpression(element.data.expression);
           if (result.success)
-            visit(result.value !== 0 ? element.data.then : element.data.else, omit);
+            visitBranch(result.value !== 0 ? element.data.then : element.data.else, omit);
           break;
         }
         case "expr": {

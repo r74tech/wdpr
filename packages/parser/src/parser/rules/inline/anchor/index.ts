@@ -1,3 +1,4 @@
+import { precedingSingleNewline } from "../parsing/automatic-line-break";
 /**
  *
  * Parses the Wikidot anchor inline block syntax: `[[a]]...[[/a]]`.
@@ -10,7 +11,8 @@
  * - `[[a_ href="url"]]text[[/a]]` -- paragraph strip mode (trailing underscore)
  *
  * Paragraph strip mode (`[[a_]]`) suppresses newlines within the anchor
- * body and strips at most one trailing newline after the closing tag
+ * body and strips at most one automatic newline before the opening tag
+ * and one trailing newline after the closing tag
  * (preserving double newlines as paragraph breaks). This prevents
  * unwanted `<br>` elements when consecutive anchor blocks are placed on
  * separate lines.
@@ -98,6 +100,7 @@ export const anchorRule: InlineRule = {
         },
       ],
       consumed,
+      stripLeadingLineBreak: openResult.paragraphStrip ? precedingSingleNewline(ctx) : undefined,
     };
   },
 };

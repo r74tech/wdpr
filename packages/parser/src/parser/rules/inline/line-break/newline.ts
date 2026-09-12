@@ -1,3 +1,4 @@
+import { createAutomaticLineBreak } from "../parsing/automatic-line-break";
 import type { Element } from "@wdprlib/ast";
 import type { TokenType } from "../../../../lexer";
 import type { InlineRule, ParseContext, RuleResult } from "../../types";
@@ -27,7 +28,7 @@ export const newlineLineBreakRule: InlineRule = {
 
     return {
       success: true,
-      elements: [{ element: "line-break" }],
+      elements: [createAutomaticLineBreak(currentTok)],
       consumed: 1,
     };
   },

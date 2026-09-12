@@ -1,3 +1,4 @@
+import type { Token } from "../../../../lexer";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 import { inlineRules } from "../index";
@@ -6,6 +7,7 @@ import { getCandidateInlineRules } from "../utils";
 export interface AnchorChildResult {
   elements: Element[];
   consumed: number;
+  stripLeadingLineBreak?: Token;
 }
 
 export function parseAnchorChild(ctx: ParseContext, pos: number): AnchorChildResult {
@@ -22,7 +24,7 @@ export function parseAnchorChild(ctx: ParseContext, pos: number): AnchorChildRes
   for (const rule of getCandidateInlineRules(inlineRules, token.type)) {
     const result = rule.parse(inlineCtx);
     if (result.success) {
-      return { elements: result.elements, consumed: result.consumed };
+      return result;
     }
   }
 

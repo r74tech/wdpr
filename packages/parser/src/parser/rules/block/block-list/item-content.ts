@@ -1,3 +1,5 @@
+import type { Token } from "../../../../lexer";
+import { stripAutomaticLineBreak } from "../../inline/parsing/automatic-line-break";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 import { getCandidateInlineRules } from "../../inline/utils";
@@ -8,6 +10,7 @@ interface ListItemContentResult {
   matched: boolean;
   elements: Element[];
   consumed: number;
+  stripLeadingLineBreak?: Token;
 }
 
 const blockListExcludedRulesCache = new WeakMap<
@@ -26,7 +29,7 @@ export function parseListItemBlockContent(
   for (const rule of getCandidateBlockRules(filteredBlockRules, token)) {
     const result = rule.parse(blockCtx);
     if (result.success) {
-      return { matched: true, elements: result.elements, consumed: result.consumed };
+      return { matched: true, ...result };
     }
   }
 
@@ -56,7 +59,7 @@ export function parseListItemInlineContent(
   for (const rule of getCandidateInlineRules(ctx.inlineRules, tokenType)) {
     const result = rule.parse(inlineCtx);
     if (result.success) {
-      return { matched: true, elements: result.elements, consumed: result.consumed };
+      return { matched: true, ...result };
     }
   }
 
@@ -108,6 +111,7 @@ export function collectPostLiTrailingContent(
 
     const inlineResult = parseListItemInlineContent(ctx, pos, token.type);
     if (inlineResult.matched) {
+      stripAutomaticLineBreak(elements, inlineResult.stripLeadingLineBreak);
       for (const element of inlineResult.elements) elements.push(element);
       consumed += inlineResult.consumed;
       pos += inlineResult.consumed;

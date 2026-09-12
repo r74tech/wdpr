@@ -69,7 +69,7 @@ export function parseCellContent(
     for (const rule of getCandidateInlineRules(ctx.inlineRules, token.type)) {
       const result = rule.parse(inlineCtx);
       if (result.success) {
-        content.addInlineElements(result.elements);
+        content.addInlineElements(result.elements, result.stripLeadingLineBreak);
         consumed += result.consumed;
         pos += result.consumed;
         matched = true;

@@ -1,3 +1,4 @@
+import { createAutomaticLineBreak } from "../parsing/automatic-line-break";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 
@@ -38,7 +39,7 @@ export function consumeSpanNewline(
   }
 
   const targetChildren = paragraphStrip && afterBlankLine ? escapedChildren : children;
-  targetChildren.push({ element: "line-break" });
+  targetChildren.push(createAutomaticLineBreak(ctx.tokens[pos]!));
   let consumed = 1;
   let nextPos = pos + 1;
   while (ctx.tokens[nextPos]?.type === "WHITESPACE" && ctx.tokens[nextPos]?.lineStart) {

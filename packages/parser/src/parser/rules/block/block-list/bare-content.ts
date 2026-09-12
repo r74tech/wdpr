@@ -1,3 +1,4 @@
+import { stripAutomaticLineBreak } from "../../inline/parsing/automatic-line-break";
 import type { ListItem } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 import { getCandidateInlineRules } from "../../inline/utils";
@@ -52,7 +53,7 @@ export function parseBareListContent(
       if (consecutiveNewlines >= 2) {
         flushBareParagraph(paragraphState);
       } else {
-        appendBareParagraphLineBreakIfNeeded(paragraphState);
+        appendBareParagraphLineBreakIfNeeded(paragraphState, token);
       }
       continue;
     }
@@ -66,6 +67,7 @@ export function parseBareListContent(
     for (const rule of getCandidateInlineRules(ctx.inlineRules, token.type)) {
       const result = rule.parse(inlineCtx);
       if (result.success) {
+        stripAutomaticLineBreak(paragraphState.current, result.stripLeadingLineBreak);
         appendBareParagraphElements(paragraphState, result.elements);
         consumed += result.consumed;
         pos += result.consumed;

@@ -1,3 +1,7 @@
+import {
+  createAutomaticLineBreak,
+  stripAutomaticLineBreak,
+} from "../../inline/parsing/automatic-line-break";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 import { parseListItemBlockContent, parseListItemInlineContent } from "./item-content";
@@ -50,7 +54,7 @@ export function collectLiItemContent(
     if (token.type === "NEWLINE") {
       const newlineResult = consumeLiItemNewlines(ctx, pos, elements.length > 0);
       if (newlineResult.addLineBreak) {
-        elements.push({ element: "line-break" });
+        elements.push(createAutomaticLineBreak(token));
       }
       pos += newlineResult.consumed;
       consumed += newlineResult.consumed;
@@ -67,6 +71,7 @@ export function collectLiItemContent(
 
     const inlineResult = parseListItemInlineContent(ctx, pos, token.type);
     if (inlineResult.matched) {
+      stripAutomaticLineBreak(elements, inlineResult.stripLeadingLineBreak);
       for (const element of inlineResult.elements) elements.push(element);
       consumed += inlineResult.consumed;
       pos += inlineResult.consumed;

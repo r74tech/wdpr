@@ -1,3 +1,4 @@
+import { stripAutomaticLineBreak } from "../parsing/automatic-line-break";
 import { rawRegionEnd } from "../raw/end";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
@@ -118,6 +119,7 @@ function parseOneSpanChild(
   for (const rule of getCandidateInlineRules(inlineRules, token.type)) {
     const result = rule.parse(inlineCtx);
     if (result.success) {
+      stripAutomaticLineBreak(targetChildren, result.stripLeadingLineBreak);
       for (const element of result.elements) targetChildren.push(element);
       return { consumed: result.consumed };
     }

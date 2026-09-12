@@ -1,3 +1,4 @@
+import { stripAutomaticLineBreak } from "./automatic-line-break";
 import { parseDateSyntax } from "../date/syntax";
 import { emailRegionEnd } from "../email/candidates";
 import { protectedInlineRegionEnd } from "../raw/end";
@@ -136,6 +137,7 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
     for (const rule of getCandidateInlineRules(inlineRules, token.type)) {
       const result = rule.parse(inlineCtx);
       if (result.success) {
+        stripAutomaticLineBreak(nodes, result.stripLeadingLineBreak);
         if (rule.name === "raw" && result.elements.length === 0 && nodes.length === 0) {
           consumedEmptyRaw = true;
         }

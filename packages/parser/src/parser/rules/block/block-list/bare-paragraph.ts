@@ -1,3 +1,5 @@
+import type { Token } from "../../../../lexer";
+import { createAutomaticLineBreak } from "../../inline/parsing/automatic-line-break";
 import type { Element } from "@wdprlib/ast";
 
 export interface BareParagraphState {
@@ -20,9 +22,12 @@ export function appendBareParagraphText(state: BareParagraphState, text: string)
   state.current.push({ element: "text", data: text });
 }
 
-export function appendBareParagraphLineBreakIfNeeded(state: BareParagraphState): void {
+export function appendBareParagraphLineBreakIfNeeded(
+  state: BareParagraphState,
+  token: Token,
+): void {
   if (state.current.length > 0) {
-    state.current.push({ element: "line-break" });
+    state.current.push(createAutomaticLineBreak(token));
   }
 }
 

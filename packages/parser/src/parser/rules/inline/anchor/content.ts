@@ -1,3 +1,4 @@
+import { stripAutomaticLineBreak } from "../parsing/automatic-line-break";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 import { parseAnchorChild } from "./child";
@@ -50,6 +51,7 @@ export function parseAnchorContent(
     }
 
     const child = parseAnchorChild(ctx, pos);
+    stripAutomaticLineBreak(children, child.stripLeadingLineBreak);
     for (const element of child.elements) children.push(element);
     pos += child.consumed;
     consumed += child.consumed;

@@ -25,7 +25,7 @@ export { MODULE_RULES, getModuleRuleByName } from "./mapping";
 export { moduleRule } from "./rule";
 
 // Module parsers
-export { rateModuleRule } from "./rate/index";
+export { rateModuleRule, customRateModuleRule } from "./rate/index";
 export { cssModuleRule } from "./css/index";
 export { backlinksModuleRule } from "./backlinks/index";
 export { categoriesModuleRule } from "./categories/index";
@@ -35,7 +35,7 @@ export { listPagesModuleRule } from "./listpages/parser";
 export { listUsersModuleRule } from "./listusers/parser";
 
 // Module data types (parser-only modules)
-export type { RateModuleData } from "./rate/types";
+export type { RateModuleData, CustomRateModuleData, RatingsFetcher } from "./rate/types";
 export type { BacklinksModuleData } from "./backlinks/types";
 export type { CategoriesModuleData } from "./categories/types";
 export type { JoinModuleData } from "./join/types";

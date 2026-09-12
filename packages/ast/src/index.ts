@@ -13,6 +13,14 @@
 export { buildInfo } from "./build-info.generated";
 export { extractReadableText, countCharacters, excerptText } from "./readable-text";
 export type { ReadableTextOptions, TextExcerptOptions } from "./readable-text";
+export type {
+  RatingRef,
+  RatingVote,
+  RatingAggregate,
+  RatingState,
+  RateModuleData,
+  CustomRateModuleData,
+} from "./rating";
 
 export type { Position, Point } from "./position";
 export { createPoint, createPosition } from "./position";

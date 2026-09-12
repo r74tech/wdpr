@@ -17,6 +17,7 @@
  */
 
 import type { CssLengthUnit } from "./css";
+import type { RateModuleData, CustomRateModuleData } from "./rating";
 
 // ---------------------------------------------------------------------------
 // Primitive types
@@ -499,10 +500,8 @@ export type Module =
       /** Max depth, or null for unlimited */
       depth: number | null;
     }
-  | {
-      /** `[[module Rate]]` — page rating widget */
-      module: "rate";
-    }
+  | RateModuleData
+  | CustomRateModuleData
   | {
       /** `[[module TagCloud]]` — weighted cloud of page tags */
       module: "tag-cloud";

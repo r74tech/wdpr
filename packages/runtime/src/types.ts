@@ -1,3 +1,6 @@
+import type { RatingRef, RatingAction, RatingState } from "./rating";
+export type { RatingRef, RatingVote, RatingAction, RatingAggregate, RatingState } from "./rating";
+
 /**
  * Configuration for `initWdprRuntime()`.
  *
@@ -17,13 +20,13 @@ export interface RuntimeOptions {
   fade?: boolean;
 
   /**
-   * Called when a user casts a vote in a `[[module Rate]]` widget.
-   *
-   * @param pageId - Identifier of the page being rated
-   * @param points - Vote value (e.g. +1, -1, or 0 to cancel)
-   * @returns Updated aggregate rating data
+   * Submit an action on the displayed page's Rate or CustomRate. The host must
+   * bind the page, revalidate registration, include-expanded declarations and permissions,
+   * and persist the action.
+   * Return updated viewer state, or null to withdraw the widget. Reject to show
+   * a retryable error. Neutral voting (value 0) and cancellation are distinct.
    */
-  onRate?: (pageId: string, points: number) => Promise<RateResult>;
+  onRate?: (ref: RatingRef, action: RatingAction) => Promise<RatingState | null>;
 
   /**
    * Called when a user clicks the `[[module Join]]` button to
@@ -33,20 +36,6 @@ export interface RuntimeOptions {
 
   /** Handle a standalone page-option button. The host owns permissions and UI. */
   onPageAction?: (action: string) => void | Promise<void>;
-}
-
-/**
- * Aggregate rating data returned after a vote is submitted.
- *
- * @group Runtime
- */
-export interface RateResult {
-  /** Total accumulated points */
-  points: number;
-  /** Number of votes cast */
-  votes: number;
-  /** Percentage of positive votes (0–100) */
-  percent: number;
 }
 
 /**

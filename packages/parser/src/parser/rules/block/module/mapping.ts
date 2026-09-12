@@ -11,7 +11,7 @@
  */
 
 import type { ModuleRule } from "./types";
-import { rateModuleRule } from "./rate/index";
+import { rateModuleRule, customRateModuleRule } from "./rate/index";
 import { cssModuleRule } from "./css/index";
 import { backlinksModuleRule } from "./backlinks/index";
 import { categoriesModuleRule } from "./categories/index";
@@ -29,6 +29,7 @@ import { tagCloudModuleRule } from "./tagcloud/parser";
  */
 export const MODULE_RULES: ModuleRule[] = [
   rateModuleRule,
+  customRateModuleRule,
   cssModuleRule,
   backlinksModuleRule,
   categoriesModuleRule,

@@ -1,19 +1,9 @@
-/**
- *
- * Type definitions for the Rate module.
- *
- * The `[[module Rate]]` block renders a page rating widget (upvote/downvote buttons).
- * It takes no attributes and has no body.
- *
- * @module
- */
+import type { RatingRef, RatingState } from "@wdprlib/ast";
+export type { RateModuleData, CustomRateModuleData } from "@wdprlib/ast";
 
 /**
- * AST data for a `[[module Rate]]` element.
- *
- * This module has no configurable properties. The rendering application
- * is responsible for displaying the appropriate rating widget.
+ * Read authorized ratings for the displayed page. Omit unknown, disabled, or
+ * inaccessible references. The host owns registration, category policies,
+ * access checks, aggregates, and persistence; rendering must never create data.
  */
-export interface RateModuleData {
-  module: "rate";
-}
+export type RatingsFetcher = (refs: readonly RatingRef[]) => Promise<readonly RatingState[]>;

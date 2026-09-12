@@ -31,6 +31,7 @@ import {
 import { walkAndResolve } from "./resolution/walk-resolve";
 import { collectStyles, mergeCollectedStyles } from "./resolution/styles";
 import { containsSyntaxFootnoteBlock, ModuleDocumentRegistry } from "./resolution/document";
+import { resolveRatings, suppressModuleRatings } from "./rate/resolve";
 
 const MODULE_SECONDARY_INCLUDE_MAX_ITERATIONS = 5;
 
@@ -188,11 +189,9 @@ export async function resolveModules(
   if (mergedStyles.length > 0) result.styles = mergedStyles;
 
   options.onDiagnostics?.(registry.diagnostics);
-  return registry.finalize(
-    result,
-    finalElements,
-    pageTags,
-    containsSyntaxFootnoteBlock(ast.elements),
+  return resolveRatings(
+    registry.finalize(result, finalElements, pageTags, containsSyntaxFootnoteBlock(ast.elements)),
+    dataProvider.fetchRatings,
   );
 }
 
@@ -203,9 +202,12 @@ function createModuleParseFunction(
 ): ParseFunction {
   const transform = createModuleSourceTransform(options, dataProvider);
   return (source: string) =>
-    registry.register(options.parse(transform ? transform(source) : source), {
-      stripLegacyImplicitFootnoteBlock: true,
-    });
+    registry.register(
+      suppressModuleRatings(options.parse(transform ? transform(source) : source)),
+      {
+        stripLegacyImplicitFootnoteBlock: true,
+      },
+    );
 }
 
 function createModuleSourceTransform(

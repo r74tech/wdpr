@@ -23,6 +23,7 @@ import type { ListPagesExternalData, CompiledTemplate } from "./types";
 import type { ParseFunction } from "../types";
 import { renderListPagesItems } from "./resolution/items";
 import { wrapListPagesResult } from "./resolution/wrapper";
+import { suppressModuleRatings } from "../rate/resolve";
 export type { ParseFunction };
 
 /**
@@ -55,6 +56,7 @@ export function resolveListPages(
   compiledTemplate: CompiledTemplate,
   parse: ParseFunction,
 ): Element[] {
-  const items = renderListPagesItems(module, data, compiledTemplate, parse);
-  return wrapListPagesResult(module, items, parse, data);
+  const parseFragment: ParseFunction = (source) => suppressModuleRatings(parse(source));
+  const items = renderListPagesItems(module, data, compiledTemplate, parseFragment);
+  return wrapListPagesResult(module, items, parseFragment, data);
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { parse } from "@wdprlib/parser";
+import { parse, processWikitext } from "@wdprlib/parser";
 import { DEFAULT_SETTINGS } from "@wdprlib/ast";
 import type { SyntaxTree } from "@wdprlib/ast";
 import { Window } from "happy-dom";
@@ -50,24 +50,8 @@ describe("renderer i18n", () => {
         expect(normalizeForParity(actual.body.innerHTML)).toBe(
           normalizeForParity(original.body.innerHTML),
         );
-        // The general parity normalizer removes rate widgets; compare their labels directly.
-        expect(actual.querySelector(".rate-points")?.textContent).toBe(
-          original.querySelector(".rate-points")?.textContent,
-        );
-        // The English preview site disables downvotes; WDPR still renders that control.
-        if (locale === "en") {
-          expect(original.querySelector(".ratedown")).toBeNull();
-          actual.querySelector(".ratedown")?.remove();
-        }
-        expect(
-          [...actual.querySelectorAll(".page-rate-widget-box a")].map((a) =>
-            a.getAttribute("title"),
-          ),
-        ).toEqual(
-          [...original.querySelectorAll(".page-rate-widget-box a")].map((a) =>
-            a.getAttribute("title"),
-          ),
-        );
+        // Rating controls now require provider state and are tested separately below.
+        expect(actual.querySelector(".page-rate-widget-box")).toBeNull();
       }
     },
   );
@@ -113,8 +97,8 @@ describe("renderer i18n", () => {
     );
   });
 
-  it("localizes renderer labels, escapes attribute text and keeps author labels", () => {
-    const { ast } = parse(
+  it("localizes renderer labels, escapes attribute text and keeps author labels", async () => {
+    const { ast } = await processWikitext(
       [
         "[[module Rate]]",
         "[[module Join]]",
@@ -125,12 +109,27 @@ describe("renderer i18n", () => {
         "[[collapsible]]\nBody\n[[/collapsible]]",
         '[[toc title="Author title"]]',
       ].join("\n\n"),
+      {
+        page: { fullName: "test", tags: [] },
+        dataProvider: {
+          fetchRatings: async () => [
+            {
+              ref: { kind: "main" },
+              label: "評価",
+              allowedVotes: [1, 0, -1],
+              canVote: true,
+              canCancel: true,
+              currentVote: null,
+              aggregate: { points: 0, votes: 0, percent: 0 },
+            },
+          ],
+        },
+      },
     );
     const html = renderToHtml(ast, {
       i18n: {
         locale: "ja",
         messages: {
-          "rate.label": "評価",
           "module.join": "参加",
           "rate.up": '好き"<&',
           "gallery.empty": "画像なし",
@@ -141,7 +140,7 @@ describe("renderer i18n", () => {
         },
       },
     });
-    expect(html).toContain("評価:&nbsp;");
+    expect(html).toContain('class="rate-points" aria-live="polite">評価:&nbsp;');
     expect(html).toContain(">参加</a>");
     expect(html).toContain(">Author join</a>");
     expect(html).toContain('title="好き&quot;&lt;&amp;"');

@@ -4,6 +4,8 @@ import type {
   SyntaxTree,
   WikitextPageContext,
   WikitextSettings,
+  RatingRef,
+  RatingState,
   ReadableTextOptions,
 } from "@wdprlib/ast";
 import type { IncludeDependency } from "../parser/rules/block/module/include";
@@ -27,6 +29,17 @@ export interface ProcessWikitextCallbackContext<TPage extends WikitextPageContex
 }
 
 export interface ProcessWikitextDataProvider<TPage extends WikitextPageContext> {
+  /**
+   * Read only authorized, registered ratings in context.page, including declarations
+   * from its includes. Keys match exactly. Omit no-rate and inaccessible references.
+   * Main category policy and custom policies are independent. Votes belong to page + ref.
+   * ListPages/ListUsers output cannot declare ratings, including its nested includes.
+   * The host owns registration, aggregation and invalidation when included declarations change.
+   */
+  fetchRatings?: (
+    refs: readonly RatingRef[],
+    context: ProcessWikitextCallbackContext<TPage>,
+  ) => Promise<readonly RatingState[]>;
   fetchInclude?: (
     pageRef: PageRef,
     context: ProcessWikitextCallbackContext<TPage>,

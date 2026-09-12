@@ -21,6 +21,7 @@
  */
 
 export { buildInfo } from "./build-info.generated";
+export type { RatingRef, RatingVote, RatingAggregate, RatingState } from "@wdprlib/ast";
 
 // Re-export AST types and utilities from @wdprlib/ast
 export type {
@@ -125,6 +126,7 @@ export type {
   // Callback types
   ListPagesDataFetcher,
   DataProvider,
+  RatingsFetcher,
   // Template types
   VariableContext,
   CompiledTemplate,

@@ -28,6 +28,7 @@ import { ModuleDocumentRegistry } from "./document";
 import { collectStyles, mergeCollectedStyles } from "./styles";
 import { createListPagesPager } from "../listpages/resolution/pager";
 import type { ListPagesPaginationState } from "./data-maps";
+import { suppressModuleRatings } from "../rate/resolve";
 
 export type AsyncModuleParseFunction = (source: string) => Promise<ModuleParseResult>;
 
@@ -73,7 +74,7 @@ export async function resolveModulesWithAsyncParse(
   const registry = new ModuleDocumentRegistry();
   registry.register(ast);
   const parse = async (source: string): Promise<SyntaxTree> =>
-    registry.register(await options.parse(source));
+    registry.register(suppressModuleRatings(await options.parse(source)));
 
   const [listPagesData, listUsersData, tagCloudData] = await Promise.all([
     buildListPagesDataMap(

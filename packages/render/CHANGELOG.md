@@ -1,3 +1,17 @@
+## 4.3.0 (2026-09-12)
+
+### 🩹 Fixes
+
+- Wikidotとの構文・描画の差分を修正 ([#75](https://github.com/r74tech/wdpr/pull/75))
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/ast to 4.3.0
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 ## 4.2.0 (2026-09-11)
 
 ### 🚀 Features

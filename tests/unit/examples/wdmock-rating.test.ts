@@ -58,6 +58,50 @@ beforeEach(async () => {
   }
 });
 
+test("seeding twice preserves existing pages and votes while making both custom ratings visible", async () => {
+  sqlite.exec("DELETE FROM pages");
+  const seed = await Bun.file("examples/wdmock-cf/seed.sql").text();
+  sqlite.exec(seed);
+  sqlite.exec(`UPDATE pages SET title = 'Edited page', source = 'User content' WHERE category = 'nav';
+    INSERT INTO page_rate_vote (user_id, page_id, rate)
+      SELECT 2, page_id, 1 FROM pages WHERE category = '_default' AND unix_name = 'main';
+    INSERT INTO page_custom_rate_vote (site_id, page_id, axis_key, user_id, rate)
+      SELECT site_id, page_id, 'contest-2026-theme', 2, 0 FROM pages
+      WHERE category = 'rating-example' AND unix_name = 'first';
+    UPDATE site_rating_axes SET can_cancel = 0 WHERE axis_key = 'contest-2026-style';`);
+  const pages = sqlite.query("SELECT * FROM pages ORDER BY page_id").all();
+  const tags = sqlite.query("SELECT * FROM page_tags ORDER BY page_id, tag").all();
+  const votes = sqlite.query("SELECT * FROM page_rate_vote").all();
+  const customVotes = sqlite.query("SELECT * FROM page_custom_rate_vote").all();
+  const axes = sqlite.query("SELECT * FROM site_rating_axes ORDER BY axis_key").all();
+
+  sqlite.exec(seed);
+
+  expect(sqlite.query("SELECT * FROM pages ORDER BY page_id").all()).toEqual(pages);
+  expect(sqlite.query("SELECT * FROM page_tags ORDER BY page_id, tag").all()).toEqual(tags);
+  expect(sqlite.query("SELECT * FROM page_rate_vote").all()).toEqual(votes);
+  expect(sqlite.query("SELECT * FROM page_custom_rate_vote").all()).toEqual(customVotes);
+  expect(sqlite.query("SELECT * FROM site_rating_axes ORDER BY axis_key").all()).toEqual(axes);
+  expect(sqlite.query("PRAGMA foreign_key_check").all()).toEqual([]);
+  const { source } = sqlite
+    .query<{ source: string }, []>(
+      "SELECT source FROM pages WHERE category = 'rating-example' AND unix_name = 'first'",
+    )
+    .get()!;
+  const rendered = await renderPage(source, "rating-example:first", d1 as unknown as D1Database);
+  const window = new Window();
+  window.document.body.innerHTML = rendered.html;
+  const theme = window.document.querySelector('[data-rating-axis="contest-2026-theme"]')!;
+  const style = window.document.querySelector('[data-rating-axis="contest-2026-style"]')!;
+  expect(theme.textContent).toContain("テーマ適合性");
+  expect(theme.querySelector('[data-rating-action="0"]')?.getAttribute("aria-pressed")).toBe(
+    "true",
+  );
+  expect(style.textContent).toContain("表現への支持");
+  expect(style.querySelectorAll("a[data-rating-action]")).toHaveLength(1);
+  await window.happyDOM.close();
+});
+
 test("a site axis supplies CustomRate and persists votes separately on each display page", async () => {
   sqlite.exec(`INSERT INTO site_rating_axes (site_id, axis_key, label, allow_nv)
     VALUES (1, 'theme', 'テーマ適合性', 1)`);

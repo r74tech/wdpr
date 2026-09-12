@@ -37,7 +37,7 @@ INSERT OR IGNORE INTO page_tags (page_id, tag)
 SELECT page_id, 'entry' FROM pages
 WHERE site_id = 1 AND category = 'rating-example' AND unix_name IN ('first', 'second');
 
-INSERT OR REPLACE INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, 'nav', 'top', 'Top Navigation', '[[div class="top-bar"]]
+INSERT INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, 'nav', 'top', 'Top Navigation', '[[div class="top-bar"]]
 * [/ Home]
 * [/about About]
 [[/div]]
@@ -48,8 +48,9 @@ INSERT OR REPLACE INTO pages (site_id, category, unix_name, title, source, owner
 * [/ Home]
 * [/about About]
 [[/div]]
-', 1);
-INSERT OR REPLACE INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, 'nav', 'side', 'Side Navigation', '[[div class="side-block"]]
+', 1)
+ON CONFLICT(site_id, category, unix_name) DO NOTHING;
+INSERT INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, 'nav', 'side', 'Side Navigation', '[[div class="side-block"]]
 
 [[div class="menu-item"]]
 [[image https://scp-jp.github.io/files/util/common/media/nav/side/home.png]][/ メインページ]
@@ -69,13 +70,15 @@ Recent Pages
 [[a href="##" class="close-menu"]]
 [[image https://scp-jp.github.io/files/util/common/media/nav/side/black.png style="z-index:-1; opacity: 0.3;"]]
 [[/a]]
-', 1);
-INSERT OR REPLACE INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, '_default', 'main', 'main page', '+ Main Page
+', 1)
+ON CONFLICT(site_id, category, unix_name) DO NOTHING;
+INSERT INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, '_default', 'main', 'main page', '+ Main Page
 [[module ListPages limit="5" order="-date_created" category="_default"]]
 * %%title_linked%% (by %%created_by%%, %%created_at%%)
 [[/module]]
-', 1);
-INSERT OR REPLACE INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, '_default', 'about', 'About', '+ About WikidotMock
+', 1)
+ON CONFLICT(site_id, category, unix_name) DO NOTHING;
+INSERT INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, '_default', 'about', 'About', '+ About WikidotMock
 
 This is an example application demonstrating the capabilities of the wdpr library.
 
@@ -86,8 +89,9 @@ This is an example application demonstrating the capabilities of the wdpr librar
 * **Parser**: @wdprlib/parser
 * **Renderer**: @wdprlib/render
 * **Runtime**: @wdprlib/runtime (client-side)
-', 1);
-INSERT OR REPLACE INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, '_default', 'scp-280-jp', 'SCP-280-JP', '[[include credit:start]]
+', 1)
+ON CONFLICT(site_id, category, unix_name) DO NOTHING;
+INSERT INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, '_default', 'scp-280-jp', 'SCP-280-JP', '[[include credit:start]]
 **タイトル:** SCP-280-JP - 縮小する時空間異常
 **著者:** ©︎[[*user dr_toraya]]
 **作成年:** 2015
@@ -431,8 +435,9 @@ uplevel=0;
 
 </script>
 </link>
-[[/html]]', 1);
-INSERT OR REPLACE INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, 'credit', 'start', 'クレジット付き評価モジュール: start', '[[module css]]
+[[/html]]', 1)
+ON CONFLICT(site_id, category, unix_name) DO NOTHING;
+INSERT INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, 'credit', 'start', 'クレジット付き評価モジュール: start', '[[module css]]
 @import url("https://scp-jp.github.io/files/util/common/credit/style/style.css");
 
 .creditRate.no-rate .page-rate-widget-box {
@@ -469,8 +474,9 @@ INSERT OR REPLACE INTO pages (site_id, category, unix_name, title, source, owner
 ++* クレジット
 [[/div]]
 [[div class="credit"]]
-', 1);
-INSERT OR REPLACE INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, 'credit', 'end', 'クレジット付き評価モジュール: end', '[[div_ class="credit-back" style="text-align: center;"]]
+', 1)
+ON CONFLICT(site_id, category, unix_name) DO NOTHING;
+INSERT INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES (1, 'credit', 'end', 'クレジット付き評価モジュール: end', '[[div_ class="credit-back" style="text-align: center;"]]
 [[iframe https://scp-jp.github.io/files/util/common/credit/backmodule/end.html style="height:2em;width: 100%;margin: 0;padding: 0;border: 0;background: transparent;" scrolling="no"]]
 [[/div]]
 [[/div]]
@@ -488,7 +494,8 @@ INSERT OR REPLACE INTO pages (site_id, category, unix_name, title, source, owner
 [[/div]]
 [[/div]]
 [[/div]]
-', 1);
+', 1)
+ON CONFLICT(site_id, category, unix_name) DO NOTHING;
 
 INSERT OR IGNORE INTO page_tags (page_id, tag) VALUES ((SELECT page_id FROM pages WHERE unix_name = 'main'), 'jp');
 INSERT OR IGNORE INTO page_tags (page_id, tag) VALUES ((SELECT page_id FROM pages WHERE unix_name = 'main'), 'hub');

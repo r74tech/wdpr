@@ -1,25 +1,27 @@
 /**
- *
- * Post-processing pass: suppress paragraph wrapping adjacent to div containers.
- *
- * In Wikidot, when a paragraph is a direct sibling of a `<div>` block (no other
- * block elements between them), the `<p>` wrapping is removed and the inner
- * elements are promoted to the parent level.
- *
- * When the unwrapped paragraph follows a div, a line-break element is prepended
- * to represent the newline between the closing `</div>` and the bare text.
- *
- * Examples:
- *   `[[div]]inline[[/div]]\n[[div]]\n[[/div]]`  → no `<p>` (adjacent to div)
- *   `[[div]]inline[[/div]]\n> a\n[[div]]\n[[/div]]` → has `<p>` (blockquote between)
- *
- * @module
+ * Preserve the bare rendering of unparsed div syntax beside a valid div.
+ * Ordinary paragraphs retain their wrappers, including beside div containers.
  */
 import type { Element, ContainerData } from "@wdprlib/ast";
 
-function isParagraphContainer(el: Element | undefined): boolean {
+// Track the syntax node rather than its paragraph so splitting a paragraph
+// cannot mark a separate fragment containing only ordinary text.
+const unparsedDivStarts = new WeakSet<Element>();
+
+export function markUnparsedDivStart(elements: Element[]): void {
+  const first = elements[0];
+  const text =
+    first?.element === "container" && first.data.type === "paragraph"
+      ? first.data.elements[0]
+      : first;
+  if (text?.element === "text") unparsedDivStarts.add(text);
+}
+
+function isUnparsedDivParagraph(el: Element | undefined): boolean {
   if (!el || el.element !== "container") return false;
-  return (el.data as ContainerData).type === "paragraph";
+  return (
+    el.data.type === "paragraph" && el.data.elements.some((child) => unparsedDivStarts.has(child))
+  );
 }
 
 function isDivContainer(el: Element | undefined): boolean {
@@ -28,8 +30,8 @@ function isDivContainer(el: Element | undefined): boolean {
 }
 
 /**
- * At a single nesting level, unwrap paragraph containers that are directly
- * adjacent to div containers. A line-break is prepended when the paragraph
+ * At a single nesting level, unwrap paragraphs containing unparsed div syntax
+ * that are directly adjacent to div containers. A line-break is prepended when the paragraph
  * follows a div.
  */
 function suppressAtLevel(elements: Element[]): Element[] {
@@ -38,7 +40,7 @@ function suppressAtLevel(elements: Element[]): Element[] {
   const unwrap = Array.from({ length: elements.length }, () => false);
 
   for (let i = 0; i < elements.length; i++) {
-    if (!isParagraphContainer(elements[i])) continue;
+    if (!isUnparsedDivParagraph(elements[i])) continue;
     const prevIsDiv = i > 0 && isDivContainer(elements[i - 1]);
     const nextIsDiv = i < elements.length - 1 && isDivContainer(elements[i + 1]);
     if (prevIsDiv || nextIsDiv) {
@@ -66,7 +68,7 @@ function suppressAtLevel(elements: Element[]): Element[] {
 }
 
 /**
- * Suppress paragraph wrapping adjacent to div containers.
+ * Suppress wrapping of unparsed div syntax adjacent to div containers.
  *
  * Applied only at the top level. Inside div containers, paragraphs adjacent
  * to nested divs retain their `<p>` wrapping (matching Wikidot behavior).

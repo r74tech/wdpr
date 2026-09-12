@@ -1,3 +1,5 @@
+import { markUnparsedDivStart } from "../../../postprocess/divAdjacentParagraph";
+import { isDivClose } from "../div/close";
 /**
  * Paragraph rule
  *
@@ -44,9 +46,11 @@ export const paragraphRule: BlockRule = {
       };
     }
 
+    const wrapped = wrapParagraphElements(elements);
+    if (isDivClose(ctx)) markUnparsedDivStart(wrapped);
     return {
       success: true,
-      elements: wrapParagraphElements(elements),
+      elements: wrapped,
       consumed: result.consumed,
     };
   },

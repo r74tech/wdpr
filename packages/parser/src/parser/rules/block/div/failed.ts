@@ -1,3 +1,4 @@
+import { markUnparsedDivStart } from "../../../postprocess/divAdjacentParagraph";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext, RuleResult } from "../../types";
 import { parseAttributes, parseBlockName } from "../utils";
@@ -100,6 +101,7 @@ export function consumeFailedDiv(ctx: ParseContext): RuleResult<Element> {
     consumed++;
   }
 
+  markUnparsedDivStart(elements);
   return {
     success: true,
     elements: [

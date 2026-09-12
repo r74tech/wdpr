@@ -97,9 +97,8 @@ export function rowToPageData(row: Record<string, unknown>, pageTags: string[]):
     hiddenTags,
     children: 0,
     comments: 0,
-    size: (row.source_size as number | undefined) ?? ((row.source as string) || "").length,
     rating: (row.rate as number) || 0,
-    ratingVotes: 0,
+    ratingVotes: (row.rating_votes as number | undefined) ?? 0,
     revisions: 1,
     content: (row.source as string) || undefined,
   };

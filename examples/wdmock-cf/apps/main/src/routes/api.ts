@@ -2,8 +2,10 @@
  * API routes for page operations
  */
 import { Hono } from "hono";
+import { processWikitext } from "@wdprlib/parser";
+import type { RatingAction } from "@wdprlib/runtime";
 import type { Bindings } from "@wdmock/shared";
-import { parseFullname, buildFullname } from "@wdmock/shared";
+import { parseFullname, buildFullname, SITE } from "@wdmock/shared";
 import {
   findPage,
   createPage,
@@ -12,8 +14,10 @@ import {
   upsertVote,
   deleteVote,
   recalculatePageRate,
+  getTagsByFullname,
 } from "@wdmock/db";
-import { renderPage, deletePageBlocks } from "../services/pipeline";
+import { renderPage, deletePageBlocks, getIncludeSource } from "../services/pipeline";
+import { readMainRating } from "../services/ratings";
 
 const api = new Hono<{ Bindings: Bindings }>();
 
@@ -24,25 +28,69 @@ api.get("/health", (c) => {
 
 // Rate a page
 api.post("/rate", async (c) => {
-  const body = await c.req.json<{ page_id: number; points: number }>();
-  const { page_id, points } = body;
+  const body = await c.req.json<Record<string, unknown>>().catch(() => null);
+  if (!body || typeof body !== "object") return c.json({ error: "Invalid request" }, 400);
+  const { page_id, ref, action } = body;
   const userId = 2; // Fixed: user
 
-  if (!page_id || (points !== 1 && points !== -1 && points !== 0)) {
+  if (
+    typeof page_id !== "number" ||
+    !Number.isSafeInteger(page_id) ||
+    page_id <= 0 ||
+    !ref ||
+    typeof ref !== "object" ||
+    !("kind" in ref) ||
+    ref.kind !== "main"
+  ) {
     return c.json({ error: "Invalid request" }, 400);
   }
+  const ratingAction = readRatingAction(action);
+  if (!ratingAction) return c.json({ error: "Invalid action" }, 400);
 
   const db = c.env.DB;
+  const page = await db
+    .prepare("SELECT category, unix_name, source FROM pages WHERE page_id = ?")
+    .bind(page_id)
+    .first<{ category: string; unix_name: string; source: string }>();
+  if (!page) return c.json({ error: "Page not found" }, 404);
+  let declared = false;
+  await processWikitext(page.source, {
+    page: {
+      fullName: buildFullname(page.category, page.unix_name),
+      tags: await getTagsByFullname(db, page.category, page.unix_name),
+      site: SITE.name,
+    },
+    dataProvider: {
+      fetchInclude: (reference) => getIncludeSource(db, reference),
+      fetchRatings: async (refs) => {
+        declared = refs.some((reference) => reference.kind === "main");
+        return [];
+      },
+    },
+  });
+  if (!declared) return c.json({ error: "Rating is not available on this page" }, 403);
 
-  if (points === 0) {
+  if (ratingAction.type === "cancel") {
     await deleteVote(db, userId, page_id);
   } else {
-    await upsertVote(db, userId, page_id, points);
+    await upsertVote(db, userId, page_id, ratingAction.value);
   }
 
-  const result = await recalculatePageRate(db, page_id);
-  return c.json(result);
+  await recalculatePageRate(db, page_id);
+  return c.json(await readMainRating(db, page_id));
 });
+
+function readRatingAction(action: unknown): RatingAction | null {
+  if (!action || typeof action !== "object" || !("type" in action)) return null;
+  if (action.type === "cancel") return { type: "cancel" };
+  if (
+    action.type === "vote" &&
+    "value" in action &&
+    (action.value === -1 || action.value === 0 || action.value === 1)
+  )
+    return { type: "vote", value: action.value };
+  return null;
+}
 
 // Get rendered page HTML
 api.get("/page/*", async (c) => {

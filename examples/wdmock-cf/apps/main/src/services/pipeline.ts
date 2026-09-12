@@ -3,11 +3,20 @@
  *
  * Handles source parsing, module resolution, and HTML rendering.
  */
-import { matchesListPagesSelectors, processWikitext } from "@wdprlib/parser";
-import type { NormalizedListPagesQuery, ListPagesExternalData } from "@wdprlib/parser";
+import {
+  extractDataRequirements,
+  matchesListPagesSelectors,
+  processWikitext,
+} from "@wdprlib/parser";
+import type {
+  NormalizedListPagesQuery,
+  ListPagesExternalData,
+  ListPagesDataRequirement,
+} from "@wdprlib/parser";
 import { renderWikitext } from "@wdprlib/render";
 import { SITE, parseFullname } from "@wdmock/shared";
 import { findPage, getTagsByFullname, rowToPageData } from "@wdmock/db";
+import { readMainRating } from "./ratings";
 
 // Normalized order field -> DB column mapping
 const ORDER_COLUMN_MAP: Record<string, string> = {
@@ -16,7 +25,10 @@ const ORDER_COLUMN_MAP: Record<string, string> = {
   title: "title",
   fullname: "unix_name",
   rating: "rate",
-  size: "LENGTH(source)",
+  votes: "rating_votes",
+  // The demo has no comment storage: every page has zero comments and no timestamp.
+  comments: "(0 + 0)",
+  commented_at: "(NULL)",
 };
 
 export interface RenderResult {
@@ -49,17 +61,23 @@ export async function renderPage(
       domain: SITE.domain,
     },
     dataProvider: {
-      fetchInclude: async (pageRef) => {
-        if (pageRef.site) return null;
-        const included = parseFullname(pageRef.page);
-        return (await findPage(db, included.category, included.name))?.source ?? null;
+      fetchInclude: (pageRef) => getIncludeSource(db, pageRef),
+      fetchRatings: async (refs) => {
+        if (!refs.some((ref) => ref.kind === "main")) return [];
+        const stored = await findPage(db, identity.category, identity.name);
+        return stored ? [await readMainRating(db, stored.page_id)] : [];
       },
-      fetchListPages: async (query) =>
-        queryListPages(db, query, {
-          fullname: pageName,
-          category: identity.category,
-          tags: pageTags,
-        }),
+      fetchListPages: async (query, requirement) =>
+        queryListPages(
+          db,
+          query,
+          {
+            fullname: pageName,
+            category: identity.category,
+            tags: pageTags,
+          },
+          requirement,
+        ),
     },
   });
   const rendered = await renderWikitext(document, {
@@ -136,11 +154,29 @@ interface CurrentListPagesPage {
   tags: string[];
 }
 
+export async function getIncludeSource(
+  db: D1Database,
+  reference: { site: string | null; page: string },
+): Promise<string | null> {
+  if (reference.site) return null;
+  const included = parseFullname(reference.page);
+  return (await findPage(db, included.category, included.name))?.source ?? null;
+}
+
 async function queryListPages(
   db: D1Database,
   query: NormalizedListPagesQuery,
   currentPage: CurrentListPagesPage,
+  requirement: ListPagesDataRequirement,
 ): Promise<ListPagesExternalData> {
+  // No custom/metadata registry or materialized readable sizes exist in this demo DB.
+  if (
+    query.ratingAxis !== undefined ||
+    query.order?.field === "metadata" ||
+    query.order?.field === "size"
+  ) {
+    return { pages: [], totalCount: 0, site: SITE };
+  }
   const conditions: string[] = [];
   const params: unknown[] = [];
 
@@ -165,7 +201,8 @@ async function queryListPages(
   const rows = await db
     .prepare(
       `SELECT page_id, category, unix_name, title, date_created, date_last_edited,
-              owner_user_id, rate, LENGTH(source) AS source_size${includeAllContent ? ", source" : ""}
+              owner_user_id, rate,
+              (SELECT COUNT(*) FROM page_rate_vote WHERE page_rate_vote.page_id = pages.page_id) AS rating_votes${includeAllContent ? ", source" : ""}
        FROM pages ${where} ${orderBy}`,
     )
     .bind(...params)
@@ -188,7 +225,12 @@ async function queryListPages(
       pageId: row.page_id as number,
       page: rowToPageData(row, tagsByPage.get(row.page_id as number) ?? []),
     }))
-    .filter(({ page }) => matchesListPagesSelectors(page, query, currentPage));
+    .filter(
+      ({ page }) =>
+        matchesListPagesSelectors(page, query, currentPage) &&
+        matchesNumber(page.rating, query.rating) &&
+        matchesNumber(page.ratingVotes, query.votes),
+    );
   const offset = Math.max(0, query.offset ?? 0);
   const limit = Math.min(query.limit ?? 20, query.perPage ?? 20, 250);
   const end = limit < 0 ? undefined : offset + limit;
@@ -220,15 +262,36 @@ async function queryListPages(
   }
 
   return {
-    pages: selectedPages.map(({ pageId, page }) => {
-      const selectedTags = selectedTagsByPage.get(pageId);
-      return {
-        ...page,
-        tags: selectedTags?.filter((tag) => !tag.startsWith("_")) ?? page.tags,
-        hiddenTags: selectedTags?.filter((tag) => tag.startsWith("_")) ?? page.hiddenTags,
-        content: includeAllContent ? page.content : contentByPage.get(pageId),
-      };
-    }),
+    pages: await Promise.all(
+      selectedPages.map(async ({ pageId, page }) => {
+        const selectedTags = selectedTagsByPage.get(pageId);
+        const tags = selectedTags ?? [...page.tags, ...page.hiddenTags];
+        const content = includeAllContent ? page.content : contentByPage.get(pageId);
+        const document =
+          (requirement.needsReadableText || requirement.neededVariables.includes("size")) &&
+          content !== undefined
+            ? await processWikitext(content, {
+                page: { fullName: page.fullname, tags, site: SITE.name },
+                dataProvider: { fetchInclude: (reference) => getIncludeSource(db, reference) },
+              })
+            : undefined;
+        const remaining = document ? extractDataRequirements(document.ast).requirements : undefined;
+        const completeText =
+          document &&
+          document.diagnostics.length === 0 &&
+          remaining?.listPages.length === 0 &&
+          remaining.listUsers.length === 0 &&
+          remaining.tagCloud.length === 0;
+        return {
+          ...page,
+          tags: selectedTags?.filter((tag) => !tag.startsWith("_")) ?? page.tags,
+          hiddenTags: selectedTags?.filter((tag) => tag.startsWith("_")) ?? page.hiddenTags,
+          content,
+          readableText: completeText ? document.readableText : undefined,
+          size: completeText ? document.characterCount : undefined,
+        };
+      }),
+    ),
     totalCount: matchedPages.length,
     site: SITE,
   };
@@ -242,6 +305,22 @@ function buildOrderBy(query: NormalizedListPagesQuery): string {
 
   const direction = query.order.direction === "asc" ? "ASC" : "DESC";
   return `ORDER BY ${column} ${direction}, page_id ${direction}`;
+}
+
+function matchesNumber(value: number, selector: NormalizedListPagesQuery["rating"]): boolean {
+  if (!selector) return true;
+  switch (selector.op) {
+    case "=":
+      return value === selector.value;
+    case "<":
+      return value < selector.value;
+    case ">":
+      return value > selector.value;
+    case "<=":
+      return value <= selector.value;
+    case ">=":
+      return value >= selector.value;
+  }
 }
 
 // R2 Storage helpers

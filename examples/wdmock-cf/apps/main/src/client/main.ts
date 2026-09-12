@@ -86,15 +86,17 @@ async function loadPage(path: string) {
   updatePageOptions(true);
 
   // Init runtime for interactive elements
+  const ratingPageId = currentPageId;
   runtime = initWdprRuntime({
     root: content as HTMLElement,
-    onRate: async (_id, points) => {
-      if (!currentPageId) return { points: 0, votes: 0, percent: 0 };
+    onRate: async (ref, action) => {
+      if (ratingPageId == null) return null;
       const rateRes = await fetch("/api/rate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ page_id: currentPageId, points }),
+        body: JSON.stringify({ page_id: ratingPageId, ref, action }),
       });
+      if (!rateRes.ok) throw new Error("Vote submission failed");
       return rateRes.json();
     },
   });

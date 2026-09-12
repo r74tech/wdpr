@@ -2,12 +2,6 @@
  * Votes table operations
  */
 
-export interface RateResult {
-  points: number;
-  votes: number;
-  percent: number;
-}
-
 export async function upsertVote(
   db: D1Database,
   userId: number,
@@ -31,22 +25,11 @@ export async function deleteVote(db: D1Database, userId: number, pageId: number)
     .run();
 }
 
-export async function recalculatePageRate(db: D1Database, pageId: number): Promise<RateResult> {
-  const result = await db
+export async function recalculatePageRate(db: D1Database, pageId: number): Promise<void> {
+  await db
     .prepare(
-      "SELECT COALESCE(SUM(rate), 0) as total, COUNT(*) as votes FROM page_rate_vote WHERE page_id = ?",
+      "UPDATE pages SET rate = (SELECT COALESCE(SUM(rate), 0) FROM page_rate_vote WHERE page_id = ?) WHERE page_id = ?",
     )
-    .bind(pageId)
-    .first<{ total: number; votes: number }>();
-
-  const total = result?.total ?? 0;
-  const votes = result?.votes ?? 0;
-
-  await db.prepare("UPDATE pages SET rate = ? WHERE page_id = ?").bind(total, pageId).run();
-
-  return {
-    points: total,
-    votes,
-    percent: votes > 0 ? Math.round(((total + votes) / (2 * votes)) * 100) : 0,
-  };
+    .bind(pageId, pageId)
+    .run();
 }

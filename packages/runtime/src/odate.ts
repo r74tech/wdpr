@@ -79,14 +79,17 @@ function processOdate(el: HTMLElement): (() => void) | undefined {
   if (!Number.isFinite(date.getTime())) return;
   const [pattern, ...options] = format?.split("|") ?? [];
   el.textContent = pattern === undefined ? date.toLocaleString() : formatDate(date, pattern);
+  el.style.display = "inline";
 
   const previous = hoverListeners.get(el);
   if (previous) {
     el.removeEventListener("mouseover", previous);
     hoverListeners.delete(el);
     el.removeAttribute("title");
+    el.style.removeProperty("cursor");
   }
   if (options.includes("agohover")) {
+    el.style.cursor = "help";
     const updateHover = () => {
       el.title = `${elapsedTime(date)} ago`;
     };

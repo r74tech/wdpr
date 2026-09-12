@@ -21,10 +21,14 @@ describe("date wikitext runtime", () => {
       `${String(local.getDate()).padStart(2, "0")}. ${String(local.getMonth() + 1).padStart(2, "0")}. ${local.getFullYear()}`,
     );
     expect(date?.getAttribute("title")).toMatch(/\d+ days ago/);
+    expect(date?.style.cursor).toBe("help");
+    expect(date?.style.display).toBe("inline");
   });
   test("expands locale representation", () => {
     const { date } = renderDate('[[date 1237135440 format="%c"]]');
     expect(date?.textContent).toBe(new Date(1237135440000).toLocaleString());
+    expect(date?.style.cursor).toBe("");
+    expect(date?.style.display).toBe("inline");
   });
   test("uses elapsed time for %O and refreshes hover text", () => {
     setSystemTime(new Date(681746400000 + 2 * 86400000));
@@ -64,6 +68,8 @@ test("removes an earlier hover listener when reinitialized without agohover", ()
   initOdate(root as unknown as HTMLElement);
   date!.dispatchEvent(new win.MouseEvent("mouseover"));
   expect(date?.hasAttribute("title")).toBe(false);
+  expect(date?.style.cursor).toBe("");
+  expect(date?.style.display).toBe("inline");
 });
 
 test("stops refreshing the tooltip after destroy", () => {

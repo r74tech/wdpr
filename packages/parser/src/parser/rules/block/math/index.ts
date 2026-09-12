@@ -11,9 +11,7 @@
 import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../../types";
 import { currentToken } from "../../types";
-import { parseBlockName } from "../utils";
-import { collectMathContent, consumeMathClose } from "./content";
-import { parseMathName } from "./name";
+import { findMathOpen, findMathBodyBounds } from "./boundary";
 
 /**
  * Block rule for `[[math name]]...[[/math]]`.
@@ -28,79 +26,41 @@ export const mathBlockRule: BlockRule = {
 
   parse(ctx: ParseContext): RuleResult<Element> {
     const openToken = currentToken(ctx);
-    if (openToken.type !== "BLOCK_OPEN") {
-      return { success: false };
-    }
-
-    let pos = ctx.pos + 1;
-    let consumed = 1;
-
-    const nameResult = parseBlockName(ctx, pos);
-    if (!nameResult || nameResult.name !== "math") {
-      return { success: false };
-    }
-    pos += nameResult.consumed;
-    consumed += nameResult.consumed;
-
-    while (ctx.tokens[pos]?.type === "WHITESPACE") {
-      pos++;
-      consumed++;
-    }
-
-    const mathName = parseMathName(ctx, pos);
-    pos += mathName.consumed;
-    consumed += mathName.consumed;
-
-    while (ctx.tokens[pos]?.type === "WHITESPACE") {
-      pos++;
-      consumed++;
-    }
-
-    if (ctx.tokens[pos]?.type !== "BLOCK_CLOSE") {
-      return { success: false };
-    }
-    pos++;
-    consumed++;
-
-    if (ctx.tokens[pos]?.type === "NEWLINE") {
-      pos++;
-      consumed++;
-    }
-
-    const contentResult = collectMathContent(ctx, pos);
-    const latexSource = contentResult.latexSource.trim();
-    consumed += contentResult.consumed;
-    pos += contentResult.consumed;
-
-    if (!contentResult.foundClose) {
+    const open = findMathOpen(ctx.tokens, ctx.pos);
+    if (!open) return { success: false };
+    const bounds = findMathBodyBounds(ctx.tokens, open.bodyStart);
+    if (!bounds.foundClose) {
       ctx.diagnostics.push({
         severity: "warning",
         code: "unclosed-block",
         message: "Missing closing tag [[/math]] for [[math]]",
         position: openToken.position,
       });
-    } else {
-      const closeConsumed = consumeMathClose(ctx, pos);
-      pos += closeConsumed;
-      consumed += closeConsumed;
     }
-
-    if (!latexSource) {
+    if (!bounds.hasContent) {
       return { success: false };
     }
-
+    const latexSource = ctx.tokens
+      .slice(open.bodyStart, bounds.closeStart)
+      .map((token) => (token.type === "BACKSLASH_BREAK" ? "\\\n" : token.value))
+      .join("")
+      .trim();
+    const name = ctx.tokens
+      .slice(open.nameStart, open.nameEnd)
+      .map((token) => token.value)
+      .join("");
     return {
       success: true,
       elements: [
         {
           element: "math",
           data: {
-            name: mathName.name,
+            name: name || null,
             "latex-source": latexSource,
           },
         },
       ],
-      consumed,
+      consumed: bounds.end - ctx.pos,
     };
   },
 };

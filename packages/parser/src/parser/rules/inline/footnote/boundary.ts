@@ -1,3 +1,4 @@
+import { createOpaqueProbe, opaqueRuleEnd } from "../../opaque-probe";
 import type { ParseContext } from "../../types";
 import { codeBlockRule } from "../../block/code";
 import { htmlBlockRule } from "../../block/html";
@@ -24,22 +25,7 @@ const opaqueRules = [
 
 /** Locate the enclosing close without parsing code, HTML or math as footnote syntax. */
 export function findFootnoteEnd(ctx: ParseContext, start: number): number {
-  const probe: ParseContext = {
-    ...ctx,
-    diagnostics: [],
-    footnotes: [],
-    tocEntries: [],
-    codeBlocks: [],
-    htmlBlocks: [],
-    bibcites: [],
-    scope: {
-      ...ctx.scope,
-      inlineEnd: undefined,
-      tableFormatting: undefined,
-      // Code's rule also collects the following paragraph; only its raw body is protected here.
-      blockCloseCondition: () => true,
-    },
-  };
+  const probe = createOpaqueProbe(ctx);
   let depth = 0;
   for (let pos = start; pos < ctx.tokens.length; pos++) {
     if (ctx.tokens[pos]?.type === "EOF") return pos;
@@ -63,14 +49,8 @@ export function findFootnoteEnd(ctx: ParseContext, start: number): number {
       pos += open.consumed - 1;
       continue;
     }
-    for (const rule of opaqueRules) {
-      if (!rule.startTokens.includes(ctx.tokens[pos]!.type)) continue;
-      const result = rule.parse(probe);
-      if (result.success) {
-        pos += result.consumed - 1;
-        break;
-      }
-    }
+    const opaqueEnd = opaqueRuleEnd(probe, pos, opaqueRules);
+    if (opaqueEnd > pos) pos = opaqueEnd - 1;
   }
   return ctx.tokens.length;
 }

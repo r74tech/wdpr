@@ -122,6 +122,7 @@ export type StringContainerType =
   | "monospace"
   | "span"
   | "div"
+  | "note"
   | "blockquote"
   | "size"
   | "paragraph"
@@ -1315,6 +1316,7 @@ export function isContainerTypeParagraphSafe(type: ContainerType): boolean {
     case "size":
       return true;
     case "div":
+    case "note":
     case "blockquote":
     case "paragraph":
     case "heading":

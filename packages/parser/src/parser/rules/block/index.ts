@@ -27,6 +27,7 @@ import { blockListRule } from "./block-list";
 import { blockquoteRule } from "./blockquote";
 import { definitionListRule } from "./definition-list";
 import { paragraphRule } from "./paragraph";
+import { noteRule } from "./note";
 import { divRule } from "./div";
 import { codeBlockRule } from "./code";
 import { collapsibleRule } from "./collapsible";
@@ -58,6 +59,7 @@ export { blockListRule } from "./block-list";
 export { blockquoteRule } from "./blockquote";
 export { definitionListRule } from "./definition-list";
 export { paragraphRule } from "./paragraph";
+export { noteRule } from "./note";
 export { divRule } from "./div";
 export { codeBlockRule } from "./code";
 export { collapsibleRule } from "./collapsible";
@@ -123,6 +125,7 @@ export const blockRules: BlockRule[] = [
   iftagsRule,
   bibliographyRule,
   galleryRule,
+  noteRule,
   divRule,
   // paragraphRule is not included - used as fallback
 ];

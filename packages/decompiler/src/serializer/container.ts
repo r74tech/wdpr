@@ -162,6 +162,12 @@ function serializeStringContainer(
         serializeSpanLike(ctx, "span", elements, attributes);
       }
       break;
+    case "note":
+      ctx.pushBlockLine("[[note]]");
+      ctx.push(serializeBlockInner(ctx, elements));
+      ctx.pushBlockLine("[[/note]]");
+      ctx.requestBlankLine();
+      break;
     case "div":
       serializeDivContainer(ctx, elements, attributes);
       break;
@@ -307,7 +313,7 @@ function isBlockLevelElement(el: Element): boolean {
       const type = (el.data as ContainerData)?.type;
       if (typeof type === "object") return true; // header, alignment
       if (typeof type === "string") {
-        return type === "paragraph" || type === "div" || type === "blockquote";
+        return type === "paragraph" || type === "div" || type === "note" || type === "blockquote";
       }
       return false;
     }

@@ -1,0 +1,143 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Before"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "note",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "更"
+                },
+                {
+                  "element": "text",
+                  "data": "な"
+                },
+                {
+                  "element": "text",
+                  "data": "る"
+                },
+                {
+                  "element": "text",
+                  "data": "情"
+                },
+                {
+                  "element": "text",
+                  "data": "報"
+                },
+                {
+                  "element": "text",
+                  "data": "は"
+                },
+                {
+                  "element": "text",
+                  "data": "こ"
+                },
+                {
+                  "element": "text",
+                  "data": "ち"
+                },
+                {
+                  "element": "text",
+                  "data": "ら"
+                },
+                {
+                  "element": "text",
+                  "data": "へ"
+                },
+                {
+                  "element": "text",
+                  "data": "連"
+                },
+                {
+                  "element": "text",
+                  "data": "絡"
+                },
+                {
+                  "element": "text",
+                  "data": "し"
+                },
+                {
+                  "element": "text",
+                  "data": "て"
+                },
+                {
+                  "element": "text",
+                  "data": "く"
+                },
+                {
+                  "element": "text",
+                  "data": "だ"
+                },
+                {
+                  "element": "text",
+                  "data": "さ"
+                },
+                {
+                  "element": "text",
+                  "data": "い"
+                },
+                {
+                  "element": "text",
+                  "data": "："
+                },
+                {
+                  "element": "link",
+                  "data": {
+                    "type": "direct",
+                    "link": "mailto:support@wikidot.com",
+                    "label": {
+                      "text": "support@wikidot.com"
+                    },
+                    "target": null,
+                    "extra": null
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "After"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

@@ -2,6 +2,8 @@ import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 import { parseBlockName } from "../../common";
 import { parseInlineUntil } from "../utils";
+import { protectedInlineRegionEnd } from "../raw/end";
+import { parseSizeOpen } from "./open";
 
 export interface SizeContentResult {
   children: Element[];
@@ -13,8 +15,9 @@ export function parseSizeContent(ctx: ParseContext, startPos: number): SizeConte
   const children: Element[] = [];
   let pos = startPos;
   let consumed = 0;
+  const inlineEnd = findSizeClose(ctx, startPos);
 
-  while (pos < ctx.tokens.length) {
+  while (pos < (ctx.scope.inlineEnd ?? ctx.tokens.length)) {
     const token = ctx.tokens[pos];
     if (!token || token.type === "EOF") {
       break;
@@ -29,9 +32,9 @@ export function parseSizeContent(ctx: ParseContext, startPos: number): SizeConte
       };
     }
 
-    const inlineCtx: ParseContext = { ...ctx, pos };
-    const inlineResult = parseInlineUntil(inlineCtx, "BLOCK_END_OPEN");
-    if (inlineResult.elements.length > 0) {
+    const inlineCtx: ParseContext = { ...ctx, pos, scope: { ...ctx.scope, inlineEnd } };
+    const inlineResult = parseInlineUntil(inlineCtx, "EOF");
+    if (inlineResult.consumed > 0) {
       for (const element of inlineResult.elements) children.push(element);
       pos += inlineResult.consumed;
       consumed += inlineResult.consumed;
@@ -43,6 +46,30 @@ export function parseSizeContent(ctx: ParseContext, startPos: number): SizeConte
   }
 
   return { children, consumed, foundClose: false };
+}
+
+function findSizeClose(ctx: ParseContext, startPos: number): number {
+  const end = ctx.scope.inlineEnd ?? ctx.tokens.length;
+  let depth = 0;
+  for (let pos = startPos; pos < end; pos++) {
+    const protectedEnd = protectedInlineRegionEnd(ctx.tokens, pos, end);
+    if (protectedEnd > pos) {
+      pos = protectedEnd - 1;
+      continue;
+    }
+    const open = ctx.tokens[pos]?.type === "BLOCK_OPEN" ? parseSizeOpen({ ...ctx, pos }) : null;
+    if (open) {
+      depth++;
+      pos = open.bodyStart - 1;
+      continue;
+    }
+    const close = tryConsumeSizeClose(ctx, pos);
+    if (!close) continue;
+    if (depth === 0) return pos;
+    depth--;
+    pos += close.consumed - 1;
+  }
+  return end;
 }
 
 function tryConsumeSizeClose(ctx: ParseContext, pos: number): { consumed: number } | null {

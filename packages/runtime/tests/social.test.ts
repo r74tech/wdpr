@@ -93,12 +93,13 @@ test.each(["javascript:alert(1)", "data:text/plain,x", "/relative", ""])(
 );
 test("encodes lone surrogates without throwing, and never replaces metadata placeholders twice", () => {
   const title = 'a\uD800{url}{text}" onclick="bad';
+  const expectedTitle = 'a\uFFFD{url}{text}" onclick="bad';
   const options = { socialShare: { url: sourceUrl, title } };
   const { root } = setup(options);
-  checkLinks(root, sourceUrl, title.replace("\uD800", "\uFFFD"));
+  checkLinks(root, sourceUrl, expectedTitle);
   expect(root.querySelector("[onclick]")).toBeNull();
   initSocial(root);
-  checkLinks(root, sourceUrl, title.replace("\uD800", "\uFFFD"));
+  checkLinks(root, sourceUrl, expectedTitle);
 });
 test("rejects an active URL injected into a template", () => {
   const { root } = setup();

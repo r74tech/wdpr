@@ -1,4 +1,6 @@
-import { formatDate, formatUserLinked, getFirstParagraph, getSummary } from "../format";
+import { formatDate, formatUserLinked } from "../format";
+import { countCharacters, excerptText } from "@wdprlib/ast";
+import { literalWikitext } from "../literal";
 import type { VariableGetter } from "./types";
 
 /** Default character count for `%%preview%%` when no length is specified (Wikidot default). */
@@ -38,16 +40,24 @@ export const SIMPLE_GETTERS: Record<string, VariableGetter> = {
     ctx.page.parentFullname ? `[[[${ctx.page.parentFullname} | ${ctx.page.parentTitle}]]]` : "",
 
   content: (ctx) => ctx.page.content ?? "",
-  preview: (ctx) => (ctx.page.content ?? "").slice(0, DEFAULT_PREVIEW_LENGTH),
-  summary: (ctx) => getSummary(ctx.page),
-  first_paragraph: (ctx) => getFirstParagraph(ctx.page.content),
+  preview: (ctx) =>
+    literalWikitext(
+      excerptText(ctx.page.readableText ?? "", { maxLength: DEFAULT_PREVIEW_LENGTH }),
+    ),
+  summary: (ctx) => literalWikitext(ctx.page.readableText?.split(/\n{2,}/)[0] ?? ""),
+  first_paragraph: (ctx) => literalWikitext(ctx.page.readableText?.split(/\n{2,}/)[0] ?? ""),
 
   tags: (ctx) => ctx.page.tags.join(" "),
   _tags: (ctx) => ctx.page.hiddenTags.join(" "),
 
   children: (ctx) => String(ctx.page.children),
   comments: (ctx) => String(ctx.page.comments),
-  size: (ctx) => String(ctx.page.size),
+  size: (ctx) =>
+    ctx.page.readableText !== undefined
+      ? String(countCharacters(ctx.page.readableText))
+      : ctx.page.size !== undefined
+        ? String(ctx.page.size)
+        : "",
   rating: (ctx) => String(ctx.page.rating),
   rating_votes: (ctx) => String(ctx.page.ratingVotes),
   rating_percent: (ctx) => String(ctx.page.ratingPercent ?? 0),

@@ -25,7 +25,6 @@ describe("definePageData", () => {
       hiddenTags: [],
       children: 0,
       comments: 0,
-      size: 0,
       rating: 0,
       ratingVotes: 0,
       revisions: 0,

@@ -38,6 +38,7 @@ export type ListPagesVariable =
   | "content_n"
   | "preview"
   | "preview_n"
+  | "excerpt"
   | "summary"
   | "first_paragraph"
   // Tags

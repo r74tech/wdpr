@@ -11,6 +11,8 @@
  */
 
 export { buildInfo } from "./build-info.generated";
+export { extractReadableText, countCharacters, excerptText } from "./readable-text";
+export type { ReadableTextOptions, TextExcerptOptions } from "./readable-text";
 
 export type { Position, Point } from "./position";
 export { createPoint, createPosition } from "./position";

@@ -4,6 +4,7 @@ import type {
   SyntaxTree,
   WikitextPageContext,
   WikitextSettings,
+  ReadableTextOptions,
 } from "@wdprlib/ast";
 import type { IncludeDependency } from "../parser/rules/block/module/include";
 import type {
@@ -50,12 +51,15 @@ export interface ProcessWikitextOptions<TPage extends WikitextPageContext> {
   settings?: WikitextSettings;
   dataProvider?: ProcessWikitextDataProvider<TPage>;
   includeMaxIterations?: number;
+  readableText?: ReadableTextOptions;
 }
 
 export interface ProcessedWikitextDocument<
   TPage extends WikitextPageContext = WikitextPageContext,
 > {
   ast: SyntaxTree;
+  readableText: string;
+  characterCount: number;
   page: TPage;
   settings: WikitextSettings;
   diagnostics: Diagnostic[];

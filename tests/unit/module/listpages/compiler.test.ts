@@ -1,5 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { compileTemplate } from "../../../../packages/parser/src/parser/rules/block/module/listpages/compiler";
+import { parse } from "@wdprlib/parser";
+import { extractReadableText } from "@wdprlib/ast";
 import type {
   VariableContext,
   PageData,
@@ -237,15 +239,15 @@ describe("compileTemplate", () => {
     it("should substitute %%preview%%", () => {
       const fn = compileTemplate("%%preview%%");
       const content = "A".repeat(300);
-      const ctx = createContext({ content });
-      expect(fn(ctx)).toBe("A".repeat(200));
+      const ctx = createContext({ readableText: content });
+      expect(extractReadableText(parse(fn(ctx)).ast)).toBe("A".repeat(200));
     });
 
     it("should substitute %%preview(50)%%", () => {
       const fn = compileTemplate("%%preview(50)%%");
       const content = "B".repeat(100);
-      const ctx = createContext({ content });
-      expect(fn(ctx)).toBe("B".repeat(50));
+      const ctx = createContext({ readableText: content });
+      expect(extractReadableText(parse(fn(ctx)).ast)).toBe("B".repeat(50));
     });
 
     it("should substitute %%content{1}%%", () => {

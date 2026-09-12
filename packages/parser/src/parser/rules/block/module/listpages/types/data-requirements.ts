@@ -24,6 +24,8 @@ export interface ListPagesDataRequirement {
 
   /** Field names needed for form_data{field} etc. */
   formFields?: string[];
+  /** Supply PageData.readableText for previews, excerpts, and summaries. */
+  needsReadableText?: boolean;
 
   /** Prefix for tags_linked|prefix */
   tagsLinkPrefix?: string;

@@ -29,6 +29,7 @@ const KNOWN_VARIABLES: ReadonlySet<ListPagesVariable> = new Set([
   "parent_title_linked",
   "content",
   "preview",
+  "excerpt",
   "summary",
   "first_paragraph",
   "tags",

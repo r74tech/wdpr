@@ -32,6 +32,9 @@ export function extractListPagesModule(
     contentSectionIndices: extraction.contentIndices,
     previewLengths: extraction.previewLengths,
     formFields: extraction.formFields,
+    needsReadableText: extraction.variables.some((name) =>
+      ["preview", "preview_n", "summary", "first_paragraph", "excerpt"].includes(name),
+    ),
     tagsLinkPrefix: extraction.tagsLinkPrefix,
     hiddenTagsLinkPrefix: extraction.hiddenTagsLinkPrefix,
     urlAttrPrefix: listPages["url-attr-prefix"],

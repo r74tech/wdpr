@@ -1,5 +1,7 @@
 import {
   DEFAULT_SETTINGS,
+  extractReadableText,
+  countCharacters,
   type Diagnostic,
   type PageRef,
   type WikitextPageContext,
@@ -117,8 +119,12 @@ export async function processWikitext<TPage extends WikitextPageContext>(
     );
   }
 
+  const readableText = extractReadableText(ast, options.readableText);
+
   return {
     ast,
+    readableText,
+    characterCount: countCharacters(readableText),
     page: options.page,
     settings,
     diagnostics,

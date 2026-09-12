@@ -1,5 +1,7 @@
 import { formatDate, formatTagsLinked, splitContentSections } from "../format";
 import type { VariableGetter } from "./types";
+import { excerptText } from "@wdprlib/ast";
+import { literalWikitext } from "../literal";
 
 export function createBraceParamGetter(name: string, param: string): VariableGetter | null {
   switch (name) {
@@ -28,7 +30,7 @@ export function createParenParamGetter(name: string, param: string): VariableGet
   if (name !== "preview") return null;
 
   const len = Number(param);
-  return (ctx) => (ctx.page.content ?? "").slice(0, len);
+  return (ctx) => literalWikitext(excerptText(ctx.page.readableText ?? "", { maxLength: len }));
 }
 
 export function createFormattedGetter(name: string, format: string): VariableGetter | null {

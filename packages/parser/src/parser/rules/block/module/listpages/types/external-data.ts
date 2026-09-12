@@ -37,6 +37,12 @@ export interface PageData {
 
   // Wikitext content split by ==== when resolving %%content{n}%%.
   content?: string;
+  /**
+   * Text extracted from this page's resolved AST for preview, summary, first_paragraph and
+   * `%%excerpt{start}(200)|end%%`. Values stay literal; raw content is never a fallback.
+   * The host owns extraction policy, dependency invalidation and recursion limits.
+   */
+  readableText?: string;
 
   // Tags
   tags: string[];
@@ -51,7 +57,8 @@ export interface PageData {
   // Metrics
   children: number;
   comments: number;
-  size: number;
+  /** Materialized readable character count, computed with countCharacters. */
+  size?: number;
   rating: number;
   ratingVotes: number;
   ratingPercent?: number;
@@ -73,7 +80,6 @@ export function definePageData(input: PageDataInput): PageData {
     hiddenTags: input.hiddenTags ?? [],
     children: input.children ?? 0,
     comments: input.comments ?? 0,
-    size: input.size ?? 0,
     rating: input.rating ?? 0,
     ratingVotes: input.ratingVotes ?? 0,
     revisions: input.revisions ?? 0,

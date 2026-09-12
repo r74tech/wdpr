@@ -390,7 +390,7 @@ describe("processWikitext", () => {
 
   it("merges diagnostics emitted while parsing an additional pass", async () => {
     const document = await processWikitext(
-      '[[module ListPages range="." limit="1"]]%%content%%[[/module]]',
+      '[[module ListPages range="." limit="1"]]\n%%content%%\n[[/module]]',
       {
         page: pageContext,
         dataProvider: {
@@ -400,7 +400,7 @@ describe("processWikitext", () => {
             site: siteContext(),
           }),
           fetchInclude: async () =>
-            '[[module ListUsers users="."]][[code]]generated unclosed[[/module]]',
+            '[[module ListUsers users="."]]\n[[code]]generated unclosed\n[[/module]]',
           fetchListUsers: async () => ({
             user: { number: 1, title: "Alice", name: "alice" },
           }),
@@ -434,7 +434,7 @@ describe("processWikitext", () => {
 
   it("stops self-generating modules after five passes with a diagnostic", async () => {
     let calls = 0;
-    const generated = '[[module ListPages range="." limit="1"]]%%content%%[[/module]]';
+    const generated = '[[module ListPages range="." limit="1"]]\n%%content%%\n[[/module]]';
     const document = await processWikitext(generated, {
       page: pageContext,
       dataProvider: {

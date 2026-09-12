@@ -1,3 +1,4 @@
+import { stripAutomaticLineBreak } from "../../../inline/parsing/automatic-line-break";
 import { protectedInlineRegionEnd } from "../../../inline/raw/end";
 import type { Element, TableCell } from "@wdprlib/ast";
 import type { ParseContext } from "../../../types";
@@ -85,7 +86,8 @@ export function parseTableCell(
     for (const rule of getCandidateInlineRules(inlineRules, token.type)) {
       const result = rule.parse(inlineCtx);
       if (result.success) {
-        children.push(...result.elements);
+        stripAutomaticLineBreak(children, result.stripLeadingLineBreak);
+        for (const element of result.elements) children.push(element);
         consumed += result.consumed;
         pos += result.consumed;
         matched = true;

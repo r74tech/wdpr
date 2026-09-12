@@ -1,23 +1,32 @@
 {
   "elements": [
     {
-      "element": "text",
-      "data": "Body"
-    },
-    {
-      "element": "footnote"
-    },
-    {
-      "element": "text",
-      "data": " "
-    },
-    {
-      "element": "text",
-      "data": "text"
-    },
-    {
-      "element": "text",
-      "data": "."
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Body"
+          },
+          {
+            "element": "footnote"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "text"
+          },
+          {
+            "element": "text",
+            "data": "."
+          }
+        ]
+      }
     },
     {
       "element": "container",

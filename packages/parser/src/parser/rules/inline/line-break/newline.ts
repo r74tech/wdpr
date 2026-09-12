@@ -1,3 +1,4 @@
+import { createAutomaticLineBreak } from "../parsing/automatic-line-break";
 import type { Element } from "@wdprlib/ast";
 import type { TokenType } from "../../../../lexer";
 import type { InlineRule, ParseContext, RuleResult } from "../../types";
@@ -27,7 +28,7 @@ export const newlineLineBreakRule: InlineRule = {
 
     return {
       success: true,
-      elements: [{ element: "line-break" }],
+      elements: [createAutomaticLineBreak(currentTok)],
       consumed: 1,
     };
   },
@@ -51,6 +52,12 @@ function isValidBlockStartAfterNewline(ctx: ParseContext, tokenPos: number): boo
   const token = ctx.tokens[tokenPos];
   if (!isBlockStartToken(token?.type) || !token?.lineStart) {
     return false;
+  }
+
+  if (token.type === "LIST_BULLET" || token.type === "LIST_NUMBER") {
+    // リスト構文はマーカー直後の空白が必須（list/line.tsと同じ規則）。
+    // 空白なしの行（例: 行頭の `*http://...`）はリストにならないため<br>を抑制しない
+    return ctx.tokens[tokenPos + 1]?.type === "WHITESPACE";
   }
 
   if (token.type !== "HEADING_MARKER") {

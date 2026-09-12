@@ -1,4 +1,6 @@
+import { getEmailCandidate } from "../email/candidates";
 import type { TokenType } from "../../../../lexer";
+import { URL_SCHEME_NAMES } from "../../../../lexer/url-schemes";
 import type { ParseContext } from "../../types";
 
 const MIN_INLINE_TEXT_RUN_LENGTH = 32;
@@ -18,6 +20,7 @@ export function collectLongPlainTextRun(
 ): PlainTextRun | null {
   const firstToken = ctx.tokens[startPos];
   if (
+    !getEmailCandidate(ctx.tokens, startPos) &&
     firstToken?.type === "TEXT" &&
     firstToken.value.length >= MIN_INLINE_TEXT_RUN_LENGTH &&
     firstToken.value !== "("
@@ -50,10 +53,12 @@ export function collectLongPlainTextRun(
 
 function isPlainTextRunToken(ctx: ParseContext, pos: number): boolean {
   const token = ctx.tokens[pos];
-  if (!token) return false;
+  if (!token || getEmailCandidate(ctx.tokens, pos)) return false;
 
   if (token.type === "IDENTIFIER") {
-    return true;
+    // 連続平文の一括テキスト化がURL先頭のスキーム名を取り込むと
+    // autolinkルールに到達しなくなるため、スキーム名の手前で止める
+    return !(URL_SCHEME_NAMES.has(token.value) && ctx.tokens[pos + 1]?.type === "COLON");
   }
 
   if (token.type === "WHITESPACE") {

@@ -26,6 +26,11 @@ export async function compilePublicPipelineContracts(): Promise<void> {
       urlPath: "/category:page",
     },
   });
+  await renderWikitext(document, {
+    resolvers: {
+      resolvePageTitles: async (names: string[]) => new Map(names.map((name) => [name, name])),
+    },
+  });
   const result = await renderWikitext({
     ...document,
     customField: "preserved",
@@ -44,6 +49,7 @@ export async function compilePublicPipelineContracts(): Promise<void> {
   void invalidHtml;
 
   const lowLevelCompatibility: RenderOptions = {
+    page: { pageName: "current", pageTitle: (name: string) => name },
     i18n: {
       locale: "ja",
       messages: { "toc.title": "目次" },

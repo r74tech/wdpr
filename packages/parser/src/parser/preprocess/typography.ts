@@ -19,6 +19,8 @@
  * @module
  */
 
+import { makeUniqueSentinels, maskRawRegions, restorePlaceholders } from "./utils";
+
 /** Unicode left single quotation mark (U+2018) */
 const LEFT_SINGLE_QUOTE = "\u2018"; // '
 /** Unicode right single quotation mark (U+2019) */
@@ -66,14 +68,24 @@ function replaceDelimitedTypography(
   let searchFrom = 0;
   let result = "";
   let lastCopied = 0;
+  let closeIndex = -1;
+  let newlineIndex = -1;
 
   while (searchFrom < text.length) {
     const openIndex = text.indexOf(opener, searchFrom);
     if (openIndex === -1) break;
 
     const contentStart = openIndex + opener.length;
-    const closeIndex = text.indexOf(closer, contentStart);
+    if (closeIndex < contentStart) closeIndex = text.indexOf(closer, contentStart);
     if (closeIndex === -1) break;
+    if (newlineIndex < contentStart) {
+      const nextNewline = text.indexOf("\n", contentStart);
+      newlineIndex = nextNewline === -1 ? text.length : nextNewline;
+    }
+    if (newlineIndex < closeIndex) {
+      searchFrom = newlineIndex + 1;
+      continue;
+    }
 
     result += text.slice(lastCopied, openIndex);
     result += leftQuote;
@@ -99,7 +111,17 @@ function replaceDelimitedTypography(
  * @returns Text with ASCII typography patterns replaced by Unicode equivalents
  */
 export function substitute(text: string): string {
-  let result = text;
+  if (
+    !text.includes("`") &&
+    !text.includes(",,") &&
+    !text.includes("...") &&
+    !text.includes(". . .")
+  ) {
+    return text;
+  }
+  const sentinels = makeUniqueSentinels(text);
+  const { masked, placeholders } = maskRawRegions(text, sentinels);
+  let result = masked;
 
   // Double quotes: ``...'' -> "..."
   if (result.includes("``") && result.includes("''")) {
@@ -128,5 +150,5 @@ export function substitute(text: string): string {
     result = replaceExactEllipsisPattern(result, ". . .");
   }
 
-  return result;
+  return restorePlaceholders(result, placeholders, sentinels);
 }

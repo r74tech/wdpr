@@ -1,3 +1,5 @@
+import { stripAutomaticLineBreak } from "../../inline/parsing/automatic-line-break";
+import { createAutomaticLineBreak } from "../../inline/parsing/automatic-line-break";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 import { getCandidateInlineRules } from "../../inline/utils";
@@ -58,7 +60,7 @@ export function parseInlineContentUntil(
       consumed += newlineResult.consumed;
       pos += newlineResult.consumed;
       if (newlineResult.addLineBreak) {
-        elements.push({ element: "line-break" });
+        elements.push(createAutomaticLineBreak(token));
       }
       continue;
     }
@@ -69,7 +71,7 @@ export function parseInlineContentUntil(
     for (const rule of getCandidateBlockRules(blockRules, token)) {
       const result = rule.parse(blockCtx);
       if (result.success) {
-        elements.push(...result.elements);
+        for (const element of result.elements) elements.push(element);
         consumed += result.consumed;
         pos += result.consumed;
         matched = true;
@@ -84,7 +86,8 @@ export function parseInlineContentUntil(
     for (const rule of getCandidateInlineRules(inlineRules, token.type)) {
       const result = rule.parse(inlineCtx);
       if (result.success) {
-        elements.push(...result.elements);
+        stripAutomaticLineBreak(elements, result.stripLeadingLineBreak);
+        for (const element of result.elements) elements.push(element);
         consumed += result.consumed;
         pos += result.consumed;
         matched = true;

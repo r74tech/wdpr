@@ -34,3 +34,6 @@ export { renderInclude } from "./include";
 export { renderIfTags } from "./iftags";
 export { renderColor } from "./color";
 export { renderDate } from "./date";
+
+export { renderButton } from "./button";
+export { renderSocial } from "./social";

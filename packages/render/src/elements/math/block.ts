@@ -9,15 +9,12 @@ export function renderMath(ctx: RenderContext, data: MathData): void {
   const latex = data["latex-source"];
   const mathml = renderLatexToMathML(latex, true);
 
-  const id = data.name
-    ? ctx.generateId("equation-", data.name)
-    : ctx.generateId("equation-", index);
+  const id = ctx.generateId("equation-", index);
+  if (data.name) ctx.registerEquation(data.name, index);
   const dataName = data.name ? ` data-name="${escapeAttr(data.name)}"` : "";
 
   ctx.push(`<div class="math-block" id="${escapeAttr(id)}"${dataName}>`);
-  if (data.name) {
-    ctx.push(`<span class="equation-number">(${index})</span>`);
-  }
+  ctx.push(`<span class="equation-number">(${index})</span>`);
 
   pushHiddenLatexSource(ctx, latex);
   pushMathRender(ctx, mathml, () => {

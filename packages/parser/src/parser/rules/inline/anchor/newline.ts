@@ -1,3 +1,4 @@
+import { createAutomaticLineBreak } from "../parsing/automatic-line-break";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 
@@ -15,7 +16,7 @@ export function consumeAnchorNewline(
   let nextPos = pos + 1;
 
   if (!paragraphStrip) {
-    children.push({ element: "line-break" });
+    children.push(createAutomaticLineBreak(ctx.tokens[pos]!));
     while (ctx.tokens[nextPos]?.type === "WHITESPACE" && ctx.tokens[nextPos]?.lineStart) {
       nextPos++;
       consumed++;

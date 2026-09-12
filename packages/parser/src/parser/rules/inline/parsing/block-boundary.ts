@@ -1,3 +1,4 @@
+import { findNoteBounds } from "../../block/note/boundary";
 import type { ParseContext } from "../../types";
 import { INDENT_ACCEPTING_BLOCK_NAMES, KNOWN_BLOCK_NAMES } from "../../../constants";
 import { parseBlockName } from "../../common";
@@ -27,6 +28,7 @@ export function isUnknownBlockToken(ctx: ParseContext, tokenPos: number): boolea
     }
     return true;
   }
+  if (nameResult.name === "note") return findNoteBounds(ctx, tokenPos) === null;
   return !KNOWN_BLOCK_NAMES.has(nameResult.name);
 }
 

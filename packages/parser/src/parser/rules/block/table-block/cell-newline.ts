@@ -1,3 +1,4 @@
+import { createAutomaticLineBreak } from "../../inline/parsing/automatic-line-break";
 import type { ParseContext } from "../../types";
 import type { CellContentAccumulator } from "./cell-content/segments";
 
@@ -40,7 +41,7 @@ export function consumeCellContentNewline(
   }
 
   if (!content.isEmpty()) {
-    content.addInline({ element: "line-break" });
+    content.addInline(createAutomaticLineBreak(ctx.tokens[startPos]!));
   }
 
   return { consumed };

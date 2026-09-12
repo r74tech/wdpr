@@ -30,6 +30,8 @@ import { initMath } from "./math";
 import { initJoin } from "./modules/join";
 import { initRate } from "./modules/rate";
 import { initOdate } from "./odate";
+import { initPageButtons } from "./page-buttons";
+import { initSocial } from "./social";
 import { initTabview } from "./tabview";
 import { initToc } from "./toc";
 import type { ModuleCleanup, RuntimeOptions, WdprRuntime } from "./types";
@@ -62,13 +64,15 @@ export function initWdprRuntime(options?: RuntimeOptions): WdprRuntime {
   cleanups.push(initFoldableList(root));
   cleanups.push(initRate(root, options));
   cleanups.push(initJoin(root, options));
+  cleanups.push(initPageButtons(root, options));
   cleanups.push(initHtmlBlockResize(root));
   cleanups.push(initGallery(root));
 
   cleanups.push(initMath(root));
 
-  initOdate(root);
+  cleanups.push(initOdate(root));
   initEmail(root);
+  initSocial(root);
 
   return {
     destroy() {

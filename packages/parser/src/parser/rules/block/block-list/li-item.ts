@@ -62,7 +62,7 @@ export function parseLiItem(
     pos += closeConsumed;
 
     const trailingResult = collectPostLiTrailingContent(ctx, pos, listType);
-    contentElements.push(...trailingResult.elements);
+    for (const element of trailingResult.elements) contentElements.push(element);
     consumed += trailingResult.consumed;
   }
 

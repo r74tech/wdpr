@@ -1,38 +1,13 @@
 import type { Element } from "@wdprlib/ast";
 
-export function buildFootnoteChildren(paragraphs: Element[][]): Element[] {
-  const children: Element[] = [];
-
-  for (let i = 0; i < paragraphs.length; i++) {
-    const para = trimLineBreaks(paragraphs[i] ?? []);
-    if (para.length === 0) {
-      continue;
-    }
-
-    if (i === 0) {
-      children.push(...para);
-    } else {
-      children.push({
-        element: "container",
-        data: {
-          type: "paragraph",
-          attributes: {},
-          elements: para,
-        },
-      });
-    }
+/** Wikidot leaves the initial footnote paragraph unwrapped unless a blank line precedes it. */
+export function buildFootnoteChildren(
+  elements: Element[],
+  leadingParagraphBreak: boolean,
+): Element[] {
+  const first = elements[0];
+  if (!leadingParagraphBreak && first?.element === "container" && first.data.type === "paragraph") {
+    return [...first.data.elements, ...elements.slice(1)];
   }
-
-  return children;
-}
-
-function trimLineBreaks(elements: Element[]): Element[] {
-  const result = [...elements];
-  while (result.length > 0 && result[0]?.element === "line-break") {
-    result.shift();
-  }
-  while (result.length > 0 && result[result.length - 1]?.element === "line-break") {
-    result.pop();
-  }
-  return result;
+  return elements;
 }

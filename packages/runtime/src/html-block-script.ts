@@ -1,7 +1,8 @@
 /** Script injected into HTML block iframes to notify the parent of content height changes. */
 export const HTML_BLOCK_RESIZE_SCRIPT = `(function(){
   function notifyHeight() {
-    var height = (document.documentElement.scrollHeight || document.body.scrollHeight) + 2;
+    // scrollHeight includes the viewport height; adding padding creates a resize feedback loop.
+    var height = document.documentElement.scrollHeight || document.body.scrollHeight;
     parent.postMessage({ type: 'wdpr-html-block-resize', height: height }, '*');
   }
   if (typeof ResizeObserver !== 'undefined') {

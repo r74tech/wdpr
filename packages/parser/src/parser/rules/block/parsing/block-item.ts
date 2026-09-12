@@ -21,7 +21,7 @@ export function parseBlockItem(ctx: ParseContext): BlockItemResult {
   }
 
   const fallback = ctx.blockFallbackRule.parse(ctx);
-  if (fallback.success && fallback.elements.length > 0) {
+  if (fallback.success) {
     return { elements: fallback.elements, consumed: fallback.consumed };
   }
 

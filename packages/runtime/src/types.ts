@@ -30,6 +30,9 @@ export interface RuntimeOptions {
    * request membership in the site.
    */
   onJoin?: () => Promise<void>;
+
+  /** Handle a standalone page-option button. The host owns permissions and UI. */
+  onPageAction?: (action: string) => void | Promise<void>;
 }
 
 /**

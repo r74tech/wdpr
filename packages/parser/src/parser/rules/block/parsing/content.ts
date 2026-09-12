@@ -101,7 +101,7 @@ export function parseBlocksUntil(
     blockCtx.scope = blockScope;
 
     const result = parseBlockItem(blockCtx);
-    elements.push(...result.elements);
+    for (const element of result.elements) elements.push(element);
     consumed += result.consumed;
     pos += result.consumed;
   }

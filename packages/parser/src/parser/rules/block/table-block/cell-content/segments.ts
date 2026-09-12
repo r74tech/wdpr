@@ -1,8 +1,10 @@
+import type { Token } from "../../../../../lexer";
+import { stripAutomaticLineBreak } from "../../../inline/parsing/automatic-line-break";
 import type { Element } from "@wdprlib/ast";
 
 export interface CellContentAccumulator {
   addInline(element: Element): void;
-  addInlineElements(elements: Element[]): void;
+  addInlineElements(elements: Element[], stripLeadingLineBreak?: Token): void;
   addBlockElements(elements: Element[]): void;
   addParagraphBreak(): void;
   closeInlineSegmentBeforeBlock(): void;
@@ -40,7 +42,8 @@ export function createCellContentAccumulator(): CellContentAccumulator {
     addInline(element: Element) {
       currentSegment.push(element);
     },
-    addInlineElements(nextElements: Element[]) {
+    addInlineElements(nextElements: Element[], stripLeadingLineBreak?: Token) {
+      stripAutomaticLineBreak(currentSegment, stripLeadingLineBreak);
       currentSegment.push(...nextElements);
     },
     addBlockElements(blockElements: Element[]) {

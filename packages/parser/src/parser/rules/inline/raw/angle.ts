@@ -1,4 +1,5 @@
 import type { Element } from "@wdprlib/ast";
+import { decodeHTML } from "entities";
 import type { ParseContext, RuleResult } from "../../types";
 import { currentToken, hasClosingMarkerBeforeNewline } from "../../types";
 import { rawElement, textElement } from "./result";
@@ -36,5 +37,5 @@ export function parseAngleRaw(ctx: ParseContext): RuleResult<Element> {
     consumed++;
   }
 
-  return rawElement(value, consumed);
+  return rawElement(decodeHTML(value), consumed);
 }

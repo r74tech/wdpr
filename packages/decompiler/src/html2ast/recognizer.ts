@@ -1,3 +1,7 @@
+import { recognizeButton } from "./button";
+import { recognizeSocial } from "./social";
+import { recognizeEquationReference } from "./equation-reference";
+import { recognizeDate } from "./date";
 import type { Element } from "@wdprlib/ast";
 import { isTag, isText, type ChildNode, type Element as DomElement } from "domhandler";
 import type { DecompileContext } from "./context";
@@ -118,8 +122,10 @@ export function recognizeElement(node: DomElement, ctx: DecompileContext): Eleme
       return recognizeSpanDispatch(node, ctx, rec);
 
     // links
-    case "a":
-      return recognizeLink(node, ctx, rec);
+    case "a": {
+      const button = recognizeButton(node);
+      return button ? [button] : recognizeLink(node, ctx, rec);
+    }
 
     // images
     case "img":
@@ -169,6 +175,15 @@ function recognizeSpanDispatch(
 ): Element[] {
   const className = node.attribs.class ?? "";
   const style = node.attribs.style ?? "";
+
+  const date = recognizeDate(node);
+  if (date) return [date];
+
+  const social = recognizeSocial(node);
+  if (social) return [social];
+
+  const equationReference = recognizeEquationReference(node);
+  if (equationReference) return [equationReference];
 
   // math-inline
   if (className.includes("math-inline")) {
@@ -223,7 +238,7 @@ function recognizeDivDispatch(
 
   // footnotes-footer
   if (className.includes("footnotes-footer")) {
-    return recognizeFootnotesFooter(node, ctx, rec);
+    return recognizeFootnotesFooter(node, ctx, (child) => recognizeElement(child, ctx));
   }
 
   // math-block

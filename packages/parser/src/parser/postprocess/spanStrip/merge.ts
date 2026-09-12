@@ -7,6 +7,8 @@ import {
   isContainer,
   isEmptyExpr,
   isSplitSpan,
+  isSpanStripMarker,
+  isWhitespaceText,
 } from "./predicates";
 import { splitParagraphAtBlankLineSpans, splitParagraphAtEmptyExpr } from "./split";
 
@@ -40,6 +42,10 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
       continue;
     }
 
+    const firstMeaningful = paraData.elements.find(
+      (child) => child.element !== "line-break" && !isWhitespaceText(child),
+    );
+    const keepParagraph = firstMeaningful && !isSpanStripMarker(firstMeaningful);
     const mergedChildren: Element[] = [...paraData.elements];
     i++;
 
@@ -55,7 +61,7 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
       }
 
       const hasSpanStrip = hasParagraphStripSpan(nextPara);
-      mergedChildren.push(...nextParaData.elements);
+      for (const element of nextParaData.elements) mergedChildren.push(element);
       i++;
 
       if (!hasSpanStrip) {
@@ -69,7 +75,7 @@ export function mergeSpanStripParagraphs(children: Element[]): Element[] {
     const escapedSpans = extractEscapedSpans(mergedChildren);
     removeLineBreaksAroundSpanStrip(mergedChildren);
 
-    if (escapedSpans.length > 0) {
+    if (escapedSpans.length > 0 || keepParagraph) {
       if (mergedChildren.length > 0) {
         result.push(paragraphElement(mergedChildren));
       }

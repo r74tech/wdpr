@@ -12,7 +12,7 @@
 import type { Element, CodeBlockData } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../../types";
 import { currentToken } from "../../types";
-import { parseBlockName } from "../utils";
+import { findCodeOpen } from "./open";
 import { parseAttributesRaw } from "../utils";
 import { repairSwallowedCodeClose } from "./attributes";
 import { parseInlineUntil } from "../../inline/utils";
@@ -38,37 +38,14 @@ export const codeBlockRule: BlockRule = {
       return { success: false };
     }
 
-    let pos = ctx.pos + 1;
-    let consumed = 1;
+    const open = findCodeOpen(ctx.tokens, ctx.pos);
+    if (!open) return { success: false };
+    const attrResult = parseAttributesRaw(ctx, ctx.pos + 2);
+    if (open.repaired) repairSwallowedCodeClose(ctx, open.attributesEnd, attrResult.attrs);
+    let pos = open.bodyStart;
+    let consumed = pos - ctx.pos;
 
-    const nameResult = parseBlockName(ctx, pos);
-    if (!nameResult || nameResult.name !== "code") {
-      return { success: false };
-    }
-
-    pos += nameResult.consumed;
-    consumed += nameResult.consumed;
-
-    const attrResult = parseAttributesRaw(ctx, pos);
-    pos += attrResult.consumed;
-    consumed += attrResult.consumed;
-
-    let closingSwallowed = false;
-    if (ctx.tokens[pos]?.type !== "BLOCK_CLOSE") {
-      const repaired = repairSwallowedCodeClose(ctx, pos, attrResult.attrs);
-      if (!repaired) return { success: false };
-      closingSwallowed = repaired.closingSwallowed;
-    } else {
-      pos++;
-      consumed++;
-    }
-
-    if (ctx.tokens[pos]?.type === "NEWLINE") {
-      pos++;
-      consumed++;
-    }
-
-    const contentResult = collectCodeContent(ctx, pos, closingSwallowed);
+    const contentResult = collectCodeContent(ctx, pos, open.closingSwallowed);
     let codeContent = contentResult.contents.replace(/\n$/, "");
     consumed += contentResult.consumed;
     pos += contentResult.consumed;

@@ -88,7 +88,7 @@ function sliceLineTokens(ctx: ParseContext, lines: BlockquoteLine[]): Token[] {
   for (const { start, end } of lines) {
     for (let pos = start; pos < end; pos++) {
       const token = ctx.tokens[pos];
-      if (token) {
+      if (token && token.type !== "BACKSLASH_BREAK") {
         tokens.push(token);
       }
     }

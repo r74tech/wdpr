@@ -28,6 +28,8 @@ export interface PageContext {
    * to the link element — the standard Wikidot convention for red-links.
    */
   pageExists?: (page: string) => boolean;
+  /** Resolve a canonical local page name to its title; null/undefined means unavailable. */
+  pageTitle?: (page: string) => string | null | undefined;
   /** Page tags used for client-side `[[iftags]]` evaluation during rendering */
   tags?: string[];
   /**
@@ -120,6 +122,8 @@ export interface RenderResolvers {
  * @group Render Options
  */
 export interface RenderOptions {
+  /** Share metadata for [[social]]. Omitted fields are filled by the browser runtime. */
+  socialShare?: { url?: string; title?: string };
   /** Caller-selected ICU catalog. Omit to retain the English source messages. */
   i18n?: RenderI18n;
   /**

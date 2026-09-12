@@ -1,6 +1,16 @@
 import type { ParseContext } from "../../types";
 
 const VALID_SIZE_UNITS = ["px", "em", "rem", "ex", "%", "cm", "mm", "in", "pc"];
+const VALID_SIZE_KEYWORDS = [
+  "smaller",
+  "larger",
+  "xx-small",
+  "x-small",
+  "small",
+  "large",
+  "x-large",
+  "xx-large",
+];
 
 export function parseSizeValue(
   ctx: ParseContext,
@@ -40,6 +50,7 @@ export function parseSizeValue(
 }
 
 function isValidSizeValue(size: string): boolean {
+  if (VALID_SIZE_KEYWORDS.includes(size)) return true;
   const unitPattern = VALID_SIZE_UNITS.join("|");
   return new RegExp(`^(\\d+(?:\\.\\d+)?)(${unitPattern})$`, "i").test(size);
 }

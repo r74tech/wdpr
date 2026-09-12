@@ -1,11 +1,13 @@
 import type { Element } from "@wdprlib/ast";
-import type { TokenType } from "../../../lexer";
+import type { Token, TokenType } from "../../../lexer";
 import type { ParseContext } from "./parse-context";
 
 /**
  * Result of a rule attempt.
  */
-export type RuleResult<T> = { success: true; elements: T[]; consumed: number } | { success: false };
+export type RuleResult<T> =
+  | { success: true; elements: T[]; consumed: number; stripLeadingLineBreak?: Token }
+  | { success: false };
 
 /**
  * Block rule interface.

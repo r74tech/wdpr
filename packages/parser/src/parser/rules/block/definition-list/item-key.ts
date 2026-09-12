@@ -51,7 +51,7 @@ export function parseDefinitionItemKey(
     const inlineCtx: ParseContext = { ...ctx, pos };
     const result = parseInlineUntil(inlineCtx, "COLON");
     if (result.elements.length > 0) {
-      key.push(...result.elements);
+      for (const element of result.elements) key.push(element);
       for (let i = 0; i < result.consumed; i++) {
         const t = ctx.tokens[pos + i];
         if (t) keyTokens.push(t.value);

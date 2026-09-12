@@ -57,6 +57,10 @@ export async function renderWikitext<TDocument extends RenderableWikitextDocumen
         ),
       )
     : null;
+  const pageTitles =
+    options.resolvers?.resolvePageTitles && pages.length > 0
+      ? await options.resolvers.resolvePageTitles(pages)
+      : null;
   const resolvedUsers =
     options.resolvers?.resolveUsers && usernames.length > 0
       ? await options.resolvers.resolveUsers(usernames, document.page)
@@ -65,6 +69,7 @@ export async function renderWikitext<TDocument extends RenderableWikitextDocumen
     document.page,
     existingPages ? (target) => existingPages.has(target) : undefined,
   );
+  if (pageTitles) finalPage.pageTitle = (target) => pageTitles.get(target);
   const finalOptions = createRenderOptions(document, options, finalPage, {
     user: createUserResolver(resolvedUsers, options.resolvers?.user),
     htmlBlockUrl: htmlUrls ? (index) => htmlUrls[index] ?? "" : undefined,

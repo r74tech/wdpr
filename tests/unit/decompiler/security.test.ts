@@ -249,12 +249,16 @@ describe("decompiler directive boundaries", () => {
               { element: "raw", data: "[[" },
               { element: "text", data: "iframe" },
               { element: "text", data: " " },
-              { element: "text", data: "https" },
-              { element: "text", data: ":" },
-              { element: "text", data: "//" },
-              { element: "text", data: "evil" },
-              { element: "text", data: "." },
-              { element: "text", data: "example" },
+              {
+                element: "link" as const,
+                data: {
+                  type: "direct" as const,
+                  link: "https://evil.example",
+                  extra: null,
+                  label: { text: "https://evil.example" },
+                  target: null,
+                },
+              },
               { element: "text", data: "]]" },
             ],
           },
@@ -279,12 +283,16 @@ describe("decompiler directive boundaries", () => {
               { element: "raw", data: "[[" },
               { element: "text", data: "iframe" },
               { element: "text", data: " " },
-              { element: "text", data: "https" },
-              { element: "text", data: ":" },
-              { element: "text", data: "//" },
-              { element: "text", data: "evil" },
-              { element: "text", data: "." },
-              { element: "text", data: "example" },
+              {
+                element: "link" as const,
+                data: {
+                  type: "direct" as const,
+                  link: "https://evil.example",
+                  extra: null,
+                  label: { text: "https://evil.example" },
+                  target: null,
+                },
+              },
               { element: "text", data: "]]" },
             ],
           },
@@ -346,12 +354,16 @@ describe("decompiler directive boundaries", () => {
         { element: "raw" as const, data: "[[" },
         { element: "text" as const, data: "iframe" },
         { element: "text" as const, data: " " },
-        { element: "text" as const, data: "https" },
-        { element: "text" as const, data: ":" },
-        { element: "text" as const, data: "//" },
-        { element: "text" as const, data: "evil" },
-        { element: "text" as const, data: "." },
-        { element: "text" as const, data: "example" },
+        {
+          element: "link" as const,
+          data: {
+            type: "direct" as const,
+            link: "https://evil.example",
+            extra: null,
+            label: { text: "https://evil.example" },
+            target: null,
+          },
+        },
         { element: "text" as const, data: "]]" },
       ],
     },
@@ -450,12 +462,16 @@ describe("decompiler directive boundaries", () => {
               { element: "raw", data: "[[" },
               { element: "text", data: "iframe" },
               { element: "text", data: " " },
-              { element: "text", data: "https" },
-              { element: "text", data: ":" },
-              { element: "text", data: "//" },
-              { element: "text", data: "evil" },
-              { element: "text", data: "." },
-              { element: "text", data: "example" },
+              {
+                element: "link" as const,
+                data: {
+                  type: "direct" as const,
+                  link: "https://evil.example",
+                  extra: null,
+                  label: { text: "https://evil.example" },
+                  target: null,
+                },
+              },
               { element: "text", data: "]]" },
             ],
           },
@@ -759,6 +775,15 @@ function renderTextContent(tree: SyntaxTree): string {
         ? element.data.elements
         : [],
     )
-    .map((element) => (element.element === "text" || element.element === "raw" ? element.data : ""))
+    .map((element) => {
+      if (element.element === "text" || element.element === "raw") return element.data;
+      if (
+        element.element === "link" &&
+        typeof element.data.label === "object" &&
+        "text" in element.data.label
+      )
+        return element.data.label.text;
+      return "";
+    })
     .join("");
 }

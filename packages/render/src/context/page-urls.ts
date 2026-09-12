@@ -1,5 +1,6 @@
 import type { LinkLocation } from "@wdprlib/ast";
 import type { PageContext } from "../types";
+import { normalizePageName } from "./page-name";
 
 export function resolvePageLink(
   location: LinkLocation,
@@ -15,17 +16,16 @@ export function resolvePageLink(
   }
 
   const hashIdx = page.indexOf("#");
-  if (hashIdx !== -1) {
-    let pagePart = page.slice(0, hashIdx);
-    const anchor = page.slice(hashIdx);
-    if (pagePart.endsWith("/")) {
-      pagePart = pagePart.slice(0, -1);
-    }
-    return `/${pagePart.toLowerCase()}${anchor.toLowerCase()}`;
-  }
-
-  const normalizedPage = normalizePageName(page);
-  const safePage = normalizedPage.startsWith("/") ? normalizedPage.slice(1) : normalizedPage;
+  const pagePart = hashIdx === -1 ? page : page.slice(0, hashIdx).replace(/\/$/, "");
+  const anchor = hashIdx === -1 ? "" : page.slice(hashIdx).toLowerCase();
+  // Slash-prefixed paths are routes rather than page slugs.
+  const normalizedPage = page.includes("#/")
+    ? pagePart.toLowerCase()
+    : pagePart.startsWith("/")
+      ? pagePart.toLowerCase().replace(/\s+/g, "-")
+      : normalizePageName(pagePart);
+  const safePage =
+    (normalizedPage.startsWith("/") ? normalizedPage.slice(1) : normalizedPage) + anchor;
 
   if (location.site) {
     const domain = resolveSiteDomain(location.site, pageContext);
@@ -64,18 +64,4 @@ function normalizeDomain(domain: string): string {
     end--;
   }
   return end === normalized.length ? normalized : normalized.slice(0, end);
-}
-
-function normalizePageName(page: string): string {
-  let normalized = page.toLowerCase();
-  if (normalized.indexOf(":") !== -1) {
-    normalized = normalized.replace(/:\s+/g, ":");
-  }
-  if (/\s/.test(normalized)) {
-    normalized = normalized.replace(/\s+/g, "-").trim();
-  }
-  if (!normalized.startsWith("/") && normalized.indexOf("/") !== -1) {
-    normalized = normalized.replace(/\//g, "-");
-  }
-  return normalized;
 }

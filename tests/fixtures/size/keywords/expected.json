@@ -1,0 +1,235 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "size",
+              "attributes": {
+                "style": "font-size:smaller;"
+              },
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "smaller"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "size",
+              "attributes": {
+                "style": "font-size:larger;"
+              },
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "larger"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "size",
+              "attributes": {
+                "style": "font-size:xx-small;"
+              },
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "xx"
+                },
+                {
+                  "element": "text",
+                  "data": "-"
+                },
+                {
+                  "element": "text",
+                  "data": "small"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "size",
+              "attributes": {
+                "style": "font-size:x-small;"
+              },
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "x"
+                },
+                {
+                  "element": "text",
+                  "data": "-"
+                },
+                {
+                  "element": "text",
+                  "data": "small"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "size",
+              "attributes": {
+                "style": "font-size:small;"
+              },
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "small"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "size",
+              "attributes": {
+                "style": "font-size:large;"
+              },
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "large"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "size",
+              "attributes": {
+                "style": "font-size:x-large;"
+              },
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "x"
+                },
+                {
+                  "element": "text",
+                  "data": "-"
+                },
+                {
+                  "element": "text",
+                  "data": "large"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "size",
+              "attributes": {
+                "style": "font-size:xx-large;"
+              },
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "xx"
+                },
+                {
+                  "element": "text",
+                  "data": "-"
+                },
+                {
+                  "element": "text",
+                  "data": "large"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

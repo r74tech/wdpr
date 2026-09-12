@@ -217,10 +217,7 @@ describe("spanStrip postprocessing", () => {
 
         const result = mergeSpanStripParagraphs(input);
 
-        // Empty span_ causes paragraph unwrap, and the empty span_ itself is removed
-        expect(result).toHaveLength(2);
-        expect(result[0]).toMatchObject({ element: "text", data: "Before" });
-        expect(result[1]).toMatchObject({ element: "text", data: "After" });
+        expect(result).toEqual([paragraph(text("Before"), text("After"))]);
       });
     });
 

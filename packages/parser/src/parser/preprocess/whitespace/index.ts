@@ -13,6 +13,7 @@
 import { needsWhitespaceSubstitution, mayContainWhitespaceOnlyLine } from "./detection";
 import { replaceLeadingSpaces } from "./leading-spaces";
 import { CONCAT_LINES, DOS_MAC_NEWLINES, NULL_CHARS, TABS, WHITESPACE_ONLY_LINE } from "./patterns";
+import { makeUniqueSentinels, maskRawRegions, restorePlaceholders } from "../utils";
 
 /**
  * Apply all whitespace normalization substitutions to the given text.
@@ -41,7 +42,13 @@ export function substitute(text: string): string {
   }
 
   if (result.indexOf("\\\n") !== -1) {
-    result = result.replace(CONCAT_LINES, String.fromCharCode(0xe000));
+    const sentinels = makeUniqueSentinels(result);
+    const { masked, placeholders } = maskRawRegions(result, sentinels);
+    result = restorePlaceholders(
+      masked.replace(CONCAT_LINES, String.fromCharCode(0xe000)),
+      placeholders,
+      sentinels,
+    );
   }
 
   if (result.indexOf("\t") !== -1) {

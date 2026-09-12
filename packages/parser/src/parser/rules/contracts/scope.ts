@@ -10,6 +10,8 @@ import type { ParseContext } from "./parse-context";
 export interface ScopeContext {
   /** Exclusive token boundary inherited by nested inline rules. */
   readonly inlineEnd?: number;
+  /** Keep bare addresses as text inside an existing anchor. */
+  readonly suppressEmailLinks?: boolean;
   /** Closing delimiters paired across cells of the current pipe table. */
   readonly tableFormatting?: { end: number; suppressedClosers: Set<number> };
   /**

@@ -24,6 +24,9 @@ export function recognizeLink(
     return [{ element: "anchor-name", data: nameAttr }];
   }
 
+  // An inactive anchor has no Wikidot link destination; retain its visible content.
+  if (!href) return rec(node);
+
   // email link
   if (href.startsWith("mailto:")) {
     const email = href.slice(7);

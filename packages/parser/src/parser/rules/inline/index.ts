@@ -31,6 +31,8 @@ import { linkTripleRule } from "./link-triple";
 import { linkSingleRule } from "./link-single";
 import { linkAnchorRule } from "./link-anchor";
 import { linkStarRule } from "./link-star";
+import { autolinkRule } from "./autolink";
+import { emailRule } from "./email";
 import { colorRule } from "./color";
 import {
   backslashLineBreakRule,
@@ -41,6 +43,9 @@ import { commentRule } from "./comment";
 import { htmlInlineRule } from "./html";
 import { rawRule } from "./raw";
 import { spanRule, closeSpanRule } from "./span";
+import { buttonRule } from "./button";
+import { socialRule } from "./social";
+import { dateRule } from "./date";
 import { sizeRule } from "./size";
 import { footnoteRule } from "./footnote";
 import { imageRule } from "./image";
@@ -65,6 +70,7 @@ export { linkTripleRule } from "./link-triple";
 export { linkSingleRule } from "./link-single";
 export { linkAnchorRule } from "./link-anchor";
 export { linkStarRule } from "./link-star";
+export { autolinkRule } from "./autolink";
 export { colorRule } from "./color";
 export {
   backslashLineBreakRule,
@@ -75,6 +81,9 @@ export { commentRule } from "./comment";
 export { htmlInlineRule } from "./html";
 export { rawRule } from "./raw";
 export { spanRule, closeSpanRule } from "./span";
+export { buttonRule } from "./button";
+export { socialRule } from "./social";
+export { dateRule } from "./date";
 export { sizeRule } from "./size";
 export { footnoteRule } from "./footnote";
 export { imageRule } from "./image";
@@ -112,6 +121,7 @@ export { textRule, fallbackRule } from "./text";
  * separate last-resort handler.
  */
 export const inlineRules: InlineRule[] = [
+  emailRule,
   boldRule,
   italicRule,
   underlineRule,
@@ -123,6 +133,7 @@ export const inlineRules: InlineRule[] = [
   linkSingleRule,
   linkAnchorRule,
   linkStarRule,
+  autolinkRule,
   colorRule,
   backslashLineBreakRule,
   underscoreLineBreakRule,
@@ -132,6 +143,9 @@ export const inlineRules: InlineRule[] = [
   rawRule,
   imageRule,
   embedBlockRule,
+  buttonRule,
+  socialRule,
+  dateRule,
   sizeRule,
   footnoteRule,
   spanRule,

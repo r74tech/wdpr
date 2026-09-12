@@ -122,6 +122,7 @@ export type StringContainerType =
   | "monospace"
   | "span"
   | "div"
+  | "note"
   | "blockquote"
   | "size"
   | "paragraph"
@@ -814,8 +815,48 @@ export interface DateData {
   value: DateItem;
   /** strftime-style format string, or null for default */
   format: string | null;
-  /** Whether to show a tooltip with the full date on hover */
+  /** Whether to show elapsed time in a tooltip on hover */
   hover: boolean;
+}
+
+/** Standalone page-option action, used by [[button action]].
+ * @group Element Data
+ */
+export type PageButtonAction =
+  | "edit"
+  | "edit-append"
+  | "edit-sections"
+  | "history"
+  | "print"
+  | "files"
+  | "tags"
+  | "source"
+  | "backlinks"
+  | "talk"
+  | "delete"
+  | "rename"
+  | "site-tools"
+  | "edit-meta"
+  | "watchers"
+  | "parent"
+  | "lock-page";
+
+/** Data for a standalone [[button]] element.
+ * @group Element Data
+ */
+export interface PageButtonData {
+  /** Unknown actions remain representable so the renderer can display the error. */
+  action: string;
+  text: string | null;
+  attributes: AttributeMap;
+}
+
+/** Data for [[social]], with null selecting the default services.
+ * @group Element Data
+ */
+export interface SocialData {
+  /** Unsupported names remain representable, but produce no share link. */
+  sites: string[] | null;
 }
 
 /**
@@ -989,6 +1030,8 @@ export type ElementDataMap = {
   "bibliography-block": BibliographyBlockData;
   user: UserData;
   date: DateData;
+  button: PageButtonData;
+  social: SocialData;
   color: ColorData;
   code: CodeBlockData;
   math: MathData;
@@ -1282,6 +1325,7 @@ export function isContainerTypeParagraphSafe(type: ContainerType): boolean {
     case "size":
       return true;
     case "div":
+    case "note":
     case "blockquote":
     case "paragraph":
     case "heading":
@@ -1354,7 +1398,10 @@ export function isParagraphSafe(element: Element): boolean {
     case "user":
       return true;
     case "date":
+    case "social":
       return true;
+    case "button":
+      return isPageButtonAction(element.data.action);
     case "color":
       return true;
     case "code":
@@ -1390,6 +1437,32 @@ export function isParagraphSafe(element: Element): boolean {
     case "expr":
     case "if":
     case "ifexpr":
+      return true;
+    default:
+      return false;
+  }
+}
+
+/** Whether a standalone button names a supported page action. */
+export function isPageButtonAction(action: string): action is PageButtonAction {
+  switch (action) {
+    case "edit":
+    case "edit-append":
+    case "edit-sections":
+    case "history":
+    case "print":
+    case "files":
+    case "tags":
+    case "source":
+    case "backlinks":
+    case "talk":
+    case "delete":
+    case "rename":
+    case "site-tools":
+    case "edit-meta":
+    case "watchers":
+    case "parent":
+    case "lock-page":
       return true;
     default:
       return false;

@@ -1,3 +1,8 @@
+import { stripAutomaticLineBreak } from "./automatic-line-break";
+import { parseButtonSyntax } from "../button/syntax";
+import { parseSocialSyntax } from "../social/syntax";
+import { parseDateSyntax } from "../date/syntax";
+import { emailRegionEnd } from "../email/candidates";
 import { protectedInlineRegionEnd } from "../raw/end";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
@@ -7,7 +12,10 @@ import {
   type InlineEndType,
 } from "./plain-text";
 import { getParagraphNewlineBoundary } from "./paragraph-boundary";
-import { createPreservedTrailingLineBreak } from "./preserved-line-break";
+import {
+  createPreservedLeadingLineBreak,
+  createPreservedTrailingLineBreak,
+} from "./preserved-line-break";
 import { getCandidateInlineRules } from "./rules";
 import { parseSimpleInlineToken } from "./simple-token";
 
@@ -31,13 +39,20 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
   const nodes: Element[] = [];
   let consumed = 0;
   let pos = ctx.pos;
+  let consumedEmptyRaw = false;
 
   const paragraphMode = endType === "PARAGRAPH_BREAK";
   const multiline = paragraphMode || FORMATTING_CLOSE_TOKENS.has(endType);
   let inlineEnd = ctx.scope.inlineEnd ?? ctx.tokens.length;
   if (!multiline) {
     for (let end = ctx.pos; end < inlineEnd; end++) {
-      const protectedEnd = protectedInlineRegionEnd(ctx.tokens, end, inlineEnd);
+      const protectedEnd = Math.max(
+        parseButtonSyntax(ctx, end, inlineEnd)?.end ?? end,
+        parseSocialSyntax(ctx, end, inlineEnd)?.end ?? end,
+        parseDateSyntax(ctx, end, inlineEnd)?.end ?? end,
+        emailRegionEnd(ctx.tokens, end, inlineEnd),
+        protectedInlineRegionEnd(ctx.tokens, end, inlineEnd),
+      );
       if (protectedEnd > end) {
         end = protectedEnd - 1;
         continue;
@@ -97,11 +112,12 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
       continue;
     }
 
-    if (token.type === endType) {
+    const hasEmail = emailRegionEnd(ctx.tokens, pos, inlineEnd) > pos;
+    if (token.type === endType && !hasEmail) {
       break;
     }
 
-    if (canCollectLongPlainTextRuns) {
+    if (canCollectLongPlainTextRuns && !hasEmail) {
       const plainTextRun = collectLongPlainTextRun(ctx, pos, endType);
       if (plainTextRun) {
         nodes.push({ element: "text", data: plainTextRun.value });
@@ -112,7 +128,7 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
     }
 
     const simpleToken = parseSimpleInlineToken(token, ctx.tokens[pos + 1]);
-    if (simpleToken) {
+    if (simpleToken && !hasEmail) {
       nodes.push(simpleToken.element);
       consumed += simpleToken.consumed;
       pos += simpleToken.consumed;
@@ -125,6 +141,10 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
     for (const rule of getCandidateInlineRules(inlineRules, token.type)) {
       const result = rule.parse(inlineCtx);
       if (result.success) {
+        stripAutomaticLineBreak(nodes, result.stripLeadingLineBreak);
+        if (rule.name === "raw" && result.elements.length === 0 && nodes.length === 0) {
+          consumedEmptyRaw = true;
+        }
         if (rule.name === "comment") {
           let after = pos + result.consumed;
           while (ctx.tokens[after]?.type === "WHITESPACE") after++;
@@ -139,7 +159,17 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
             if (nodes.at(-1)?.element === "line-break") nodes.pop();
           }
         }
-        nodes.push(...result.elements);
+        for (const element of result.elements) {
+          nodes.push(
+            paragraphMode &&
+              consumedEmptyRaw &&
+              nodes.length === 0 &&
+              token.type === "NEWLINE" &&
+              element.element === "line-break"
+              ? createPreservedLeadingLineBreak()
+              : element,
+          );
+        }
         consumed += result.consumed;
         pos += result.consumed;
         matched = true;

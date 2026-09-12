@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@braintree/sanitize-url": "^7.1.1",
-    "@wdprlib/ast": "workspace:*"
+    "@wdprlib/ast": "workspace:*",
+    "entities": "^7.0.1"
   }
 }

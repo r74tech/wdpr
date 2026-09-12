@@ -36,6 +36,7 @@ export const linkTripleRule: InlineRule = {
     const normalized = normalizeTripleLinkTarget(trimmedTarget);
     const { linkType, link } = determineLinkTypeAndLocation(normalized.target);
     const label = buildTripleLinkLabel({
+      isPage: linkType === "page",
       foundPipe: parts.foundPipe,
       labelText: parts.labelText,
       finalTarget: normalized.target,

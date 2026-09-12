@@ -1,0 +1,81 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "blockquote",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "Alpha"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "text",
+                  "data": "beta"
+                },
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "ordinary"
+                },
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "newline"
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "blockquote",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "paragraph",
+                    "attributes": {},
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "日"
+                      },
+                      {
+                        "element": "text",
+                        "data": "本"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

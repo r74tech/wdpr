@@ -71,6 +71,7 @@ function serializeFootnoteContent(ctx: SerializeContext, content: Element[]): vo
         innerCtx.push(innerCtx.newline);
         innerCtx.pushBlankLine();
       }
+      innerCtx.inParagraph = !seenParagraph;
       serializeElement(innerCtx, el);
     }
     const inner = innerCtx.getBlockInnerOutput();
@@ -84,6 +85,7 @@ function serializeFootnoteContent(ctx: SerializeContext, content: Element[]): vo
   } else {
     // No paragraph containers → buffer and decide single-line vs multi-line
     const innerCtx = new SerializeContext({ newline: ctx.newline });
+    innerCtx.inParagraph = true;
     serializeElements(innerCtx, content);
     const inner = innerCtx.getBlockInnerOutput();
 

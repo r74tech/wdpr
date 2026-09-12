@@ -14,6 +14,11 @@ export function renderStringContainer(
   attributes: Record<string, string>,
   elements: Element[],
 ): void {
+  if (type === "note") {
+    renderWrapped(ctx, "div", { ...attributes, class: "wiki-note" }, elements);
+    return;
+  }
+
   if (type === "div" && elements.length === 0 && !hasAttributes(attributes)) {
     return;
   }

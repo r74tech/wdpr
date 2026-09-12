@@ -1,3 +1,5 @@
+import { markUnparsedDivStart } from "../../../postprocess/divAdjacentParagraph";
+import { isDivClose } from "../div/close";
 /**
  * Paragraph rule
  *
@@ -8,6 +10,7 @@ import type { Element } from "@wdprlib/ast";
 import type { BlockRule, ParseContext, RuleResult } from "../../types";
 import { parseInlineContent } from "./content";
 import { normalizeParagraphElements } from "./normalize";
+import { isPreservedLeadingLineBreak } from "../../inline/parsing/preserved-line-break";
 
 /**
  * Paragraph is the fallback block rule.
@@ -23,18 +26,19 @@ export const paragraphRule: BlockRule = {
 
   parse(ctx: ParseContext): RuleResult<Element> {
     const result = parseInlineContent(ctx);
-    if (result.elements.length === 0) {
+    if (result.consumed === 0) {
       return { success: false };
     }
 
     const elements = normalizeParagraphElements(result.elements);
     if (elements.length === 0) {
-      return { success: false };
+      return { success: true, elements: [], consumed: result.consumed };
     }
 
     const nextPos = ctx.pos + result.consumed;
     const nextToken = ctx.tokens[nextPos];
     if (nextToken?.type === "COLON" && nextToken.lineStart) {
+      if (isPreservedLeadingLineBreak(elements[0])) elements[0] = { element: "line-break" };
       return {
         success: true,
         elements: [...elements, { element: "line-break" }],
@@ -42,9 +46,11 @@ export const paragraphRule: BlockRule = {
       };
     }
 
+    const wrapped = wrapParagraphElements(elements);
+    if (isDivClose(ctx)) markUnparsedDivStart(wrapped);
     return {
       success: true,
-      elements: wrapParagraphElements(elements),
+      elements: wrapped,
       consumed: result.consumed,
     };
   },
@@ -57,7 +63,8 @@ export function wrapParagraphElements(elements: Element[]): Element[] {
   let bare = false;
   const flush = (trimBreaks = false) => {
     const content = trimBreaks ? normalizeParagraphElements(group) : group;
-    while (content[0]?.element === "line-break") content.shift();
+    while (content[0]?.element === "line-break" && !isPreservedLeadingLineBreak(content[0]))
+      content.shift();
     while (content.length) {
       const last = content.at(-1)!;
       if (last.element !== "text" || last.data.trim() !== "") break;
@@ -66,6 +73,7 @@ export function wrapParagraphElements(elements: Element[]): Element[] {
     while (content[0]?.element === "text" && content[0].data.trim() === "") content.shift();
     if (content[0]?.element === "text")
       content[0] = { element: "text", data: content[0].data.trimStart() };
+    if (isPreservedLeadingLineBreak(content[0])) content[0] = { element: "line-break" };
     if (content.length)
       output.push(
         ...(bare || content.some((el) => el.element === "image")

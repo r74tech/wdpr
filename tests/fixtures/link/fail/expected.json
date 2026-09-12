@@ -225,32 +225,16 @@
             "data": "["
           },
           {
-            "element": "text",
-            "data": "https"
-          },
-          {
-            "element": "text",
-            "data": ":"
-          },
-          {
-            "element": "text",
-            "data": "//"
-          },
-          {
-            "element": "text",
-            "data": "example"
-          },
-          {
-            "element": "text",
-            "data": "."
-          },
-          {
-            "element": "text",
-            "data": "com"
-          },
-          {
-            "element": "text",
-            "data": "/"
+            "element": "link",
+            "data": {
+              "type": "direct",
+              "link": "https://example.com/",
+              "extra": null,
+              "label": {
+                "text": "https://example.com/"
+              },
+              "target": null
+            }
           },
           {
             "element": "text",

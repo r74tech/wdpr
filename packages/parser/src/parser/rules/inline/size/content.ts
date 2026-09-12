@@ -32,7 +32,7 @@ export function parseSizeContent(ctx: ParseContext, startPos: number): SizeConte
     const inlineCtx: ParseContext = { ...ctx, pos };
     const inlineResult = parseInlineUntil(inlineCtx, "BLOCK_END_OPEN");
     if (inlineResult.elements.length > 0) {
-      children.push(...inlineResult.elements);
+      for (const element of inlineResult.elements) children.push(element);
       pos += inlineResult.consumed;
       consumed += inlineResult.consumed;
     } else {

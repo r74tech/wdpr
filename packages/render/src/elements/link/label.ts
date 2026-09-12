@@ -1,9 +1,17 @@
 import type { LinkData } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
 
-export function renderLinkLabel(ctx: RenderContext, data: LinkData): void {
+import type { ResolvedPageLink } from "./page";
+
+export function renderLinkLabel(
+  ctx: RenderContext,
+  data: LinkData,
+  page: ResolvedPageLink | null,
+): void {
   if (data.label === "page") {
-    if (typeof data.link === "string") {
+    if (page) {
+      ctx.pushEscaped(page.title ?? page.name);
+    } else if (typeof data.link === "string") {
       ctx.pushEscaped(data.link);
     } else {
       ctx.pushEscaped(data.link.page);

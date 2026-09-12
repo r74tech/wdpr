@@ -1,3 +1,4 @@
+import { stripAutomaticLineBreak } from "../parsing/automatic-line-break";
 import type { Element } from "@wdprlib/ast";
 import type { ParseContext } from "../../types";
 import { getCandidateInlineRules } from "../utils";
@@ -52,7 +53,8 @@ export function parseInlineBranch(ctx: ParseContext, startPos: number): BranchPa
       }
       const result = rule.parse(inlineCtx);
       if (result.success) {
-        elements.push(...result.elements);
+        stripAutomaticLineBreak(elements, result.stripLeadingLineBreak);
+        for (const element of result.elements) elements.push(element);
         consumed += result.consumed;
         pos += result.consumed;
         matched = true;

@@ -81,6 +81,8 @@ export type {
   BibliographyBlockData,
   UserData,
   DateData,
+  PageButtonAction,
+  PageButtonData,
   ColorData,
   MathData,
   MathInlineData,
@@ -110,6 +112,7 @@ export {
   isAlignType,
   isContainerTypeParagraphSafe,
   isParagraphSafe,
+  isPageButtonAction,
 } from "./element";
 
 // Diagnostics

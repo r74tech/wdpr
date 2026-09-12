@@ -1,3 +1,4 @@
+import { initPageButtons } from "./page-buttons";
 /**
  * Browser-side runtime for Wikidot rendered HTML.
  *
@@ -62,6 +63,7 @@ export function initWdprRuntime(options?: RuntimeOptions): WdprRuntime {
   cleanups.push(initFoldableList(root));
   cleanups.push(initRate(root, options));
   cleanups.push(initJoin(root, options));
+  cleanups.push(initPageButtons(root, options));
   cleanups.push(initHtmlBlockResize(root));
   cleanups.push(initGallery(root));
 

@@ -50,6 +50,8 @@ export class Lexer {
    * consume content up to the next `"` or newline.
    */
   private blockOpenerDepth = 0;
+  private rawTagBounds: { source: string; close: number; outerDepth: number } | null = null;
+  private rawClosesExhausted = false;
 
   constructor(source: string, options: LexerOptions = {}) {
     this.options = {
@@ -92,8 +94,8 @@ export class Lexer {
    * When invalid, returns the position of the closing ]] so the lexer can
    * emit tokens that allow the inner [# text] to be parsed as a described link.
    */
-  private findInvalidAnchorNameEnd(): number | null {
-    return findInvalidAnchorNameEnd(this.state.source, this.state.pos);
+  private findInvalidAnchorNameEnd(source: string): number | null {
+    return findInvalidAnchorNameEnd(source, this.state.pos);
   }
 
   /**
@@ -117,6 +119,24 @@ export class Lexer {
     this.state.tokens.push(createLexerToken(this.state, type, value, this.options.trackPositions));
     this.lastNonWhitespaceType = updateLastNonWhitespaceType(this.lastNonWhitespaceType, type);
     this.blockOpenerDepth = nextBlockOpenerDepth(this.blockOpenerDepth, type);
+    if (
+      this.rawTagBounds === null &&
+      !this.rawClosesExhausted &&
+      value.toLowerCase() === "button" &&
+      this.state.tokens.at(-2)?.type === "BLOCK_OPEN" &&
+      /\s/.test(this.current())
+    ) {
+      const close = this.state.source.indexOf("]]", this.state.pos);
+      if (close < 0) {
+        this.rawClosesExhausted = true;
+      } else {
+        this.rawTagBounds = {
+          source: this.state.source.slice(0, close),
+          close,
+          outerDepth: this.blockOpenerDepth - 1,
+        };
+      }
+    }
   }
 
   private emitTokenAction(action: TokenAction): void {
@@ -140,7 +160,16 @@ export class Lexer {
   private scanToken(): void {
     const char = this.current();
     const isLineStart = isSyntaxLineStart(this.state);
-    const src = this.state.source;
+    const bounds = this.rawTagBounds;
+    const src = bounds?.source ?? this.state.source;
+
+    // Scanners see a bounded source so no token can consume part of the close.
+    if (bounds && this.state.pos === bounds.close) {
+      this.emitTokenAction({ type: "BLOCK_CLOSE", value: "]]", length: 2 });
+      this.blockOpenerDepth = bounds.outerDepth;
+      this.rawTagBounds = null;
+      return;
+    }
 
     const spacingAction = scanSpacingToken(src, this.state.pos);
     if (spacingAction) {
@@ -155,7 +184,7 @@ export class Lexer {
       lineStart: isLineStart,
       physicalLineStart: this.state.lineStart,
       splitBlockClose: this.splitBlockClosePositions.has(this.state.pos),
-      findInvalidAnchorNameEnd: () => this.findInvalidAnchorNameEnd(),
+      findInvalidAnchorNameEnd: () => this.findInvalidAnchorNameEnd(src),
     });
     if (punctuation.handled) {
       if (punctuation.clearSplitBlockCloseAt !== undefined) {
@@ -176,7 +205,7 @@ export class Lexer {
     if (char === '"') {
       const lastNonWs = this.lastNonWhitespaceTokenType();
       if (this.blockOpenerDepth > 0 && lastNonWs === "EQUALS") {
-        this.addToken("QUOTED_STRING", scanQuotedString(this.state));
+        this.addToken("QUOTED_STRING", scanQuotedString(this.state, src.length));
         return;
       }
       this.advance();

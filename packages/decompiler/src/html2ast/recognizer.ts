@@ -1,3 +1,4 @@
+import { recognizeButton } from "./button";
 import { recognizeEquationReference } from "./equation-reference";
 import { recognizeDate } from "./date";
 import type { Element } from "@wdprlib/ast";
@@ -120,8 +121,10 @@ export function recognizeElement(node: DomElement, ctx: DecompileContext): Eleme
       return recognizeSpanDispatch(node, ctx, rec);
 
     // links
-    case "a":
-      return recognizeLink(node, ctx, rec);
+    case "a": {
+      const button = recognizeButton(node);
+      return button ? [button] : recognizeLink(node, ctx, rec);
+    }
 
     // images
     case "img":

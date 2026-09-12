@@ -1,0 +1,82 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "text",
+            "data": "Before"
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "button",
+            "data": {
+              "action": "edit",
+              "text": null,
+              "attributes": {}
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "after"
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "button",
+            "data": {
+              "action": "source",
+              "text": "ページソース",
+              "attributes": {
+                "style": "color: #444"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "button",
+            "data": {
+              "action": "print",
+              "text": "Print\nthis page",
+              "attributes": {
+                "class": "print-link"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

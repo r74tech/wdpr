@@ -43,6 +43,7 @@ import { commentRule } from "./comment";
 import { htmlInlineRule } from "./html";
 import { rawRule } from "./raw";
 import { spanRule, closeSpanRule } from "./span";
+import { buttonRule } from "./button";
 import { dateRule } from "./date";
 import { sizeRule } from "./size";
 import { footnoteRule } from "./footnote";
@@ -79,6 +80,7 @@ export { commentRule } from "./comment";
 export { htmlInlineRule } from "./html";
 export { rawRule } from "./raw";
 export { spanRule, closeSpanRule } from "./span";
+export { buttonRule } from "./button";
 export { dateRule } from "./date";
 export { sizeRule } from "./size";
 export { footnoteRule } from "./footnote";
@@ -139,6 +141,7 @@ export const inlineRules: InlineRule[] = [
   rawRule,
   imageRule,
   embedBlockRule,
+  buttonRule,
   dateRule,
   sizeRule,
   footnoteRule,

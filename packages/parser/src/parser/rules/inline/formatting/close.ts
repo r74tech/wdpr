@@ -1,4 +1,5 @@
 import { emailRegionEnd } from "../email/candidates";
+import { parseButtonSyntax } from "../button/syntax";
 import { protectedInlineRegionEnd } from "../raw/end";
 import type { TokenType } from "../../../../lexer";
 import type { ParseContext } from "../../types";
@@ -21,9 +22,12 @@ export function findFormattingClose(
       getParagraphNewlineBoundary(ctx, pos, true).shouldBreak
     )
       return null;
-    const emailEnd = emailRegionEnd(ctx.tokens, pos, end);
-    if (emailEnd > pos) {
-      pos = emailEnd - 1;
+    const inlineRegionEnd = Math.max(
+      emailRegionEnd(ctx.tokens, pos, end),
+      parseButtonSyntax(ctx, pos, end)?.end ?? pos,
+    );
+    if (inlineRegionEnd > pos) {
+      pos = inlineRegionEnd - 1;
       continue;
     }
     if (token.type === marker && !table?.suppressedClosers.has(pos)) return pos;

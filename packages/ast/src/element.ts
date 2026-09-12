@@ -818,6 +818,38 @@ export interface DateData {
   hover: boolean;
 }
 
+/** Standalone page-option action, used by [[button action]].
+ * @group Element Data
+ */
+export type PageButtonAction =
+  | "edit"
+  | "edit-append"
+  | "edit-sections"
+  | "history"
+  | "print"
+  | "files"
+  | "tags"
+  | "source"
+  | "backlinks"
+  | "talk"
+  | "delete"
+  | "rename"
+  | "site-tools"
+  | "edit-meta"
+  | "watchers"
+  | "parent"
+  | "lock-page";
+
+/** Data for a standalone [[button]] element.
+ * @group Element Data
+ */
+export interface PageButtonData {
+  /** Unknown actions remain representable so the renderer can display the error. */
+  action: string;
+  text: string | null;
+  attributes: AttributeMap;
+}
+
 /**
  * Data for `##color|text##` inline color syntax.
  *
@@ -989,6 +1021,7 @@ export type ElementDataMap = {
   "bibliography-block": BibliographyBlockData;
   user: UserData;
   date: DateData;
+  button: PageButtonData;
   color: ColorData;
   code: CodeBlockData;
   math: MathData;
@@ -1355,6 +1388,8 @@ export function isParagraphSafe(element: Element): boolean {
       return true;
     case "date":
       return true;
+    case "button":
+      return isPageButtonAction(element.data.action);
     case "color":
       return true;
     case "code":
@@ -1390,6 +1425,32 @@ export function isParagraphSafe(element: Element): boolean {
     case "expr":
     case "if":
     case "ifexpr":
+      return true;
+    default:
+      return false;
+  }
+}
+
+/** Whether a standalone button names a supported page action. */
+export function isPageButtonAction(action: string): action is PageButtonAction {
+  switch (action) {
+    case "edit":
+    case "edit-append":
+    case "edit-sections":
+    case "history":
+    case "print":
+    case "files":
+    case "tags":
+    case "source":
+    case "backlinks":
+    case "talk":
+    case "delete":
+    case "rename":
+    case "site-tools":
+    case "edit-meta":
+    case "watchers":
+    case "parent":
+    case "lock-page":
       return true;
     default:
       return false;

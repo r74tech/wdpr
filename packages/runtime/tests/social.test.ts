@@ -101,11 +101,33 @@ test("encodes lone surrogates without throwing, and never replaces metadata plac
   initSocial(root);
   checkLinks(root, sourceUrl, expectedTitle);
 });
-test("rejects an active URL injected into a template", () => {
-  const { root } = setup();
-  root.querySelector("a")!.setAttribute("data-wdpr-social-template", "javascript:alert(1)");
+test.each([
+  "javascript:alert(1)",
+  "JaVaScRiPt:alert(1)",
+  "java\tscript:alert(1)",
+  "data:text/html,test",
+  "/relative",
+  "https://",
+])("rejects an invalid URL injected into a template: %s", (template) => {
+  const { root } = setup({ socialShare: { url: sourceUrl, title: sourceTitle } });
+  const link = root.querySelector("a")!;
+  expect(link.hasAttribute("href")).toBe(true);
+  link.setAttribute("data-wdpr-social-template", template);
   initSocial(root);
-  expect(root.querySelector("a")!.hasAttribute("href")).toBe(false);
+  expect(link.hasAttribute("href")).toBe(false);
+  expect(link.getAttribute("aria-disabled")).toBe("true");
+});
+test.each(["http:", "https:"])("reenables a valid share template using %s", (protocol) => {
+  const { root } = setup();
+  const link = root.querySelector("a")!;
+  const template = `${protocol}//example.test/share?url={url}`;
+  link.setAttribute("data-wdpr-social-template", "javascript:alert(1)");
+  initSocial(root);
+  link.setAttribute("data-wdpr-social-template", template);
+  initSocial(root);
+  expect(new URL(link.href).protocol).toBe(protocol);
+  expect(new URL(link.href).searchParams.get("url")).toBe(sourceUrl);
+  expect(link.hasAttribute("aria-disabled")).toBe(false);
 });
 test("does not discard custom content added to generated markup during HTML import", () => {
   const { root } = setup();

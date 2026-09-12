@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { Window } from "happy-dom";
+import { runInNewContext } from "node:vm";
 import { HTML_BLOCK_RESIZE_SCRIPT } from "../src/index";
 
 describe("html-block resize", () => {
@@ -170,6 +171,57 @@ describe("html-block resize", () => {
     // Script should be syntactically valid
     expect(() => new Function(HTML_BLOCK_RESIZE_SCRIPT)).not.toThrow();
   });
+
+  test.each([true, false])(
+    "height notifications settle after parent resize (observer=%s)",
+    (useObserver) => {
+      let viewportHeight = 150;
+      let contentHeight = 300;
+      let notify = () => {};
+      const heights: number[] = [];
+      const scrollingElement = {
+        // Root scrollHeight cannot be smaller than the iframe viewport.
+        get scrollHeight() {
+          return Math.max(viewportHeight, contentHeight);
+        },
+      };
+
+      runInNewContext(HTML_BLOCK_RESIZE_SCRIPT, {
+        document: {
+          documentElement: scrollingElement,
+          body: scrollingElement,
+          readyState: "complete",
+        },
+        parent: {
+          postMessage(message: { height: number }) {
+            heights.push(message.height);
+            viewportHeight = message.height;
+          },
+        },
+        window: { addEventListener() {} },
+        ResizeObserver: useObserver
+          ? class {
+              constructor(callback: () => void) {
+                notify = callback;
+              }
+              observe() {}
+            }
+          : undefined,
+        setInterval(callback: () => void) {
+          notify = callback;
+        },
+      });
+
+      notify();
+      notify();
+      expect(heights).toEqual([300, 300, 300]);
+
+      contentHeight = 450;
+      notify();
+      notify();
+      expect(heights.slice(-2)).toEqual([450, 450]);
+    },
+  );
 
   test("HTML_BLOCK_RESIZE_SCRIPT contains expected message type", () => {
     expect(HTML_BLOCK_RESIZE_SCRIPT).toContain("wdpr-html-block-resize");

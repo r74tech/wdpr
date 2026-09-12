@@ -122,7 +122,7 @@ export class Lexer {
     if (
       this.rawTagBounds === null &&
       !this.rawClosesExhausted &&
-      value.toLowerCase() === "button" &&
+      (value.toLowerCase() === "button" || value.toLowerCase() === "social") &&
       this.state.tokens.at(-2)?.type === "BLOCK_OPEN" &&
       /\s/.test(this.current())
     ) {

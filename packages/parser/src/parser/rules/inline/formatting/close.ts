@@ -1,5 +1,6 @@
 import { emailRegionEnd } from "../email/candidates";
 import { parseButtonSyntax } from "../button/syntax";
+import { parseSocialSyntax } from "../social/syntax";
 import { protectedInlineRegionEnd } from "../raw/end";
 import type { TokenType } from "../../../../lexer";
 import type { ParseContext } from "../../types";
@@ -25,6 +26,7 @@ export function findFormattingClose(
     const inlineRegionEnd = Math.max(
       emailRegionEnd(ctx.tokens, pos, end),
       parseButtonSyntax(ctx, pos, end)?.end ?? pos,
+      parseSocialSyntax(ctx, pos, end)?.end ?? pos,
     );
     if (inlineRegionEnd > pos) {
       pos = inlineRegionEnd - 1;

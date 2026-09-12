@@ -108,3 +108,24 @@ please see <http://www.php.net>.
 - Copyright (c) 2019-2023 Emmie Maeda
 - License: MIT, reproduced in [licenses/wikidot-normalize-MIT.txt](licenses/wikidot-normalize-MIT.txt)
 - Used for page name normalization rules in `src/context/page-name.ts`.
+
+## Shareon
+
+- Source: <https://github.com/kytta/shareon/tree/b73f5d8bd08b4761ecb365e73716beb190d1ab10>
+- Copyright (c) 2020-2022 Nikita Karamov
+- License: MIT, reproduced in [licenses/shareon-MIT.txt](licenses/shareon-MIT.txt)
+- Sharing URL definitions and icon assets were adapted for `src/elements/social/`.
+  X uses its current `x.com` intent; Hatena's panel URL comes from its
+  [official bookmark button](https://b.hatena.ne.jp/guide/bbutton), and Mastodon's URL
+  comes from the [official sharing tool](https://github.com/mastodon/share/blob/91bcb99c1efa2e358fe84a77a52bb176cfcbe6ca/src/Instructions.tsx).
+
+## Simple Icons
+
+- Source: <https://github.com/simple-icons/simple-icons/tree/b054428646591252023b9599defb56f6e0b32f10>
+- License: CC0 1.0 Universal, reproduced in [licenses/simple-icons-CC0.md](licenses/simple-icons-CC0.md)
+- X and Hatena Bookmark SVG paths are taken from the above revision. Bluesky, LinkedIn,
+  Mastodon, Facebook, and Reddit paths are Simple Icons assets distributed by Shareon
+  at the revision noted above. The paths are rendered at 16px with `currentColor`.
+- The optional Twitter bird is preserved from
+  [revision 06deb20e92a8d6bc4d51164c31522ca034be2917](https://github.com/simple-icons/simple-icons/blob/06deb20e92a8d6bc4d51164c31522ca034be2917/icons/twitter.svg),
+  before [its removal in PR #9748](https://github.com/simple-icons/simple-icons/pull/9748).

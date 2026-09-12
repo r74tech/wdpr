@@ -851,6 +851,14 @@ export interface PageButtonData {
   attributes: AttributeMap;
 }
 
+/** Data for [[social]], with null selecting the default services.
+ * @group Element Data
+ */
+export interface SocialData {
+  /** Unsupported names remain representable, but produce no share link. */
+  sites: string[] | null;
+}
+
 /**
  * Data for `##color|text##` inline color syntax.
  *
@@ -1023,6 +1031,7 @@ export type ElementDataMap = {
   user: UserData;
   date: DateData;
   button: PageButtonData;
+  social: SocialData;
   color: ColorData;
   code: CodeBlockData;
   math: MathData;
@@ -1389,6 +1398,7 @@ export function isParagraphSafe(element: Element): boolean {
     case "user":
       return true;
     case "date":
+    case "social":
       return true;
     case "button":
       return isPageButtonAction(element.data.action);

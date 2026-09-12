@@ -1,5 +1,6 @@
 import { stripAutomaticLineBreak } from "./automatic-line-break";
 import { parseButtonSyntax } from "../button/syntax";
+import { parseSocialSyntax } from "../social/syntax";
 import { parseDateSyntax } from "../date/syntax";
 import { emailRegionEnd } from "../email/candidates";
 import { protectedInlineRegionEnd } from "../raw/end";
@@ -47,6 +48,7 @@ export function parseInlineUntil(ctx: ParseContext, endType: InlineEndType): Inl
     for (let end = ctx.pos; end < inlineEnd; end++) {
       const protectedEnd = Math.max(
         parseButtonSyntax(ctx, end, inlineEnd)?.end ?? end,
+        parseSocialSyntax(ctx, end, inlineEnd)?.end ?? end,
         parseDateSyntax(ctx, end, inlineEnd)?.end ?? end,
         emailRegionEnd(ctx.tokens, end, inlineEnd),
         protectedInlineRegionEnd(ctx.tokens, end, inlineEnd),

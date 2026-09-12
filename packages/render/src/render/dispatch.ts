@@ -1,4 +1,5 @@
 import { renderButton } from "../elements/button";
+import { renderSocial } from "../elements/social";
 import type { Element } from "@wdprlib/ast";
 import { RenderContext } from "../context";
 import { renderBibliographyBlock, renderBibliographyCite } from "../elements/bibliography";
@@ -137,6 +138,9 @@ export function renderElement(ctx: RenderContext, element: Element): void {
       break;
     case "user":
       renderUser(ctx, element.data);
+      break;
+    case "social":
+      renderSocial(ctx, element.data);
       break;
     case "button":
       renderButton(ctx, element.data);

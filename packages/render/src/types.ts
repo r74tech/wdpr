@@ -122,6 +122,8 @@ export interface RenderResolvers {
  * @group Render Options
  */
 export interface RenderOptions {
+  /** Share metadata for [[social]]. Omitted fields are filled by the browser runtime. */
+  socialShare?: { url?: string; title?: string };
   /** Caller-selected ICU catalog. Omit to retain the English source messages. */
   i18n?: RenderI18n;
   /**

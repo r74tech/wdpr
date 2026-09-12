@@ -1,4 +1,5 @@
 import { recognizeButton } from "./button";
+import { recognizeSocial } from "./social";
 import { recognizeEquationReference } from "./equation-reference";
 import { recognizeDate } from "./date";
 import type { Element } from "@wdprlib/ast";
@@ -177,6 +178,9 @@ function recognizeSpanDispatch(
 
   const date = recognizeDate(node);
   if (date) return [date];
+
+  const social = recognizeSocial(node);
+  if (social) return [social];
 
   const equationReference = recognizeEquationReference(node);
   if (equationReference) return [equationReference];

@@ -1,5 +1,5 @@
 import type { PageButtonData } from "@wdprlib/ast";
-import type { Token } from "../../../../lexer";
+import { findRawTagClose } from "../parsing/raw-tag";
 import type { ParseContext } from "../../types";
 import { parseButtonAttributes } from "./attributes";
 
@@ -7,8 +7,6 @@ interface ButtonSyntax {
   data: PageButtonData;
   end: number;
 }
-
-const unclosedRanges = new WeakMap<readonly Token[], { start: number; end: number }>();
 
 /** Read a complete standalone button, including permitted separator newlines. */
 export function parseButtonSyntax(
@@ -40,20 +38,8 @@ export function parseButtonSyntax(
   if (!action) return null;
   action = action.replaceAll("_", "-");
   skipSpace();
-  const unclosed = unclosedRanges.get(tokens);
-  if (unclosed && pos >= unclosed.start && end <= unclosed.end) return null;
-  let close = pos;
-  while (close < end && tokens[close]?.type !== "BLOCK_CLOSE") {
-    if (!tokens[close] || tokens[close]?.type === "EOF") {
-      unclosedRanges.set(tokens, { start: pos, end });
-      return null;
-    }
-    close++;
-  }
-  if (close >= end) {
-    unclosedRanges.set(tokens, { start: pos, end });
-    return null;
-  }
+  const close = findRawTagClose(tokens, pos, end);
+  if (close === null) return null;
   const attrs = parseButtonAttributes(
     tokens
       .slice(pos, close)

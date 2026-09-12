@@ -1,0 +1,21 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [{ "element": "social", "data": { "sites": null } }]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [{ "element": "social", "data": { "sites": ["facebook", "delicious"] } }]
+      }
+    },
+    { "element": "footnote-block", "data": { "title": null, "hide": false } }
+  ]
+}

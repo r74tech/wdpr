@@ -83,6 +83,7 @@ export type {
   DateData,
   PageButtonAction,
   PageButtonData,
+  SocialData,
   ColorData,
   MathData,
   MathInlineData,

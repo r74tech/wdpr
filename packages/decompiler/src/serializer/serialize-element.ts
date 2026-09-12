@@ -1,4 +1,5 @@
 import { serializeButton } from "./button";
+import { serializeSocial } from "./social";
 import { serializeDate } from "./date";
 import type { Element, SyntaxTree } from "@wdprlib/ast";
 import type { SerializeContext } from "./context";
@@ -129,6 +130,9 @@ export function serializeElement(ctx: SerializeContext, element: Element): void 
       break;
     case "equation-reference":
       serializeEquationRef(ctx, element.data);
+      break;
+    case "social":
+      serializeSocial(ctx, element.data);
       break;
     case "button":
       serializeButton(ctx, element.data);

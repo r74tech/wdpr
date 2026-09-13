@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  container,
   countCharacters,
   excerptText,
   extractReadableText,
@@ -11,6 +12,19 @@ import { Window } from "happy-dom";
 import { htmlToAst } from "@wdprlib/decompiler";
 
 describe("readable text", () => {
+  test.each([
+    ["  Alpha \t beta  \n \t Gamma \r\n Delta  ", "Alpha beta\nGamma\nDelta"],
+    [" 前\u3000文 \n\t次\r\n 行 ", "前 文\n次\n行"],
+    [" A \n  \n\t \n B ", "A\n\nB"],
+    [" A \t B \u00a0 C ", "A B C"],
+    ["\t \n \u3000 \n", ""],
+    ["", ""],
+  ])("normalizes spaces around line breaks in both text extractors: %j", (input, expected) => {
+    const ast = { elements: [container("paragraph", [{ element: "text", data: input! }])] };
+    expect(extractReadableText(ast)).toBe(expected);
+    expect(extractFirstParagraph(ast)).toBe(expected);
+  });
+
   test.each([
     ["+ 見出し\n\n最初の**段落**。\n\n次の段落。", "最初の段落。"],
     ["[[include component]]\n\n次の段落。", "包含本文。"],

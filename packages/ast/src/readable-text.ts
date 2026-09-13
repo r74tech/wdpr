@@ -214,7 +214,7 @@ function extractText(
 function normalizeText(text: string): string {
   return text
     .replace(/[^\S\n]+/g, " ")
-    .replace(/ *\n */g, "\n")
+    .replace(/ ?\n ?/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }

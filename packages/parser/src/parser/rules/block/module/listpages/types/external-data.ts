@@ -59,11 +59,17 @@ export interface PageData {
   // Wikitext content split by ==== when resolving %%content{n}%%.
   content?: string;
   /**
-   * Text extracted from this page's resolved AST for preview, summary, first_paragraph and
+   * Text extracted from this page's resolved AST for preview and
    * `%%excerpt{start}(200)|end%%`. Values stay literal; raw content is never a fallback.
    * The host owns extraction policy, dependency invalidation and recursion limits.
    */
   readableText?: string;
+  /**
+   * First nonempty paragraph from extractFirstParagraph, for summary and first_paragraph.
+   * Uses the same extraction policy as readableText. Empty when no readable paragraph
+   * exists; undefined when unavailable. Headings and appended footnotes are excluded.
+   */
+  firstParagraph?: string;
 
   // Tags
   tags: string[];

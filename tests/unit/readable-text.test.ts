@@ -1,11 +1,47 @@
 import { describe, expect, test } from "bun:test";
-import { countCharacters, excerptText, extractReadableText } from "@wdprlib/ast";
+import {
+  countCharacters,
+  excerptText,
+  extractReadableText,
+  extractFirstParagraph,
+} from "@wdprlib/ast";
 import { definePageData, extractDataRequirements, parse, processWikitext } from "@wdprlib/parser";
 import { renderToHtml } from "@wdprlib/render";
 import { Window } from "happy-dom";
 import { htmlToAst } from "@wdprlib/decompiler";
 
 describe("readable text", () => {
+  test.each([
+    ["+ 見出し\n\n最初の**段落**。\n\n次の段落。", "最初の段落。"],
+    ["[[include component]]\n\n次の段落。", "包含本文。"],
+    ["+ 見出し\n\n[[#if 0 | 非表示 | 表示]]本文。", "表示本文。"],
+    ["+ 見出しだけ", ""],
+    ["[[code]]\nコードだけ\n[[/code]]", ""],
+  ])("first paragraph retains paragraph semantics: %s", async (source, expected) => {
+    const document = await processWikitext(source!, {
+      page: { fullName: "test", tags: [] },
+      dataProvider: { fetchInclude: async () => "+ 包含見出し\n\n包含本文。" },
+    });
+    expect(document.firstParagraph).toBe(expected);
+    expect(document.characterCount).toBe(countCharacters(document.readableText));
+  });
+
+  test("first paragraph ignores excluded and empty paragraphs and appended footnotes", async () => {
+    const document = await processWikitext(
+      '+ 見出し\n[[div class="acs"]]\n除外本文\n[[/div]]\n\n[[$ x $]]\n\n本文[[footnote]]注釈[[/footnote]]\n\n次の段落。',
+      {
+        page: { fullName: "test", tags: [] },
+        readableText: {
+          exclude: (element) =>
+            element.element === "container" && element.data.attributes.class === "acs",
+        },
+      },
+    );
+    expect(document.firstParagraph).toBe("本文");
+    expect(document.readableText).toContain("注釈");
+    expect(document.readableText).not.toContain("除外本文");
+  });
+
   test.each([
     ["[[#if true | A | B]]C", "AC", "A", "C"],
     ["[[#if 0 | A | B]]C", "BC", "B", "C"],
@@ -78,6 +114,7 @@ describe("readable text", () => {
     const text = extractReadableText(ast);
     expect(text).toBe("展開済み本文。\n\n後続\n\n包含注\n\n後続注");
     expect(countCharacters(text)).toBe(21);
+    expect(extractFirstParagraph(ast)).toBe("展開済み本文。");
     expect(extractReadableText(ast, { exclude: (element) => element.element === "include" })).toBe(
       "後続\n\n後続注",
     );
@@ -142,6 +179,7 @@ describe("readable text", () => {
               updatedAt: new Date(0),
               content: "WRONG SOURCE",
               readableText,
+              firstParagraph: readableText,
             }),
           ],
           totalCount: 1,

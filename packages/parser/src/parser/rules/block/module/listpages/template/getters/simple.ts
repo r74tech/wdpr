@@ -44,8 +44,8 @@ export const SIMPLE_GETTERS: Record<string, VariableGetter> = {
     literalWikitext(
       excerptText(ctx.page.readableText ?? "", { maxLength: DEFAULT_PREVIEW_LENGTH }),
     ),
-  summary: (ctx) => literalWikitext(ctx.page.readableText?.split(/\n{2,}/)[0] ?? ""),
-  first_paragraph: (ctx) => literalWikitext(ctx.page.readableText?.split(/\n{2,}/)[0] ?? ""),
+  summary: (ctx) => literalWikitext(ctx.page.firstParagraph ?? ""),
+  first_paragraph: (ctx) => literalWikitext(ctx.page.firstParagraph ?? ""),
 
   tags: (ctx) => ctx.page.tags.join(" "),
   _tags: (ctx) => ctx.page.hiddenTags.join(" "),

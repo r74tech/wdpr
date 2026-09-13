@@ -159,6 +159,18 @@ async function renderText(source: string): Promise<string> {
   return text;
 }
 
+test("ListPages summaries use the first body paragraph after an included heading", async () => {
+  sqlite
+    .query("UPDATE pages SET source = ? WHERE page_id = 3")
+    .run("+ 見出し\n\n最初の**段落**。\n\n次の段落。");
+  sqlite.query("UPDATE pages SET source = ? WHERE page_id = 2").run("[[include plain]]");
+  expect(
+    await renderText(
+      '[[module ListPages name="included"]]\nFIRST:%%first_paragraph%% / SUMMARY:%%summary%%\n[[/module]]',
+    ),
+  ).toBe("FIRST:最初の段落。 / SUMMARY:最初の段落。");
+});
+
 test("ListPages uses the site axis before pagination while displaying independent main and custom aggregates", async () => {
   sqlite.exec(`INSERT INTO site_rating_axes (site_id, axis_key, label, allow_nv)
     VALUES (1, 'theme', 'Theme', 1), (1, 'style', 'Style', 0);

@@ -11,7 +11,12 @@
  */
 
 export { buildInfo } from "./build-info.generated";
-export { extractReadableText, countCharacters, excerptText } from "./readable-text";
+export {
+  extractReadableText,
+  extractFirstParagraph,
+  countCharacters,
+  excerptText,
+} from "./readable-text";
 export type { ReadableTextOptions, TextExcerptOptions } from "./readable-text";
 export type {
   RatingRef,

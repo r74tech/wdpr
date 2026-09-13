@@ -57,9 +57,23 @@ export function excerptText(text: string, options: TextExcerptOptions = {}): str
  * Math/date leaves require resolveText; source TeX and timestamps are not prose.
  */
 export function extractReadableText(ast: SyntaxTree, options: ReadableTextOptions = {}): string {
+  return extractText(ast, options, false);
+}
+
+/** Extract the first nonempty paragraph, excluding headings and appended footnotes. */
+export function extractFirstParagraph(ast: SyntaxTree, options: ReadableTextOptions = {}): string {
+  return extractText(ast, options, true);
+}
+
+function extractText(
+  ast: SyntaxTree,
+  options: ReadableTextOptions,
+  firstParagraphOnly: boolean,
+): string {
   const parts: string[] = [];
   const notes = new Set<number>();
   let footnoteIndex = 0;
+  let firstParagraph: string | undefined;
   const emit = (value: string, omit: boolean) => {
     if (!omit) parts.push(value);
   };
@@ -77,6 +91,7 @@ export function extractReadableText(ast: SyntaxTree, options: ReadableTextOption
   };
   const visit = (elements: Element[], inheritedOmit = false): void => {
     for (const element of elements) {
+      if (firstParagraphOnly && firstParagraph !== undefined) return;
       const omit = inheritedOmit || options.exclude?.(element) === true;
       switch (element.element) {
         case "text":
@@ -85,6 +100,7 @@ export function extractReadableText(ast: SyntaxTree, options: ReadableTextOption
           emit(element.data, omit);
           break;
         case "container": {
+          const start = parts.length;
           const type = element.data.type;
           const kind: string = typeof type === "string" ? type : "block";
           const hidden = omit || ["ruby-text", "hidden", "invisible"].includes(kind);
@@ -102,6 +118,10 @@ export function extractReadableText(ast: SyntaxTree, options: ReadableTextOption
           )
             block(element.data.elements, hidden);
           else visit(element.data.elements, hidden);
+          if (firstParagraphOnly && kind === "paragraph" && firstParagraph === undefined) {
+            const text = normalizeText(parts.slice(start).join(""));
+            if (text) firstParagraph = text;
+          }
           break;
         }
         case "color":
@@ -214,12 +234,16 @@ export function extractReadableText(ast: SyntaxTree, options: ReadableTextOption
     }
   };
   visit(ast.elements);
+  if (firstParagraphOnly) return firstParagraph ?? "";
   for (const index of notes) {
     const note = ast.footnotes?.[index];
     if (note) block(note, false);
   }
-  return parts
-    .join("")
+  return normalizeText(parts.join(""));
+}
+
+function normalizeText(text: string): string {
+  return text
     .replace(/[^\S\n]+/g, " ")
     .replace(/ *\n */g, "\n")
     .replace(/\n{3,}/g, "\n\n")

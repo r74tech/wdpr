@@ -72,6 +72,8 @@ export interface ProcessedWikitextDocument<
 > {
   ast: SyntaxTree;
   readableText: string;
+  /** First nonempty body paragraph, excluding headings and appended footnotes. */
+  firstParagraph: string;
   characterCount: number;
   page: TPage;
   settings: WikitextSettings;

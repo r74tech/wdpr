@@ -28,7 +28,7 @@ export interface ListPagesDataRequirement {
   metadataKeys?: string[];
   /** Exact custom rating keys needed for display, independent of query.ratingAxis. */
   customRateKeys?: string[];
-  /** Supply PageData.readableText for previews, excerpts, and summaries. */
+  /** Supply PageData.readableText and firstParagraph for previews, excerpts, and summaries. */
   needsReadableText?: boolean;
 
   /** Prefix for tags_linked|prefix */

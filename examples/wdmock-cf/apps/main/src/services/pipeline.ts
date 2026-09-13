@@ -313,6 +313,7 @@ async function queryListPages(
           hiddenTags: selectedTags?.filter((tag) => tag.startsWith("_")) ?? page.hiddenTags,
           content,
           readableText: completeText ? document.readableText : undefined,
+          firstParagraph: completeText ? document.firstParagraph : undefined,
           size: completeText ? document.characterCount : undefined,
         };
       }),

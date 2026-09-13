@@ -60,7 +60,8 @@ export interface PageData {
   content?: string;
   /**
    * Text extracted from this page's resolved AST for preview and
-   * `%%excerpt{start}(200)|end%%`. Values stay literal; raw content is never a fallback.
+   * `%%excerpt{pattern="..." group="1" match="2" max="200"}%%`.
+   * Values stay literal; raw content is never a fallback.
    * The host owns extraction policy, dependency invalidation and recursion limits.
    */
   readableText?: string;

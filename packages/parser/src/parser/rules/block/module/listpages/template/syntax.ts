@@ -1,3 +1,5 @@
+import { findExcerptEnd } from "./excerpt";
+
 export interface TemplateVariableMatch {
   raw: string;
   index: number;
@@ -25,7 +27,10 @@ export function scanTemplateVariables(template: string): TemplateVariableMatch[]
     if (start === -1) break;
 
     const contentStart = start + 2;
-    const end = template.indexOf("%%", contentStart);
+    const end =
+      template.slice(contentStart, contentStart + 8).toLowerCase() === "excerpt{"
+        ? findExcerptEnd(template, contentStart)
+        : template.indexOf("%%", contentStart);
     if (end === -1) break;
 
     const parsed = parseTemplateVariableContent(template.slice(contentStart, end));
@@ -53,6 +58,10 @@ function parseTemplateVariableContent(
   if (cursor === 0) return null;
 
   const name = content.slice(0, cursor);
+  if (name.toLowerCase() === "excerpt" && content[cursor] === "{") {
+    if (!content.endsWith("}")) return null;
+    return { name, braceParam: content.slice(cursor + 1, -1) };
+  }
   let braceParam: string | undefined;
   let parenParam: string | undefined;
   let format: string | undefined;

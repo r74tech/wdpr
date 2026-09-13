@@ -10,15 +10,6 @@ export interface ReadableTextOptions {
   ) => string | undefined;
 }
 
-export interface TextExcerptOptions {
-  /** Literal start marker, excluded from the result. Missing markers return empty text. */
-  start?: string;
-  /** Literal end marker, included if it fits within maxLength. */
-  end?: string;
-  /** Grapheme limit, default 200. Invalid, negative, or zero lengths return empty text. */
-  maxLength?: number;
-}
-
 const segmenter = new Intl.Segmenter("und", { granularity: "grapheme" });
 
 /** Count graphemes, including whitespace, in the supplied readable text. */
@@ -26,28 +17,6 @@ export function countCharacters(text: string): number {
   let count = 0;
   for (const _segment of segmenter.segment(text)) count++;
   return count;
-}
-
-/** Select literal delimiters and truncate without splitting a grapheme cluster. */
-export function excerptText(text: string, options: TextExcerptOptions = {}): string {
-  const limit = options.maxLength ?? 200;
-  if (!Number.isSafeInteger(limit) || limit <= 0) return "";
-  const startIndex = options.start ? text.indexOf(options.start) : 0;
-  if (startIndex < 0) return "";
-  const start = startIndex + (options.start?.length ?? 0);
-  const endIndex = options.end ? text.indexOf(options.end, start) : -1;
-  const end = endIndex < 0 ? text.length : endIndex + options.end!.length;
-  let count = 0;
-  let first = -1;
-  let last = start;
-  for (const segment of segmenter.segment(text)) {
-    if (segment.index < start) continue;
-    if (segment.index >= end || count === limit) break;
-    if (first === -1) first = segment.index;
-    last = segment.index + segment.segment.length;
-    count++;
-  }
-  return first === -1 ? "" : text.slice(first, last);
 }
 
 /**

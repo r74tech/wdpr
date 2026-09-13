@@ -171,6 +171,17 @@ test("ListPages summaries use the first body paragraph after an included heading
   ).toBe("FIRST:最初の段落。 / SUMMARY:最初の段落。");
 });
 
+test("ListPages extracts the requested description from resolved readable text", async () => {
+  sqlite
+    .query("UPDATE pages SET source = ? WHERE page_id = 3")
+    .run("前文。\n\n説明: 最初。\n\n説明： **二番目**。末尾。");
+  expect(
+    await renderText(
+      '[[module ListPages name="plain"]]\n%%excerpt{pattern="説明[:：]\\s*([^。]*。)" group="1" match="2" max="200"}%%\n[[/module]]',
+    ),
+  ).toBe("二番目。");
+});
+
 test("ListPages keeps readable text recovered from an unclosed code block", async () => {
   sqlite
     .query("UPDATE pages SET source = ? WHERE page_id = 3")

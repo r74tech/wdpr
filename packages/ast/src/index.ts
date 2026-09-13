@@ -11,13 +11,10 @@
  */
 
 export { buildInfo } from "./build-info.generated";
-export {
-  extractReadableText,
-  extractFirstParagraph,
-  countCharacters,
-  excerptText,
-} from "./readable-text";
-export type { ReadableTextOptions, TextExcerptOptions } from "./readable-text";
+export { extractReadableText, extractFirstParagraph, countCharacters } from "./readable-text";
+export type { ReadableTextOptions } from "./readable-text";
+export { excerptText, compileTextExcerpt } from "./text-excerpt";
+export type { TextExcerptOptions } from "./text-excerpt";
 export type {
   RatingRef,
   RatingVote,

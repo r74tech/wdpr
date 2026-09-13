@@ -18,6 +18,7 @@
     "dist",
     "src",
     "LICENSE",
+    "licenses",
     "THIRD-PARTY-LICENSES.md"
   ],
   "type": "module",
@@ -40,5 +41,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "re2js": "2.8.6"
   }
 }

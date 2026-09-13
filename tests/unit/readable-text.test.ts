@@ -52,7 +52,9 @@ describe("readable text", () => {
     const document = await processWikitext(source!, { page: { fullName: "test", tags: [] } });
     expect(document.readableText).toBe(expected);
     expect(document.characterCount).toBe(expected!.length);
-    expect(excerptText(document.readableText, { start, maxLength: 1 })).toBe(excerpt);
+    expect(
+      excerptText(document.readableText, { pattern: `${start}(.*)`, group: 1, maxLength: 1 }),
+    ).toBe(excerpt);
   });
 
   test("extracts resolved body and labels while omitting syntax and duplicated UI", async () => {
@@ -82,7 +84,9 @@ describe("readable text", () => {
     expect(text).not.toContain("undefined");
     for (const part of [".secret", "example.invalid", "module", "include", "alpha", "Footnotes"])
       expect(text).not.toContain(part);
-    expect(excerptText(text, { start: "説明: ", end: "。", maxLength: 200 })).toBe("恐竜です。");
+    expect(excerptText(text, { pattern: "説明: ([^。]*。)", group: 1, maxLength: 200 })).toBe(
+      "恐竜です。",
+    );
   });
 
   test("exclusions preserve the association of later footnotes", () => {
@@ -139,16 +143,13 @@ describe("readable text", () => {
     expect(extractReadableText(converted)).toBe("本文\n\n脚注");
   });
 
-  test("graphemes are not split, and absent delimiters and invalid lengths are explicit", () => {
+  test("graphemes are not split, and absent matches and invalid lengths are explicit", () => {
     const text = "Aか\u3099👨‍👩‍👧‍👦🇯🇵。末尾";
     expect(countCharacters(text)).toBe(7);
     expect(countCharacters("")).toBe(0);
-    expect(excerptText("か\u3099次", { start: "か" })).toBe("次");
-    expect(excerptText("家族👨‍👩‍👧‍👦。", { end: "👨" })).toBe("家族👨‍👩‍👧‍👦");
     expect(excerptText(text, { maxLength: 3 })).toBe("Aか\u3099👨‍👩‍👧‍👦");
-    expect(excerptText(text, { start: "見つからない", maxLength: 10 })).toBe("");
-    expect(excerptText(text, { start: "A", end: "?", maxLength: 2 })).toBe("か\u3099👨‍👩‍👧‍👦");
-    expect(excerptText("説明: 終わり。続き。", { start: "説明: ", end: "。" })).toBe("終わり。");
+    expect(excerptText(text, { pattern: "見つからない", maxLength: 10 })).toBe("");
+    expect(excerptText(text, { pattern: "A(.*)", group: 1, maxLength: 2 })).toBe("か\u3099👨‍👩‍👧‍👦");
     for (const length of [0, -1, NaN, Infinity])
       expect(excerptText(text, { maxLength: length })).toBe("");
     expect(excerptText(text, { maxLength: Number.MAX_SAFE_INTEGER })).toBe(text);
@@ -156,7 +157,7 @@ describe("readable text", () => {
 
   test("ListPages requests readable text and never executes text from previews or excerpts", async () => {
     const source =
-      "[[module ListPages]]\n%%excerpt{説明: }(80)|。%%\n%%preview(80)%%\n%%summary%%\n%%first_paragraph%%\n%%size%%\n[[/module]]";
+      '[[module ListPages]]\nEXCERPT:%%excerpt{pattern="説明: ([^。]*。)" group="1" max="80"}%%:END\n%%preview(80)%%\n%%summary%%\n%%first_paragraph%%\n%%size%%\n[[/module]]';
     expect(
       extractDataRequirements(parse(source).ast).requirements.listPages[0]?.needsReadableText,
     ).toBe(true);
@@ -190,7 +191,7 @@ describe("readable text", () => {
     const dom = new Window().document;
     dom.body.innerHTML = renderToHtml(doc.ast);
     expect(includeCalls).toBe(0);
-    expect(dom.body.textContent).toContain("[[include secret]] @@ >@ 恐竜。");
+    expect(dom.body.textContent).toContain("EXCERPT:[[include secret]] @@ >@ 恐竜。:END");
     expect(dom.body.textContent).toContain(String(countCharacters(readableText)));
     expect(dom.body.textContent).not.toContain("WRONG SOURCE");
   });

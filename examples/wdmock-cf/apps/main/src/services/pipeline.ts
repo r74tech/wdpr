@@ -169,8 +169,8 @@ async function queryListPages(
   currentPage: CurrentListPagesPage,
   requirement: ListPagesDataRequirement,
 ): Promise<ListPagesExternalData> {
-  // No metadata registry or materialized readable sizes exist in this demo DB.
-  if (query.order?.field === "metadata" || query.order?.field === "size") {
+  // No metadata registry exists in this demo DB.
+  if (query.order?.field === "metadata") {
     return { pages: [], totalCount: 0, site: SITE };
   }
   const axes = await readRatingAxes(db, [
@@ -249,17 +249,13 @@ async function queryListPages(
   const offset = Math.max(0, query.offset ?? 0);
   const limit = Math.min(query.limit ?? 20, query.perPage ?? 20, 250);
   const end = limit < 0 ? undefined : offset + limit;
-  const selectedPages = matchedPages.slice(offset, end);
-  const displayKeys = new Set(requirement.customRateKeys);
-  const customRatings = await readCustomRatings(
-    db,
-    selectedPages.map(({ pageId }) => pageId),
-    axes.filter((axis) => displayKeys.has(axis.axis_key) && axis.show_aggregate === 1),
-  );
+  const sortBySize = query.order?.field === "size";
+  // Only readable-size ordering needs candidate bodies before pagination.
+  const contentPages = sortBySize ? matchedPages : matchedPages.slice(offset, end);
   const contentByPage = new Map<number, string>();
   const selectedTagsByPage = new Map<number, string[]>();
-  for (let start = 0; !includeAllContent && start < selectedPages.length; start += 80) {
-    const batch = selectedPages.slice(start, start + 80);
+  for (let start = 0; !includeAllContent && start < contentPages.length; start += 80) {
+    const batch = contentPages.slice(start, start + 80);
     const placeholders = batch.map(() => "?").join(", ");
     const pageIds = batch.map(({ pageId }) => pageId);
     const [contents, selectedTags] = await Promise.all([
@@ -282,31 +278,58 @@ async function queryListPages(
     }
   }
 
+  const pagesWithContent = contentPages.map(({ pageId, page }) => {
+    const selectedTags = selectedTagsByPage.get(pageId);
+    return {
+      pageId,
+      page: {
+        ...page,
+        tags: selectedTags?.filter((tag) => !tag.startsWith("_")) ?? page.tags,
+        hiddenTags: selectedTags?.filter((tag) => tag.startsWith("_")) ?? page.hiddenTags,
+        content: includeAllContent ? page.content : contentByPage.get(pageId),
+      },
+    };
+  });
+  if (sortBySize || requirement.needsReadableText || requirement.neededVariables.includes("size")) {
+    // Bound concurrent include resolution even when sorting an entire category.
+    for (let start = 0; start < pagesWithContent.length; start += 4) {
+      await Promise.all(
+        pagesWithContent.slice(start, start + 4).map(async (entry) => {
+          const { page } = entry;
+          if (page.content !== undefined) {
+            entry.page = {
+              ...page,
+              ...(await readPageText(db, page, page.content, [...page.tags, ...page.hiddenTags])),
+            };
+          }
+        }),
+      );
+    }
+  }
+  if (sortBySize) {
+    const direction = query.order?.direction === "asc" ? 1 : -1;
+    pagesWithContent.sort((a, b) => {
+      if (a.page.size === undefined && b.page.size !== undefined) return 1;
+      if (b.page.size === undefined && a.page.size !== undefined) return -1;
+      return direction * ((a.page.size ?? 0) - (b.page.size ?? 0) || a.pageId - b.pageId);
+    });
+  }
+  const selectedPages = sortBySize ? pagesWithContent.slice(offset, end) : pagesWithContent;
+  const displayKeys = new Set(requirement.customRateKeys);
+  const customRatings = await readCustomRatings(
+    db,
+    selectedPages.map(({ pageId }) => pageId),
+    axes.filter((axis) => displayKeys.has(axis.axis_key) && axis.show_aggregate === 1),
+  );
   return {
-    pages: await Promise.all(
-      selectedPages.map(async ({ pageId, page }) => {
-        const selectedTags = selectedTagsByPage.get(pageId);
-        const tags = selectedTags ?? [...page.tags, ...page.hiddenTags];
-        const content = includeAllContent ? page.content : contentByPage.get(pageId);
-        const readableData =
-          (requirement.needsReadableText || requirement.neededVariables.includes("size")) &&
-          content !== undefined
-            ? await readPageText(db, page, content, tags)
-            : {};
-        return {
-          ...page,
-          customRates: Object.fromEntries(
-            (customRatings.get(pageId) ?? []).flatMap((state) =>
-              state.ref.kind === "custom" ? [[state.ref.axisKey, state.aggregate]] : [],
-            ),
-          ),
-          tags: selectedTags?.filter((tag) => !tag.startsWith("_")) ?? page.tags,
-          hiddenTags: selectedTags?.filter((tag) => tag.startsWith("_")) ?? page.hiddenTags,
-          content,
-          ...readableData,
-        };
-      }),
-    ),
+    pages: selectedPages.map(({ pageId, page }) => ({
+      ...page,
+      customRates: Object.fromEntries(
+        (customRatings.get(pageId) ?? []).flatMap((state) =>
+          state.ref.kind === "custom" ? [[state.ref.axisKey, state.aggregate]] : [],
+        ),
+      ),
+    })),
     totalCount: matchedPages.length,
     site: SITE,
   };

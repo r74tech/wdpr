@@ -207,6 +207,65 @@ test("ListPages does not publish a partial size after the include expansion limi
   ).toBe("PREVIEW: / SIZE:");
 });
 
+test.each(["size", "pagelength"])(
+  "ListPages sorts %s by readable graphemes before pagination",
+  async (order) => {
+    sqlite.query("UPDATE pages SET source = ? WHERE page_id = 1").run("ABCDEF");
+    const insert = sqlite.query(
+      "INSERT INTO pages (page_id, category, unix_name, source) VALUES (?, 'entry', ?, ?)",
+    );
+    insert.run(10, "short", `[[module CSS]]\n.x { color: red; }\n[[/module]]\n\nA`);
+    insert.run(11, "long", "[[include main]]");
+    insert.run(12, "equal", "123456");
+    insert.run(13, "emoji", "[[iftags show]]\n👨‍👩‍👧‍👦🇯🇵\n[[/iftags]]");
+    insert.run(14, "unknown", "途中。\n[[include missing]]");
+    insert.run(15, "empty", "[[module Rate]]");
+    sqlite.exec("INSERT INTO page_tags (page_id, tag) VALUES (13, 'show')");
+    const rows = async (direction: string, pagination = "") =>
+      (
+        await renderText(
+          `[[module ListPages category="entry" order="${order} ${direction}" ${pagination}]]\nROW:%%name%%:%%size%%:%%total%%:END\n[[/module]]`,
+        )
+      ).match(/ROW:[^\n]*?:END/g);
+    expect(await rows("asc")).toEqual([
+      "ROW:empty:0:6:END",
+      "ROW:short:1:6:END",
+      "ROW:emoji:2:6:END",
+      "ROW:long:6:6:END",
+      "ROW:equal:6:6:END",
+      "ROW:unknown::6:END",
+    ]);
+    expect(await rows("desc")).toEqual([
+      "ROW:equal:6:6:END",
+      "ROW:long:6:6:END",
+      "ROW:emoji:2:6:END",
+      "ROW:short:1:6:END",
+      "ROW:empty:0:6:END",
+      "ROW:unknown::6:END",
+    ]);
+    expect(await rows("desc", 'offset="1" limit="2" per-page="2"')).toEqual([
+      "ROW:long:6:6:END",
+      "ROW:emoji:2:6:END",
+    ]);
+    expect(await rows("asc", 'offset="1" limit="2" per-page="2"')).toEqual([
+      "ROW:short:1:6:END",
+      "ROW:emoji:2:6:END",
+    ]);
+  },
+);
+
+test("ListPages counts more than 100 candidates before selecting a size-ordered page", async () => {
+  const insert = sqlite.query(
+    "INSERT INTO pages (category, unix_name, source) VALUES ('entry', ?, ?)",
+  );
+  for (let index = 1; index <= 105; index++) insert.run(`p${index}`, "文".repeat(index));
+  expect(
+    await renderText(
+      '[[module ListPages category="entry" order="size desc" offset="100" per-page="1"]]\nROW:%%name%%:%%size%%:%%total%%:END\n[[/module]]',
+    ),
+  ).toContain("ROW:p5:5:105:END");
+});
+
 test("ListPages uses the site axis before pagination while displaying independent main and custom aggregates", async () => {
   sqlite.exec(`INSERT INTO site_rating_axes (site_id, axis_key, label, allow_nv)
     VALUES (1, 'theme', 'Theme', 1), (1, 'style', 'Style', 0);

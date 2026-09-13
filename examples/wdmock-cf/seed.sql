@@ -10,9 +10,9 @@ INSERT OR IGNORE INTO members (site_id, user_id) VALUES (1, 1);
 -- User as site member
 INSERT OR IGNORE INTO members (site_id, user_id) VALUES (1, 2);
 
-INSERT INTO site_rating_axes (site_id, axis_key, label, allow_nv, allow_dv) VALUES
-  (1, 'contest-2026-theme', 'テーマ適合性', 1, 1),
-  (1, 'contest-2026-style', '表現への支持', 0, 0)
+INSERT INTO site_rating_axes (site_id, axis_key, label, allow_nv, allow_dv, uv_label, nv_label, dv_label) VALUES
+  (1, 'contest-2026-theme', 'テーマ適合性', 1, 1, '+', 'φ', '-'),
+  (1, 'contest-2026-style', '表現への支持', 0, 0, '支持', 'Ø', '–')
 ON CONFLICT(site_id, axis_key) DO NOTHING;
 
 INSERT INTO pages (site_id, category, unix_name, title, source, owner_user_id) VALUES

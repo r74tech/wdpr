@@ -46,6 +46,7 @@ beforeEach(async () => {
   sqlite.exec(await Bun.file("examples/wdmock-cf/migrations/0002_page_lock.sql").text());
   const migration = Bun.file("examples/wdmock-cf/migrations/0003_custom_rating.sql");
   sqlite.exec(await migration.text());
+  sqlite.exec(await Bun.file("examples/wdmock-cf/migrations/0004_rating_labels.sql").text());
   for (const [id, name, source] of [
     [1, "main", "[[module Rate]]"],
     [2, "included", "[[include main]]"],
@@ -68,7 +69,7 @@ test("seeding twice preserves existing pages and votes while making both custom 
     INSERT INTO page_custom_rate_vote (site_id, page_id, axis_key, user_id, rate)
       SELECT site_id, page_id, 'contest-2026-theme', 2, 0 FROM pages
       WHERE category = 'rating-example' AND unix_name = 'first';
-    UPDATE site_rating_axes SET can_cancel = 0 WHERE axis_key = 'contest-2026-style';`);
+    UPDATE site_rating_axes SET can_cancel = 0, uv_label = 'Custom label' WHERE axis_key = 'contest-2026-style';`);
   const pages = sqlite.query("SELECT * FROM pages ORDER BY page_id").all();
   const tags = sqlite.query("SELECT * FROM page_tags ORDER BY page_id, tag").all();
   const votes = sqlite.query("SELECT * FROM page_rate_vote").all();
@@ -97,8 +98,48 @@ test("seeding twice preserves existing pages and votes while making both custom 
   expect(theme.querySelector('[data-rating-action="0"]')?.getAttribute("aria-pressed")).toBe(
     "true",
   );
+  expect(theme.querySelector('[data-rating-action="0"]')?.textContent).toBe("φ");
   expect(style.textContent).toContain("表現への支持");
+  expect(style.querySelector('[data-rating-action="1"]')?.textContent).toBe("Custom label");
   expect(style.querySelectorAll("a[data-rating-action]")).toHaveLength(1);
+  await window.happyDOM.close();
+});
+
+test("site vote labels reach rendering and fresh API responses without granting vote types", async () => {
+  sqlite.exec(`INSERT INTO site_rating_axes
+    (site_id, axis_key, label, allow_nv, allow_dv, uv_label, nv_label, dv_label)
+    VALUES (1, 'theme', 'テーマ適合性', 1, 0, '▲', '■', '▼')`);
+  const source = '[[module CustomRate key="theme"]]';
+  const rendered = await renderPage(source, "custom", d1 as unknown as D1Database);
+  const window = new Window();
+  window.document.body.innerHTML = rendered.html;
+  const labels = () =>
+    [...window.document.querySelectorAll("a[data-rating-action]")].map(
+      (control) => control.textContent,
+    );
+  expect(labels()).toEqual(["▲", "■", "×"]);
+  const ref = { kind: "custom", axisKey: "theme" };
+  const voted = await post(4, { type: "vote", value: 0 }, ref);
+  expect(voted.status).toBe(200);
+  expect(await voted.json()).toMatchObject({
+    voteLabels: { 1: "▲", 0: "■", [-1]: "▼" },
+    allowedVotes: [1, 0],
+    currentVote: 0,
+  });
+  expect((await post(4, { type: "vote", value: -1 }, ref)).status).toBe(403);
+  sqlite
+    .query("UPDATE site_rating_axes SET nv_label = ? WHERE site_id = 1 AND axis_key = 'theme'")
+    .run("□");
+  const cancelled = await post(4, { type: "cancel" }, ref);
+  expect(cancelled.status).toBe(200);
+  expect(await cancelled.json()).toMatchObject({
+    voteLabels: { 1: "▲", 0: "□", [-1]: "▼" },
+    currentVote: null,
+  });
+  window.document.body.innerHTML = (
+    await renderPage(source, "custom", d1 as unknown as D1Database)
+  ).html;
+  expect(labels()).toEqual(["▲", "□", "×"]);
   await window.happyDOM.close();
 });
 
@@ -477,7 +518,7 @@ test("more than 100 registered keys are resolved in one page and ListPages witho
   for (let i = 0; i < keys.length; i++) expect(text).toContain(`KEY${i}:0:END`);
 });
 
-test("the additive migration preserves existing pages, tags and main votes", async () => {
+test("additive migrations preserve existing pages, tags, main votes and custom axis policy", async () => {
   const legacy = new Database(":memory:");
   try {
     legacy.exec("PRAGMA foreign_keys = ON");
@@ -488,6 +529,20 @@ test("the additive migration preserves existing pages, tags and main votes", asy
       INSERT INTO page_tags VALUES (1, 'tag');
       INSERT INTO page_rate_vote (page_id, user_id, rate) VALUES (1, 2, -1);`);
     legacy.exec(await Bun.file("examples/wdmock-cf/migrations/0003_custom_rating.sql").text());
+    legacy.exec(`INSERT INTO site_rating_axes (site_id, axis_key, label, allow_nv, can_vote, can_cancel)
+      VALUES (1, 'theme', 'Theme', 1, 0, 0);
+      INSERT INTO page_custom_rate_vote (site_id, page_id, axis_key, user_id, rate)
+      VALUES (1, 1, 'theme', 2, 0);`);
+    const axis = legacy.query("SELECT * FROM site_rating_axes").get()!;
+    const customVote = legacy.query("SELECT * FROM page_custom_rate_vote").get();
+    legacy.exec(await Bun.file("examples/wdmock-cf/migrations/0004_rating_labels.sql").text());
+    expect(legacy.prepare("SELECT * FROM site_rating_axes").get()).toEqual({
+      ...axis,
+      uv_label: "+",
+      nv_label: "Ø",
+      dv_label: "–",
+    });
+    expect(legacy.query("SELECT * FROM page_custom_rate_vote").get()).toEqual(customVote);
     expect(legacy.query("SELECT source, rate, is_locked FROM pages").get()).toEqual({
       source: "Original source",
       rate: -1,

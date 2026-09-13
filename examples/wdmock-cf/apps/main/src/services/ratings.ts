@@ -4,6 +4,9 @@ import { SITE } from "@wdmock/shared";
 interface RatingAxis {
   axis_key: string;
   label: string;
+  uv_label: string;
+  nv_label: string;
+  dv_label: string;
   allow_uv: number;
   allow_nv: number;
   allow_dv: number;
@@ -19,7 +22,8 @@ export async function readRatingAxes(
   if (keys.length === 0) return [];
   const result = await db
     .prepare(
-      `SELECT axis_key, label, allow_uv, allow_nv, allow_dv, can_vote, can_cancel, show_aggregate
+      `SELECT axis_key, label, uv_label, nv_label, dv_label,
+              allow_uv, allow_nv, allow_dv, can_vote, can_cancel, show_aggregate
        FROM site_rating_axes WHERE site_id = ? AND enabled = 1
          AND axis_key IN (SELECT value FROM json_each(?))`,
     )
@@ -67,6 +71,7 @@ export async function readCustomRatings(
     const state: RatingState = {
       ref: { kind: "custom", axisKey: row.axis_key },
       label: axis.label,
+      voteLabels: { 1: axis.uv_label, 0: axis.nv_label, [-1]: axis.dv_label },
       allowedVotes,
       canVote: axis.can_vote === 1,
       canCancel: axis.can_cancel === 1,

@@ -15,13 +15,15 @@ export interface RatingAggregate {
 export interface RatingState {
   ref: RatingRef;
   label: string;
+  /** Plain-text vote labels, e.g. { 1: "+", 0: "φ", [-1]: "-" }. Omitted entries use + / Ø / –. */
+  voteLabels?: Readonly<Partial<Record<RatingVote, string>>>;
   /** Host policy: e.g. [1, -1], [1], [-1], or [1, 0, -1]. */
   allowedVotes: readonly RatingVote[];
   /** False keeps a visible, read-only widget. Omit the state to hide it entirely. */
   canVote: boolean;
   /** Independent of permission to cast a vote. */
   canCancel: boolean;
-  /** Null means no vote; zero is a saved neutral vote (Ø). */
+  /** Null means no vote; zero is a saved neutral vote. */
   currentVote: RatingVote | null;
   /** Null hides all aggregate values without preventing voting. */
   aggregate: RatingAggregate | null;

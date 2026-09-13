@@ -10,6 +10,8 @@ export interface RatingAggregate {
 export interface RatingState {
   ref: RatingRef;
   label: string;
+  /** Plain-text vote labels. Omitted entries in each complete state use + / Ø / –. */
+  voteLabels?: Readonly<Partial<Record<RatingVote, string>>>;
   allowedVotes: readonly RatingVote[];
   canVote: boolean;
   canCancel: boolean;

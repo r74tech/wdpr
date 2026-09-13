@@ -17,12 +17,15 @@ export function checkRatingContracts(
   const backward: RatingState = runtimeState;
   const a: RuntimeRatingRef = ref;
   const b: RatingRef = runtimeRef;
-  const provider: DataProvider = { fetchRatings: async () => [state] };
+  const labeled: RatingState = { ...state, voteLabels: { 1: "▲", 0: "■", [-1]: "▼" } };
+  const labelsForward: RuntimeRatingState["voteLabels"] = labeled.voteLabels;
+  const labelsBackward: RatingState["voteLabels"] = runtimeState.voteLabels;
+  const provider: DataProvider = { fetchRatings: async () => [labeled] };
   const action: RatingAction = { type: "vote", value: 0 };
   const metadata: PageMetadataValue = { type: "number", value: 0 };
   const values: Pick<PageData, "metadata" | "customRates"> = {
     metadata: { zero: metadata },
     customRates: { theme: { points: 0, votes: 1, percent: 0 } },
   };
-  void [forward, backward, a, b, provider, action, values];
+  void [forward, backward, labelsForward, labelsBackward, a, b, provider, action, values];
 }

@@ -41,6 +41,48 @@ describe("modules/rate", () => {
     root.querySelectorAll<HTMLElement>(`[data-rating-action="${value}"]`)[index]!.click();
   }
 
+  test.each([main, custom])("provider labels follow complete state updates: %j", async (ref) => {
+    const source =
+      ref.kind === "main" ? "[[module Rate]]" : `[[module CustomRate key="${ref.axisKey}"]]`;
+    const result = await processWikitext(`${source}\n${source}`, {
+      page: { fullName: "displayed", tags: [] },
+      dataProvider: {
+        fetchRatings: async () => [
+          {
+            ...state(ref),
+            voteLabels: { 1: "▲", 0: "■", [-1]: "▼" },
+          },
+        ],
+      },
+    });
+    root.innerHTML = renderToHtml(result.ast);
+    const labels = () =>
+      [...root.querySelectorAll("a[data-rating-action]")].map((control) => control.textContent);
+    expect(labels()).toEqual(["▲", "■", "▼", "×", "▲", "■", "▼", "×"]);
+    expect(root.querySelector('[data-rating-action="0"]')?.getAttribute("aria-label")).toBe(
+      "Neutral vote",
+    );
+
+    const calls: { ref: RatingRef; action: RatingAction }[] = [];
+    const cleanup = initRate(root, {
+      onRate: async (ref, action) => {
+        calls.push({ ref, action });
+        return action.type === "vote"
+          ? { ...state(ref, action.value), voteLabels: { 0: "□" } }
+          : state(ref);
+      },
+    });
+    click("0");
+    await settle();
+    expect(calls).toEqual([{ ref, action: { type: "vote", value: 0 } }]);
+    expect(labels()).toEqual(["+", "□", "–", "×", "+", "□", "–", "×"]);
+    click("cancel", 1);
+    await settle();
+    expect(calls[1]).toEqual({ ref, action: { type: "cancel" } });
+    expect(labels()).toEqual(["+", "Ø", "–", "×", "+", "Ø", "–", "×"]);
+    cleanup.destroy();
+  });
+
   test("neutral is a vote, cancellation is distinct, and duplicate widgets synchronize", async () => {
     expect(root.querySelectorAll(".vote-count, .rate-percent")).toHaveLength(0);
     const calls: { ref: RatingRef; action: RatingAction }[] = [];

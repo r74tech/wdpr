@@ -31,7 +31,7 @@ export function getRateWidgetParts(ctx: RenderContext, state: RatingState): stri
           ? ["rateup rateneutral", "Ø", labels.neutral]
           : ["ratedown", "–", labels.down];
     parts.push(
-      `<span class="${className} btn btn-default"><a href="#" role="button" data-rating-action="${value}" title="${escapeAttr(label)}" aria-label="${escapeAttr(label)}" aria-pressed="${state.currentVote === value}" aria-disabled="${!state.canVote}" tabindex="${state.canVote ? 0 : -1}">${glyph}</a></span>`,
+      `<span class="${className} btn btn-default"><a href="#" role="button" data-rating-action="${value}" title="${escapeAttr(label)}" aria-label="${escapeAttr(label)}" aria-pressed="${state.currentVote === value}" aria-disabled="${!state.canVote}" tabindex="${state.canVote ? 0 : -1}">${escapeHtml(state.voteLabels?.[value] ?? glyph)}</a></span>`,
     );
   }
   if (state.canCancel) {

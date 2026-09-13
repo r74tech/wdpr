@@ -173,7 +173,7 @@ function updateWidget(widget: HTMLElement, state: RatingState): void {
     wrapper.className = `${className} btn btn-default`;
     button.href = "#";
     button.setAttribute("role", "button");
-    button.textContent = glyph;
+    button.textContent = value === "cancel" ? glyph : (state.voteLabels?.[value] ?? glyph);
     button.dataset.ratingAction = String(value);
     button.title = title ?? glyph;
     button.setAttribute("aria-label", title ?? glyph);

@@ -1,5 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { compileTemplate } from "../../../../packages/parser/src/parser/rules/block/module/listpages/compiler";
+import { parse } from "@wdprlib/parser";
+import { extractReadableText } from "@wdprlib/ast";
 import type {
   VariableContext,
   PageData,
@@ -228,6 +230,37 @@ describe("compileTemplate", () => {
   });
 
   describe("content variables", () => {
+    it.each([
+      [String.raw`%%excerpt{pattern="(\d{2})" group="1" match="2"}%%`, "id12 id34", "34"],
+      ['%%excerpt{pattern="(})" group="1"}%%', "before } after", "}"],
+      ['%%excerpt{pattern="(%%title%%)" group="1"}%%', "before %%title%% after", "%%title%%"],
+      [String.raw`%%excerpt{pattern="(a\"b)" group="1"}%%`, 'a"b', 'a"b'],
+      [String.raw`%%excerpt{pattern='(a\\b)' group='1'}%%`, "a\\b", "a\\b"],
+      ['%%EXCERPT{pattern="(hello)" group="1" flags="i" max="3"}%%', "Hello", "Hel"],
+    ])(
+      "parses regex excerpt arguments without consuming other variables: %s",
+      (syntax, readableText, expected) => {
+        const fn = compileTemplate(`${syntax} / %%title%%`);
+        expect(extractReadableText(parse(fn(createContext({ readableText }))).ast)).toBe(
+          `${expected} / Test Page`,
+        );
+      },
+    );
+
+    it.each([
+      'pattern="("',
+      'pattern="a" pattern="b"',
+      'pattern="a" match="0"',
+      'pattern="a" match="2.5"',
+      'pattern="a" max=""',
+      'pattern="a" max="-1"',
+      'pattern="a" unknown="1"',
+      'match="2"',
+    ])("invalid excerpt arguments produce no text: %s", (args) => {
+      const fn = compileTemplate(`%%excerpt{${args}}%%`);
+      expect(fn(createContext({ readableText: "a", content: "RAW FALLBACK" }))).toBe("");
+    });
+
     it("should substitute %%content%%", () => {
       const fn = compileTemplate("%%content%%");
       const ctx = createContext({ content: "Full page content here." });
@@ -237,15 +270,15 @@ describe("compileTemplate", () => {
     it("should substitute %%preview%%", () => {
       const fn = compileTemplate("%%preview%%");
       const content = "A".repeat(300);
-      const ctx = createContext({ content });
-      expect(fn(ctx)).toBe("A".repeat(200));
+      const ctx = createContext({ readableText: content });
+      expect(extractReadableText(parse(fn(ctx)).ast)).toBe("A".repeat(200));
     });
 
     it("should substitute %%preview(50)%%", () => {
       const fn = compileTemplate("%%preview(50)%%");
       const content = "B".repeat(100);
-      const ctx = createContext({ content });
-      expect(fn(ctx)).toBe("B".repeat(50));
+      const ctx = createContext({ readableText: content });
+      expect(extractReadableText(parse(fn(ctx)).ast)).toBe("B".repeat(50));
     });
 
     it("should substitute %%content{1}%%", () => {

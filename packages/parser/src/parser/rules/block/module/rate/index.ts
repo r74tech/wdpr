@@ -1,28 +1,25 @@
-/**
- *
- * Parser rule for the Wikidot `[[module Rate]]` block.
- *
- * Renders a page rating widget. This is a simple module with no attributes
- * and no body content.
- *
- * @module
- */
-
+import type { CustomRateModuleData, RateModuleData } from "@wdprlib/ast";
 import type { ModuleRule } from "../types";
-import type { RateModuleData } from "./types";
 
-/**
- * Module rule for `[[module Rate]]`.
- *
- * Simply produces a `{ module: "rate" }` AST node. The rendering application
- * is responsible for displaying upvote/downvote buttons and the current rating.
- */
+/** The main rating accepts no page, axis, policy, or permission attributes. */
 export const rateModuleRule: ModuleRule = {
   name: "module-rate",
   acceptsNames: ["rate"],
   hasBody: false,
+  parse(_ctx, _pos, args): RateModuleData {
+    return { module: "rate", ref: Object.keys(args).length === 0 ? { kind: "main" } : null };
+  },
+};
 
-  parse(): RateModuleData {
-    return { module: "rate" };
+/** Reference an exact, host-registered key on the displayed page. */
+export const customRateModuleRule: ModuleRule = {
+  name: "module-custom-rate",
+  acceptsNames: ["customrate"],
+  hasBody: false,
+  parse(_ctx, _pos, args): CustomRateModuleData {
+    const key = args.key;
+    const valid =
+      key !== undefined && key !== "" && Object.keys(args).every((name) => name === "key");
+    return { module: "custom-rate", ref: valid ? { kind: "custom", axisKey: key } : null };
   },
 };

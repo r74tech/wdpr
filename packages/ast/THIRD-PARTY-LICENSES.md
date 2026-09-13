@@ -10,3 +10,11 @@ Portions of this package's AST data structures were adapted from or based on the
 - License: GNU Affero General Public License, version 3 or later
 
 The GNU Affero General Public License version 3 is reproduced in [LICENSE](LICENSE). The upstream project permits use under version 3 or any later version.
+
+## RE2JS
+
+- Source: <https://github.com/le0pard/re2js>
+- Copyright notice: Copyright (c) 2023 Oleksii Vasyliev
+- License: MIT
+
+RE2JS provides the regular expression engine used for text excerpts. Its license is reproduced in [licenses/re2js-MIT.txt](licenses/re2js-MIT.txt).

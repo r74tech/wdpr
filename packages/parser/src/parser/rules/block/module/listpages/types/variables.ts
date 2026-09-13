@@ -2,6 +2,10 @@
  * All supported ListPages template variables.
  */
 export type ListPagesVariable =
+  | "metadata"
+  | "customrate"
+  | "customrate_votes"
+  | "customrate_percent"
   // Lifecycle - created
   | "created_at"
   | "created_by"
@@ -38,6 +42,7 @@ export type ListPagesVariable =
   | "content_n"
   | "preview"
   | "preview_n"
+  | "excerpt"
   | "summary"
   | "first_paragraph"
   // Tags

@@ -6,6 +6,10 @@ import {
 } from "./parameterized";
 import { SIMPLE_GETTERS } from "./simple";
 import type { VariableGetter } from "./types";
+import { createRegisteredGetter } from "./registered";
+import { compileTextExcerpt } from "@wdprlib/ast";
+import { literalWikitext } from "../literal";
+import { parseExcerptOptions } from "../excerpt";
 
 /**
  * Create a getter function for a specific template variable.
@@ -20,8 +24,18 @@ export function createVariableGetter(
   parenParam?: string,
   format?: string,
 ): VariableGetter {
+  if (name === "excerpt") {
+    const options = braceParam === undefined ? null : parseExcerptOptions(braceParam);
+    if (!options || parenParam !== undefined || format !== undefined) return () => "";
+    const extract = compileTextExcerpt(options);
+    return (ctx) => literalWikitext(extract(ctx.page.readableText ?? ""));
+  }
+  const registeredGetter =
+    braceParam !== undefined ? createRegisteredGetter(name, braceParam, format) : null;
+  if (registeredGetter) return registeredGetter;
   const braceGetter = braceParam !== undefined ? createBraceParamGetter(name, braceParam) : null;
   if (braceGetter) return braceGetter;
+  if (braceParam !== undefined) return () => "";
 
   const parenGetter = parenParam !== undefined ? createParenParamGetter(name, parenParam) : null;
   if (parenGetter) return parenGetter;

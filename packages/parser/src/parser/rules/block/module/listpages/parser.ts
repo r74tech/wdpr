@@ -78,6 +78,7 @@ export const listPagesModuleRule: ModuleRule = {
       "created-at": createdAt,
       "updated-at": updatedAt,
       rating,
+      "rating-axis": args["rating-axis"],
       votes,
       name,
       fullname,

@@ -54,7 +54,8 @@ export function renderModule(ctx: RenderContext, data: Module): void {
       renderPageTree(ctx, data);
       break;
     case "rate":
-      renderRate(ctx);
+    case "custom-rate":
+      renderRate(ctx, data);
       break;
     case "list-users":
       renderListUsers(ctx, data);

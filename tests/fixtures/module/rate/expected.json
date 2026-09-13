@@ -3,13 +3,19 @@
     {
       "element": "module",
       "data": {
-        "module": "rate"
+        "module": "rate",
+        "ref": {
+          "kind": "main"
+        }
       }
     },
     {
       "element": "module",
       "data": {
-        "module": "rate"
+        "module": "rate",
+        "ref": {
+          "kind": "main"
+        }
       }
     },
     {
@@ -23,7 +29,10 @@
           {
             "element": "module",
             "data": {
-              "module": "rate"
+              "module": "rate",
+              "ref": {
+                "kind": "main"
+              }
             }
           }
         ]

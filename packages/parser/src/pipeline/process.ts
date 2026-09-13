@@ -1,5 +1,8 @@
 import {
   DEFAULT_SETTINGS,
+  extractReadableText,
+  extractFirstParagraph,
+  countCharacters,
   type Diagnostic,
   type PageRef,
   type WikitextPageContext,
@@ -10,6 +13,7 @@ import type { AsyncIncludeFetcher, IncludeDependency } from "../parser/rules/blo
 import { resolveIncludesAsyncWithTraceSelective } from "../parser/rules/block/module/include/resolve";
 import type { DataProvider } from "../parser/rules/block/module/types-common";
 import { resolveModulesWithAsyncParse } from "../parser/rules/block/module/resolution/resolve-async";
+import { resolveRatings } from "../parser/rules/block/module/rate/resolve";
 import type {
   ProcessedWikitextDocument,
   ProcessWikitextCallbackContext,
@@ -117,8 +121,14 @@ export async function processWikitext<TPage extends WikitextPageContext>(
     );
   }
 
+  ast = await resolveRatings(ast, dataProvider.fetchRatings);
+  const readableText = extractReadableText(ast, options.readableText);
+
   return {
     ast,
+    readableText,
+    firstParagraph: extractFirstParagraph(ast, options.readableText),
+    characterCount: countCharacters(readableText),
     page: options.page,
     settings,
     diagnostics,
@@ -167,6 +177,9 @@ function createModuleDataProvider<TPage extends WikitextPageContext>(
 ): DataProvider {
   const provider = options.dataProvider;
   return {
+    fetchRatings: provider?.fetchRatings
+      ? (refs) => provider.fetchRatings!(refs, context)
+      : undefined,
     fetchListPages: provider?.fetchListPages
       ? (query, requirement) => provider.fetchListPages!(query, requirement, context)
       : undefined,

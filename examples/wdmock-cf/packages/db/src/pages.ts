@@ -3,7 +3,7 @@
  */
 
 import type { PageData } from "@wdprlib/parser";
-import { getUserInfo, buildFullname } from "@wdmock/shared";
+import { getUserInfo, buildFullname, SITE } from "@wdmock/shared";
 
 export interface PageApiData {
   page_id: number;
@@ -19,15 +19,16 @@ export async function findPage(
 ): Promise<PageApiData | null> {
   return db
     .prepare(
-      "SELECT page_id, title, source, is_locked FROM pages WHERE category = ? AND unix_name = ?",
+      "SELECT page_id, title, source, is_locked FROM pages WHERE site_id = ? AND category = ? AND unix_name = ?",
     )
-    .bind(category, name)
+    .bind(SITE.id, category, name)
     .first<PageApiData>();
 }
 
 export async function getAllPageSources(db: D1Database): Promise<Map<string, string>> {
   const result = await db
-    .prepare("SELECT category, unix_name, source FROM pages")
+    .prepare("SELECT category, unix_name, source FROM pages WHERE site_id = ?")
+    .bind(SITE.id)
     .all<{ category: string; unix_name: string; source: string }>();
 
   const map = new Map<string, string>();
@@ -47,9 +48,9 @@ export async function createPage(
   const result = await db
     .prepare(
       `INSERT INTO pages (site_id, category, unix_name, title, source, owner_user_id)
-       VALUES (1, ?, ?, ?, ?, 2)`,
+       VALUES (?, ?, ?, ?, ?, 2)`,
     )
-    .bind(category, name, title, source)
+    .bind(SITE.id, category, name, title, source)
     .run();
   return result.meta.last_row_id as number;
 }
@@ -97,9 +98,8 @@ export function rowToPageData(row: Record<string, unknown>, pageTags: string[]):
     hiddenTags,
     children: 0,
     comments: 0,
-    size: (row.source_size as number | undefined) ?? ((row.source as string) || "").length,
     rating: (row.rate as number) || 0,
-    ratingVotes: 0,
+    ratingVotes: (row.rating_votes as number | undefined) ?? 0,
     revisions: 1,
     content: (row.source as string) || undefined,
   };

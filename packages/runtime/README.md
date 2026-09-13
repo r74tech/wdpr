@@ -17,12 +17,13 @@ import type { WdprRuntime, RuntimeOptions } from "@wdprlib/runtime";
 // Initialize after DOM is ready
 const runtime: WdprRuntime = initWdprRuntime({
   root: document.getElementById("page-content") as HTMLElement,
-  onRate: async (pageId, points) => {
+  onRate: async (ref, action) => {
     const res = await fetch("/api/rate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ page_id: pageId, points }),
+      body: JSON.stringify({ page_id: currentPageId, ref, action }),
     });
+    if (!res.ok) throw new Error("Vote submission failed");
     return res.json();
   },
 });

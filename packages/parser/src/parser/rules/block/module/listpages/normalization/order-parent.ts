@@ -3,7 +3,7 @@ import type { NormalizedOrder, NormalizedParent, OrderDirection, OrderField } fr
 /**
  * Mapping from Wikidot's order field names to normalized OrderField values.
  */
-const ORDER_FIELD_MAP: Record<string, OrderField> = {
+const ORDER_FIELD_MAP: Record<string, Exclude<OrderField, "metadata">> = {
   datecreated: "created_at",
   dateedited: "updated_at",
   title: "title",
@@ -12,6 +12,7 @@ const ORDER_FIELD_MAP: Record<string, OrderField> = {
   votes: "votes",
   revisions: "revisions",
   comments: "comments",
+  commented_at: "commented_at",
   pagelength: "size",
   size: "size",
   random: "random",
@@ -23,6 +24,13 @@ const ORDER_FIELD_MAP: Record<string, OrderField> = {
  * Parse order string into structured format.
  */
 export function parseOrder(value: string): NormalizedOrder {
+  const metadata = /^metadata\{([^}]*)\}(?:\s+(asc|desc))?$/i.exec(value.trim());
+  if (metadata)
+    return {
+      field: "metadata",
+      key: metadata[1]!,
+      direction: metadata[2]?.toLowerCase() === "asc" ? "asc" : "desc",
+    };
   const defaultOrder: NormalizedOrder = { field: "created_at", direction: "desc" };
   const trimmed = value.trim().toLowerCase();
   if (!trimmed) return defaultOrder;

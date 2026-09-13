@@ -24,6 +24,12 @@ export interface ListPagesDataRequirement {
 
   /** Field names needed for form_data{field} etc. */
   formFields?: string[];
+  /** Exact metadata keys used by display templates. Also validate query.order on the host. */
+  metadataKeys?: string[];
+  /** Exact custom rating keys needed for display, independent of query.ratingAxis. */
+  customRateKeys?: string[];
+  /** Supply PageData.readableText and firstParagraph for previews, excerpts, and summaries. */
+  needsReadableText?: boolean;
 
   /** Prefix for tags_linked|prefix */
   tagsLinkPrefix?: string;

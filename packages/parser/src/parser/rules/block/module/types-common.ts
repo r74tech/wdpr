@@ -17,6 +17,7 @@ import type { ListUsersDataFetcher } from "./listusers/types";
 import type { TagCloudDataFetcher } from "./tagcloud/types";
 import type { IfTagsResolver } from "./iftags/types";
 import type { IncludeFetcher } from "./include/resolve/types";
+import type { RatingsFetcher } from "./rate/types";
 
 /**
  * Callback bag for supplying external data during module resolution.
@@ -29,6 +30,9 @@ import type { IncludeFetcher } from "./include/resolve/types";
  * @group Module Resolution
  */
 export interface DataProvider {
+  /** Read registered ratings for the displayed page; omitted references stay hidden. */
+  fetchRatings?: RatingsFetcher;
+
   /**
    * Fetch page data for `[[module ListPages]]` expansion.
    *

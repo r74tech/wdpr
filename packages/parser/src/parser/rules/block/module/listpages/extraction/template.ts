@@ -19,6 +19,8 @@ export interface TemplateExtraction {
   contentIndices: number[];
   previewLengths: number[];
   formFields: string[];
+  metadataKeys: string[];
+  customRateKeys: string[];
   tagsLinkPrefix?: string;
   hiddenTagsLinkPrefix?: string;
 }
@@ -31,6 +33,8 @@ export function extractVariablesFromTemplate(template: string): TemplateExtracti
   const contentIndices = new Set<number>();
   const previewLengths = new Set<number>();
   const formFields = new Set<string>();
+  const metadataKeys = new Set<string>();
+  const customRateKeys = new Set<string>();
   let tagsLinkPrefix: string | undefined;
   let hiddenTagsLinkPrefix: string | undefined;
 
@@ -39,6 +43,16 @@ export function extractVariablesFromTemplate(template: string): TemplateExtracti
 
     if (match.braceParam !== undefined) {
       switch (varName) {
+        case "metadata":
+          metadataKeys.add(match.braceParam);
+          variables.add("metadata");
+          continue;
+        case "customrate":
+        case "customrate_votes":
+        case "customrate_percent":
+          customRateKeys.add(match.braceParam);
+          variables.add(varName);
+          continue;
         case "content":
           contentIndices.add(Number(match.braceParam));
           variables.add("content_n");
@@ -90,6 +104,8 @@ export function extractVariablesFromTemplate(template: string): TemplateExtracti
     contentIndices: Array.from(contentIndices).sort((a, b) => a - b),
     previewLengths: Array.from(previewLengths).sort((a, b) => a - b),
     formFields: Array.from(formFields).sort(),
+    metadataKeys: [...metadataKeys].sort(),
+    customRateKeys: [...customRateKeys].sort(),
     tagsLinkPrefix,
     hiddenTagsLinkPrefix,
   };

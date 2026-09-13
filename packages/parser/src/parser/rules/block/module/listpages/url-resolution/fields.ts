@@ -36,6 +36,7 @@ type StringUrlQueryKey = Extract<
   | "updatedAt"
   | "createdBy"
   | "rating"
+  | "ratingAxis"
   | "votes"
 >;
 
@@ -81,6 +82,7 @@ export const URL_RESOLVABLE_FIELDS: readonly UrlResolvableField[] = [
     aliases: ["createdby", "created_by"],
   },
   { attr: "rating", queryKey: "rating", type: "string" },
+  { attr: "rating-axis", queryKey: "ratingAxis", type: "string" },
   { attr: "votes", queryKey: "votes", type: "string" },
   { attr: "reverse", queryKey: "reverse", type: "boolean" },
 ];

@@ -61,6 +61,28 @@ describe("readable text", () => {
     ).toBe("本文\n\n本文注");
   });
 
+  test("resolved include children contribute text and preserve later footnote associations", () => {
+    const ast = parse(
+      "展開済み本文。[[footnote]]包含注[[/footnote]]\n\n後続[[footnote]]後続注[[/footnote]]",
+    ).ast;
+    const included = ast.elements.shift()!;
+    ast.elements.unshift({
+      element: "include",
+      data: {
+        "paragraph-safe": false,
+        variables: {},
+        location: { site: null, page: "component" },
+        elements: [included],
+      },
+    });
+    const text = extractReadableText(ast);
+    expect(text).toBe("展開済み本文。\n\n後続\n\n包含注\n\n後続注");
+    expect(countCharacters(text)).toBe(21);
+    expect(extractReadableText(ast, { exclude: (element) => element.element === "include" })).toBe(
+      "後続\n\n後続注",
+    );
+  });
+
   test("anchor text and footnotes preserve their association when a link is excluded", async () => {
     const document = await processWikitext(
       '[[a href="/x"]]表示名[[footnote]]リンク注[[/footnote]][[/a]]\n\n本文[[footnote]]本文注[[/footnote]]',

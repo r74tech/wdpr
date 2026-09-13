@@ -106,6 +106,7 @@ export function extractReadableText(ast: SyntaxTree, options: ReadableTextOption
         }
         case "color":
         case "anchor":
+        case "include":
           visit(element.data.elements, omit);
           break;
         case "collapsible":

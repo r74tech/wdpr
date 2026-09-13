@@ -12,6 +12,7 @@ import type {
   NormalizedListPagesQuery,
   ListPagesExternalData,
   ListPagesDataRequirement,
+  PageData,
 } from "@wdprlib/parser";
 import { renderWikitext } from "@wdprlib/render";
 import { SITE, parseFullname } from "@wdmock/shared";
@@ -287,21 +288,11 @@ async function queryListPages(
         const selectedTags = selectedTagsByPage.get(pageId);
         const tags = selectedTags ?? [...page.tags, ...page.hiddenTags];
         const content = includeAllContent ? page.content : contentByPage.get(pageId);
-        const document =
+        const readableData =
           (requirement.needsReadableText || requirement.neededVariables.includes("size")) &&
           content !== undefined
-            ? await processWikitext(content, {
-                page: { fullName: page.fullname, tags, site: SITE.name },
-                dataProvider: { fetchInclude: (reference) => getIncludeSource(db, reference) },
-              })
-            : undefined;
-        const remaining = document ? extractDataRequirements(document.ast).requirements : undefined;
-        const completeText =
-          document &&
-          document.diagnostics.length === 0 &&
-          remaining?.listPages.length === 0 &&
-          remaining.listUsers.length === 0 &&
-          remaining.tagCloud.length === 0;
+            ? await readPageText(db, page, content, tags)
+            : {};
         return {
           ...page,
           customRates: Object.fromEntries(
@@ -312,14 +303,61 @@ async function queryListPages(
           tags: selectedTags?.filter((tag) => !tag.startsWith("_")) ?? page.tags,
           hiddenTags: selectedTags?.filter((tag) => tag.startsWith("_")) ?? page.hiddenTags,
           content,
-          readableText: completeText ? document.readableText : undefined,
-          firstParagraph: completeText ? document.firstParagraph : undefined,
-          size: completeText ? document.characterCount : undefined,
+          ...readableData,
         };
       }),
     ),
     totalCount: matchedPages.length,
     site: SITE,
+  };
+}
+
+async function readPageText(
+  db: D1Database,
+  page: PageData,
+  content: string,
+  tags: string[],
+): Promise<Pick<PageData, "readableText" | "firstParagraph" | "size">> {
+  let unresolvedInclude = false;
+  const document = await processWikitext(content, {
+    page: { fullName: page.fullname, tags, site: SITE.name },
+    dataProvider: {
+      fetchInclude: async (reference) => {
+        const source = await getIncludeSource(db, reference).catch(() => null);
+        if (source === null) unresolvedInclude = true;
+        return source;
+      },
+    },
+    readableText: {
+      exclude: (element) => {
+        if (element.element === "include" && element.data.elements.length === 0) {
+          unresolvedInclude = true;
+          return true;
+        }
+        return false;
+      },
+    },
+  });
+  const remaining = extractDataRequirements(document.ast).requirements;
+  // Recovered syntax warnings still have readable text; incomplete expansion does not.
+  if (
+    unresolvedInclude ||
+    document.diagnostics.some(
+      ({ severity, code }) =>
+        severity === "error" ||
+        code === "include-resolution-limit" ||
+        code === "module-resolution-limit",
+    ) ||
+    remaining.listPages.length > 0 ||
+    remaining.listUsers.length > 0 ||
+    remaining.tagCloud.length > 0
+  ) {
+    return {};
+  }
+  return {
+    readableText: document.readableText,
+    firstParagraph: document.firstParagraph,
+    size: document.characterCount,
   };
 }
 

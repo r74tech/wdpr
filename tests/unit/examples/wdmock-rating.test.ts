@@ -171,6 +171,42 @@ test("ListPages summaries use the first body paragraph after an included heading
   ).toBe("FIRST:最初の段落。 / SUMMARY:最初の段落。");
 });
 
+test("ListPages keeps readable text recovered from an unclosed code block", async () => {
+  sqlite
+    .query("UPDATE pages SET source = ? WHERE page_id = 3")
+    .run("本文。\n\n[[code]]\nconst x = 1;");
+  expect(
+    await renderText(
+      '[[module ListPages name="plain"]]\nPREVIEW:%%preview%% / SIZE:%%size%% / FIRST:%%first_paragraph%%\n[[/module]]',
+    ),
+  ).toBe("PREVIEW:本文。\n\nconst x = 1; / SIZE:17 / FIRST:本文。");
+});
+
+test.each([
+  "[[include missing]]",
+  "[[module ListPages]]\n%%title%%\n[[/module]]",
+  "[[module ListUsers]]",
+  "[[module TagCloud]]",
+])("ListPages leaves incomplete text unavailable: %s", async (unresolved) => {
+  sqlite.query("UPDATE pages SET source = ? WHERE page_id = 3").run(`本文。\n\n${unresolved}`);
+  expect(
+    await renderText(
+      '[[module ListPages name="plain"]]\nPREVIEW:%%preview%% / SIZE:%%size%% / FIRST:%%first_paragraph%%\n[[/module]]',
+    ),
+  ).toBe("PREVIEW: / SIZE: / FIRST:");
+});
+
+test("ListPages does not publish a partial size after the include expansion limit", async () => {
+  sqlite.exec(`UPDATE pages SET source = '本文。\n[[include included]]' WHERE page_id = 3;
+    UPDATE pages SET source = '途中。\n[[include custom]]' WHERE page_id = 2;
+    UPDATE pages SET source = '続き。\n[[include included]]' WHERE page_id = 4;`);
+  expect(
+    await renderText(
+      '[[module ListPages name="plain"]]\nPREVIEW:%%preview%% / SIZE:%%size%%\n[[/module]]',
+    ),
+  ).toBe("PREVIEW: / SIZE:");
+});
+
 test("ListPages uses the site axis before pagination while displaying independent main and custom aggregates", async () => {
   sqlite.exec(`INSERT INTO site_rating_axes (site_id, axis_key, label, allow_nv)
     VALUES (1, 'theme', 'Theme', 1), (1, 'style', 'Style', 0);

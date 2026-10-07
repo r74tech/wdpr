@@ -16,7 +16,6 @@ import type { ParseContext } from "../../types";
 import { codeBlockRule } from "../../block/code";
 import { isDivClose } from "../../block/div/close";
 import { parseDivOpen } from "../../block/div/open";
-import { htmlBlockRule } from "../../block/html";
 import { mathBlockRule } from "../../block/math";
 import { createOpaqueProbe, opaqueRuleEnd } from "../../opaque-probe";
 import { matchFootnoteCloses } from "../footnote/boundary";
@@ -25,7 +24,7 @@ import { protectedInlineRegionEnd } from "../raw/end";
 import { parseCloseSpan, parseSpanOpener } from "./syntax";
 
 // These constructs are replaced before Span in Wikidot's processing order.
-const opaqueRules = [codeBlockRule, htmlBlockRule, mathBlockRule, linkTripleRule];
+const opaqueRules = [codeBlockRule, mathBlockRule, linkTripleRule];
 
 type BoundaryKind = "open" | "close";
 

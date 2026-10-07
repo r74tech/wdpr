@@ -1,6 +1,7 @@
 import { DEFAULT_SETTINGS, type PageRef } from "@wdprlib/ast";
 import type { Token } from "../../lexer";
 import { blockFallbackRule, blockRules, inlineRules, type ParseContext } from "../rules";
+import { splitSpansAtDivBoundaries } from "../rules/inline/span/block-split";
 import type { ParserOptions } from "./options";
 
 export function createParseContext(
@@ -8,7 +9,7 @@ export function createParseContext(
   options: ParserOptions = {},
   deferInclude?: (location: PageRef) => boolean,
 ): ParseContext {
-  return {
+  const ctx: ParseContext = {
     tokens,
     pos: 0,
     version: options.version ?? "wikidot",
@@ -29,4 +30,6 @@ export function createParseContext(
       footnoteBlockParsed: false,
     },
   };
+  ctx.tokens = splitSpansAtDivBoundaries(ctx);
+  return ctx;
 }

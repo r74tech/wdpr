@@ -1,0 +1,403 @@
+{
+  "elements": [
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "span",
+                    "attributes": {
+                      "class": "k"
+                    },
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "a"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "span",
+              "attributes": {
+                "class": "k"
+              },
+              "elements": [
+                {
+                  "element": "line-break"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "span",
+                    "attributes": {
+                      "style": "color:red"
+                    },
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "b"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "span",
+              "attributes": {
+                "style": "color:red"
+              },
+              "elements": [
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "c"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "bold",
+                    "attributes": {},
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "d"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "element": "line-break"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "span",
+              "attributes": {
+                "class": "k"
+              },
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "e"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "span",
+                    "attributes": {
+                      "class": "k"
+                    },
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "f"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "span",
+              "attributes": {
+                "class": "k"
+              },
+              "elements": [
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "g"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "div",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "paragraph",
+                    "attributes": {},
+                    "elements": [
+                      {
+                        "element": "container",
+                        "data": {
+                          "type": "span",
+                          "attributes": {
+                            "class": "k"
+                          },
+                          "elements": [
+                            {
+                              "element": "text",
+                              "data": "h"
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "span",
+                    "attributes": {
+                      "class": "k"
+                    },
+                    "elements": [
+                      {
+                        "element": "line-break"
+                      },
+                      {
+                        "element": "text",
+                        "data": "i"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "span",
+              "attributes": {
+                "class": "k"
+              },
+              "elements": [
+                {
+                  "element": "line-break"
+                },
+                {
+                  "element": "text",
+                  "data": "j"
+                },
+                {
+                  "element": "line-break"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "div",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "paragraph",
+              "attributes": {},
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "k"
+                },
+                {
+                  "element": "text",
+                  "data": " "
+                },
+                {
+                  "element": "container",
+                  "data": {
+                    "type": "span",
+                    "attributes": {
+                      "class": "k"
+                    },
+                    "elements": [
+                      {
+                        "element": "text",
+                        "data": "l"
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "element": "container",
+      "data": {
+        "type": "paragraph",
+        "attributes": {},
+        "elements": [
+          {
+            "element": "container",
+            "data": {
+              "type": "span",
+              "attributes": {
+                "class": "k"
+              },
+              "elements": [
+                {
+                  "element": "text",
+                  "data": "m"
+                }
+              ]
+            }
+          },
+          {
+            "element": "text",
+            "data": " "
+          },
+          {
+            "element": "text",
+            "data": "n"
+          }
+        ]
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

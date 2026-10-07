@@ -50,6 +50,28 @@ describe("span crossing div boundaries", () => {
     expect(html).toContain("[[/div]]");
   });
 
+  test("counts indented nested divs", () => {
+    const { html } = render("[[div]]\n[[span]]a\n [[div]]\nb\n[[/div]]\nc[[/span]]\n[[/div]]");
+
+    expect(html).toBe(
+      "<div><p><span>a</span></p><div><p><span>b</span></p></div>" +
+        "<p><span><br />c</span></p></div>",
+    );
+  });
+
+  test("pairs [[/span]] with an inner span_ before the outer span", () => {
+    const source = "[[span class=outer]]a[[span_]]b\n[[div]]\nc[[/span]]\n[[/div]]\nd[[/span]]";
+    const { html } = render(source);
+
+    expect(html.match(/class="outer"/g)).toHaveLength(1);
+  });
+
+  test("skips repeated unclosed footnotes in linear time", () => {
+    const source = "[[span]]a[[/span]]\n" + "[[footnote x]]".repeat(16_000);
+
+    expect(() => parse(source)).not.toThrow();
+  }, 1_000);
+
   test("handles many spans across many divs in linear time", () => {
     const unit = '[[div]]\n[[span class="k"]]a\n[[/div]]\nb\n[[/span]]\n\n';
     const { html } = render(unit.repeat(2_000));

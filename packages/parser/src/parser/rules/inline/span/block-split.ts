@@ -16,15 +16,16 @@ import type { ParseContext } from "../../types";
 import { codeBlockRule } from "../../block/code";
 import { isDivClose } from "../../block/div/close";
 import { parseDivOpen } from "../../block/div/open";
+import { htmlBlockRule } from "../../block/html";
 import { mathBlockRule } from "../../block/math";
 import { createOpaqueProbe, opaqueRuleEnd } from "../../opaque-probe";
-import { parseFootnoteOpen } from "../footnote/open";
+import { matchFootnoteCloses } from "../footnote/boundary";
 import { linkTripleRule } from "../link-triple";
 import { protectedInlineRegionEnd } from "../raw/end";
 import { parseCloseSpan, parseSpanOpener } from "./syntax";
 
 // These constructs are replaced before Span in Wikidot's processing order.
-const opaqueRules = [codeBlockRule, mathBlockRule, linkTripleRule];
+const opaqueRules = [codeBlockRule, htmlBlockRule, mathBlockRule, linkTripleRule];
 
 type BoundaryKind = "open" | "close";
 
@@ -82,8 +83,7 @@ function findCrossingSpans(probe: ParseContext): CrossingSpan[] {
   const crossing: CrossingSpan[] = [];
   let divDepth = 0;
   let stripDepth = 0;
-  // A footnote without a close here has none at any later position either.
-  let footnoteCloseMissingFrom = tokens.length;
+  let footnoteCloses: Map<number, number> | undefined;
 
   const crossBoundary = (start: number, end: number, kind: BoundaryKind): void => {
     for (const span of stack) {
@@ -110,15 +110,13 @@ function findCrossingSpans(probe: ParseContext): CrossingSpan[] {
     if (token.type === "BLOCK_OPEN") {
       probe.pos = pos;
       // Footnote precedes Span and keeps its body out of the outer source.
-      const footnote = parseFootnoteOpen(probe);
-      if (footnote) {
-        const end =
-          footnote.bodyStart < footnoteCloseMissingFrom
-            ? footnoteCloseEnd(tokens, footnote.bodyStart)
-            : -1;
-        if (end < 0) footnoteCloseMissingFrom = Math.min(footnoteCloseMissingFrom, pos);
-        else pos = end - 1;
-        continue;
+      if (tokens[pos + 1]?.value.toLowerCase() === "footnote") {
+        footnoteCloses ??= matchFootnoteCloses(probe);
+        const end = footnoteCloses.get(pos);
+        if (end !== undefined) {
+          pos = end - 1;
+          continue;
+        }
       }
       const opener = parseSpanOpener(probe);
       if (opener.success) {
@@ -173,20 +171,6 @@ function startsLine(tokens: readonly Token[], pos: number): boolean {
   let prev = pos - 1;
   while (prev >= 0 && tokens[prev]!.type === "WHITESPACE") prev--;
   return prev < 0 || tokens[prev]!.type === "NEWLINE";
-}
-
-/** End of the first `[[/footnote]]`, or -1 when the footnote never closes. */
-function footnoteCloseEnd(tokens: readonly Token[], start: number): number {
-  for (let pos = start; pos < tokens.length; pos++) {
-    if (
-      tokens[pos]?.type === "BLOCK_END_OPEN" &&
-      tokens[pos + 1]?.value.toLowerCase() === "footnote" &&
-      tokens[pos + 2]?.type === "BLOCK_CLOSE"
-    ) {
-      return pos + 3;
-    }
-  }
-  return -1;
 }
 
 function planEdits(tokens: readonly Token[], crossing: CrossingSpan[]): Edits {

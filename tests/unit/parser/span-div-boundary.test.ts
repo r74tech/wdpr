@@ -66,6 +66,23 @@ describe("span crossing div boundaries", () => {
     expect(html.match(/class="outer"/g)).toHaveLength(1);
   });
 
+  test("finds the footnote close outside raw text", () => {
+    const source =
+      "[[span class=k]]a[[footnote]]@@[[/footnote]]@@\n[[div]]\nb\n[[/div]]\n[[/footnote]]c[[/span]]";
+    const { html, messages } = render(source);
+
+    expect(html).toContain("<div><p>b</p></div>");
+    expect(messages).toEqual([]);
+  });
+
+  test("ignores div tags inside an html block", () => {
+    const source =
+      "[[div]]\n[[span class=k]]a\n[[html]]\n[[/div]]\n[[/html]]\nb[[/span]]\n[[/div]]";
+    const { html } = render(source);
+
+    expect(html.match(/class="k"/g)).toHaveLength(1);
+  });
+
   test("skips repeated unclosed footnotes in linear time", () => {
     const source = "[[span]]a[[/span]]\n" + "[[footnote x]]".repeat(16_000);
 

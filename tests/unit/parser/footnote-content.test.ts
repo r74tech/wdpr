@@ -155,6 +155,17 @@ test("nested footnote boundaries preserve the existing registration order", () =
   expect(renderToHtml(ast)).toContain(">1</a></sup>after</p>");
 });
 
+test("footnotes nested beyond the limit stay as text", () => {
+  const { ast } = parse("[[footnote]]".repeat(65) + "x" + "[[/footnote]]".repeat(65));
+  expect(ast.footnotes).toHaveLength(64);
+  expect(renderToHtml(ast)).toContain("[[footnote]]x[[/footnote]]");
+});
+
+test("many unclosed footnotes parse without overflowing the stack", () => {
+  const { ast } = parse("[[footnote]]".repeat(16_000));
+  expect(ast.footnotes).toHaveLength(64);
+}, 5_000);
+
 test.each([
   ["[[html]]hidden[[/footnote]][[/html]]\nend", 1],
   ["[[html]]hidden\n\nend", 2],

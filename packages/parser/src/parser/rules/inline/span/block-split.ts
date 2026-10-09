@@ -182,7 +182,6 @@ function findNextHtmlCloses(probe: ParseContext): Int32Array {
   const tokens = probe.tokens;
   const ends = new Int32Array(tokens.length + 1).fill(-1);
   for (let pos = tokens.length - 1; pos >= 0; pos--) {
-    probe.pos = pos;
     if (!isHtmlCloseAt(probe, pos)) {
       ends[pos] = ends[pos + 1]!;
       continue;

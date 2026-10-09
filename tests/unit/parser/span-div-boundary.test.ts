@@ -90,6 +90,13 @@ describe("span crossing div boundaries", () => {
     expect(html.endsWith("<p>b</p>")).toBe(true);
   });
 
+  test("keeps the span when an unclosed [[html]] follows", () => {
+    const source = "[[span class=k]]a\n[[div]]\nb\n[[html]]\nc[[/span]]\n[[/div]]";
+    const { html } = render(source);
+
+    expect(html).toContain('<div><p><span class="k">b<br />[[html]]<br />c</span></p></div>');
+  });
+
   test("skips repeated unclosed footnotes in linear time", () => {
     const source = "[[span]]a[[/span]]\n" + "[[footnote x]]".repeat(16_000);
 

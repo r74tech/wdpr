@@ -75,6 +75,21 @@ describe("span crossing div boundaries", () => {
     expect(messages).toEqual([]);
   });
 
+  test("ignores div tags inside an html block", () => {
+    const source =
+      "[[div]]\n[[span class=k]]a\n[[html]]\n[[/div]]\n[[/html]]\nb[[/span]]\n[[/div]]";
+    const { html } = render(source);
+
+    expect(html.match(/class="k"/g)).toHaveLength(1);
+  });
+
+  test("does not treat an inline [[html]] as a block", () => {
+    const source = "[[div]]\n[[span class=k]]a x[[html]][[/span]][[/html]]\n[[/div]]\nb[[/span]]";
+    const { html } = render(source);
+
+    expect(html.endsWith("<p>b</p>")).toBe(true);
+  });
+
   test("skips repeated unclosed footnotes in linear time", () => {
     const source = "[[span]]a[[/span]]\n" + "[[footnote x]]".repeat(16_000);
 

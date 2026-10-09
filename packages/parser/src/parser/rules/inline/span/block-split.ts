@@ -15,6 +15,8 @@ import type { Token } from "../../../../lexer";
 import type { ParseContext } from "../../types";
 import { codeBlockRule } from "../../block/code";
 import { isDivClose } from "../../block/div/close";
+import { isHtmlCloseAt } from "../../block/html/body";
+import { parseHtmlOpen } from "../../block/html/open";
 import { parseDivOpen } from "../../block/div/open";
 import { mathBlockRule } from "../../block/math";
 import { createOpaqueProbe, opaqueRuleEnd } from "../../opaque-probe";
@@ -83,6 +85,7 @@ function findCrossingSpans(probe: ParseContext): CrossingSpan[] {
   let divDepth = 0;
   let stripDepth = 0;
   let footnoteCloses: Map<number, number> | undefined;
+  let htmlCloses: Int32Array | undefined;
 
   const crossBoundary = (start: number, end: number, kind: BoundaryKind): void => {
     for (const span of stack) {
@@ -113,6 +116,15 @@ function findCrossingSpans(probe: ParseContext): CrossingSpan[] {
         footnoteCloses ??= matchFootnoteCloses(probe);
         const end = footnoteCloses.get(pos);
         if (end !== undefined) {
+          pos = end - 1;
+          continue;
+        }
+      }
+      // An HTML block keeps its body verbatim, but only where a block can start.
+      if (startsLine(tokens, pos) && parseHtmlOpen(probe, pos)) {
+        htmlCloses ??= findNextHtmlCloses(probe);
+        const end = htmlCloses[pos]!;
+        if (end >= 0) {
           pos = end - 1;
           continue;
         }
@@ -163,6 +175,23 @@ function findCrossingSpans(probe: ParseContext): CrossingSpan[] {
   }
 
   return crossing;
+}
+
+/** End of the first `[[/html]]` at or after each position, or -1 when none follows. */
+function findNextHtmlCloses(probe: ParseContext): Int32Array {
+  const tokens = probe.tokens;
+  const ends = new Int32Array(tokens.length + 1).fill(-1);
+  for (let pos = tokens.length - 1; pos >= 0; pos--) {
+    probe.pos = pos;
+    if (!isHtmlCloseAt(probe, pos)) {
+      ends[pos] = ends[pos + 1]!;
+      continue;
+    }
+    let end = pos + 1;
+    while (tokens[end] && tokens[end]!.type !== "BLOCK_CLOSE") end++;
+    ends[pos] = end + 1;
+  }
+  return ends;
 }
 
 /** Div opens where block parsing can start: after indentation at most. */

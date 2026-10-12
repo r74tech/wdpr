@@ -45,15 +45,14 @@ export function parseIncludeDirective(inner: string): {
  * Substitute `{$key}` placeholders in assignment order.
  *
  * A value may contain a later placeholder, so chained assignments can double
- * the content at each step. Returns null instead of building a result longer
- * than `maxLength`.
+ * the content at each step. Returns null instead of building an intermediate
+ * result longer than `maxLength`; the caller checks the final length.
  */
 export function substituteVariables(
   content: string,
   assignments: readonly IncludeAssignment[],
   maxLength: number = Number.POSITIVE_INFINITY,
 ): string | null {
-  if (content.length > maxLength) return null;
   if (assignments.length === 0) return content;
   if (!content.includes("{$")) return content;
 

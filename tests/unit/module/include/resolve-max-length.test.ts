@@ -79,6 +79,12 @@ describe("include expansion length limit", () => {
     expect(traced.source.startsWith("[[include p")).toBe(true);
   }, 2_000);
 
+  test("allows substitution that shrinks the content below the limit", () => {
+    expect(resolveIncludes("[[include p |a=x]]", () => "{$a}{$a}{$a}", { maxLength: 5 })).toBe(
+      "xxx",
+    );
+  });
+
   test("stops starting async fetches once fetched text exceeds the limit", async () => {
     const source = Array.from({ length: 20 }, (_, i) => `[[include p${i}]]`).join("\n");
     let calls = 0;

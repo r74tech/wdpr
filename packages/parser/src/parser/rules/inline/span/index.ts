@@ -33,11 +33,16 @@ function refId(value: object | undefined): number {
   return id;
 }
 
-/** Null when the scope carries mutable table state, which makes failures non-repeatable. */
+/**
+ * Null when the scope carries mutable table state, which makes failures non-repeatable.
+ * Settings and version are included because callers may parse one token array more than once.
+ */
 function failureKey(ctx: ParseContext): string | null {
   const scope = ctx.scope;
   if (scope.tableFormatting) return null;
   return [
+    refId(ctx.settings),
+    ctx.version,
     ctx.pos,
     scope.inlineEnd ?? -1,
     scope.suppressEmailLinks === true ? 1 : 0,

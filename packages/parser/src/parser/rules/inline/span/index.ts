@@ -11,6 +11,48 @@ import { buildSpanElements } from "./elements";
 import { parseCloseSpan, parseSpanOpener } from "./syntax";
 import { parseSpanContent } from "./content";
 
+/**
+ * Span openers already known to have no closing tag under an identical scope.
+ *
+ * Formatting that spans across `[[/span]]` can make a span consume later
+ * paragraphs, and every failed attempt is retried by each enclosing rule.
+ * Without this cache, `[[span]]**a[[/span]][[span]]b**[[/span]]` repeated
+ * n times fails 2^n - 1 times at only n distinct positions.
+ */
+const failedSpans = new WeakMap<ParseContext["tokens"], Set<string>>();
+const scopeRefIds = new WeakMap<object, number>();
+let nextScopeRefId = 1;
+
+function refId(value: object | undefined): number {
+  if (value === undefined) return 0;
+  let id = scopeRefIds.get(value);
+  if (id === undefined) {
+    id = nextScopeRefId++;
+    scopeRefIds.set(value, id);
+  }
+  return id;
+}
+
+/**
+ * Null when the scope carries mutable table state, which makes failures non-repeatable.
+ * Settings and version are included because callers may parse one token array more than once.
+ */
+function failureKey(ctx: ParseContext): string | null {
+  const scope = ctx.scope;
+  if (scope.tableFormatting) return null;
+  return [
+    refId(ctx.settings),
+    ctx.version,
+    ctx.pos,
+    scope.inlineEnd ?? -1,
+    scope.suppressEmailLinks === true ? 1 : 0,
+    refId(scope.blockCloseCondition),
+    refId(scope.excludedBlockNames),
+    scope.divClosesBudget ?? -1,
+    scope.footnoteBlockParsed ? 1 : 0,
+  ].join(":");
+}
+
 export const spanRule: InlineRule = {
   name: "span",
   startTokens: ["BLOCK_OPEN"],
@@ -26,8 +68,18 @@ export const spanRule: InlineRule = {
       return { success: false };
     }
 
+    const key = failureKey(ctx);
+    const failed = failedSpans.get(ctx.tokens);
+    if (key !== null && failed?.has(key)) {
+      return { success: false };
+    }
+
     const content = parseSpanContent(ctx, opener.pos, opener.blockName);
     if (!content.foundClose) {
+      if (key !== null) {
+        if (failed) failed.add(key);
+        else failedSpans.set(ctx.tokens, new Set([key]));
+      }
       ctx.diagnostics.push({
         severity: "warning",
         code: "unclosed-block",

@@ -11,6 +11,10 @@ import type {
 
 const MAYBE_INCLUDE_PATTERN = /\[\[include\s/i;
 
+/** Returned when an iteration's result would exceed the length limit. */
+const OVER_LIMIT = Symbol("include expansion over limit");
+type IterationSource = string | typeof OVER_LIMIT;
+
 /**
  * Iteratively expand all `[[include]]` directives in source text.
  *
@@ -22,12 +26,13 @@ export function expandIterative(
   source: string,
   fetcher: IncludeFetcher,
   maxIterations: number,
+  maxLength: number,
 ): string {
   let current = source;
   const replacementCache = new Map<string, string>();
   for (let i = 0; i < maxIterations; i++) {
-    const expanded = expandOneIteration(current, fetcher, replacementCache);
-    if (expanded === null || expanded === current) break;
+    const expanded = expandOneIteration(current, fetcher, replacementCache, maxLength);
+    if (expanded === null || expanded === OVER_LIMIT || expanded === current) break;
     current = expanded;
   }
   return current;
@@ -44,15 +49,22 @@ export function expandIterativeWithTrace(
   source: string,
   fetcher: IncludeFetcher,
   maxIterations: number,
+  maxLength: number,
 ): ResolveIncludesTraceResult {
   let current = source;
   const replacementCache = new Map<string, string>();
   const dependencies: IncludeDependency[] = [];
   const iterations: ResolveIncludesTraceResult["iterations"] = [];
+  let reachedMaxLength = false;
 
   for (let i = 0; i < maxIterations; i++) {
-    const expanded = expandOneIterationWithTrace(current, fetcher, replacementCache, i);
+    const expanded = expandOneIterationWithTrace(current, fetcher, replacementCache, i, maxLength);
     if (expanded === null) break;
+    // The discarded iteration is not traced, so the trace matches the returned source.
+    if (expanded.source === OVER_LIMIT) {
+      reachedMaxLength = true;
+      break;
+    }
 
     dependencies.push(...expanded.dependencies);
     iterations.push({
@@ -76,6 +88,7 @@ export function expandIterativeWithTrace(
     // maxIterations passes without leaving work behind.
     reachedMaxIterations:
       iterations.length === maxIterations && scanIncludeDirectives(current).length > 0,
+    reachedMaxLength,
   };
 }
 
@@ -91,12 +104,13 @@ export async function expandIterativeAsync(
   source: string,
   fetcher: AsyncIncludeFetcher,
   maxIterations: number,
+  maxLength: number,
 ): Promise<string> {
   let current = source;
   const replacementCache = new Map<string, Promise<string>>();
   for (let i = 0; i < maxIterations; i++) {
-    const expanded = await expandOneIterationAsync(current, fetcher, replacementCache);
-    if (expanded === null || expanded === current) break;
+    const expanded = await expandOneIterationAsync(current, fetcher, replacementCache, maxLength);
+    if (expanded === null || expanded === OVER_LIMIT || expanded === current) break;
     current = expanded;
   }
   return current;
@@ -107,12 +121,14 @@ export async function expandIterativeAsyncWithTrace(
   source: string,
   fetcher: AsyncIncludeFetcher,
   maxIterations: number,
+  maxLength: number,
   shouldDefer?: (reference: IncludeReference) => boolean,
 ): Promise<ResolveIncludesTraceResult> {
   let current = source;
   const replacementCache = new Map<string, Promise<string>>();
   const dependencies: IncludeDependency[] = [];
   const iterations: ResolveIncludesTraceResult["iterations"] = [];
+  let reachedMaxLength = false;
 
   for (let i = 0; i < maxIterations; i++) {
     const expanded = await expandOneIterationAsyncWithTrace(
@@ -120,9 +136,14 @@ export async function expandIterativeAsyncWithTrace(
       fetcher,
       replacementCache,
       i,
+      maxLength,
       shouldDefer,
     );
     if (expanded === null) break;
+    if (expanded.source === OVER_LIMIT) {
+      reachedMaxLength = true;
+      break;
+    }
 
     dependencies.push(...expanded.dependencies);
     iterations.push({
@@ -141,6 +162,7 @@ export async function expandIterativeAsyncWithTrace(
     iterations,
     reachedMaxIterations:
       iterations.length === maxIterations && hasResolvableDirectives(current, shouldDefer),
+    reachedMaxLength,
   };
 }
 
@@ -148,20 +170,16 @@ function expandOneIteration(
   source: string,
   fetcher: IncludeFetcher,
   replacementCache: Map<string, string>,
-): string | null {
+  maxLength: number,
+): IterationSource | null {
   if (!MAYBE_INCLUDE_PATTERN.test(source)) return null;
 
   const directives = scanIncludeDirectives(source);
   if (directives.length === 0) return null;
 
-  const parts: string[] = [];
-  let lastPos = 0;
-  for (const { start, end, inner } of directives) {
-    parts.push(source.slice(lastPos, start), replaceCached(inner, fetcher, replacementCache));
-    lastPos = end;
-  }
-  parts.push(source.slice(lastPos));
-  return parts.join("");
+  return assembleIteration(source, directives, maxLength, ({ inner }) =>
+    replaceCached(inner, fetcher, replacementCache),
+  );
 }
 
 function expandOneIterationWithTrace(
@@ -169,8 +187,9 @@ function expandOneIterationWithTrace(
   fetcher: IncludeFetcher,
   replacementCache: Map<string, string>,
   iteration: number,
+  maxLength: number,
 ): {
-  source: string;
+  source: IterationSource;
   references: IncludeReference[];
   dependencies: IncludeDependency[];
 } | null {
@@ -180,19 +199,12 @@ function expandOneIterationWithTrace(
   if (directives.length === 0) return null;
 
   const references = directives.map(createIncludeReference);
-  const dependencies = references.map((reference) => ({ ...reference, iteration }));
-  const parts: string[] = [];
-  let lastPos = 0;
-  for (const { start, end, inner } of directives) {
-    parts.push(source.slice(lastPos, start), replaceCached(inner, fetcher, replacementCache));
-    lastPos = end;
-  }
-  parts.push(source.slice(lastPos));
-
   return {
-    source: parts.join(""),
+    source: assembleIteration(source, directives, maxLength, ({ inner }) =>
+      replaceCached(inner, fetcher, replacementCache),
+    ),
     references,
-    dependencies,
+    dependencies: references.map((reference) => ({ ...reference, iteration })),
   };
 }
 
@@ -200,7 +212,8 @@ async function expandOneIterationAsync(
   source: string,
   fetcher: AsyncIncludeFetcher,
   replacementCache: Map<string, Promise<string>>,
-): Promise<string | null> {
+  maxLength: number,
+): Promise<IterationSource | null> {
   if (!MAYBE_INCLUDE_PATTERN.test(source)) return null;
 
   const directives = scanIncludeDirectives(source);
@@ -209,16 +222,7 @@ async function expandOneIterationAsync(
   const replacements = await Promise.all(
     directives.map(({ inner }) => replaceCachedAsync(inner, fetcher, replacementCache)),
   );
-
-  const parts: string[] = [];
-  let lastPos = 0;
-  for (let i = 0; i < directives.length; i++) {
-    const { start, end } = directives[i]!;
-    parts.push(source.slice(lastPos, start), replacements[i]!);
-    lastPos = end;
-  }
-  parts.push(source.slice(lastPos));
-  return parts.join("");
+  return assembleIteration(source, directives, maxLength, (_, index) => replacements[index]!);
 }
 
 async function expandOneIterationAsyncWithTrace(
@@ -226,9 +230,10 @@ async function expandOneIterationAsyncWithTrace(
   fetcher: AsyncIncludeFetcher,
   replacementCache: Map<string, Promise<string>>,
   iteration: number,
+  maxLength: number,
   shouldDefer?: (reference: IncludeReference) => boolean,
 ): Promise<{
-  source: string;
+  source: IterationSource;
   references: IncludeReference[];
   dependencies: IncludeDependency[];
 } | null> {
@@ -246,23 +251,42 @@ async function expandOneIterationAsyncWithTrace(
         : replaceCachedAsync(directive.inner, fetcher, replacementCache),
     ),
   );
-  const parts: string[] = [];
-  let lastPos = 0;
-
-  for (let i = 0; i < directives.length; i++) {
-    const { start, end } = directives[i]!;
-    parts.push(source.slice(lastPos, start), replacements[i]!);
-    lastPos = end;
-  }
-  parts.push(source.slice(lastPos));
 
   return {
-    source: parts.join(""),
+    source: assembleIteration(source, directives, maxLength, (_, index) => replacements[index]!),
     references,
     dependencies: references
       .filter((_, index) => !deferred[index])
       .map((reference) => ({ ...reference, iteration })),
   };
+}
+
+/**
+ * Splice replacements into `source`, checking the length before joining so an
+ * oversized iteration never materializes as one string.
+ */
+function assembleIteration(
+  source: string,
+  directives: readonly { start: number; end: number; inner: string }[],
+  maxLength: number,
+  replacementAt: (directive: { inner: string }, index: number) => string,
+): IterationSource {
+  const parts: string[] = [];
+  let length = 0;
+  let lastPos = 0;
+  for (let i = 0; i < directives.length; i++) {
+    const directive = directives[i]!;
+    const before = source.slice(lastPos, directive.start);
+    const replacement = replacementAt(directive, i);
+    length += before.length + replacement.length;
+    if (length > maxLength) return OVER_LIMIT;
+    parts.push(before, replacement);
+    lastPos = directive.end;
+  }
+  const rest = source.slice(lastPos);
+  if (length + rest.length > maxLength) return OVER_LIMIT;
+  parts.push(rest);
+  return parts.join("");
 }
 
 function hasResolvableDirectives(

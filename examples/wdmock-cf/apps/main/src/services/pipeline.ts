@@ -369,6 +369,7 @@ async function readPageText(
       ({ severity, code }) =>
         severity === "error" ||
         code === "include-resolution-limit" ||
+        code === "include-expansion-limit" ||
         code === "module-resolution-limit",
     ) ||
     remaining.listPages.length > 0 ||

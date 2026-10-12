@@ -469,6 +469,18 @@ describe("processWikitext", () => {
     );
   });
 
+  it("reports an include expansion length limit", async () => {
+    const document = await processWikitext("[[include a]]", {
+      page: pageContext,
+      includeMaxLength: 100,
+      dataProvider: {
+        fetchInclude: async ({ page }) => `[[include ${page === "a" ? "b" : "a"}]]\n`.repeat(4),
+      },
+    });
+
+    expect(document.diagnostics.some((item) => item.code === "include-expansion-limit")).toBe(true);
+  });
+
   it("renders a current-page include introduced by an included page as literal source", async () => {
     const calls: string[] = [];
     const document = await processWikitext("[[include :www:component:inc-loop-base |l=_]]", {

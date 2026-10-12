@@ -33,6 +33,14 @@ export interface ResolveIncludesOptions {
    * unchanged or this limit is reached.
    */
   maxIterations?: number;
+  /**
+   * Maximum length of the expanded source in UTF-16 code units (default: 1,000,000).
+   *
+   * Pages that include each other grow geometrically with every iteration, so
+   * an iteration whose result would exceed this limit is discarded and
+   * expansion stops with the previous source. Must be a positive integer.
+   */
+  maxLength?: number;
   /** Wikitext settings. If enablePageSyntax is false, includes are not expanded. */
   settings?: WikitextSettings;
 }
@@ -102,4 +110,6 @@ export interface ResolveIncludesTraceResult {
   iterations: IncludeIterationTrace[];
   /** True when expansion stopped with directives still present after hitting the iteration cap. */
   reachedMaxIterations: boolean;
+  /** True when an iteration was discarded because its result would exceed `maxLength`. */
+  reachedMaxLength: boolean;
 }

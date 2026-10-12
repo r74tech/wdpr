@@ -64,6 +64,33 @@ describe("include expansion length limit", () => {
     ).toBe("[[include a]]!");
   });
 
+  // Each assignment doubles the content, so 30 of them would build about 2^30 characters.
+  test("stops chained variable substitution before it grows", () => {
+    const keys = Array.from({ length: 31 }, (_, i) => `v${i}`);
+    const args = keys
+      .slice(0, -1)
+      .map((key, i) => `${key}={$${keys[i + 1]}}{$${keys[i + 1]}}`)
+      .join("|");
+    const traced = resolveIncludesWithTrace(`[[include p |${args}|v30=Z]]`, () => "{$v0}", {
+      maxLength: 1_000,
+    });
+
+    expect(traced.reachedMaxLength).toBe(true);
+    expect(traced.source.startsWith("[[include p")).toBe(true);
+  }, 2_000);
+
+  test("stops starting async fetches once fetched text exceeds the limit", async () => {
+    const source = Array.from({ length: 20 }, (_, i) => `[[include p${i}]]`).join("\n");
+    let calls = 0;
+    const traced = await resolveIncludesAsyncWithTrace(source, async () => {
+      calls++;
+      return "x".repeat(1_000_001);
+    });
+
+    expect(traced.reachedMaxLength).toBe(true);
+    expect(calls).toBeLessThanOrEqual(8);
+  });
+
   // NaN and Infinity would make every comparison pass and disable the limit.
   test.each([0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY])(
     "rejects maxLength %p",

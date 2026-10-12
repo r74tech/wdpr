@@ -29,7 +29,7 @@ export function expandIterative(
   maxLength: number,
 ): string {
   let current = source;
-  const replacementCache = new Map<string, string>();
+  const replacementCache = new Map<string, string | null>();
   for (let i = 0; i < maxIterations; i++) {
     const expanded = expandOneIteration(current, fetcher, replacementCache, maxLength);
     if (expanded === null || expanded === OVER_LIMIT || expanded === current) break;
@@ -52,7 +52,7 @@ export function expandIterativeWithTrace(
   maxLength: number,
 ): ResolveIncludesTraceResult {
   let current = source;
-  const replacementCache = new Map<string, string>();
+  const replacementCache = new Map<string, string | null>();
   const dependencies: IncludeDependency[] = [];
   const iterations: ResolveIncludesTraceResult["iterations"] = [];
   let reachedMaxLength = false;
@@ -107,7 +107,7 @@ export async function expandIterativeAsync(
   maxLength: number,
 ): Promise<string> {
   let current = source;
-  const replacementCache = new Map<string, Promise<string>>();
+  const replacementCache = new Map<string, Promise<string | null>>();
   for (let i = 0; i < maxIterations; i++) {
     const expanded = await expandOneIterationAsync(current, fetcher, replacementCache, maxLength);
     if (expanded === null || expanded === OVER_LIMIT || expanded === current) break;
@@ -125,7 +125,7 @@ export async function expandIterativeAsyncWithTrace(
   shouldDefer?: (reference: IncludeReference) => boolean,
 ): Promise<ResolveIncludesTraceResult> {
   let current = source;
-  const replacementCache = new Map<string, Promise<string>>();
+  const replacementCache = new Map<string, Promise<string | null>>();
   const dependencies: IncludeDependency[] = [];
   const iterations: ResolveIncludesTraceResult["iterations"] = [];
   let reachedMaxLength = false;
@@ -169,7 +169,7 @@ export async function expandIterativeAsyncWithTrace(
 function expandOneIteration(
   source: string,
   fetcher: IncludeFetcher,
-  replacementCache: Map<string, string>,
+  replacementCache: Map<string, string | null>,
   maxLength: number,
 ): IterationSource | null {
   if (!MAYBE_INCLUDE_PATTERN.test(source)) return null;
@@ -178,14 +178,14 @@ function expandOneIteration(
   if (directives.length === 0) return null;
 
   return assembleIteration(source, directives, maxLength, ({ inner }) =>
-    replaceCached(inner, fetcher, replacementCache),
+    replaceCached(inner, fetcher, replacementCache, maxLength),
   );
 }
 
 function expandOneIterationWithTrace(
   source: string,
   fetcher: IncludeFetcher,
-  replacementCache: Map<string, string>,
+  replacementCache: Map<string, string | null>,
   iteration: number,
   maxLength: number,
 ): {
@@ -201,7 +201,7 @@ function expandOneIterationWithTrace(
   const references = directives.map(createIncludeReference);
   return {
     source: assembleIteration(source, directives, maxLength, ({ inner }) =>
-      replaceCached(inner, fetcher, replacementCache),
+      replaceCached(inner, fetcher, replacementCache, maxLength),
     ),
     references,
     dependencies: references.map((reference) => ({ ...reference, iteration })),
@@ -211,7 +211,7 @@ function expandOneIterationWithTrace(
 async function expandOneIterationAsync(
   source: string,
   fetcher: AsyncIncludeFetcher,
-  replacementCache: Map<string, Promise<string>>,
+  replacementCache: Map<string, Promise<string | null>>,
   maxLength: number,
 ): Promise<IterationSource | null> {
   if (!MAYBE_INCLUDE_PATTERN.test(source)) return null;
@@ -219,16 +219,17 @@ async function expandOneIterationAsync(
   const directives = scanIncludeDirectives(source);
   if (directives.length === 0) return null;
 
-  const replacements = await Promise.all(
-    directives.map(({ inner }) => replaceCachedAsync(inner, fetcher, replacementCache)),
+  const replacements = await fetchReplacementsWithin(source, directives, maxLength, ({ inner }) =>
+    replaceCachedAsync(inner, fetcher, replacementCache, maxLength),
   );
+  if (replacements === OVER_LIMIT) return OVER_LIMIT;
   return assembleIteration(source, directives, maxLength, (_, index) => replacements[index]!);
 }
 
 async function expandOneIterationAsyncWithTrace(
   source: string,
   fetcher: AsyncIncludeFetcher,
-  replacementCache: Map<string, Promise<string>>,
+  replacementCache: Map<string, Promise<string | null>>,
   iteration: number,
   maxLength: number,
   shouldDefer?: (reference: IncludeReference) => boolean,
@@ -244,21 +245,64 @@ async function expandOneIterationAsyncWithTrace(
 
   const references = directives.map(createIncludeReference);
   const deferred = references.map((reference) => shouldDefer?.(reference) ?? false);
-  const replacements = await Promise.all(
-    directives.map((directive, index) =>
+  const replacements = await fetchReplacementsWithin(
+    source,
+    directives,
+    maxLength,
+    (directive, index) =>
       deferred[index]
         ? Promise.resolve(source.slice(directive.start, directive.end))
-        : replaceCachedAsync(directive.inner, fetcher, replacementCache),
-    ),
+        : replaceCachedAsync(directive.inner, fetcher, replacementCache, maxLength),
   );
 
   return {
-    source: assembleIteration(source, directives, maxLength, (_, index) => replacements[index]!),
+    source:
+      replacements === OVER_LIMIT
+        ? OVER_LIMIT
+        : assembleIteration(source, directives, maxLength, (_, index) => replacements[index]!),
     references,
     dependencies: references
       .filter((_, index) => !deferred[index])
       .map((reference) => ({ ...reference, iteration })),
   };
+}
+
+/** Sibling includes fetched at once; later ones start only while the result still fits. */
+const MAX_CONCURRENT_FETCHES = 8;
+
+/**
+ * Fetch replacements concurrently but stop starting new fetches once the
+ * fetched text alone exceeds `maxLength`, so a page listing many large
+ * includes cannot pull all of them into memory before the limit applies.
+ */
+async function fetchReplacementsWithin(
+  source: string,
+  directives: readonly { start: number; end: number; inner: string }[],
+  maxLength: number,
+  fetchAt: (
+    directive: { start: number; end: number; inner: string },
+    index: number,
+  ) => Promise<string | null>,
+): Promise<(string | null)[] | typeof OVER_LIMIT> {
+  const replacements: (string | null)[] = new Array(directives.length);
+  let length = source.length;
+  for (const { start, end } of directives) length -= end - start;
+  let next = 0;
+  let over = false;
+
+  const worker = async (): Promise<void> => {
+    while (!over && next < directives.length) {
+      const index = next++;
+      const replacement = await fetchAt(directives[index]!, index);
+      replacements[index] = replacement;
+      length += replacement?.length ?? 0;
+      if (replacement === null || length > maxLength) over = true;
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(MAX_CONCURRENT_FETCHES, directives.length) }, worker),
+  );
+  return over ? OVER_LIMIT : replacements;
 }
 
 /**
@@ -269,7 +313,7 @@ function assembleIteration(
   source: string,
   directives: readonly { start: number; end: number; inner: string }[],
   maxLength: number,
-  replacementAt: (directive: { inner: string }, index: number) => string,
+  replacementAt: (directive: { inner: string }, index: number) => string | null,
 ): IterationSource {
   const parts: string[] = [];
   let length = 0;
@@ -278,6 +322,7 @@ function assembleIteration(
     const directive = directives[i]!;
     const before = source.slice(lastPos, directive.start);
     const replacement = replacementAt(directive, i);
+    if (replacement === null) return OVER_LIMIT;
     length += before.length + replacement.length;
     if (length > maxLength) return OVER_LIMIT;
     parts.push(before, replacement);
@@ -298,11 +343,16 @@ function hasResolvableDirectives(
   return directives.some((directive) => !shouldDefer(createIncludeReference(directive)));
 }
 
-function replaceCached(inner: string, fetcher: IncludeFetcher, cache: Map<string, string>): string {
+function replaceCached(
+  inner: string,
+  fetcher: IncludeFetcher,
+  cache: Map<string, string | null>,
+  maxLength: number,
+): string | null {
   const cached = cache.get(inner);
   if (cached !== undefined) return cached;
 
-  const replacement = replaceOneInclude(inner, fetcher);
+  const replacement = replaceOneInclude(inner, fetcher, maxLength);
   cache.set(inner, replacement);
   return replacement;
 }
@@ -310,12 +360,13 @@ function replaceCached(inner: string, fetcher: IncludeFetcher, cache: Map<string
 function replaceCachedAsync(
   inner: string,
   fetcher: AsyncIncludeFetcher,
-  cache: Map<string, Promise<string>>,
-): Promise<string> {
+  cache: Map<string, Promise<string | null>>,
+  maxLength: number,
+): Promise<string | null> {
   const cached = cache.get(inner);
   if (cached) return cached;
 
-  const replacement = replaceOneIncludeAsync(inner, fetcher);
+  const replacement = replaceOneIncludeAsync(inner, fetcher, maxLength);
   cache.set(inner, replacement);
   return replacement;
 }

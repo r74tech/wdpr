@@ -41,18 +41,43 @@ export function parseIncludeDirective(inner: string): {
   return { location: parseIncludePageRef(target), assignments };
 }
 
+/**
+ * Substitute `{$key}` placeholders in assignment order.
+ *
+ * A value may contain a later placeholder, so chained assignments can double
+ * the content at each step. Returns null instead of building a result longer
+ * than `maxLength`.
+ */
 export function substituteVariables(
   content: string,
   assignments: readonly IncludeAssignment[],
-): string {
+  maxLength: number = Number.POSITIVE_INFINITY,
+): string | null {
+  if (content.length > maxLength) return null;
   if (assignments.length === 0) return content;
   if (!content.includes("{$")) return content;
 
   let substituted = content;
   for (const { key, value } of assignments) {
-    substituted = substituted.replaceAll(`{$${key}}`, value);
+    const placeholder = `{$${key}}`;
+    const count = countOccurrences(substituted, placeholder);
+    if (count === 0) continue;
+    if (substituted.length + count * (value.length - placeholder.length) > maxLength) return null;
+    substituted = substituted.replaceAll(placeholder, value);
   }
   return substituted;
+}
+
+function countOccurrences(text: string, search: string): number {
+  let count = 0;
+  for (
+    let index = text.indexOf(search);
+    index !== -1;
+    index = text.indexOf(search, index + search.length)
+  ) {
+    count++;
+  }
+  return count;
 }
 
 function parseIncludePageRef(target: string): PageRef {

@@ -11,6 +11,12 @@ import { parseFootnoteContent } from "./content";
 import { buildFootnoteChildren } from "./elements";
 import { parseFootnoteOpen } from "./open";
 
+/**
+ * Each nested body is parsed recursively, so deeper footnotes stay as text
+ * instead of overflowing the call stack.
+ */
+const MAX_FOOTNOTE_NESTING = 64;
+
 export const footnoteRule: InlineRule = {
   name: "footnote",
   startTokens: ["BLOCK_OPEN"],
@@ -22,7 +28,7 @@ export const footnoteRule: InlineRule = {
     }
 
     const openResult = parseFootnoteOpen(ctx);
-    if (!openResult) {
+    if (!openResult || (ctx.scope.footnoteDepth ?? 0) >= MAX_FOOTNOTE_NESTING) {
       return { success: false };
     }
 

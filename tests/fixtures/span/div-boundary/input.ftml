@@ -1,0 +1,28 @@
+[[div]]
+[[span class="k"]]a
+[[/div]]
+[[/span]]
+
+[[div]]
+[[span style="color:red"]]b
+[[/div]]
+c **d**
+[[/span]]
+
+[[span class="k"]]e
+[[div]]
+f
+[[/div]]
+g[[/span]]
+
+[[div]]
+[[div]]
+[[span class="k"]]h
+[[/div]]
+i
+[[/div]]
+j
+[[/span]]
+
+[[div]]
+k [[span class="k"]]l [[/div]] m[[/span]] n

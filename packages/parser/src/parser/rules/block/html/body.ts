@@ -98,7 +98,7 @@ export function consumeHtmlClose(ctx: ParseContext, startPos: number): number {
   return consumed;
 }
 
-function isHtmlCloseAt(ctx: ParseContext, pos: number): boolean {
+export function isHtmlCloseAt(ctx: ParseContext, pos: number): boolean {
   if (ctx.tokens[pos]?.type !== "BLOCK_END_OPEN") {
     return false;
   }

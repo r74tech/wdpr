@@ -29,6 +29,7 @@ export function parseFootnoteContent(ctx: ParseContext, startPos: number): Footn
       inlineEnd: undefined,
       tableFormatting: undefined,
       blockCloseCondition: undefined,
+      footnoteDepth: (ctx.scope.footnoteDepth ?? 0) + 1,
     },
   };
   const result = parseBlocksUntil(bodyCtx, () => false);

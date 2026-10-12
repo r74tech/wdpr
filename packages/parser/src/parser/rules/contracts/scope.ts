@@ -34,4 +34,6 @@ export interface ScopeContext {
    * the original primitive semantics while avoiding rollback-unsafe shared state.
    */
   readonly footnoteBlockParsed: boolean;
+  /** Number of enclosing footnote bodies. */
+  readonly footnoteDepth?: number;
 }

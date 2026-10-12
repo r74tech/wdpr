@@ -91,7 +91,7 @@ function buildSplitSpans(
     element: "container" as const,
     data: {
       type: "span" as const,
-      attributes: index === 0 ? attributes : {},
+      attributes,
       elements: segment,
       _splitByBlankLine: index > 0,
     },

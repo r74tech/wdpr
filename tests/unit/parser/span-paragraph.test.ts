@@ -72,3 +72,10 @@ test("literal div examples do not mark their paragraphs as malformed", () => {
     "[[span_]][[/span]]\n[[/div]]",
   );
 });
+
+// Wikidot's HTML Tidy reopens the span with the same attributes, including the id.
+test("spans split by a blank line keep their attributes", () => {
+  expect(html('[[span id="x" style="color:red"]]a\n\nb[[/span]]')).toBe(
+    '<p><span id="u-x" style="color:red">a</span></p><p><span id="u-x" style="color:red">b</span></p>',
+  );
+});

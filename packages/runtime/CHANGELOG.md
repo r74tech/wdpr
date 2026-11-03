@@ -1,3 +1,9 @@
+## 2.0.1 (2026-11-03)
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/render to 5.0.1
+
 # 2.0.0 (2026-09-13)
 
 ### 🚀 Features

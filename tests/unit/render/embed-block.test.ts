@@ -5,6 +5,7 @@ import {
 } from "../../../packages/render/src/elements/embed-block";
 import { RenderContext } from "../../../packages/render/src/context";
 import type { RenderOptions } from "@wdprlib/render";
+import { Window } from "happy-dom";
 
 function createContext(options: RenderOptions = {}): RenderContext {
   return new RenderContext({ elements: [] }, options);
@@ -429,5 +430,114 @@ describe("embed-block security", () => {
       renderEmbedBlock(ctx, data);
       expect(ctx.getOutput()).toContain("error-block");
     });
+  });
+});
+
+/**
+ * Parse the rendered output with a browser-grade HTML parser and return the iframe's attributes
+ * exactly as a browser would see them.
+ */
+function renderIframeAttributes(
+  contents: string,
+  options: RenderOptions = {},
+): Record<string, string> {
+  const ctx = createContext(options);
+  renderEmbedBlock(ctx, { contents });
+  const output = ctx.getOutput();
+  const document = new Window().document;
+  document.body.innerHTML = output;
+  const iframe = document.querySelector("iframe");
+  if (!iframe) {
+    throw new Error(`iframe was not rendered: ${output}`);
+  }
+  return Object.fromEntries(Array.from(iframe.attributes, (attr) => [attr.name, attr.value]));
+}
+
+describe("embed-block attribute injection", () => {
+  const youtube = "https://www.youtube.com/embed/dQw4w9WgXcQ";
+
+  test.each([
+    [
+      "title",
+      `<iframe src="${youtube}" title="x hidden onload=alert(document.domain)//"></iframe>`,
+    ],
+    ["class", `<iframe src="${youtube}" class="a allowfullscreen onload=alert(1)//"></iframe>`],
+    ["src", '<iframe src="https://www.youtube.com/embed/x hidden onload=alert(1)//"></iframe>'],
+  ])(
+    "boolean attribute name inside the %s value does not create new attributes",
+    (_attribute, contents) => {
+      const attribs = renderIframeAttributes(contents);
+
+      expect(Object.keys(attribs).filter((name) => name.startsWith("on"))).toEqual([]);
+      expect(attribs.hidden).toBeUndefined();
+    },
+  );
+
+  test("title keeps the author's text as one attribute value", () => {
+    const attribs = renderIframeAttributes(
+      `<iframe src="${youtube}" title="x hidden onload=alert(document.domain)//"></iframe>`,
+    );
+
+    expect(attribs.title).toBe("x hidden onload=alert(document.domain)//");
+  });
+
+  test("class keeps only names made of letters, digits, hyphen and underscore", () => {
+    const attribs = renderIframeAttributes(
+      `<iframe src="${youtube}" class="a allowfullscreen onload=alert(1)//"></iframe>`,
+    );
+
+    expect(attribs.class).toBe("a allowfullscreen");
+    expect(attribs.allowfullscreen).toBeUndefined();
+  });
+
+  test("class is dropped when no name is safe", () => {
+    const attribs = renderIframeAttributes(`<iframe src="${youtube}" class='x="y'></iframe>`);
+
+    expect(attribs.class).toBeUndefined();
+  });
+
+  test("src is written back in canonical URL form", () => {
+    const attribs = renderIframeAttributes(
+      '<iframe src="https://www.youtube.com/embed/x hidden onload=alert(1)//"></iframe>',
+    );
+
+    expect(attribs.src).toBe("https://www.youtube.com/embed/x%20hidden%20onload=alert(1)//");
+  });
+
+  test("src whitespace and host case are normalized", () => {
+    const attribs = renderIframeAttributes(
+      '<iframe src="  https://WWW.YouTube.com/embed/abc  "></iframe>',
+    );
+
+    expect(attribs.src).toBe("https://www.youtube.com/embed/abc");
+  });
+
+  test("protocol-relative src is written back as an absolute HTTPS URL", () => {
+    const attribs = renderIframeAttributes('<iframe src="//www.youtube.com/embed/abc"></iframe>', {
+      baseUrl: "https://example.com",
+    });
+
+    expect(attribs.src).toBe("https://www.youtube.com/embed/abc");
+  });
+});
+
+describe("embed-block boolean attributes", () => {
+  test.each(["allowfullscreen", 'allowfullscreen=""', "ALLOWFULLSCREEN"])(
+    '%s is written as allowfullscreen="allowfullscreen"',
+    (attribute) => {
+      const attribs = renderIframeAttributes(
+        `<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" ${attribute}></iframe>`,
+      );
+
+      expect(attribs.allowfullscreen).toBe("allowfullscreen");
+    },
+  );
+
+  test("an explicit allowfullscreen value is kept", () => {
+    const attribs = renderIframeAttributes(
+      '<iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen="true"></iframe>',
+    );
+
+    expect(attribs.allowfullscreen).toBe("true");
   });
 });

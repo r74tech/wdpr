@@ -24,15 +24,18 @@ const BOOLEAN_ATTRIBUTES = [
 
 /**
  * Normalize HTML boolean attributes to Wikidot's `attr="attr"` format.
+ *
+ * Works on the parsed attribute map, before sanitize-html serializes and escapes each value.
+ * Rewriting the serialized HTML instead would let text inside a value be read as a new attribute.
  */
-export function normalizeBooleanAttributes(html: string): string {
-  let result = html;
+export function normalizeBooleanAttributes(
+  attribs: Record<string, string>,
+): Record<string, string> {
+  const result = { ...attribs };
   for (const attr of BOOLEAN_ATTRIBUTES) {
-    const standalonePattern = new RegExp(`\\s${attr}(?=\\s|>|/>)`, "gi");
-    result = result.replace(standalonePattern, ` ${attr}="${attr}"`);
-
-    const emptyValuePattern = new RegExp(`\\s${attr}=""`, "gi");
-    result = result.replace(emptyValuePattern, ` ${attr}="${attr}"`);
+    if (result[attr] === "") {
+      result[attr] = attr;
+    }
   }
   return result;
 }

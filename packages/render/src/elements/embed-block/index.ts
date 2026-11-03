@@ -8,7 +8,7 @@ import type { EmbedBlockData } from "@wdprlib/ast";
 import type { RenderContext } from "../../context";
 import { escapeHtml } from "../../escape";
 import { DEFAULT_EMBED_ALLOWLIST, type EmbedAllowlistEntry } from "./allowlist";
-import { normalizeBooleanAttributes, validateAndSanitizeEmbed } from "./sanitize";
+import { validateAndSanitizeEmbed } from "./sanitize";
 
 export { DEFAULT_EMBED_ALLOWLIST, type EmbedAllowlistEntry } from "./allowlist";
 
@@ -30,5 +30,5 @@ export function renderEmbedBlock(ctx: RenderContext, data: EmbedBlockData): void
     return;
   }
 
-  ctx.push(`<p>${normalizeBooleanAttributes(sanitized)}</p>`);
+  ctx.push(`<p>${sanitized}</p>`);
 }

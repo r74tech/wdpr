@@ -131,8 +131,9 @@ report a catalog error in both its collection and final render passes.
 
 ## Security defaults
 
-- `[[embed]]` accepts HTTPS iframes only. Inline `style` attributes are removed; use the allowed
-  `width` and `height` attributes for sizing.
+- `[[embed]]` accepts HTTPS iframes only. The `src` is written back in canonical URL form, `class`
+  keeps only names made of letters, digits, `-` and `_`, and inline `style` attributes are removed;
+  use the allowed `width` and `height` attributes for sizing.
 - Local image and gallery paths reject traversal segments, encoded path components, backslashes,
   NUL bytes, query strings, and fragments.
 - `createSettings("page")` and `DEFAULT_SETTINGS` keep `[[module CSS]]` disabled. Enable it only

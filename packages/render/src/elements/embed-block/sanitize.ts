@@ -2,19 +2,19 @@ import sanitizeHtml from "sanitize-html";
 import type { EmbedAllowlistEntry } from "./allowlist";
 import { matchesAllowlistEntry } from "./allowlist";
 import { findIframes, parseIframeUrl } from "./iframe";
-import { SANITIZE_CONFIG } from "./sanitize-config";
-
-export { normalizeBooleanAttributes } from "./boolean-attributes";
+import { createSanitizeConfig } from "./sanitize-config";
 
 /**
  * Validate and sanitize embed block content through a multi-step iframe pipeline.
+ *
+ * The returned string is sanitize-html output and must be emitted as-is.
  */
 export function validateAndSanitizeEmbed(
   content: string,
   allowlist: EmbedAllowlistEntry[] | null,
   baseUrl?: string,
 ): string | null {
-  const sanitized = sanitizeHtml(content.trim(), SANITIZE_CONFIG);
+  const sanitized = sanitizeHtml(content.trim(), createSanitizeConfig(baseUrl));
   if (!sanitized.trim()) {
     return null;
   }

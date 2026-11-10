@@ -1,3 +1,15 @@
+## 6.1.0 (2026-11-10)
+
+### 🩹 Fixes
+
+- 閉じない[[a]]・[[#if]]の入れ子と相互includeでパースが指数的に遅くなる問題を修正 ([#87](https://github.com/r74tech/wdpr/pull/87))
+- divをまたぐspanが[[/div]]を飲み込みdivが閉じない問題を修正 ([#80](https://github.com/r74tech/wdpr/pull/80), [#78](https://github.com/r74tech/wdpr/issues/78))
+- spanをまたぐ装飾記号でパースが指数的に遅くなる問題を修正 ([#79](https://github.com/r74tech/wdpr/pull/79))
+
+### ❤️ Thank You
+
+- r74tech @r74tech
+
 # 6.0.0 (2026-09-13)
 
 ### 🚀 Features

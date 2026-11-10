@@ -1,3 +1,9 @@
+## 2.0.2 (2026-11-10)
+
+### 🧱 Updated Dependencies
+
+- Updated @wdprlib/parser to 6.1.0
+
 ## 2.0.1 (2026-11-03)
 
 ### 🧱 Updated Dependencies

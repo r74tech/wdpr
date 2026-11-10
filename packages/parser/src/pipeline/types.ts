@@ -77,6 +77,12 @@ export interface ProcessedWikitextDocument<
   /** First nonempty body paragraph, excluding headings and appended footnotes. */
   firstParagraph: string;
   characterCount: number;
+  /**
+   * `theme_url` of the first `[[module ThemePreviewer]]`, or null.
+   * Hosts replace their theme stylesheet with this URL, as Wikidot does.
+   * Always null unless `settings.allowStyleElements` is enabled.
+   */
+  themeUrl: string | null;
   page: TPage;
   settings: WikitextSettings;
   diagnostics: Diagnostic[];

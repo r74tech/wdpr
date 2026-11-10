@@ -33,6 +33,7 @@ export { joinModuleRule } from "./join/index";
 export { pageTreeModuleRule } from "./page-tree/index";
 export { listPagesModuleRule } from "./listpages/parser";
 export { listUsersModuleRule } from "./listusers/parser";
+export { themePreviewerModuleRule } from "./theme-previewer/index";
 
 // Module data types (parser-only modules)
 export type { RateModuleData, CustomRateModuleData, RatingsFetcher } from "./rate/types";
@@ -141,6 +142,10 @@ export type {
   TagCloudModuleData,
 } from "./tagcloud";
 export { tagCloudModuleRule as tagCloudRule, isTagCloudModule, resolveTagCloud } from "./tagcloud";
+
+// ThemePreviewer module
+export type { ThemePreviewerModuleData } from "./theme-previewer";
+export { findThemePreviewerUrl } from "./theme-previewer";
 
 // Module resolver
 export type { ModuleSourceTransform, ResolveOptions } from "./resolve";

@@ -36,6 +36,7 @@ const document = await processWikitext(source, {
 document.ast;
 document.diagnostics;
 document.dependencies; // direct and transitive includes, including module output
+document.themeUrl; // [[module ThemePreviewer]] theme_url (null unless allowStyleElements); swap your theme stylesheet with it
 ```
 
 Pass `document` to `renderWikitext()` from `@wdprlib/render` for HTML generation.
@@ -45,7 +46,7 @@ The parser and renderer remain separate packages and both depend only on the sha
 
 - Wikidot markup parsing (bold, italic, links, images, tables, etc.)
 - Include resolution (`[[include page]]`)
-- Module support (ListPages, ListUsers, TagCloud, IfTags, etc.)
+- Module support (ListPages, ListUsers, TagCloud, ThemePreviewer, IfTags, etc.)
 - `[[gallery]]` (auto-collection uses `page.files`; responsive layout and lightbox via `@wdprlib/runtime`)
 
 - Data extraction for server-side rendering

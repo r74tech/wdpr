@@ -14,6 +14,7 @@ import { resolveIncludesAsyncWithTraceSelective } from "../parser/rules/block/mo
 import type { DataProvider } from "../parser/rules/block/module/types-common";
 import { resolveModulesWithAsyncParse } from "../parser/rules/block/module/resolution/resolve-async";
 import { resolveRatings } from "../parser/rules/block/module/rate/resolve";
+import { findThemePreviewerUrl } from "../parser/rules/block/module/theme-previewer";
 import type {
   ProcessedWikitextDocument,
   ProcessWikitextCallbackContext,
@@ -138,6 +139,7 @@ export async function processWikitext<TPage extends WikitextPageContext>(
     readableText,
     firstParagraph: extractFirstParagraph(ast, options.readableText),
     characterCount: countCharacters(readableText),
+    themeUrl: findThemePreviewerUrl(ast.elements, settings),
     page: options.page,
     settings,
     diagnostics,

@@ -160,6 +160,8 @@ export type {
   TagCloudExternalData,
   TagCloudDataFetcher,
   TagCloudModuleData,
+  // ThemePreviewer types
+  ThemePreviewerModuleData,
   // Normalized query types
   NormalizedListPagesQuery,
   NormalizedTags,
@@ -200,4 +202,6 @@ export {
   // TagCloud
   isTagCloudModule,
   resolveTagCloud,
+  // ThemePreviewer
+  findThemePreviewerUrl,
 } from "./parser/rules/block/module/index";

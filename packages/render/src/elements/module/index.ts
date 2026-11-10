@@ -5,7 +5,7 @@
  * Wikidot modules are server-side components that generate dynamic content.
  * This renderer dispatches to the appropriate module-specific renderer based
  * on the module name. Supported modules include Rate, Join, Backlinks,
- * Categories, PageTree, ListPages, and ListUsers.
+ * Categories, PageTree, ListPages, ListUsers, TagCloud, and ThemePreviewer.
  *
  * Unknown module names produce a Wikidot-compatible error block with a
  * link to the modules documentation page.
@@ -65,6 +65,10 @@ export function renderModule(ctx: RenderContext, data: Module): void {
       break;
     case "tag-cloud":
       renderTagCloud(ctx, data);
+      break;
+    case "theme-previewer":
+      // No markup: hosts swap the theme stylesheet (see `findThemePreviewerUrl`).
+      // Wikidot's theme selector UI needs the site's theme list, which wdpr lacks.
       break;
   }
 }

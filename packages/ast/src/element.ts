@@ -523,6 +523,18 @@ export type Module =
       category: string | null;
     }
   | {
+      /**
+       * `[[module ThemePreviewer]]` — previews a theme on the current page.
+       * Wikidot replaces the page's theme stylesheets with the given theme;
+       * hosts read the URL (see `findThemePreviewerUrl`, gated by
+       * `allowStyleElements`) and swap their theme CSS.
+       * Renders no markup.
+       */
+      module: "theme-previewer";
+      /** `theme_url`, or null when absent or not an http(s), `//` or `/` URL */
+      "theme-url": string | null;
+    }
+  | {
       /** `[[module ListUsers]]` — user listing with template body */
       module: "list-users";
       /** User selector expression (e.g. `"."` for current user) */

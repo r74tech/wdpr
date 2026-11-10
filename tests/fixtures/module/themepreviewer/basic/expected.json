@@ -1,0 +1,25 @@
+{
+  "elements": [
+    {
+      "element": "module",
+      "data": {
+        "module": "theme-previewer",
+        "theme-url": "https://scp-jp.github.io/sigma/css/sigma.css"
+      }
+    },
+    {
+      "element": "module",
+      "data": {
+        "module": "theme-previewer",
+        "theme-url": null
+      }
+    },
+    {
+      "element": "footnote-block",
+      "data": {
+        "title": null,
+        "hide": false
+      }
+    }
+  ]
+}

@@ -29,6 +29,9 @@ import { currentToken } from "../../types";
 import { buildAnchorAttributes } from "./attributes";
 import { parseAnchorContent } from "./content";
 import { parseAnchorOpen } from "./open";
+import { InlineFailureCache } from "../failure-cache";
+
+const failedAnchors = new InlineFailureCache();
 
 /**
  * Inline rule for parsing `[[a]]...[[/a]]` blocks.
@@ -72,10 +75,16 @@ export const anchorRule: InlineRule = {
       return { success: false };
     }
 
+    const key = failedAnchors.key(ctx);
+    if (failedAnchors.has(ctx, key)) {
+      return { success: false };
+    }
+
     const contentResult = parseAnchorContent(ctx, openResult.bodyStart, openResult.paragraphStrip);
     const consumed = openResult.consumed + contentResult.consumed;
 
     if (!contentResult.foundClose) {
+      failedAnchors.add(ctx, key);
       ctx.diagnostics.push({
         severity: "warning",
         code: "unclosed-block",

@@ -4,8 +4,16 @@ import { currentToken } from "../../types";
 import { collectExpressionText } from "./branch";
 import { parseConditionalBranch } from "./conditional-branch";
 import { MAX_EXPRESSION_LENGTH, parseExprOpener } from "./syntax";
+import { InlineFailureCache } from "../failure-cache";
 
 export type ConditionalKeyword = "if" | "ifexpr";
+
+// Branches are parsed before the closing `]]` is checked, so nested unclosed
+// conditionals are retried by every enclosing one.
+const failedConditionals: Record<ConditionalKeyword, InlineFailureCache> = {
+  if: new InlineFailureCache(),
+  ifexpr: new InlineFailureCache(),
+};
 
 export type ConditionalParseResult =
   | {
@@ -47,6 +55,12 @@ export function parseConditional(
   pos++;
   consumed++;
 
+  const failed = failedConditionals[keyword];
+  const key = failed.key(ctx);
+  if (failed.has(ctx, key)) {
+    return { success: false };
+  }
+
   const thenResult = parseConditionalBranch(ctx, pos);
   pos = thenResult.nextPos;
   consumed += thenResult.consumed;
@@ -54,6 +68,7 @@ export function parseConditional(
   let elseElements: Element[] = [];
   if (thenResult.endedWithPipe) {
     if (ctx.tokens[pos]?.type !== "PIPE") {
+      failed.add(ctx, key);
       return { success: false };
     }
     pos++;
@@ -66,6 +81,7 @@ export function parseConditional(
   }
 
   if (ctx.tokens[pos]?.type !== "BLOCK_CLOSE") {
+    failed.add(ctx, key);
     return { success: false };
   }
   consumed++;

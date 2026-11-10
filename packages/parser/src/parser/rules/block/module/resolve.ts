@@ -98,6 +98,9 @@ export interface ResolveOptions {
    */
   includeMaxIterations?: number;
 
+  /** Maximum length of the include-expanded module source. See `ResolveIncludesOptions.maxLength`. */
+  includeMaxLength?: number;
+
   /**
    * Transform module-generated wikitext before re-parsing it.
    *
@@ -225,5 +228,6 @@ function createModuleSourceTransform(
   return (source: string) =>
     resolveIncludes(source, dataProvider.fetchInclude!, {
       maxIterations: options.includeMaxIterations ?? MODULE_SECONDARY_INCLUDE_MAX_ITERATIONS,
+      maxLength: options.includeMaxLength,
     });
 }

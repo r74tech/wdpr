@@ -48,8 +48,9 @@ export function resolveIncludes(
   }
 
   const maxIterations = options?.maxIterations ?? 10;
+  const maxLength = resolveMaxLength(options);
   const cachedFetcher = createCachedIncludeFetcher(fetcher, normalizePageKey);
-  return expandIterative(source, cachedFetcher, maxIterations);
+  return expandIterative(source, cachedFetcher, maxIterations, maxLength);
 }
 
 /**
@@ -70,12 +71,14 @@ export function resolveIncludesWithTrace(
       dependencies: [],
       iterations: [],
       reachedMaxIterations: false,
+      reachedMaxLength: false,
     };
   }
 
   const maxIterations = options?.maxIterations ?? 10;
+  const maxLength = resolveMaxLength(options);
   const cachedFetcher = createCachedIncludeFetcher(fetcher, normalizePageKey);
-  return expandIterativeWithTrace(source, cachedFetcher, maxIterations);
+  return expandIterativeWithTrace(source, cachedFetcher, maxIterations, maxLength);
 }
 
 /**
@@ -106,12 +109,14 @@ export async function resolveIncludesAsyncWithTrace(
       dependencies: [],
       iterations: [],
       reachedMaxIterations: false,
+      reachedMaxLength: false,
     };
   }
 
   const maxIterations = options?.maxIterations ?? 10;
+  const maxLength = resolveMaxLength(options);
   const cachedFetcher = createCachedAsyncIncludeFetcher(fetcher, normalizePageKey);
-  return expandIterativeAsyncWithTrace(source, cachedFetcher, maxIterations);
+  return expandIterativeAsyncWithTrace(source, cachedFetcher, maxIterations, maxLength);
 }
 
 /**
@@ -133,12 +138,31 @@ export async function resolveIncludesAsyncWithTraceSelective(
       dependencies: [],
       iterations: [],
       reachedMaxIterations: false,
+      reachedMaxLength: false,
     };
   }
 
   const maxIterations = options?.maxIterations ?? 10;
+  const maxLength = resolveMaxLength(options);
   const cachedFetcher = createCachedAsyncIncludeFetcher(fetcher, normalizePageKey);
-  return expandIterativeAsyncWithTrace(source, cachedFetcher, maxIterations, shouldDefer);
+  return expandIterativeAsyncWithTrace(
+    source,
+    cachedFetcher,
+    maxIterations,
+    maxLength,
+    shouldDefer,
+  );
+}
+
+const DEFAULT_INCLUDE_MAX_LENGTH = 1_000_000;
+
+// NaN or Infinity would make every length comparison pass, silently disabling the limit.
+function resolveMaxLength(options: ResolveIncludesOptions | undefined): number {
+  const maxLength = options?.maxLength ?? DEFAULT_INCLUDE_MAX_LENGTH;
+  if (!Number.isSafeInteger(maxLength) || maxLength <= 0) {
+    throw new RangeError(`Include maxLength must be a positive integer: ${maxLength}`);
+  }
+  return maxLength;
 }
 
 /**

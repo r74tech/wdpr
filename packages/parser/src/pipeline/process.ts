@@ -51,6 +51,7 @@ export async function processWikitext<TPage extends WikitextPageContext>(
         (reference) => isCurrentPageInclude(reference.location, options.page),
         {
           maxIterations: options.includeMaxIterations,
+          maxLength: options.includeMaxLength,
           settings,
         },
       );
@@ -60,6 +61,14 @@ export async function processWikitext<TPage extends WikitextPageContext>(
           createLimitDiagnostic(
             "include-resolution-limit",
             `Include expansion stopped after ${options.includeMaxIterations ?? 10} iterations.`,
+          ),
+        );
+      }
+      if (resolution.reachedMaxLength) {
+        diagnostics.push(
+          createLimitDiagnostic(
+            "include-expansion-limit",
+            `Include expansion stopped because the expanded source would exceed ${options.includeMaxLength ?? 1_000_000} characters.`,
           ),
         );
       }

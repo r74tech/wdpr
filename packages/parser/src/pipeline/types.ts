@@ -64,6 +64,8 @@ export interface ProcessWikitextOptions<TPage extends WikitextPageContext> {
   settings?: WikitextSettings;
   dataProvider?: ProcessWikitextDataProvider<TPage>;
   includeMaxIterations?: number;
+  /** Maximum length of the include-expanded source (default: 1,000,000). See `ResolveIncludesOptions.maxLength`. */
+  includeMaxLength?: number;
   readableText?: ReadableTextOptions;
 }
 

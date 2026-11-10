@@ -1,6 +1,8 @@
 ## 5.0.1 (2026-11-03)
 
-This was a version bump only for @wdprlib/render to align it with other projects, there were no code changes.
+### 🩹 Fixes
+
+- **sec:** `[[embed]]`の属性値にイベントハンドラを注入できるXSSを修正 ([GHSA-v8hv-c79r-3rv2](https://github.com/r74tech/wdpr/security/advisories/GHSA-v8hv-c79r-3rv2)) ([eb5fa8b](https://github.com/r74tech/wdpr/commit/eb5fa8b))
 
 # 5.0.0 (2026-09-13)
 

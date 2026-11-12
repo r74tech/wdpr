@@ -43,6 +43,6 @@
     "access": "public"
   },
   "dependencies": {
-    "re2js": "2.8.6"
+    "re2js": "2.8.7"
   }
 }
